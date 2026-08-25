@@ -25,6 +25,7 @@ import os
 import time
 from datetime import date
 
+import requests
 import streamlit as st
 import streamlit.components.v1 as components
 
@@ -83,6 +84,8 @@ I love you. ❤️
 }
 
 KOD_GRY = "4821"    # kod, który mini-gra pokaże po ukończeniu wszystkich poziomów
+KOD_DRONA = "3907"  # kod, który mini-gra z dronem pokaże po ukończeniu (dowolny)
+KOD_ZABY = "6152"   # kod, który mini-gra z żabą pokaże po ukończeniu (dowolny)
 
 # Trudność mini-gry zręcznościowej — 3 poziomy, coraz trudniejsze.
 POZIOMY_GRY = [
@@ -161,12 +164,18 @@ ETAPY = [
     {
         "klucz": "wordle",
         "tytul": {"pl": "🟩 Wordle dnia", "en": "🟩 Today's Wordle"},
-        "typ": "haslo",
+        "typ": "wordle",
+        # Aplikacja SAMA pobiera dzisiejsze słowo z (angielskiego) NYT Wordle —
+        # nie musisz nic wpisywać. Nie znalazłem podobnie niezawodnego,
+        # udokumentowanego źródła dla polskiego odpowiednika (np. Literalnie),
+        # dlatego ten etap zawsze odnosi się do angielskiego Wordle, niezależnie
+        # od wybranego języka aplikacji. "odpowiedz" niżej to WYŁĄCZNIE awaryjny
+        # ręczny kod na wypadek, gdyby pobieranie automatyczne zawiodło.
         "tresc": {
-            "pl": "Zagraj dzisiaj w Wordle (np. na nytimes.com/games/wordle) i wpisz słowo, które dziś odgadłaś:",
-            "en": "Play today's Wordle (e.g. on nytimes.com/games/wordle) and type the word you guessed today:",
+            "pl": "Zagraj dzisiaj w (angielskie) Wordle na nytimes.com/games/wordle i wpisz słowo, które odgadłaś. Aplikacja sama sprawdzi, czy to dzisiejsze słowo.",
+            "en": "Play today's Wordle at nytimes.com/games/wordle and type the word you guessed. The app checks it automatically.",
         },
-        "odpowiedz": "UZUPEŁNIJ",  # <- wpisz słowo z Wordle na dzień, w którym dajesz prezent! (np. "click")
+        "odpowiedz": "UZUPEŁNIJ",  # <- awaryjny kod ręczny, używany TYLKO gdy automatyczne pobranie zawiedzie
         "cyfra": "1",
     },
     {
@@ -204,6 +213,28 @@ ETAPY = [
         "odpowiedz": "d4d8",
         "cyfra": "8",
     },
+    {
+        "klucz": "dron",
+        "tytul": {"pl": "🚁 Dron", "en": "🚁 Drone"},
+        "typ": "dron",
+        "opis": {
+            "pl": "Steruj dronem — stukaj / klikaj, żeby wznieść się w górę. Przeleć przez wszystkie bramki bez rozbicia. Kod pojawi się po osiągnięciu celu.",
+            "en": "Fly the drone — tap / click to rise. Get through all the gates without crashing. The code appears once you hit the target.",
+        },
+        "odpowiedz": KOD_DRONA,
+        "cyfra": "4",
+    },
+    {
+        "klucz": "zaba",
+        "tytul": {"pl": "🐸 Żaba", "en": "🐸 Frog"},
+        "typ": "zaba",
+        "opis": {
+            "pl": "Steruj żabą — stukaj / klikaj, żeby skoczyła. Przeskocz przez wszystkie kolce, nie wpadnij na żaden. Kod pojawi się po osiągnięciu celu.",
+            "en": "Control the frog — tap / click to jump. Hop over all the spikes without hitting one. The code appears once you hit the target.",
+        },
+        "odpowiedz": KOD_ZABY,
+        "cyfra": "2",
+    },
 ]
 
 PLIK_STANU = "stan_gry.json"
@@ -231,6 +262,8 @@ TEKST = {
         "kod_z_gry_info": "Kiedy wygrasz wszystkie 3 poziomy, przepisz kod z gry poniżej:",
         "kod_z_gry_label": "Kod z gry:",
         "zle_kod_gry": "To nie ten kod. Zagraj jeszcze raz i sprawdź uważnie!",
+        "wordle_brak_polaczenia": "Nie udało się automatycznie pobrać dzisiejszego słowa. Spróbuj ponownie za chwilę.",
+        "wordle_sprobuj_pobrac": "🔄 Spróbuj pobrać ponownie",
         "rozwiazane_status": "✅ Rozwiązane",
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
         "menu_tytul": "Wybierz etap",
@@ -266,6 +299,8 @@ TEKST = {
         "kod_z_gry_info": "When you beat all 3 levels, type the code from the game below:",
         "kod_z_gry_label": "Code from the game:",
         "zle_kod_gry": "That's not the code. Play again and check carefully!",
+        "wordle_brak_polaczenia": "Couldn't automatically fetch today's word. Try again in a moment.",
+        "wordle_sprobuj_pobrac": "🔄 Try fetching again",
         "rozwiazane_status": "✅ Solved",
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
         "menu_tytul": "Choose a stage",
@@ -687,6 +722,767 @@ SZABLON_GRY = """
 """
 
 # ======================================================================
+# SZABLON MINI-GRY "DRON" (flappy-bird, ale z dronem) — nie musisz tu nic
+# zmieniać. Trudność steruje się stałymi na górze bloku <script> (CEL_WYNIK,
+# GRAWITACJA, SILA_SKOKU, PREDKOSC_START, ODSTEP_SPAWN_START, LUKA_START/MIN).
+# Nie dało się tego przetestować "na żywo" w moim środowisku (brak
+# przeglądarki) — koniecznie zagraj sam i dostrój liczby, jeśli trzeba.
+# ======================================================================
+
+SZABLON_DRONA = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+    cursor: pointer;
+  }
+  #dron {
+    position: absolute;
+    font-size: 34px;
+    line-height: 1;
+    z-index: 5;
+  }
+  #wynikNaEkranie {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    z-index: 4;
+    pointer-events: none;
+  }
+  .przeszkoda {
+    position: absolute;
+    width: 50px;
+    background: linear-gradient(180deg, #3a3050, #241b3a);
+    border-left: 2px solid #d4af37;
+    border-right: 2px solid #d4af37;
+  }
+  .przeszkoda-gora {
+    top: 0;
+    border-bottom: 5px solid #f0dfa8;
+  }
+  .przeszkoda-dol {
+    border-top: 5px solid #f0dfa8;
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  #kodWygrany {
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: #fff;
+    background: #1a1a2e;
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid #d4af37;
+    margin: 10px 0;
+  }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span>🚁 Dron</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="wynikNaEkranie">0</div>
+    <div id="dron">🚁</div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Dron</h2>
+      <p id="nakladkaOpis">Stukaj / klikaj, żeby wznieść drona. Przeleć przez WSZYSTKIE bramki, nie rozbij się.</p>
+      <div id="kodBox" style="display:none;">
+        <div id="kodWygrany">__KOD_DRONA__</div>
+        <p style="opacity:0.7; font-size:13px;">Przepisz ten kod poniżej 👇</p>
+      </div>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var dron = document.getElementById('dron');
+  var wynikNaEkranie = document.getElementById('wynikNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var kodBox = document.getElementById('kodBox');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  var DRON_X = 0.25;
+  var DRON_R = 14;
+  var GRAWITACJA = 1400;
+  var SILA_SKOKU = -380;
+  var PREDKOSC_START = 150;
+  var ODSTEP_SPAWN_START = 1.7;
+  var SZEROKOSC_PRZESZKODY = 50;
+  var LUKA_START = 145;
+  var LUKA_MIN = 105;
+  var CEL_WYNIK = 15;
+  var MARGINES = 60;
+
+  var dronY = 0;
+  var dronVY = 0;
+  var przeszkody = [];
+  var wynik = 0;
+  var trwa = false;
+  var czasOstatni = null;
+  var czasOdSpawnu = 0;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ;
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function zagrajDzwiek(typ) {
+    if (typ === 'skok') zagrajTon(500, 0.08, 'square');
+    else if (typ === 'punkt') zagrajTon(800, 0.12, 'sine');
+    else if (typ === 'crash') zagrajTon(120, 0.35, 'sawtooth');
+  }
+
+  function skok() {
+    if (!trwa) return;
+    dronVY = SILA_SKOKU;
+    zagrajDzwiek('skok');
+  }
+
+  function usunPrzeszkode(p) {
+    if (p.elGora.parentNode) p.elGora.remove();
+    if (p.elDol.parentNode) p.elDol.remove();
+  }
+
+  function stworzPrzeszkode(szer, wys, gapY, gapH) {
+    var gora = document.createElement('div');
+    gora.className = 'przeszkoda przeszkoda-gora';
+    gora.style.height = (gapY - gapH / 2) + 'px';
+
+    var dol = document.createElement('div');
+    dol.className = 'przeszkoda przeszkoda-dol';
+    dol.style.top = (gapY + gapH / 2) + 'px';
+    dol.style.height = (wys - (gapY + gapH / 2)) + 'px';
+
+    gra.appendChild(gora);
+    gra.appendChild(dol);
+
+    return { x: szer + 10, gapY: gapY, gapH: gapH, minieta: false, elGora: gora, elDol: dol };
+  }
+
+  function aktualizujWynik() {
+    wynikNaEkranie.textContent = wynik;
+  }
+
+  function rysuj() {
+    dron.style.left = (gra.clientWidth * DRON_X) + 'px';
+    dron.style.top = dronY + 'px';
+    var obrot = Math.max(-25, Math.min(70, dronVY / 8));
+    dron.style.transform = 'translate(-50%, -50%) rotate(' + obrot + 'deg)';
+
+    for (var i = 0; i < przeszkody.length; i++) {
+      przeszkody[i].elGora.style.left = przeszkody[i].x + 'px';
+      przeszkody[i].elDol.style.left = przeszkody[i].x + 'px';
+    }
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
+    czasOstatni = czas;
+
+    var szer = gra.clientWidth;
+    var wys = gra.clientHeight;
+
+    dronVY += GRAWITACJA * dt;
+    dronY += dronVY * dt;
+
+    var mnoznik = 1 + Math.min(wynik, 20) * 0.03;
+    var predkoscAktualna = PREDKOSC_START * mnoznik;
+    var lukaAktualna = Math.max(LUKA_MIN, LUKA_START - wynik * 2);
+
+    czasOdSpawnu += dt;
+    var odstepAktualny = ODSTEP_SPAWN_START / mnoznik;
+    if (czasOdSpawnu >= odstepAktualny) {
+      czasOdSpawnu = 0;
+      var gapYMin = MARGINES + lukaAktualna / 2;
+      var gapYMax = wys - MARGINES - lukaAktualna / 2;
+      var gapY = losowo(gapYMin, gapYMax);
+      przeszkody.push(stworzPrzeszkode(szer, wys, gapY, lukaAktualna));
+    }
+
+    var dronXpx = szer * DRON_X;
+
+    for (var i = przeszkody.length - 1; i >= 0; i--) {
+      var p = przeszkody[i];
+      p.x -= predkoscAktualna * dt;
+
+      if (p.x < dronXpx + DRON_R && p.x + SZEROKOSC_PRZESZKODY > dronXpx - DRON_R) {
+        var krawedzGornej = p.gapY - p.gapH / 2;
+        var krawedzDolnej = p.gapY + p.gapH / 2;
+        if (dronY - DRON_R < krawedzGornej || dronY + DRON_R > krawedzDolnej) {
+          zakonczGre(false);
+          return;
+        }
+      }
+
+      if (!p.minieta && p.x + SZEROKOSC_PRZESZKODY < dronXpx - DRON_R) {
+        p.minieta = true;
+        wynik += 1;
+        zagrajDzwiek('punkt');
+        aktualizujWynik();
+        if (wynik >= CEL_WYNIK) {
+          zakonczGre(true);
+          return;
+        }
+      }
+
+      if (p.x < -SZEROKOSC_PRZESZKODY) {
+        usunPrzeszkode(p);
+        przeszkody.splice(i, 1);
+      }
+    }
+
+    if (dronY - DRON_R < 0 || dronY + DRON_R > wys) {
+      zakonczGre(false);
+      return;
+    }
+
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function rozpocznijGre() {
+    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+    przeszkody = [];
+    wynik = 0;
+    aktualizujWynik();
+    dronY = gra.clientHeight / 2;
+    dronVY = 0;
+    czasOdSpawnu = 0;
+    czasOstatni = null;
+    nakladka.style.display = 'none';
+    trwa = true;
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+    przeszkody = [];
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      zagrajDzwiek('punkt');
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = 'Twój kod czeka poniżej:';
+      kodBox.style.display = 'block';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      zagrajDzwiek('crash');
+      nakladkaTytul.textContent = '💥 Rozbity dron...';
+      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+      kodBox.style.display = 'none';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  gra.addEventListener('click', function () { skok(); });
+  gra.addEventListener('touchstart', function (e) { e.preventDefault(); skok(); }, { passive: false });
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+# ======================================================================
+# SZABLON MINI-GRY "ŻABA" (geometry dash, ale z żabą) — nie musisz tu nic
+# zmieniać. Trudność steruje się stałymi na górze bloku <script>
+# (CEL_WYNIK, GRAWITACJA, SILA_SKOKU, PREDKOSC_START, ODSTEP_SPAWN_START).
+# Podobnie jak przy dronie: nie dało się tego przetestować "na żywo" bez
+# przeglądarki — koniecznie zagraj sam i dostrój liczby, jeśli trzeba.
+# Skacze tylko wtedy, gdy żaba stoi na ziemi (jak w prawdziwym Geometry
+# Dash — nie ma podwójnego skoku w powietrzu).
+# ======================================================================
+
+SZABLON_ZABY = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+    cursor: pointer;
+  }
+  #podloze {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: linear-gradient(90deg, #d4af37, #f0dfa8, #d4af37);
+    z-index: 1;
+  }
+  #zaba {
+    position: absolute;
+    font-size: 34px;
+    line-height: 1;
+    z-index: 5;
+  }
+  #wynikNaEkranie {
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 32px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    z-index: 4;
+    pointer-events: none;
+  }
+  .przeszkoda-kontener {
+    position: absolute;
+    bottom: 8px;
+    height: 0;
+    z-index: 2;
+  }
+  .kolec {
+    position: absolute;
+    bottom: 0;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-bottom: 35px solid #d4af37;
+    filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  #kodWygrany {
+    font-size: 28px;
+    letter-spacing: 4px;
+    color: #fff;
+    background: #1a1a2e;
+    padding: 8px 18px;
+    border-radius: 10px;
+    border: 1px solid #d4af37;
+    margin: 10px 0;
+  }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span>🐸 Żaba</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="podloze"></div>
+    <div id="wynikNaEkranie">0</div>
+    <div id="zaba">🐸</div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Żaba</h2>
+      <p id="nakladkaOpis">Stukaj / klikaj, żeby żaba skoczyła. Przeskocz WSZYSTKIE kolce, nie wpadnij na żaden.</p>
+      <div id="kodBox" style="display:none;">
+        <div id="kodWygrany">__KOD_ZABY__</div>
+        <p style="opacity:0.7; font-size:13px;">Przepisz ten kod poniżej 👇</p>
+      </div>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var zaba = document.getElementById('zaba');
+  var wynikNaEkranie = document.getElementById('wynikNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var kodBox = document.getElementById('kodBox');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  var ZABA_X = 0.22;
+  var ZABA_R = 14;
+  var GRAWITACJA = 2200;
+  var SILA_SKOKU = -620;
+  var PODLOZE_WYSOKOSC = 8;
+  var KOLEC_SZEROKOSC = 30;
+  var KOLEC_WYSOKOSC = 35;
+  var TOLERANCJA_KOLIZJI = 3;
+  var PREDKOSC_START = 220;
+  var ODSTEP_SPAWN_START = 1.8;
+  var CEL_WYNIK = 20;
+
+  var zabaDol = 0;
+  var zabaVY = 0;
+  var naZiemi = true;
+  var przeszkody = [];
+  var wynik = 0;
+  var trwa = false;
+  var czasOstatni = null;
+  var czasOdSpawnu = 0;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ;
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function zagrajDzwiek(typ) {
+    if (typ === 'skok') zagrajTon(450, 0.07, 'square');
+    else if (typ === 'punkt') zagrajTon(750, 0.1, 'sine');
+    else if (typ === 'crash') zagrajTon(110, 0.35, 'sawtooth');
+  }
+
+  function skok() {
+    if (!trwa || !naZiemi) return;
+    zabaVY = SILA_SKOKU;
+    naZiemi = false;
+    zagrajDzwiek('skok');
+  }
+
+  function usunPrzeszkode(p) {
+    if (p.el.parentNode) p.el.remove();
+  }
+
+  function stworzPrzeszkode(szer) {
+    var liczbaKolcow = Math.random() < 0.55 ? 1 : (Math.random() < 0.8 ? 2 : 3);
+    var szerokoscCalkowita = liczbaKolcow * KOLEC_SZEROKOSC;
+
+    var kontener = document.createElement('div');
+    kontener.className = 'przeszkoda-kontener';
+    kontener.style.width = szerokoscCalkowita + 'px';
+    kontener.style.left = (szer + 20) + 'px';
+
+    for (var i = 0; i < liczbaKolcow; i++) {
+      var kolec = document.createElement('div');
+      kolec.className = 'kolec';
+      kolec.style.left = (i * KOLEC_SZEROKOSC) + 'px';
+      kontener.appendChild(kolec);
+    }
+
+    gra.appendChild(kontener);
+    return { x: szer + 20, szerokosc: szerokoscCalkowita, el: kontener, minieta: false };
+  }
+
+  function aktualizujWynik() {
+    wynikNaEkranie.textContent = wynik;
+  }
+
+  function rysuj() {
+    var szer = gra.clientWidth;
+    zaba.style.left = (szer * ZABA_X) + 'px';
+    zaba.style.top = zabaDol + 'px';
+    zaba.style.transform = 'translate(-50%, -100%)';
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
+    czasOstatni = czas;
+
+    var szer = gra.clientWidth;
+    var wys = gra.clientHeight;
+    var groundY = wys - PODLOZE_WYSOKOSC;
+
+    zabaVY += GRAWITACJA * dt;
+    zabaDol += zabaVY * dt;
+    if (zabaDol >= groundY) {
+      zabaDol = groundY;
+      zabaVY = 0;
+      naZiemi = true;
+    } else {
+      naZiemi = false;
+    }
+
+    var mnoznik = 1 + Math.min(wynik, 25) * 0.025;
+    var predkoscAktualna = PREDKOSC_START * mnoznik;
+
+    czasOdSpawnu += dt;
+    var odstepAktualny = (ODSTEP_SPAWN_START / mnoznik) * losowo(0.85, 1.25);
+    if (czasOdSpawnu >= odstepAktualny) {
+      czasOdSpawnu = 0;
+      przeszkody.push(stworzPrzeszkode(szer));
+    }
+
+    var zabaXpx = szer * ZABA_X;
+
+    for (var i = przeszkody.length - 1; i >= 0; i--) {
+      var p = przeszkody[i];
+      p.x -= predkoscAktualna * dt;
+      p.el.style.left = p.x + 'px';
+
+      var zabaLewa = zabaXpx - ZABA_R;
+      var zabaPrawa = zabaXpx + ZABA_R;
+      if (zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc) {
+        if (zabaDol > groundY - KOLEC_WYSOKOSC + TOLERANCJA_KOLIZJI) {
+          zakonczGre(false);
+          return;
+        }
+      }
+
+      if (!p.minieta && p.x + p.szerokosc < zabaXpx - ZABA_R) {
+        p.minieta = true;
+        wynik += 1;
+        zagrajDzwiek('punkt');
+        aktualizujWynik();
+        if (wynik >= CEL_WYNIK) {
+          zakonczGre(true);
+          return;
+        }
+      }
+
+      if (p.x < -200) {
+        usunPrzeszkode(p);
+        przeszkody.splice(i, 1);
+      }
+    }
+
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function rozpocznijGre() {
+    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+    przeszkody = [];
+    wynik = 0;
+    aktualizujWynik();
+    zabaDol = gra.clientHeight - PODLOZE_WYSOKOSC;
+    zabaVY = 0;
+    naZiemi = true;
+    czasOdSpawnu = 0;
+    czasOstatni = null;
+    nakladka.style.display = 'none';
+    trwa = true;
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+    przeszkody = [];
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      zagrajDzwiek('punkt');
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = 'Twój kod czeka poniżej:';
+      kodBox.style.display = 'block';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      zagrajDzwiek('crash');
+      nakladkaTytul.textContent = '🐸💥 Żaba nie doskoczyła...';
+      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+      kodBox.style.display = 'none';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  gra.addEventListener('click', function () { skok(); });
+  gra.addEventListener('touchstart', function (e) { e.preventDefault(); skok(); }, { passive: false });
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+# ======================================================================
 # STYL APLIKACJI
 # ======================================================================
 
@@ -1007,6 +1803,103 @@ def renderuj_gra(etap_dane):
     return None
 
 
+def renderuj_dron(etap_dane):
+    klucz = etap_dane["klucz"]
+    st.markdown(tt(etap_dane.get("opis", "")))
+
+    html = SZABLON_DRONA.replace("__KOD_DRONA__", str(KOD_DRONA))
+    components.html(html, height=520, scrolling=False)
+
+    st.caption(t("kod_z_gry_info"))
+    wpisane = st.text_input(t("kod_z_gry_label"), key=f"pole_{klucz}")
+    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
+            return True
+        st.error(t("zle_kod_gry"))
+        return False
+    return None
+
+
+def renderuj_zaba(etap_dane):
+    klucz = etap_dane["klucz"]
+    st.markdown(tt(etap_dane.get("opis", "")))
+
+    html = SZABLON_ZABY.replace("__KOD_ZABY__", str(KOD_ZABY))
+    components.html(html, height=520, scrolling=False)
+
+    st.caption(t("kod_z_gry_info"))
+    wpisane = st.text_input(t("kod_z_gry_label"), key=f"pole_{klucz}")
+    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
+            return True
+        st.error(t("zle_kod_gry"))
+        return False
+    return None
+
+
+@st.cache_data(ttl=300)  # 5 minut - dość świeżo, a nie odpytuje API bez przerwy
+def pobierz_dzisiejszy_wordle():
+    """Próbuje pobrać dzisiejsze słowo z (angielskiego) NYT Wordle.
+    Najpierw oficjalne, szeroko używane API NYT; jeśli zawiedzie, zapasowe
+    API wordlehints.co.uk. Zwraca None, jeśli oba się nie powiodą —
+    wtedy renderuj_wordle() spada na ręczny kod z configu."""
+    dzis_str = date.today().strftime("%Y-%m-%d")
+
+    try:
+        url = f"https://www.nytimes.com/svc/wordle/v2/{dzis_str}.json"
+        r = requests.get(url, timeout=5, headers={"User-Agent": "Mozilla/5.0"})
+        if r.ok:
+            slowo = str(r.json().get("solution", "")).strip().lower()
+            if slowo:
+                return slowo
+    except Exception:
+        pass
+
+    try:
+        r = requests.get(
+            "https://wordlehints.co.uk/wp-json/wordlehint/v1/answers",
+            params={"from": dzis_str, "to": dzis_str},
+            timeout=5,
+        )
+        if r.ok:
+            wyniki = r.json().get("results", [])
+            if wyniki:
+                slowo = str(wyniki[0].get("answer", "")).strip().lower()
+                if slowo:
+                    return slowo
+    except Exception:
+        pass
+
+    return None
+
+
+def renderuj_wordle(etap_dane):
+    klucz = etap_dane["klucz"]
+    st.markdown(tt(etap_dane["tresc"]))
+
+    dzisiejsze_slowo = pobierz_dzisiejszy_wordle()
+    if dzisiejsze_slowo is None:
+        st.warning(t("wordle_brak_polaczenia"))
+        if st.button(t("wordle_sprobuj_pobrac"), key=f"odswiez_{klucz}"):
+            pobierz_dzisiejszy_wordle.clear()
+            st.rerun()
+
+    wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
+    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        cel = dzisiejsze_slowo
+        if not cel:
+            zapasowa = str(etap_dane.get("odpowiedz", "")).strip().lower()
+            if zapasowa and zapasowa not in ("uzupełnij", "uzupelnij"):
+                cel = zapasowa
+        if not cel:
+            return None
+        if wpisane.strip().lower() == cel:
+            return True
+        st.error(t("zle_sprobuj"))
+        return False
+    return None
+
+
 def renderuj_data(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(tt(etap_dane["tresc"]))
@@ -1135,6 +2028,12 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_quiz(etap_dane)
     elif typ == "gra":
         wynik = renderuj_gra(etap_dane)
+    elif typ == "dron":
+        wynik = renderuj_dron(etap_dane)
+    elif typ == "zaba":
+        wynik = renderuj_zaba(etap_dane)
+    elif typ == "wordle":
+        wynik = renderuj_wordle(etap_dane)
     elif typ == "data":
         wynik = renderuj_data(etap_dane)
     elif typ == "szachy":
