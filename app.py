@@ -57,9 +57,9 @@ I love you. ❤️
 
 # Trudność mini-gry zręcznościowej — 3 poziomy, coraz trudniejsze.
 POZIOMY_GRY = [
-    {"serca": 6, "czarne": 2, "kierunek": "dol", "predkosc": 130, "tempo": 650},
-    {"serca": 8, "czarne": 4, "kierunek": "skos", "predkosc": 190, "tempo": 480},
-    {"serca": 10, "czarne": 6, "kierunek": "gora", "predkosc": 230, "tempo": 340},
+    {"serca": 7, "czarne": 3, "kierunek": "dol", "predkosc": 130, "tempo": 650},
+    {"serca": 10, "czarne": 5, "kierunek": "skos", "predkosc": 190, "tempo": 480},
+    {"serca": 13, "czarne": 8, "kierunek": "gora", "predkosc": 230, "tempo": 340},
 ]
 
 # Zagadka szachowa: białe mają wymusić mata w 3 posunięciach (każdy ruch
@@ -523,7 +523,7 @@ SZABLON_GRY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -902,7 +902,7 @@ SZABLON_DRONA = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -1282,7 +1282,7 @@ SZABLON_ZABY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -1808,7 +1808,7 @@ SZABLON_MEMORY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -1945,7 +1945,7 @@ SZABLON_MEMORY = """
 
   var SYMBOLE = ['🍎', '🎈', '🎵', '🌙', '⭐', '🔑', '💎', '🦋'];
   var CEL_PAR = SYMBOLE.length;
-  var CZAS_LIMIT = 60;
+  var CZAS_LIMIT = 45;
 
   var karty = [];
   var odkryteTeraz = [];
@@ -2149,7 +2149,7 @@ SZABLON_SIMON = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -2408,7 +2408,7 @@ SZABLON_PIANO = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   body {
     margin: 0;
     font-family: -apple-system, 'Poppins', sans-serif;
@@ -2538,8 +2538,8 @@ SZABLON_PIANO = """
   ];
 
   var LICZBA_PASOW = 4;
-  var PREDKOSC_START = 260;
-  var PREDKOSC_PRZYROST = 6;
+  var PREDKOSC_START = 420;
+  var PREDKOSC_PRZYROST = 10;
   var WYSOKOSC_KAFELKA = 70;
 
   var indeksNuty = 0;
