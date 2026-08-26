@@ -145,7 +145,7 @@ ETAPY = [
                     "pl": "WHAT A VILLAGE — jakie to polskie, potoczne wyrażenie?",
                     "en": "WHAT A VILLAGE — that's a literal translation. What's the Polish slang expression?",
                 },
-                "odpowiedzi": ["ale wieś", "ale wies"],
+                "odpowiedzi": ["ale wieś", "ale wies", "co za wieś", "co za wies"],
             },
             {
                 "wskazowka": {
@@ -1787,6 +1787,7 @@ SZABLON_MEMORY = """
   #siatka {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(4, 1fr);
     gap: 8px;
     padding: 14px;
     width: 100%;
@@ -1794,7 +1795,7 @@ SZABLON_MEMORY = """
   }
   .karta {
     position: relative;
-    aspect-ratio: 1;
+    min-width: 0;
     cursor: pointer;
     perspective: 600px;
   }
