@@ -734,7 +734,6 @@ SZABLON_GRY = """
     el.dataset.vy = vy;
 
     el.addEventListener('click', function () { kliknieto(el); });
-    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknieto(el); }, { passive: false });
 
     gra.appendChild(el);
     aktywneElementy.push(el);
@@ -1255,11 +1254,6 @@ SZABLON_DRONA = """
     if (nakladka.style.display !== 'none') return;
     skok();
   });
-  gra.addEventListener('touchstart', function (e) {
-    if (nakladka.style.display !== 'none') return;
-    e.preventDefault();
-    skok();
-  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1365,6 +1359,11 @@ SZABLON_ZABY = """
     border-bottom: 35px solid #d4af37;
     filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
   }
+  .kolec-wysoki {
+    border-bottom-width: 100px;
+    border-bottom-color: #e6738a;
+    filter: drop-shadow(0 0 4px rgba(230,115,138,0.5));
+  }
   .kontener-sufit {
     position: absolute;
     top: 0;
@@ -1451,15 +1450,19 @@ SZABLON_ZABY = """
   var PODLOZE_WYSOKOSC = 8;
   var KOLEC_SZEROKOSC = 30;
   var KOLEC_WYSOKOSC = 35;
+  var KOLEC_WYSOKOSC_WYSOKI = 100;
   var TOLERANCJA_KOLIZJI = 3;
+  var TOLERANCJA_LADOWANIA = 4;
   var PREDKOSC_START = 220;
   var ODSTEP_SPAWN_START = 1.8;
   var CEL_WYNIK = 20;
   var PLATFORMA_WYSOKOSC_NAD_ZIEMIA = 70;
   var PLATFORMA_SZEROKOSC = 110;
+  var PODEST_KOLCE_NACHODZENIE = 25;
   var SUFIT_PRZERWA_OD_ZIEMI = 62;
 
   var zabaDol = 0;
+  var zabaDolPoprzedni = 0;
   var zabaVY = 0;
   var naZiemi = true;
   var przeszkody = [];
@@ -1519,7 +1522,12 @@ SZABLON_ZABY = """
   }
 
   function usunPrzeszkode(p) {
-    if (p.el.parentNode) p.el.remove();
+    if (p.typ === 'podest-kolce') {
+      if (p.elPodest.parentNode) p.elPodest.remove();
+      if (p.elKolec.parentNode) p.elKolec.remove();
+    } else if (p.el && p.el.parentNode) {
+      p.el.remove();
+    }
   }
 
   // Ile kolcow w grupie na start TYLKO pojedyncze; podwojne i potrojne
@@ -1531,45 +1539,79 @@ SZABLON_ZABY = """
   }
 
   // Typ nastepnej przeszkody - na start same kolce, potem dochodza
-  // platformy (kilka poziomow do skakania), a najpozniej kolce sufitowe
-  // (czasem NIE wolno skakac, trzeba przebiec pod spodem).
+  // platformy, potem kombinacja podest+wysoki kolec (trzeba wskoczyc na
+  // podest, zeby miec dosc wysokosci na przeskoczenie), a najpozniej
+  // kolce sufitowe (czasem NIE wolno skakac, trzeba przebiec pod spodem).
   function losujTypPrzeszkody() {
     if (wynik < 6) return 'kolce';
     var r = Math.random();
-    if (wynik < 14) {
+    if (wynik < 10) {
       return r < 0.7 ? 'kolce' : 'platforma';
     }
-    if (r < 0.55) return 'kolce';
-    if (r < 0.8) return 'platforma';
-    return 'sufit';
+    if (wynik < 16) {
+      if (r < 0.5) return 'kolce';
+      if (r < 0.75) return 'platforma';
+      return 'podest-kolce';
+    }
+    if (r < 0.4) return 'kolce';
+    if (r < 0.6) return 'platforma';
+    if (r < 0.8) return 'sufit';
+    return 'podest-kolce';
   }
 
   function stworzPrzeszkode(szer, groundY) {
     var typ = losujTypPrzeszkody();
+    var xStart = szer + 20;
 
     if (typ === 'platforma') {
       var el = document.createElement('div');
       el.className = 'platforma';
       el.style.width = PLATFORMA_SZEROKOSC + 'px';
-      el.style.left = (szer + 20) + 'px';
+      el.style.left = xStart + 'px';
       var wysokoscY = groundY - PLATFORMA_WYSOKOSC_NAD_ZIEMIA;
       el.style.top = wysokoscY + 'px';
       gra.appendChild(el);
-      return { typ: 'platforma', x: szer + 20, szerokosc: PLATFORMA_SZEROKOSC, wysokoscY: wysokoscY, minieta: false, el: el };
+      return { typ: 'platforma', x: xStart, szerokosc: PLATFORMA_SZEROKOSC, wysokoscY: wysokoscY, minieta: false, el: el };
+    }
+
+    if (typ === 'podest-kolce') {
+      var elPodest = document.createElement('div');
+      elPodest.className = 'platforma';
+      elPodest.style.width = PLATFORMA_SZEROKOSC + 'px';
+      elPodest.style.left = xStart + 'px';
+      var wysokoscY2 = groundY - PLATFORMA_WYSOKOSC_NAD_ZIEMIA;
+      elPodest.style.top = wysokoscY2 + 'px';
+      gra.appendChild(elPodest);
+
+      var offsetKolca = PLATFORMA_SZEROKOSC - PODEST_KOLCE_NACHODZENIE;
+      var elKolec = document.createElement('div');
+      elKolec.className = 'przeszkoda-kontener';
+      elKolec.style.width = KOLEC_SZEROKOSC + 'px';
+      elKolec.style.left = (xStart + offsetKolca) + 'px';
+      var kolecWysoki = document.createElement('div');
+      kolecWysoki.className = 'kolec kolec-wysoki';
+      elKolec.appendChild(kolecWysoki);
+      gra.appendChild(elKolec);
+
+      return {
+        typ: 'podest-kolce', x: xStart, offsetKolca: offsetKolca,
+        szerokosc: offsetKolca + KOLEC_SZEROKOSC, wysokoscY: wysokoscY2,
+        elPodest: elPodest, elKolec: elKolec, minieta: false
+      };
     }
 
     if (typ === 'sufit') {
       var kontener = document.createElement('div');
       kontener.className = 'kontener-sufit';
       kontener.style.width = KOLEC_SZEROKOSC + 'px';
-      kontener.style.left = (szer + 20) + 'px';
+      kontener.style.left = xStart + 'px';
       var dolnaKrawedzY = groundY - SUFIT_PRZERWA_OD_ZIEMI;
       kontener.style.height = dolnaKrawedzY + 'px';
       var kolec = document.createElement('div');
       kolec.className = 'kolec-sufit';
       kontener.appendChild(kolec);
       gra.appendChild(kontener);
-      return { typ: 'sufit', x: szer + 20, szerokosc: KOLEC_SZEROKOSC, dolnaKrawedzY: dolnaKrawedzY, minieta: false, el: kontener };
+      return { typ: 'sufit', x: xStart, szerokosc: KOLEC_SZEROKOSC, dolnaKrawedzY: dolnaKrawedzY, minieta: false, el: kontener };
     }
 
     var liczbaKolcow = losujLiczbeKolcow();
@@ -1577,7 +1619,7 @@ SZABLON_ZABY = """
     var kontenerK = document.createElement('div');
     kontenerK.className = 'przeszkoda-kontener';
     kontenerK.style.width = szerokoscCalkowita + 'px';
-    kontenerK.style.left = (szer + 20) + 'px';
+    kontenerK.style.left = xStart + 'px';
     for (var i = 0; i < liczbaKolcow; i++) {
       var kolecN = document.createElement('div');
       kolecN.className = 'kolec';
@@ -1585,7 +1627,7 @@ SZABLON_ZABY = """
       kontenerK.appendChild(kolecN);
     }
     gra.appendChild(kontenerK);
-    return { typ: 'kolce', x: szer + 20, szerokosc: szerokoscCalkowita, minieta: false, el: kontenerK };
+    return { typ: 'kolce', x: xStart, szerokosc: szerokoscCalkowita, minieta: false, el: kontenerK };
   }
 
   function aktualizujWynik() {
@@ -1599,14 +1641,21 @@ SZABLON_ZABY = """
     zaba.style.transform = 'translate(-50%, -100%)';
   }
 
-  // Zwraca Y powierzchni, na ktorej zabka moze aktualnie stac w danym X:
-  // najwyzsza platforma pokrywajaca to X, albo (domyslnie) glowna podloga.
-  function pobierzPodloze(x, glownaPodlogaY) {
+  // Zwraca Y powierzchni, na ktorej zabka moze aktualnie stac w danym X.
+  // WAZNE: platforma liczy sie jako ladowanie TYLKO jesli zabka byla w
+  // POPRZEDNIEJ klatce juz na jej wysokosci lub wyzej (czyli faktycznie na
+  // nia doskoczyla) - inaczej zwykle przejscie pod spodem po ziemi nie
+  // powinno jej tam "teleportowac".
+  function pobierzPodloze(x, zabaDolPrzed, glownaPodlogaY) {
     var najlepsza = glownaPodlogaY;
     for (var i = 0; i < przeszkody.length; i++) {
       var p = przeszkody[i];
-      if (p.typ === 'platforma' && x >= p.x && x <= p.x + p.szerokosc) {
-        if (p.wysokoscY < najlepsza) najlepsza = p.wysokoscY;
+      var jestPlatforma = p.typ === 'platforma' || p.typ === 'podest-kolce';
+      if (!jestPlatforma) continue;
+      if (x >= p.x && x <= p.x + PLATFORMA_SZEROKOSC) {
+        if (p.wysokoscY < najlepsza && zabaDolPrzed <= p.wysokoscY + TOLERANCJA_LADOWANIA) {
+          najlepsza = p.wysokoscY;
+        }
       }
     }
     return najlepsza;
@@ -1623,9 +1672,10 @@ SZABLON_ZABY = """
     var groundY = wys - PODLOZE_WYSOKOSC;
     var zabaXpx = szer * ZABA_X;
 
+    zabaDolPoprzedni = zabaDol;
     zabaVY += GRAWITACJA * dt;
     zabaDol += zabaVY * dt;
-    var docelowePodloze = pobierzPodloze(zabaXpx, groundY);
+    var docelowePodloze = pobierzPodloze(zabaXpx, zabaDolPoprzedni, groundY);
     if (zabaVY >= 0 && zabaDol >= docelowePodloze) {
       zabaDol = docelowePodloze;
       zabaVY = 0;
@@ -1644,25 +1694,36 @@ SZABLON_ZABY = """
       przeszkody.push(stworzPrzeszkode(szer, groundY));
     }
 
+    var zabaLewa = zabaXpx - ZABA_R;
+    var zabaPrawa = zabaXpx + ZABA_R;
+
     for (var i = przeszkody.length - 1; i >= 0; i--) {
       var p = przeszkody[i];
       p.x -= predkoscAktualna * dt;
-      p.el.style.left = p.x + 'px';
 
-      var zabaLewa = zabaXpx - ZABA_R;
-      var zabaPrawa = zabaXpx + ZABA_R;
-      var wZasiegu = zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc;
-
-      if (wZasiegu && p.typ === 'kolce') {
-        if (zabaDol > groundY - KOLEC_WYSOKOSC + TOLERANCJA_KOLIZJI) {
+      if (p.typ === 'podest-kolce') {
+        p.elPodest.style.left = p.x + 'px';
+        var xKolec = p.x + p.offsetKolca;
+        p.elKolec.style.left = xKolec + 'px';
+        var wZasiegKolca = zabaPrawa > xKolec && zabaLewa < xKolec + KOLEC_SZEROKOSC;
+        if (wZasiegKolca && zabaDol > groundY - KOLEC_WYSOKOSC_WYSOKI + TOLERANCJA_KOLIZJI) {
           zakonczGre(false);
           return;
         }
-      } else if (wZasiegu && p.typ === 'sufit') {
-        var zabaGora = zabaDol - ZABA_WYSOKOSC;
-        if (zabaGora < p.dolnaKrawedzY - TOLERANCJA_KOLIZJI) {
-          zakonczGre(false);
-          return;
+      } else {
+        p.el.style.left = p.x + 'px';
+        var wZasiegu = zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc;
+        if (wZasiegu && p.typ === 'kolce') {
+          if (zabaDol > groundY - KOLEC_WYSOKOSC + TOLERANCJA_KOLIZJI) {
+            zakonczGre(false);
+            return;
+          }
+        } else if (wZasiegu && p.typ === 'sufit') {
+          var zabaGora = zabaDol - ZABA_WYSOKOSC;
+          if (zabaGora < p.dolnaKrawedzY - TOLERANCJA_KOLIZJI) {
+            zakonczGre(false);
+            return;
+          }
         }
       }
 
@@ -1677,7 +1738,7 @@ SZABLON_ZABY = """
         }
       }
 
-      if (p.x < -300) {
+      if (p.x + p.szerokosc < -300) {
         usunPrzeszkode(p);
         przeszkody.splice(i, 1);
       }
@@ -1693,6 +1754,7 @@ SZABLON_ZABY = """
     wynik = 0;
     aktualizujWynik();
     zabaDol = gra.clientHeight - PODLOZE_WYSOKOSC;
+    zabaDolPoprzedni = zabaDol;
     zabaVY = 0;
     naZiemi = true;
     czasOdSpawnu = 0;
@@ -1728,11 +1790,6 @@ SZABLON_ZABY = """
     if (nakladka.style.display !== 'none') return;
     skok();
   });
-  gra.addEventListener('touchstart', function (e) {
-    if (nakladka.style.display !== 'none') return;
-    e.preventDefault();
-    skok();
-  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1864,6 +1921,7 @@ SZABLON_MEMORY = """
 <body>
   <div id="panel">
     <span id="parNaEkranie">0 / 8</span>
+    <span id="czasNaEkranie">60s</span>
     <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
@@ -1878,6 +1936,7 @@ SZABLON_MEMORY = """
 <script>
   var siatka = document.getElementById('siatka');
   var parNaEkranie = document.getElementById('parNaEkranie');
+  var czasNaEkranie = document.getElementById('czasNaEkranie');
   var nakladka = document.getElementById('nakladka');
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
@@ -1886,11 +1945,14 @@ SZABLON_MEMORY = """
 
   var SYMBOLE = ['🍎', '🎈', '🎵', '🌙', '⭐', '🔑', '💎', '🦋'];
   var CEL_PAR = SYMBOLE.length;
+  var CZAS_LIMIT = 60;
 
   var karty = [];
   var odkryteTeraz = [];
   var zablokowane = false;
   var dopasowanychPar = 0;
+  var pozostalyCzas = CZAS_LIMIT;
+  var interwalCzasu = null;
   var trwa = false;
   var wyciszone = false;
 
@@ -1946,6 +2008,20 @@ SZABLON_MEMORY = """
     parNaEkranie.textContent = dopasowanychPar + ' / ' + CEL_PAR;
   }
 
+  function aktualizujCzas() {
+    czasNaEkranie.textContent = pozostalyCzas + 's';
+    czasNaEkranie.style.color = pozostalyCzas <= 10 ? '#ff6b6b' : '#f5f5f0';
+  }
+
+  function tikCzasu() {
+    if (!trwa) return;
+    pozostalyCzas -= 1;
+    aktualizujCzas();
+    if (pozostalyCzas <= 0) {
+      zakonczGre(false);
+    }
+  }
+
   function odkryjKarte(indeks) {
     karty[indeks].stan = 'odkryta';
     karty[indeks].el.classList.add('odkryta');
@@ -1985,7 +2061,7 @@ SZABLON_MEMORY = """
           aktualizujPary();
           zagrajDzwiek('dopasowanie');
           if (dopasowanychPar >= CEL_PAR) {
-            zakonczGre();
+            zakonczGre(true);
           }
         }, 500);
       } else {
@@ -2005,7 +2081,6 @@ SZABLON_MEMORY = """
     el.className = 'karta';
     el.innerHTML = '<div class="karta-wnetrze"><div class="karta-tyl">🔒</div><div class="karta-przod">' + symbol + '</div></div>';
     el.addEventListener('click', function () { kliknietoKarte(indeks); });
-    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoKarte(indeks); }, { passive: false });
     return el;
   }
 
@@ -2028,14 +2103,33 @@ SZABLON_MEMORY = """
     zbudujPlansze();
     nakladka.style.display = 'none';
     trwa = true;
+
+    pozostalyCzas = CZAS_LIMIT;
+    aktualizujCzas();
+    if (interwalCzasu) clearInterval(interwalCzasu);
+    interwalCzasu = setInterval(tikCzasu, 1000);
   }
 
-  function zakonczGre() {
+  function zakonczGre(wygrana) {
     trwa = false;
+    if (interwalCzasu) {
+      clearInterval(interwalCzasu);
+      interwalCzasu = null;
+    }
     nakladka.style.display = 'flex';
-    nakladkaTytul.textContent = '🎉 Udało się!';
-    nakladkaOpis.textContent = '';
-    nakladkaBtn.style.display = 'none';
+
+    if (wygrana) {
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = '';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      zagrajDzwiek('zle');
+      nakladkaTytul.textContent = '⏱️ Czas minął!';
+      nakladkaOpis.textContent = 'Znalazłaś ' + dopasowanychPar + ' / ' + CEL_PAR + ' par. Spróbuj jeszcze raz.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
   }
 
   wyciszBtn.addEventListener('click', function () {
@@ -2270,7 +2364,6 @@ SZABLON_SIMON = """
 
   przyciski.forEach(function (el, idx) {
     el.addEventListener('click', function () { kliknietoKolor(idx); });
-    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoKolor(idx); }, { passive: false });
   });
 
   function rozpocznijGre() {
@@ -2552,7 +2645,6 @@ SZABLON_PIANO = """
 
   pasy.forEach(function (el, idx) {
     el.addEventListener('click', function () { kliknietoPas(idx); });
-    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoPas(idx); }, { passive: false });
   });
 
   function rozpocznijGre() {
@@ -2667,6 +2759,17 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 0 12px rgba(212,175,55,0.35);
 }
 
+.serce-peka {
+    display: inline-block;
+    animation: peknij 0.5s ease;
+}
+@keyframes peknij {
+    0% { transform: scale(1.6); opacity: 0.4; }
+    40% { transform: scale(0.85) rotate(-8deg); }
+    70% { transform: scale(1.1) rotate(5deg); }
+    100% { transform: scale(1) rotate(0deg); }
+}
+
 div.stButton > button {
     background: linear-gradient(135deg, #e6c15c, #d4af37);
     color: #16130a;
@@ -2736,6 +2839,23 @@ def rysuj_wisielca(liczba_bledow, mala=False):
     st.markdown(
         f"<div style='text-align:center;'><svg width='{rozmiar}' height='{wysokosc}' "
         f"viewBox='0 0 120 150'>{widoczne}</svg></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def rysuj_serca(liczba_bledow, mala=False):
+    liczba_bledow = max(0, min(10, liczba_bledow))
+    rozmiar = "1.15rem" if mala else "1.5rem"
+    czesci = []
+    for i in range(10):
+        if i < liczba_bledow - 1:
+            czesci.append(f"<span style='font-size:{rozmiar};'>💔</span>")
+        elif i == liczba_bledow - 1:
+            czesci.append(f"<span class='serce-peka' style='font-size:{rozmiar};'>💔</span>")
+        else:
+            czesci.append(f"<span style='font-size:{rozmiar};'>❤️</span>")
+    st.markdown(
+        f"<div style='text-align:center; letter-spacing:1px; margin-top:0.3rem;'>{''.join(czesci)}</div>",
         unsafe_allow_html=True,
     )
 
@@ -3110,6 +3230,7 @@ def pokaz_menu():
 
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
     rysuj_wisielca(st.session_state.bledy_wisielec)
+    rysuj_serca(st.session_state.bledy_wisielec)
 
     kolumny = st.columns(5)
     for i, etap_dane in enumerate(ETAPY):
@@ -3152,6 +3273,7 @@ def pokaz_ekran_etapu(etap_dane):
         st.rerun()
 
     rysuj_wisielca(st.session_state.bledy_wisielec, mala=True)
+    rysuj_serca(st.session_state.bledy_wisielec, mala=True)
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
 
     if klucz in st.session_state.rozwiazane:
@@ -3235,6 +3357,7 @@ def pokaz_final():
 
 def pokaz_przegrana():
     rysuj_wisielca(10)
+    rysuj_serca(10)
     st.markdown(f"<h1 class='tytul'>{t('przegrana_tytul')}</h1>", unsafe_allow_html=True)
     st.markdown(t("przegrana_wiadomosc"))
     if st.button(t("zacznij_od_nowa"), key="restart_btn"):
