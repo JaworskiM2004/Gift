@@ -34,6 +34,7 @@ import streamlit.components.v1 as components
 # ======================================================================
 
 IMIE = "Kochanie"  # <- imię Twojej dziewczyny
+KOD_SEJFU = "2137"  # <- kod, który pokaże się na końcu, gdy rozwiąże WSZYSTKO
 
 WIADOMOSC_KONCOWA = {
     "pl": """
@@ -77,7 +78,6 @@ ETAPY = [
         "emoji": "🖤",
         "tytul": {"pl": "🖤 Refleks", "en": "🖤 Reflexes"},
         "typ": "gra",
-        "cyfra": "7",
     },
     {
         "klucz": "quiz",
@@ -106,7 +106,6 @@ ETAPY = [
             },
             # dodaj tyle pytań ile chcesz — po prostu kopiuj wzór powyżej
         ],
-        "cyfra": "3",
     },
     {
         "klucz": "krzyzowka",
@@ -156,7 +155,6 @@ ETAPY = [
                 "odpowiedzi": ["pozdrowienia z góry", "pozdrowienia z gory"],
             },
         ],
-        "cyfra": "9",
     },
     {
         "klucz": "rebus",
@@ -174,7 +172,6 @@ ETAPY = [
         # działa i pasuje do "lampa jak ...".
         "elementy": ["💡", "🐃", "❓"],
         "odpowiedz": "UZUPEŁNIJ",
-        "cyfra": "0",
     },
     {
         "klucz": "wordle",
@@ -192,7 +189,6 @@ ETAPY = [
             "en": "Play today's Wordle at nytimes.com/games/wordle and type the word you guessed. The app checks it automatically.",
         },
         "odpowiedz": "UZUPEŁNIJ",  # <- awaryjny kod ręczny, używany TYLKO gdy automatyczne pobranie zawiedzie
-        "cyfra": "1",
     },
     {
         "klucz": "irl",
@@ -204,7 +200,6 @@ ETAPY = [
             "en": "FILL IN: describe a specific place and what she needs to find / check there.",
         },
         "odpowiedz": "UZUPEŁNIJ",
-        "cyfra": "5",
     },
     {
         "klucz": "data",
@@ -217,7 +212,6 @@ ETAPY = [
         },
         "data": date(2026, 2, 24),
         "jedna_proba": True,
-        "cyfra": "6",
     },
     {
         "klucz": "szachy",
@@ -241,21 +235,177 @@ ETAPY = [
             "en": "Write only White's moves, separated by spaces, e.g. Kc7 Qb6 Qb7",
         },
         "odpowiedz": ["kc7", "qb6", "qb7"],
-        "cyfra": "8",
     },
     {
         "klucz": "dron",
         "emoji": "🚁",
         "tytul": {"pl": "🚁 Dron", "en": "🚁 Drone"},
         "typ": "dron",
-        "cyfra": "4",
     },
     {
         "klucz": "zaba",
         "emoji": "🐸",
         "tytul": {"pl": "🐸 Żaba", "en": "🐸 Frog"},
         "typ": "zaba",
-        "cyfra": "2",
+    },
+    {
+        "klucz": "memory",
+        "emoji": "🧠",
+        "tytul": {"pl": "🧠 Memory", "en": "🧠 Memory"},
+        "typ": "memory",
+    },
+    {
+        "klucz": "simon",
+        "emoji": "🎵",
+        "tytul": {"pl": "🎵 Simon", "en": "🎵 Simon"},
+        "typ": "simon",
+    },
+    {
+        "klucz": "historia",
+        "emoji": "🐉",
+        "tytul": {"pl": "🐉 Zagadka historyczna", "en": "🐉 History riddle"},
+        "typ": "haslo",
+        # Fakty zweryfikowane (kilka niezaleznych zrodel): dynastia Jin
+        # (Dzurdzenowie) istniala 1115-1234, upadla pod naporem Mongolow.
+        # X=1234, Y=119. UWAGA: matematycznie wzor ZAWSZE daje X (bo
+        # (X+Y)^2-(X-Y)^2=4XY, podzielone przez 4Y zostaje X) - Y trzeba
+        # i tak poprawnie znalezc zeby dobrze policzyc, ale samo dzialanie
+        # tego nie zweryfikuje.
+        "tresc": {
+            "pl": (
+                "W Chinach upadła dynastia Jin założona przez Dżurdżenów (ta sama, "
+                "która wcześniej podbiła dynastię Liao) — ostatecznie pokonali ją "
+                "Mongołowie.\n\n"
+                "Znajdź:\n"
+                "- X = rok jej upadku\n"
+                "- Y = liczba lat, przez które panowała (od założenia do upadku)\n\n"
+                "Oblicz:\n\n"
+                "$$\\frac{(X+Y)^2 - (X-Y)^2}{4Y}$$\n\n"
+                "Wynik (liczba) to hasło."
+            ),
+            "en": (
+                "The Jurchen-founded Jin dynasty of China (the one that had earlier "
+                "conquered the Liao dynasty) eventually fell to the Mongols.\n\n"
+                "Find:\n"
+                "- X = the year it fell\n"
+                "- Y = how many years it reigned (from founding to fall)\n\n"
+                "Compute:\n\n"
+                "$$\\frac{(X+Y)^2 - (X-Y)^2}{4Y}$$\n\n"
+                "The result (a number) is the password."
+            ),
+        },
+        "odpowiedz": "1234",
+    },
+    {
+        "klucz": "piano",
+        "emoji": "🎹",
+        "tytul": {"pl": "🎹 Piano Tiles", "en": "🎹 Piano Tiles"},
+        "typ": "piano",
+    },
+    {
+        "klucz": "spiderman",
+        "emoji": "🕷️",
+        "tytul": {"pl": "🕷️ Spider-Man", "en": "🕷️ Spider-Man"},
+        "typ": "quiz",
+        "prog": 1.0,
+        "pytania": [
+            {
+                "pytanie": {
+                    "pl": "Jak nazywa się ciotka, u której mieszka Peter Parker?",
+                    "en": "What's the name of the aunt Peter Parker lives with?",
+                },
+                "opcje": [
+                    {"pl": "Ciotka Rose", "en": "Aunt Rose"},
+                    {"pl": "Ciotka May", "en": "Aunt May"},
+                    {"pl": "Ciotka Helen", "en": "Aunt Helen"},
+                ],
+                "poprawna": 1,
+            },
+            {
+                "pytanie": {
+                    "pl": "Dla jakiej gazety Peter Parker pracuje jako fotograf?",
+                    "en": "Which newspaper does Peter Parker work for as a photographer?",
+                },
+                "opcje": [
+                    {"pl": "The Daily Planet", "en": "The Daily Planet"},
+                    {"pl": "The New York Times", "en": "The New York Times"},
+                    {"pl": "The Daily Bugle", "en": "The Daily Bugle"},
+                ],
+                "poprawna": 2,
+            },
+            {
+                "pytanie": {
+                    "pl": "Jak nazywa się szef Petera w redakcji, znany z krzyku „Parker!”?",
+                    "en": "What's the name of Peter's boss at the paper, known for shouting \"Parker!\"?",
+                },
+                "opcje": [
+                    {"pl": "J. Jonah Jameson", "en": "J. Jonah Jameson"},
+                    {"pl": "Robbie Robertson", "en": "Robbie Robertson"},
+                    {"pl": "Norman Osborn", "en": "Norman Osborn"},
+                ],
+                "poprawna": 0,
+            },
+            {
+                "pytanie": {
+                    "pl": "Który aktor zagrał Spider-Mana w filmie z 2002 roku w reżyserii Sama Raimiego?",
+                    "en": "Which actor played Spider-Man in the 2002 film directed by Sam Raimi?",
+                },
+                "opcje": [
+                    {"pl": "Andrew Garfield", "en": "Andrew Garfield"},
+                    {"pl": "Tobey Maguire", "en": "Tobey Maguire"},
+                    {"pl": "Tom Holland", "en": "Tom Holland"},
+                ],
+                "poprawna": 1,
+            },
+            {
+                "pytanie": {
+                    "pl": "Jak nazywa się rudowłosa dziewczyna Spider-Mana z klasycznych komiksów i filmów Raimiego?",
+                    "en": "What's the name of Spider-Man's red-haired girlfriend from the classic comics and Raimi films?",
+                },
+                "opcje": [
+                    {"pl": "Gwen Stacy", "en": "Gwen Stacy"},
+                    {"pl": "Felicia Hardy", "en": "Felicia Hardy"},
+                    {"pl": "Mary Jane Watson", "en": "Mary Jane Watson"},
+                ],
+                "poprawna": 2,
+            },
+            {
+                "pytanie": {
+                    "pl": "Jak nazywa się biznesmen, ojciec Harry'ego, zamieniający się w uzbrojonego w szybowiec zielonego złoczyńcę?",
+                    "en": "What's the name of the businessman, Harry's father, who turns into a glider-riding green villain?",
+                },
+                "opcje": [
+                    {"pl": "Norman Osborn", "en": "Norman Osborn"},
+                    {"pl": "Otto Octavius", "en": "Otto Octavius"},
+                    {"pl": "Flint Marko", "en": "Flint Marko"},
+                ],
+                "poprawna": 0,
+            },
+            {
+                "pytanie": {
+                    "pl": "Jak nazywa się nastoletni Spider-Man z równoległego wszechświata, bohater filmu „Spider-Man: Uniwersum”?",
+                    "en": "What's the name of the teenage Spider-Man from a parallel universe, hero of \"Spider-Man: Into the Spider-Verse\"?",
+                },
+                "opcje": [
+                    {"pl": "Miguel O'Hara", "en": "Miguel O'Hara"},
+                    {"pl": "Miles Morales", "en": "Miles Morales"},
+                    {"pl": "Peter B. Parker", "en": "Peter B. Parker"},
+                ],
+                "poprawna": 1,
+            },
+            {
+                "pytanie": {
+                    "pl": "Który aktor gra Spider-Mana w Marvel Cinematic Universe (od 2016 roku)?",
+                    "en": "Which actor plays Spider-Man in the Marvel Cinematic Universe (since 2016)?",
+                },
+                "opcje": [
+                    {"pl": "Andrew Garfield", "en": "Andrew Garfield"},
+                    {"pl": "Tobey Maguire", "en": "Tobey Maguire"},
+                    {"pl": "Tom Holland", "en": "Tom Holland"},
+                ],
+                "poprawna": 2,
+            },
+        ],
     },
 ]
 
@@ -789,9 +939,10 @@ SZABLON_DRONA = """
   }
   #dron {
     position: absolute;
-    font-size: 34px;
-    line-height: 1;
+    width: 34px;
+    height: 34px;
     z-index: 5;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
   }
   #wynikNaEkranie {
     position: absolute;
@@ -859,12 +1010,21 @@ SZABLON_DRONA = """
 </head>
 <body>
   <div id="panel">
-    <span>🚁 Dron</span>
+    <span>🛸 Dron</span>
     <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="wynikNaEkranie">0</div>
-    <div id="dron">🚁</div>
+    <svg id="dron" viewBox="0 0 34 34">
+      <line x1="6" y1="6" x2="28" y2="28" stroke="#9a9a9a" stroke-width="2"/>
+      <line x1="28" y1="6" x2="6" y2="28" stroke="#9a9a9a" stroke-width="2"/>
+      <circle cx="6" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <circle cx="28" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <circle cx="6" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <circle cx="28" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <rect x="11" y="11" width="12" height="12" rx="3" fill="#1a1a1a" stroke="#e6c15c" stroke-width="1.5"/>
+      <circle cx="17" cy="17" r="1.6" fill="#ff4d4d"/>
+    </svg>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Dron</h2>
       <p id="nakladkaOpis"></p>
@@ -1205,6 +1365,30 @@ SZABLON_ZABY = """
     border-bottom: 35px solid #d4af37;
     filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
   }
+  .kontener-sufit {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+  }
+  .kolec-sufit {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    border-left: 15px solid transparent;
+    border-right: 15px solid transparent;
+    border-top: 35px solid #d4af37;
+    filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
+  }
+  .platforma {
+    position: absolute;
+    height: 14px;
+    background: linear-gradient(180deg, #e8d9b5, #a9834f);
+    border: 2px solid #d4af37;
+    border-radius: 4px;
+    z-index: 2;
+  }
   #nakladka {
     position: absolute;
     inset: 0;
@@ -1220,16 +1404,6 @@ SZABLON_ZABY = """
   }
   #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
   #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
-  #kodWygrany {
-    font-size: 28px;
-    letter-spacing: 4px;
-    color: #fff;
-    background: #1a1a2e;
-    padding: 8px 18px;
-    border-radius: 10px;
-    border: 1px solid #d4af37;
-    margin: 10px 0;
-  }
   button.gra-btn {
     background: linear-gradient(135deg,#e6c15c,#d4af37);
     border: none;
@@ -1271,6 +1445,7 @@ SZABLON_ZABY = """
 
   var ZABA_X = 0.22;
   var ZABA_R = 14;
+  var ZABA_WYSOKOSC = 30;
   var GRAWITACJA = 2200;
   var SILA_SKOKU = -620;
   var PODLOZE_WYSOKOSC = 8;
@@ -1280,6 +1455,9 @@ SZABLON_ZABY = """
   var PREDKOSC_START = 220;
   var ODSTEP_SPAWN_START = 1.8;
   var CEL_WYNIK = 20;
+  var PLATFORMA_WYSOKOSC_NAD_ZIEMIA = 70;
+  var PLATFORMA_SZEROKOSC = 110;
+  var SUFIT_PRZERWA_OD_ZIEMI = 62;
 
   var zabaDol = 0;
   var zabaVY = 0;
@@ -1344,24 +1522,70 @@ SZABLON_ZABY = """
     if (p.el.parentNode) p.el.remove();
   }
 
-  function stworzPrzeszkode(szer) {
-    var liczbaKolcow = Math.random() < 0.55 ? 1 : (Math.random() < 0.8 ? 2 : 3);
-    var szerokoscCalkowita = liczbaKolcow * KOLEC_SZEROKOSC;
+  // Ile kolcow w grupie na start TYLKO pojedyncze; podwojne i potrojne
+  // dochodza stopniowo wraz z wynikiem.
+  function losujLiczbeKolcow() {
+    if (wynik < 5) return 1;
+    if (wynik < 12) return Math.random() < 0.6 ? 1 : 2;
+    return Math.random() < 0.45 ? 1 : (Math.random() < 0.75 ? 2 : 3);
+  }
 
-    var kontener = document.createElement('div');
-    kontener.className = 'przeszkoda-kontener';
-    kontener.style.width = szerokoscCalkowita + 'px';
-    kontener.style.left = (szer + 20) + 'px';
+  // Typ nastepnej przeszkody - na start same kolce, potem dochodza
+  // platformy (kilka poziomow do skakania), a najpozniej kolce sufitowe
+  // (czasem NIE wolno skakac, trzeba przebiec pod spodem).
+  function losujTypPrzeszkody() {
+    if (wynik < 6) return 'kolce';
+    var r = Math.random();
+    if (wynik < 14) {
+      return r < 0.7 ? 'kolce' : 'platforma';
+    }
+    if (r < 0.55) return 'kolce';
+    if (r < 0.8) return 'platforma';
+    return 'sufit';
+  }
 
-    for (var i = 0; i < liczbaKolcow; i++) {
-      var kolec = document.createElement('div');
-      kolec.className = 'kolec';
-      kolec.style.left = (i * KOLEC_SZEROKOSC) + 'px';
-      kontener.appendChild(kolec);
+  function stworzPrzeszkode(szer, groundY) {
+    var typ = losujTypPrzeszkody();
+
+    if (typ === 'platforma') {
+      var el = document.createElement('div');
+      el.className = 'platforma';
+      el.style.width = PLATFORMA_SZEROKOSC + 'px';
+      el.style.left = (szer + 20) + 'px';
+      var wysokoscY = groundY - PLATFORMA_WYSOKOSC_NAD_ZIEMIA;
+      el.style.top = wysokoscY + 'px';
+      gra.appendChild(el);
+      return { typ: 'platforma', x: szer + 20, szerokosc: PLATFORMA_SZEROKOSC, wysokoscY: wysokoscY, minieta: false, el: el };
     }
 
-    gra.appendChild(kontener);
-    return { x: szer + 20, szerokosc: szerokoscCalkowita, el: kontener, minieta: false };
+    if (typ === 'sufit') {
+      var kontener = document.createElement('div');
+      kontener.className = 'kontener-sufit';
+      kontener.style.width = KOLEC_SZEROKOSC + 'px';
+      kontener.style.left = (szer + 20) + 'px';
+      var dolnaKrawedzY = groundY - SUFIT_PRZERWA_OD_ZIEMI;
+      kontener.style.height = dolnaKrawedzY + 'px';
+      var kolec = document.createElement('div');
+      kolec.className = 'kolec-sufit';
+      kontener.appendChild(kolec);
+      gra.appendChild(kontener);
+      return { typ: 'sufit', x: szer + 20, szerokosc: KOLEC_SZEROKOSC, dolnaKrawedzY: dolnaKrawedzY, minieta: false, el: kontener };
+    }
+
+    var liczbaKolcow = losujLiczbeKolcow();
+    var szerokoscCalkowita = liczbaKolcow * KOLEC_SZEROKOSC;
+    var kontenerK = document.createElement('div');
+    kontenerK.className = 'przeszkoda-kontener';
+    kontenerK.style.width = szerokoscCalkowita + 'px';
+    kontenerK.style.left = (szer + 20) + 'px';
+    for (var i = 0; i < liczbaKolcow; i++) {
+      var kolecN = document.createElement('div');
+      kolecN.className = 'kolec';
+      kolecN.style.left = (i * KOLEC_SZEROKOSC) + 'px';
+      kontenerK.appendChild(kolecN);
+    }
+    gra.appendChild(kontenerK);
+    return { typ: 'kolce', x: szer + 20, szerokosc: szerokoscCalkowita, minieta: false, el: kontenerK };
   }
 
   function aktualizujWynik() {
@@ -1375,6 +1599,19 @@ SZABLON_ZABY = """
     zaba.style.transform = 'translate(-50%, -100%)';
   }
 
+  // Zwraca Y powierzchni, na ktorej zabka moze aktualnie stac w danym X:
+  // najwyzsza platforma pokrywajaca to X, albo (domyslnie) glowna podloga.
+  function pobierzPodloze(x, glownaPodlogaY) {
+    var najlepsza = glownaPodlogaY;
+    for (var i = 0; i < przeszkody.length; i++) {
+      var p = przeszkody[i];
+      if (p.typ === 'platforma' && x >= p.x && x <= p.x + p.szerokosc) {
+        if (p.wysokoscY < najlepsza) najlepsza = p.wysokoscY;
+      }
+    }
+    return najlepsza;
+  }
+
   function petla(czas) {
     if (!trwa) { czasOstatni = null; return; }
     if (czasOstatni === null) czasOstatni = czas;
@@ -1384,11 +1621,13 @@ SZABLON_ZABY = """
     var szer = gra.clientWidth;
     var wys = gra.clientHeight;
     var groundY = wys - PODLOZE_WYSOKOSC;
+    var zabaXpx = szer * ZABA_X;
 
     zabaVY += GRAWITACJA * dt;
     zabaDol += zabaVY * dt;
-    if (zabaDol >= groundY) {
-      zabaDol = groundY;
+    var docelowePodloze = pobierzPodloze(zabaXpx, groundY);
+    if (zabaVY >= 0 && zabaDol >= docelowePodloze) {
+      zabaDol = docelowePodloze;
       zabaVY = 0;
       naZiemi = true;
     } else {
@@ -1402,10 +1641,8 @@ SZABLON_ZABY = """
     var odstepAktualny = (ODSTEP_SPAWN_START / mnoznik) * losowo(0.85, 1.25);
     if (czasOdSpawnu >= odstepAktualny) {
       czasOdSpawnu = 0;
-      przeszkody.push(stworzPrzeszkode(szer));
+      przeszkody.push(stworzPrzeszkode(szer, groundY));
     }
-
-    var zabaXpx = szer * ZABA_X;
 
     for (var i = przeszkody.length - 1; i >= 0; i--) {
       var p = przeszkody[i];
@@ -1414,8 +1651,16 @@ SZABLON_ZABY = """
 
       var zabaLewa = zabaXpx - ZABA_R;
       var zabaPrawa = zabaXpx + ZABA_R;
-      if (zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc) {
+      var wZasiegu = zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc;
+
+      if (wZasiegu && p.typ === 'kolce') {
         if (zabaDol > groundY - KOLEC_WYSOKOSC + TOLERANCJA_KOLIZJI) {
+          zakonczGre(false);
+          return;
+        }
+      } else if (wZasiegu && p.typ === 'sufit') {
+        var zabaGora = zabaDol - ZABA_WYSOKOSC;
+        if (zabaGora < p.dolnaKrawedzY - TOLERANCJA_KOLIZJI) {
           zakonczGre(false);
           return;
         }
@@ -1432,7 +1677,7 @@ SZABLON_ZABY = """
         }
       }
 
-      if (p.x < -200) {
+      if (p.x < -300) {
         usunPrzeszkode(p);
         przeszkody.splice(i, 1);
       }
@@ -1488,6 +1733,857 @@ SZABLON_ZABY = """
     e.preventDefault();
     skok();
   }, { passive: false });
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_MEMORY = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 460px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+  }
+  #siatka {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 14px;
+    width: 100%;
+    height: 100%;
+  }
+  .karta {
+    position: relative;
+    aspect-ratio: 1;
+    cursor: pointer;
+    perspective: 600px;
+  }
+  .karta-wnetrze {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.4s;
+    transform-style: preserve-3d;
+  }
+  .karta.odkryta .karta-wnetrze,
+  .karta.dopasowana .karta-wnetrze {
+    transform: rotateY(180deg);
+  }
+  .karta-tyl, .karta-przod {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.7rem;
+  }
+  .karta-tyl {
+    background: linear-gradient(135deg, #3a3050, #1a1a2e);
+    border: 2px solid #d4af37;
+  }
+  .karta-przod {
+    background: #2a2a3d;
+    border: 2px solid #e6c15c;
+    transform: rotateY(180deg);
+  }
+  .karta.dopasowana .karta-przod {
+    border-color: #4ade80;
+    background: #163a24;
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span id="parNaEkranie">0 / 8</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="siatka"></div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Memory</h2>
+      <p id="nakladkaOpis"></p>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var siatka = document.getElementById('siatka');
+  var parNaEkranie = document.getElementById('parNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  var SYMBOLE = ['🍎', '🎈', '🎵', '🌙', '⭐', '🔑', '💎', '🦋'];
+  var CEL_PAR = SYMBOLE.length;
+
+  var karty = [];
+  var odkryteTeraz = [];
+  var zablokowane = false;
+  var dopasowanychPar = 0;
+  var trwa = false;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ;
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function zagrajDzwiek(typ) {
+    if (typ === 'odkryj') zagrajTon(500, 0.08, 'sine');
+    else if (typ === 'dopasowanie') zagrajTon(800, 0.15, 'sine');
+    else if (typ === 'zle') zagrajTon(180, 0.2, 'sawtooth');
+  }
+
+  function potasuj(tablica) {
+    for (var i = tablica.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = tablica[i]; tablica[i] = tablica[j]; tablica[j] = tmp;
+    }
+    return tablica;
+  }
+
+  function aktualizujPary() {
+    parNaEkranie.textContent = dopasowanychPar + ' / ' + CEL_PAR;
+  }
+
+  function odkryjKarte(indeks) {
+    karty[indeks].stan = 'odkryta';
+    karty[indeks].el.classList.add('odkryta');
+  }
+
+  function zakryjKarte(indeks) {
+    karty[indeks].stan = 'zakryta';
+    karty[indeks].el.classList.remove('odkryta');
+  }
+
+  function oznaczDopasowane(indeks) {
+    karty[indeks].stan = 'dopasowana';
+    karty[indeks].el.classList.remove('odkryta');
+    karty[indeks].el.classList.add('dopasowana');
+  }
+
+  function kliknietoKarte(indeks) {
+    if (zablokowane || !trwa) return;
+    var karta = karty[indeks];
+    if (karta.stan !== 'zakryta') return;
+
+    odkryjKarte(indeks);
+    zagrajDzwiek('odkryj');
+    odkryteTeraz.push(indeks);
+
+    if (odkryteTeraz.length === 2) {
+      zablokowane = true;
+      var a = karty[odkryteTeraz[0]];
+      var b = karty[odkryteTeraz[1]];
+      if (a.symbol === b.symbol) {
+        setTimeout(function () {
+          oznaczDopasowane(odkryteTeraz[0]);
+          oznaczDopasowane(odkryteTeraz[1]);
+          odkryteTeraz = [];
+          zablokowane = false;
+          dopasowanychPar += 1;
+          aktualizujPary();
+          zagrajDzwiek('dopasowanie');
+          if (dopasowanychPar >= CEL_PAR) {
+            zakonczGre();
+          }
+        }, 500);
+      } else {
+        zagrajDzwiek('zle');
+        setTimeout(function () {
+          zakryjKarte(odkryteTeraz[0]);
+          zakryjKarte(odkryteTeraz[1]);
+          odkryteTeraz = [];
+          zablokowane = false;
+        }, 900);
+      }
+    }
+  }
+
+  function stworzKarte(indeks, symbol) {
+    var el = document.createElement('div');
+    el.className = 'karta';
+    el.innerHTML = '<div class="karta-wnetrze"><div class="karta-tyl">🔒</div><div class="karta-przod">' + symbol + '</div></div>';
+    el.addEventListener('click', function () { kliknietoKarte(indeks); });
+    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoKarte(indeks); }, { passive: false });
+    return el;
+  }
+
+  function zbudujPlansze() {
+    siatka.innerHTML = '';
+    karty = [];
+    var talia = potasuj(SYMBOLE.concat(SYMBOLE));
+    for (var i = 0; i < talia.length; i++) {
+      var el = stworzKarte(i, talia[i]);
+      siatka.appendChild(el);
+      karty.push({ symbol: talia[i], stan: 'zakryta', el: el });
+    }
+  }
+
+  function rozpocznijGre() {
+    dopasowanychPar = 0;
+    odkryteTeraz = [];
+    zablokowane = false;
+    aktualizujPary();
+    zbudujPlansze();
+    nakladka.style.display = 'none';
+    trwa = true;
+  }
+
+  function zakonczGre() {
+    trwa = false;
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🎉 Udało się!';
+    nakladkaOpis.textContent = '';
+    nakladkaBtn.style.display = 'none';
+  }
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_SIMON = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+  }
+  #siatkaKolorow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+    padding: 16px;
+  }
+  .przycisk-koloru {
+    border-radius: 16px;
+    cursor: pointer;
+    filter: brightness(0.55);
+    transition: filter 0.12s, transform 0.1s;
+  }
+  .przycisk-koloru.aktywny {
+    filter: brightness(1.35);
+    transform: scale(0.97);
+  }
+  .pk-0 { background: #e63950; }
+  .pk-1 { background: #3a6fd4; }
+  .pk-2 { background: #22a35e; }
+  .pk-3 { background: #c9a13b; }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span id="dlugoscNaEkranie">0 / 8</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="siatkaKolorow">
+      <div class="przycisk-koloru pk-0"></div>
+      <div class="przycisk-koloru pk-1"></div>
+      <div class="przycisk-koloru pk-2"></div>
+      <div class="przycisk-koloru pk-3"></div>
+    </div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Simon</h2>
+      <p id="nakladkaOpis"></p>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var przyciski = document.querySelectorAll('.przycisk-koloru');
+  var dlugoscNaEkranie = document.getElementById('dlugoscNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  var CZESTOTLIWOSCI = [330, 415, 494, 262];
+  var CEL_DLUGOSC = 8;
+
+  var sekwencja = [];
+  var pozycjaGracza = 0;
+  var trwaOdtwarzanie = false;
+  var trwa = false;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function rozjasnij(idx) {
+    przyciski[idx].classList.add('aktywny');
+  }
+  function przygas(idx) {
+    przyciski[idx].classList.remove('aktywny');
+  }
+
+  function aktualizujDlugosc() {
+    dlugoscNaEkranie.textContent = sekwencja.length + ' / ' + CEL_DLUGOSC;
+  }
+
+  function odtworzSekwencje() {
+    trwaOdtwarzanie = true;
+    pozycjaGracza = 0;
+    var i = 0;
+    function krok() {
+      if (i >= sekwencja.length) {
+        trwaOdtwarzanie = false;
+        return;
+      }
+      var idx = sekwencja[i];
+      rozjasnij(idx);
+      zagrajTon(CZESTOTLIWOSCI[idx], 0.35);
+      setTimeout(function () {
+        przygas(idx);
+        i++;
+        setTimeout(krok, 200);
+      }, 420);
+    }
+    setTimeout(krok, 500);
+  }
+
+  function dodajKrokIOdtworz() {
+    sekwencja.push(Math.floor(Math.random() * 4));
+    aktualizujDlugosc();
+    odtworzSekwencje();
+  }
+
+  function kliknietoKolor(idx) {
+    if (trwaOdtwarzanie || !trwa) return;
+    rozjasnij(idx);
+    zagrajTon(CZESTOTLIWOSCI[idx], 0.2);
+    setTimeout(function () { przygas(idx); }, 200);
+
+    if (idx === sekwencja[pozycjaGracza]) {
+      pozycjaGracza++;
+      if (pozycjaGracza === sekwencja.length) {
+        if (sekwencja.length >= CEL_DLUGOSC) {
+          zakonczGre(true);
+        } else {
+          setTimeout(dodajKrokIOdtworz, 700);
+        }
+      }
+    } else {
+      zakonczGre(false);
+    }
+  }
+
+  przyciski.forEach(function (el, idx) {
+    el.addEventListener('click', function () { kliknietoKolor(idx); });
+    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoKolor(idx); }, { passive: false });
+  });
+
+  function rozpocznijGre() {
+    sekwencja = [];
+    pozycjaGracza = 0;
+    trwa = true;
+    aktualizujDlugosc();
+    nakladka.style.display = 'none';
+    setTimeout(dodajKrokIOdtworz, 500);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    nakladka.style.display = 'flex';
+    if (wygrana) {
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = '';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      nakladkaTytul.textContent = '❌ Zła kolejność...';
+      nakladkaOpis.textContent = 'Doszłaś do ' + sekwencja.length + ' / ' + CEL_DLUGOSC + '. Spróbuj jeszcze raz.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_PIANO = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+  }
+  #pasy {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+  .pas {
+    flex: 1;
+    position: relative;
+    border-right: 1px solid rgba(212,175,55,0.15);
+    cursor: pointer;
+  }
+  .pas:last-child { border-right: none; }
+  #linia-trafien {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 54px;
+    height: 2px;
+    background: rgba(212,175,55,0.35);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .kafelek {
+    position: absolute;
+    height: 70px;
+    background: linear-gradient(135deg, #2a2a3d, #0d0d0d);
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span id="postepNaEkranie">0 / 18</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="pasy">
+      <div class="pas" data-idx="0"></div>
+      <div class="pas" data-idx="1"></div>
+      <div class="pas" data-idx="2"></div>
+      <div class="pas" data-idx="3"></div>
+    </div>
+    <div id="linia-trafien"></div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Piano Tiles</h2>
+      <p id="nakladkaOpis"></p>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var pasy = document.querySelectorAll('.pas');
+  var postepNaEkranie = document.getElementById('postepNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  // "Wlazl kotek na plotek" - solmizacja: sol mi mi fa re re do mi sol
+  // (powtorzone), czyli G E E F D D C E G G E E F D D C E C.
+  var NUTY = [
+    784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 784.00,
+    784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 523.25
+  ];
+
+  var LICZBA_PASOW = 4;
+  var PREDKOSC_START = 260;
+  var PREDKOSC_PRZYROST = 6;
+  var WYSOKOSC_KAFELKA = 70;
+
+  var indeksNuty = 0;
+  var aktywnyKafelek = null;
+  var trwa = false;
+  var czasOstatni = null;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ;
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function aktualizujPostep() {
+    postepNaEkranie.textContent = indeksNuty + ' / ' + NUTY.length;
+  }
+
+  function usunAktywnyKafelek() {
+    if (aktywnyKafelek && aktywnyKafelek.el.parentNode) {
+      aktywnyKafelek.el.remove();
+    }
+    aktywnyKafelek = null;
+  }
+
+  function stworzKafelek() {
+    var pas = Math.floor(Math.random() * LICZBA_PASOW);
+    var szerPasa = gra.clientWidth / LICZBA_PASOW;
+    var el = document.createElement('div');
+    el.className = 'kafelek';
+    el.style.width = (szerPasa - 8) + 'px';
+    el.style.left = (pas * szerPasa + 4) + 'px';
+    el.style.top = (-WYSOKOSC_KAFELKA - 10) + 'px';
+    gra.appendChild(el);
+    aktywnyKafelek = { pas: pas, y: -WYSOKOSC_KAFELKA - 10, el: el };
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
+    czasOstatni = czas;
+
+    var wys = gra.clientHeight;
+    var predkosc = PREDKOSC_START + indeksNuty * PREDKOSC_PRZYROST;
+
+    if (aktywnyKafelek) {
+      aktywnyKafelek.y += predkosc * dt;
+      aktywnyKafelek.el.style.top = aktywnyKafelek.y + 'px';
+      if (aktywnyKafelek.y > wys) {
+        zakonczGre(false, 'ucieklo');
+        return;
+      }
+    }
+
+    requestAnimationFrame(petla);
+  }
+
+  function kliknietoPas(pas) {
+    if (!trwa) return;
+    if (aktywnyKafelek && aktywnyKafelek.pas === pas) {
+      zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
+      usunAktywnyKafelek();
+      indeksNuty++;
+      aktualizujPostep();
+      if (indeksNuty >= NUTY.length) {
+        zakonczGre(true);
+      } else {
+        stworzKafelek();
+      }
+    } else {
+      zakonczGre(false, 'zly-pas');
+    }
+  }
+
+  pasy.forEach(function (el, idx) {
+    el.addEventListener('click', function () { kliknietoPas(idx); });
+    el.addEventListener('touchstart', function (e) { e.preventDefault(); kliknietoPas(idx); }, { passive: false });
+  });
+
+  function rozpocznijGre() {
+    indeksNuty = 0;
+    aktualizujPostep();
+    usunAktywnyKafelek();
+    czasOstatni = null;
+    nakladka.style.display = 'none';
+    trwa = true;
+    stworzKafelek();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana, powod) {
+    trwa = false;
+    usunAktywnyKafelek();
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      zagrajTon(1046.50, 0.5, 'triangle');
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = '';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      zagrajTon(140, 0.35, 'sawtooth');
+      nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
+      nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + '. Spróbuj jeszcze raz.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1854,6 +2950,36 @@ def renderuj_zaba(etap_dane):
     return None
 
 
+def renderuj_memory(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_MEMORY, height=560, scrolling=False)
+
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
+    return None
+
+
+def renderuj_simon(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_SIMON, height=480, scrolling=False)
+
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
+    return None
+
+
+def renderuj_piano(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_PIANO, height=520, scrolling=False)
+
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
+    return None
+
+
 @st.cache_data(ttl=300)  # 5 minut - dość świeżo, a nie odpytuje API bez przerwy
 def pobierz_dzisiejszy_wordle():
     """Próbuje pobrać dzisiejsze słowo z (angielskiego) NYT Wordle.
@@ -2049,6 +3175,12 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_dron(etap_dane)
     elif typ == "zaba":
         wynik = renderuj_zaba(etap_dane)
+    elif typ == "memory":
+        wynik = renderuj_memory(etap_dane)
+    elif typ == "simon":
+        wynik = renderuj_simon(etap_dane)
+    elif typ == "piano":
+        wynik = renderuj_piano(etap_dane)
     elif typ == "wordle":
         wynik = renderuj_wordle(etap_dane)
     elif typ == "data":
@@ -2079,7 +3211,7 @@ def pokaz_final():
     st.markdown(f"<h1 class='tytul'>{t('wszystko_rozwiazane')}</h1>", unsafe_allow_html=True)
     st.markdown(tt(WIADOMOSC_KONCOWA))
 
-    kod_koncowy = "".join(str(e["cyfra"]) for e in ETAPY)
+    kod_koncowy = KOD_SEJFU
     tarcze = "".join(f"<div class='cyfra-tarcza'>{c}</div>" for c in kod_koncowy)
     st.markdown(
         f"""
