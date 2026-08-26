@@ -35,35 +35,6 @@ import streamlit.components.v1 as components
 
 IMIE = "Kochanie"  # <- imię Twojej dziewczyny
 
-POWITANIE_TYTUL = {"pl": f"Cześć, {IMIE}", "en": f"Hi, {IMIE}"}
-
-WIADOMOSC_POWITALNA = {
-    "pl": """
-Witaj w grze, którą przygotowałem specjalnie dla Ciebie.
-
-Etapy możesz robić w DOWOLNEJ kolejności — wybierasz je z menu. Za każdy
-rozwiązany zapala się zielone światełko. Cały kod do sejfu zobaczysz
-dopiero, gdy rozwiążesz wszystko.
-
-Uważaj na pomyłki — jest wspólny licznik błędów w postaci wisielca.
-Jeśli dobije do końca, wszystko zaczynasz od nowa. Możesz korzystać
-z dowolnej pomocy, jakiej chcesz — Google, znajomych, czego chcesz.
-Powodzenia. 🖤
-""",
-    "en": """
-Welcome to the game I made just for you.
-
-You can do the stages in ANY order — pick them from the menu. Each
-solved one turns green. You'll only see the full safe code once
-everything is solved.
-
-Watch out for mistakes — there's a shared mistake counter shown as a
-hangman. If it's completed, everything starts over. You can use any
-help you want — Google, friends, whatever you need.
-Good luck. 🖤
-""",
-}
-
 WIADOMOSC_KONCOWA = {
     "pl": """
 Udało Ci się rozwiązać wszystko.
@@ -83,10 +54,6 @@ I love you. ❤️
 """,
 }
 
-KOD_GRY = "4821"    # kod, który mini-gra pokaże po ukończeniu wszystkich poziomów
-KOD_DRONA = "3907"  # kod, który mini-gra z dronem pokaże po ukończeniu (dowolny)
-KOD_ZABY = "6152"   # kod, który mini-gra z żabą pokaże po ukończeniu (dowolny)
-
 # Trudność mini-gry zręcznościowej — 3 poziomy, coraz trudniejsze.
 POZIOMY_GRY = [
     {"serca": 6, "czarne": 2, "kierunek": "dol", "predkosc": 130, "tempo": 650},
@@ -94,32 +61,27 @@ POZIOMY_GRY = [
     {"serca": 10, "czarne": 6, "kierunek": "gora", "predkosc": 230, "tempo": 340},
 ]
 
-# Pozycja szachowa (białe zaczynają) — ręcznie zweryfikowana (patrz komentarz
-# niżej), ale WARTO sprawdzić samemu: wklej FEN na lichess.org/analysis
-# FEN: 7k/6pp/5N2/8/3Q4/8/8/1K6 w - - 0 1
-# Rozwiązanie: Qd4-d8# (król na h8 jest zablokowany własnymi pionkami g7/h7,
-# a pole g8 kryje skoczek f6 — to jedyna dostępna ucieczka).
-POZYCJA_SZACHOWA = {
-    "h8": "♚", "g7": "♟", "h7": "♟",
-    "b1": "♔", "d4": "♕", "f6": "♘",
-}
+# Zagadka szachowa: białe mają wymusić mata w 3 posunięciach (każdy ruch
+# zostawia czarnym dokładnie jedną legalną odpowiedź, trzeci to mat).
+# Sekwencja zweryfikowana PROGRAMOWO (własny mini-silnik sprawdzający
+# każdą legalną odpowiedź czarnych na każdym kroku, nie licząc na pamięć):
+# start: białe Kc6, Hb1; czarne sam król na a8; białe zaczynają.
+# 1.Kc7 Ka7(jedyna) 2.Hb6+ Ka8(jedyna) 3.Hb7#
+# Odpowiedź to same ruchy białych, bez ruchów czarnych.
 
 # ETAPY — każdy daje JEDNĄ cyfrę kodu do sejfu, ale cyfry pokazują się
 # dopiero na ekranie końcowym, po rozwiązaniu WSZYSTKIEGO.
 ETAPY = [
     {
         "klucz": "gra",
+        "emoji": "🖤",
         "tytul": {"pl": "🖤 Refleks", "en": "🖤 Reflexes"},
         "typ": "gra",
-        "opis": {
-            "pl": "Złap WSZYSTKIE kolorowe serca w każdym z 3 poziomów. Uważaj na czarne — jedna pomyłka i wracasz na początek poziomu.",
-            "en": "Catch ALL the colored hearts in each of the 3 levels. Watch out for black ones — one mistake and you restart the level.",
-        },
-        "odpowiedz": KOD_GRY,
         "cyfra": "7",
     },
     {
         "klucz": "quiz",
+        "emoji": "💭",
         "tytul": {"pl": "💭 Ile mnie znasz?", "en": "💭 How well do you know me?"},
         "typ": "quiz",
         "prog": 1.0,  # 1.0 = wymagane 100% poprawnych odpowiedzi
@@ -147,22 +109,76 @@ ETAPY = [
         "cyfra": "3",
     },
     {
-        "klucz": "jezyk",
-        "tytul": {"pl": "🐦 Po ptakach", "en": "🐦 Po ptakach"},
-        "typ": "haslo",
-        # Ta zagadka jest o polskim idiomie, więc treść zostaje po polsku
-        # niezależnie od wybranego języka aplikacji.
-        "tresc": (
-            "### AFTER BIRDS\n\n"
-            "To nie jest prawdziwy angielski zwrot... a jednak coś powinno Ci "
-            "zaświtać, jeśli przetłumaczysz to na nasze, słowo w słowo.\n\n"
-            "Wpisz to polskie wyrażenie (dwa słowa):"
-        ),
-        "odpowiedz": "po ptakach",
+        "klucz": "krzyzowka",
+        "emoji": "🧩",
+        "tytul": {"pl": "🧩 Krzyżówka", "en": "🧩 Crossword"},
+        "typ": "krzyzowka",
+        "info": {
+            "pl": "Cztery wskazówki, cztery odpowiedzi. Dwie pierwsze to zwroty angielskie, dwie kolejne to dosłowne tłumaczenia — odgadnij, jakie to polskie wyrażenia.",
+            "en": "Four clues, four answers. The first two are English phrases, the next two are literal translations — figure out the Polish phrases behind them.",
+        },
+        # UWAGA: pytania 1 i 2 to MOJA interpretacja Twojego opisu (definicja
+        # zwrotu -> szukamy pasującego angielskiego idiomu), więc mogą nie
+        # trafić w to, co dokładnie miałeś na myśli — sprawdź i ewentualnie
+        # dopisz swoje warianty do listy "odpowiedzi" każdego pytania.
+        # Pytania 3 i 4 to ten sam mechanizm co "after birds" (dosłowne
+        # tłumaczenie -> szukamy polskiego oryginału), tu jestem pewniejszy.
+        "pytania": [
+            {
+                "wskazowka": {
+                    "pl": "Angielski zwrot używany, gdy coś się już stało i nie da się tego cofnąć.",
+                    "en": "An English phrase used when something has already happened and can't be undone.",
+                },
+                "odpowiedzi": ["what's done is done", "whats done is done", "what is done is done"],
+            },
+            {
+                "wskazowka": {
+                    "pl": "Angielski zwrot na to, że coś jest nie tak.",
+                    "en": "An English phrase for when something is wrong.",
+                },
+                "odpowiedzi": [
+                    "something's wrong", "somethings wrong", "something is wrong",
+                    "something's not right", "somethings not right", "something is not right",
+                ],
+            },
+            {
+                "wskazowka": {
+                    "pl": "WHAT A VILLAGE — jakie to polskie, potoczne wyrażenie?",
+                    "en": "WHAT A VILLAGE — that's a literal translation. What's the Polish slang expression?",
+                },
+                "odpowiedzi": ["ale wieś", "ale wies"],
+            },
+            {
+                "wskazowka": {
+                    "pl": "GREETINGS FROM MOUNTAIN — jakie to polskie wyrażenie?",
+                    "en": "GREETINGS FROM MOUNTAIN — that's a literal translation. What's the Polish phrase?",
+                },
+                "odpowiedzi": ["pozdrowienia z góry", "pozdrowienia z gory"],
+            },
+        ],
         "cyfra": "9",
     },
     {
+        "klucz": "rebus",
+        "emoji": "🖼️",
+        "tytul": {"pl": "🖼️ Rebus", "en": "🖼️ Rebus"},
+        "typ": "rebus",
+        "info": {
+            "pl": "Każdy obrazek to jedno słowo — po brzmieniu, nie po znaczeniu. Złóż je w całe hasło.",
+            "en": "Each picture stands for one word — by how it sounds, not what it means. Put them together.",
+        },
+        # Trzeci element zostawiłem pusty — nie chciałem użyć wizerunku
+        # prawdziwej, nazwanej osoby publicznej w tej grze słownej (a o to
+        # chodziło w oryginalnym pomyśle). Podmień emoji i dopasuj
+        # "odpowiedz" na to, co chcesz tam mieć — reszta (lampa + jak) już
+        # działa i pasuje do "lampa jak ...".
+        "elementy": ["💡", "🐃", "❓"],
+        "odpowiedz": "UZUPEŁNIJ",
+        "cyfra": "0",
+    },
+    {
         "klucz": "wordle",
+        "emoji": "🟩",
         "tytul": {"pl": "🟩 Wordle dnia", "en": "🟩 Today's Wordle"},
         "typ": "wordle",
         # Aplikacja SAMA pobiera dzisiejsze słowo z (angielskiego) NYT Wordle —
@@ -180,6 +196,7 @@ ETAPY = [
     },
     {
         "klucz": "irl",
+        "emoji": "📍",
         "tytul": {"pl": "📍 Wyprawa", "en": "📍 The trip"},
         "typ": "haslo",
         "tresc": {
@@ -191,6 +208,7 @@ ETAPY = [
     },
     {
         "klucz": "data",
+        "emoji": "📅",
         "tytul": {"pl": "📅 Dokładna data", "en": "📅 The exact date"},
         "typ": "data",
         "tresc": {
@@ -203,36 +221,40 @@ ETAPY = [
     },
     {
         "klucz": "szachy",
+        "emoji": "♟️",
         "tytul": {"pl": "♟️ Szachy", "en": "♟️ Chess"},
         "typ": "szachy",
         "tresc": {
-            "pl": "Białe zaczynają. Znajdź ruch, który wymusza mata.",
-            "en": "White to move. Find the move that forces checkmate.",
+            "pl": (
+                "Białe: król c6, hetman b1. Czarne: sam król, a8.\n\n"
+                "Białe zaczynają. Znajdź 3 posunięcia białych, z których "
+                "każde wymusza jedyną możliwą odpowiedź, a trzecie to mat."
+            ),
+            "en": (
+                "White: King c6, Queen b1. Black: King alone, on a8.\n\n"
+                "White to move. Find White's 3 moves, each forcing the "
+                "only possible reply, with the third being checkmate."
+            ),
         },
-        "pozycja": POZYCJA_SZACHOWA,
-        "odpowiedz": "d4d8",
+        "format_info": {
+            "pl": "Zapisz same ruchy białych, oddzielone spacjami, np. Kc7 Qb6 Qb7",
+            "en": "Write only White's moves, separated by spaces, e.g. Kc7 Qb6 Qb7",
+        },
+        "odpowiedz": ["kc7", "qb6", "qb7"],
         "cyfra": "8",
     },
     {
         "klucz": "dron",
+        "emoji": "🚁",
         "tytul": {"pl": "🚁 Dron", "en": "🚁 Drone"},
         "typ": "dron",
-        "opis": {
-            "pl": "Steruj dronem — stukaj / klikaj, żeby wznieść się w górę. Przeleć przez wszystkie bramki bez rozbicia. Kod pojawi się po osiągnięciu celu.",
-            "en": "Fly the drone — tap / click to rise. Get through all the gates without crashing. The code appears once you hit the target.",
-        },
-        "odpowiedz": KOD_DRONA,
         "cyfra": "4",
     },
     {
         "klucz": "zaba",
+        "emoji": "🐸",
         "tytul": {"pl": "🐸 Żaba", "en": "🐸 Frog"},
         "typ": "zaba",
-        "opis": {
-            "pl": "Steruj żabą — stukaj / klikaj, żeby skoczyła. Przeskocz przez wszystkie kolce, nie wpadnij na żaden. Kod pojawi się po osiągnięciu celu.",
-            "en": "Control the frog — tap / click to jump. Hop over all the spikes without hitting one. The code appears once you hit the target.",
-        },
-        "odpowiedz": KOD_ZABY,
         "cyfra": "2",
     },
 ]
@@ -258,10 +280,7 @@ TEKST = {
         "wybierz_najpierw": "Najpierw wybierz datę.",
         "poprawnych": "Poprawnych",
         "twoj_ruch": "Twój ruch:",
-        "format_ruchu": "Wpisz ruch jako pole-startowe + pole-docelowe, np. `e2e4`.",
-        "kod_z_gry_info": "Kiedy wygrasz wszystkie 3 poziomy, przepisz kod z gry poniżej:",
-        "kod_z_gry_label": "Kod z gry:",
-        "zle_kod_gry": "To nie ten kod. Zagraj jeszcze raz i sprawdź uważnie!",
+        "ukonczone_btn": "✅ Ukończone!",
         "wordle_brak_polaczenia": "Nie udało się automatycznie pobrać dzisiejszego słowa. Spróbuj ponownie za chwilę.",
         "wordle_sprobuj_pobrac": "🔄 Spróbuj pobrać ponownie",
         "rozwiazane_status": "✅ Rozwiązane",
@@ -295,10 +314,7 @@ TEKST = {
         "wybierz_najpierw": "Pick a date first.",
         "poprawnych": "Correct",
         "twoj_ruch": "Your move:",
-        "format_ruchu": "Type your move as start-square + end-square, e.g. `e2e4`.",
-        "kod_z_gry_info": "When you beat all 3 levels, type the code from the game below:",
-        "kod_z_gry_label": "Code from the game:",
-        "zle_kod_gry": "That's not the code. Play again and check carefully!",
+        "ukonczone_btn": "✅ Done!",
         "wordle_brak_polaczenia": "Couldn't automatically fetch today's word. Try again in a moment.",
         "wordle_sprobuj_pobrac": "🔄 Try fetching again",
         "rozwiazane_status": "✅ Solved",
@@ -333,6 +349,16 @@ def tt(dwujezyczny):
         jezyk = st.session_state.get("jezyk", "pl")
         return dwujezyczny.get(jezyk, dwujezyczny.get("pl", ""))
     return dwujezyczny
+
+
+_POLSKIE_ZNAKI = str.maketrans("ąćęłńóśźżĄĆĘŁŃÓŚŹŻ", "acelnoszzACELNOSZZ")
+
+
+def znormalizuj(tekst):
+    """Do porównywania odpowiedzi: małe litery, bez spacji na końcach, bez
+    polskich znaków diakrytycznych — żeby "ale wieś" zaliczało się tak samo
+    jak "ale wies" (łatwo pominąć ogonki, pisząc szybko na telefonie)."""
+    return str(tekst).strip().lower().translate(_POLSKIE_ZNAKI)
 
 
 # ======================================================================
@@ -441,11 +467,7 @@ SZABLON_GRY = """
   <div id="gra">
     <div id="nakladka">
       <h2 id="nakladkaTytul">Poziom 1</h2>
-      <p id="nakladkaOpis">Łap kolorowe serca. Omijaj czarne — jedna pomyłka i zaczynasz poziom od nowa.</p>
-      <div id="kodBox" style="display:none;">
-        <div id="kodWygrany">__KOD_GRY__</div>
-        <p style="opacity:0.7; font-size:13px;">Przepisz ten kod poniżej 👇</p>
-      </div>
+      <p id="nakladkaOpis"></p>
       <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
     </div>
   </div>
@@ -459,7 +481,6 @@ SZABLON_GRY = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var kodBox = document.getElementById('kodBox');
   var poziomEtykieta = document.getElementById('poziomEtykieta');
   var wyciszBtn = document.getElementById('wyciszBtn');
 
@@ -682,22 +703,19 @@ SZABLON_GRY = """
     if (wygrana) {
       if (aktualnyPoziom >= POZIOMY.length - 1) {
         nakladkaTytul.textContent = '🎉 Wygrałaś!';
-        nakladkaOpis.textContent = 'Twój kod czeka poniżej:';
-        kodBox.style.display = 'block';
+        nakladkaOpis.textContent = '';
         nakladkaBtn.style.display = 'none';
       } else {
         var nastepny = aktualnyPoziom + 1;
         nakladkaTytul.textContent = '🎉 Poziom ' + (aktualnyPoziom + 1) + ' ukończony!';
         nakladkaOpis.textContent = opisPoziomu(nastepny);
-        kodBox.style.display = 'none';
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.textContent = 'Graj ▶';
         nakladkaBtn.onclick = function () { inicjujDzwiek(); startPoziom(nastepny); };
       }
     } else {
-      nakladkaTytul.textContent = powod === 'czarne' ? '🖤 To było czarne serce...' : '💔 Serduszko uciekło...';
+      nakladkaTytul.textContent = powod === 'czarne' ? '🖤 Czarnych nie łapiemy!' : '💔 Uciekło Ci serduszko!';
       nakladkaOpis.textContent = 'Trzeba złapać wszystkie, bez pomyłek. Spróbuj ponownie.';
-      kodBox.style.display = 'none';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = 'Jeszcze raz';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); startPoziom(aktualnyPoziom); };
@@ -849,11 +867,7 @@ SZABLON_DRONA = """
     <div id="dron">🚁</div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Dron</h2>
-      <p id="nakladkaOpis">Stukaj / klikaj, żeby wznieść drona. Przeleć przez WSZYSTKIE bramki, nie rozbij się.</p>
-      <div id="kodBox" style="display:none;">
-        <div id="kodWygrany">__KOD_DRONA__</div>
-        <p style="opacity:0.7; font-size:13px;">Przepisz ten kod poniżej 👇</p>
-      </div>
+      <p id="nakladkaOpis"></p>
       <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
     </div>
   </div>
@@ -866,7 +880,6 @@ SZABLON_DRONA = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var kodBox = document.getElementById('kodBox');
   var wyciszBtn = document.getElementById('wyciszBtn');
 
   var DRON_X = 0.25;
@@ -1066,22 +1079,27 @@ SZABLON_DRONA = """
     if (wygrana) {
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Twój kod czeka poniżej:';
-      kodBox.style.display = 'block';
+      nakladkaOpis.textContent = '';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajDzwiek('crash');
       nakladkaTytul.textContent = '💥 Rozbity dron...';
       nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-      kodBox.style.display = 'none';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = 'Jeszcze raz';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
     }
   }
 
-  gra.addEventListener('click', function () { skok(); });
-  gra.addEventListener('touchstart', function (e) { e.preventDefault(); skok(); }, { passive: false });
+  gra.addEventListener('click', function () {
+    if (nakladka.style.display !== 'none') return;
+    skok();
+  });
+  gra.addEventListener('touchstart', function (e) {
+    if (nakladka.style.display !== 'none') return;
+    e.preventDefault();
+    skok();
+  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1236,11 +1254,7 @@ SZABLON_ZABY = """
     <div id="zaba">🐸</div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Żaba</h2>
-      <p id="nakladkaOpis">Stukaj / klikaj, żeby żaba skoczyła. Przeskocz WSZYSTKIE kolce, nie wpadnij na żaden.</p>
-      <div id="kodBox" style="display:none;">
-        <div id="kodWygrany">__KOD_ZABY__</div>
-        <p style="opacity:0.7; font-size:13px;">Przepisz ten kod poniżej 👇</p>
-      </div>
+      <p id="nakladkaOpis"></p>
       <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
     </div>
   </div>
@@ -1253,7 +1267,6 @@ SZABLON_ZABY = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var kodBox = document.getElementById('kodBox');
   var wyciszBtn = document.getElementById('wyciszBtn');
 
   var ZABA_X = 0.22;
@@ -1454,22 +1467,27 @@ SZABLON_ZABY = """
     if (wygrana) {
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Twój kod czeka poniżej:';
-      kodBox.style.display = 'block';
+      nakladkaOpis.textContent = '';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajDzwiek('crash');
       nakladkaTytul.textContent = '🐸💥 Żaba nie doskoczyła...';
       nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-      kodBox.style.display = 'none';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = 'Jeszcze raz';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
     }
   }
 
-  gra.addEventListener('click', function () { skok(); });
-  gra.addEventListener('touchstart', function (e) { e.preventDefault(); skok(); }, { passive: false });
+  gra.addEventListener('click', function () {
+    if (nakladka.style.display !== 'none') return;
+    skok();
+  });
+  gra.addEventListener('touchstart', function (e) {
+    if (nakladka.style.display !== 'none') return;
+    e.preventDefault();
+    skok();
+  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1625,31 +1643,6 @@ def rysuj_wisielca(liczba_bledow, mala=False):
     )
 
 
-def pokaz_szachownice(pozycja):
-    kolumny = "abcdefgh"
-    wiersze = "87654321"
-    komorki = []
-    for wiersz_znak in wiersze:
-        rank_idx = int(wiersz_znak) - 1
-        for kolumna in kolumny:
-            file_idx = ord(kolumna) - ord("a")
-            pole = kolumna + wiersz_znak
-            ciemne = (file_idx + rank_idx) % 2 == 0
-            tlo = "#7a5c3e" if ciemne else "#e8d9b5"
-            figura = pozycja.get(pole, "")
-            komorki.append(
-                f"<div style='background:{tlo}; display:flex; align-items:center; "
-                f"justify-content:center; font-size:1.6rem;'>{figura}</div>"
-            )
-    siatka = "".join(komorki)
-    st.markdown(
-        "<div style='display:grid; grid-template-columns:repeat(8,1fr); "
-        "grid-template-rows:repeat(8,2.4rem); max-width:340px; margin:0.5rem auto; "
-        f"border:2px solid #d4af37; border-radius:8px; overflow:hidden;'>{siatka}</div>",
-        unsafe_allow_html=True,
-    )
-
-
 # ======================================================================
 # TRWAŁY STAN — przetrwa zamknięcie telefonu i wznowienie po jakimś czasie.
 # Zapisywany w DWÓCH miejscach naraz (link + plik na serwerze).
@@ -1749,7 +1742,55 @@ def renderuj_haslo(etap_dane):
     st.markdown(tt(etap_dane["tresc"]))
     wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
-        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
+        if znormalizuj(wpisane) == znormalizuj(etap_dane["odpowiedz"]):
+            return True
+        st.error(t("zle_sprobuj"))
+        return False
+    return None
+
+
+def renderuj_krzyzowka(etap_dane):
+    klucz = etap_dane["klucz"]
+    st.markdown(tt(etap_dane.get("info", "")))
+
+    odpowiedzi_uzytkownika = []
+    for idx, pytanie in enumerate(etap_dane["pytania"]):
+        st.markdown(f"**{idx + 1}.** {tt(pytanie['wskazowka'])}")
+        wpisane = st.text_input(
+            t("twoja_odpowiedz"), key=f"{klucz}_pyt_{idx}", label_visibility="collapsed"
+        )
+        odpowiedzi_uzytkownika.append(wpisane)
+
+    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        wszystkie_poprawne = True
+        for idx, pytanie in enumerate(etap_dane["pytania"]):
+            wpisana = znormalizuj(odpowiedzi_uzytkownika[idx])
+            akceptowane = [znormalizuj(a) for a in pytanie["odpowiedzi"]]
+            if wpisana not in akceptowane:
+                wszystkie_poprawne = False
+        if wszystkie_poprawne:
+            return True
+        st.error(t("zle_sprobuj"))
+        return False
+    return None
+
+
+def renderuj_rebus(etap_dane):
+    klucz = etap_dane["klucz"]
+    st.markdown(tt(etap_dane.get("info", "")))
+
+    emoji_html = "".join(
+        f"<span style='font-size:3rem; margin:0 0.3rem;'>{e}</span>"
+        for e in etap_dane["elementy"]
+    )
+    st.markdown(
+        f"<div style='text-align:center; margin:1rem 0;'>{emoji_html}</div>",
+        unsafe_allow_html=True,
+    )
+
+    wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
+    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        if znormalizuj(wpisane) == znormalizuj(etap_dane["odpowiedz"]):
             return True
         st.error(t("zle_sprobuj"))
         return False
@@ -1784,56 +1825,32 @@ def renderuj_quiz(etap_dane):
 
 def renderuj_gra(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane.get("opis", "")))
 
-    html = (
-        SZABLON_GRY
-        .replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
-        .replace("__KOD_GRY__", str(KOD_GRY))
-    )
+    html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
     components.html(html, height=520, scrolling=False)
 
-    st.caption(t("kod_z_gry_info"))
-    wpisane = st.text_input(t("kod_z_gry_label"), key=f"pole_{klucz}")
-    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
-        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
-            return True
-        st.error(t("zle_kod_gry"))
-        return False
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
     return None
 
 
 def renderuj_dron(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane.get("opis", "")))
 
-    html = SZABLON_DRONA.replace("__KOD_DRONA__", str(KOD_DRONA))
-    components.html(html, height=520, scrolling=False)
+    components.html(SZABLON_DRONA, height=520, scrolling=False)
 
-    st.caption(t("kod_z_gry_info"))
-    wpisane = st.text_input(t("kod_z_gry_label"), key=f"pole_{klucz}")
-    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
-        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
-            return True
-        st.error(t("zle_kod_gry"))
-        return False
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
     return None
 
 
 def renderuj_zaba(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane.get("opis", "")))
 
-    html = SZABLON_ZABY.replace("__KOD_ZABY__", str(KOD_ZABY))
-    components.html(html, height=520, scrolling=False)
+    components.html(SZABLON_ZABY, height=520, scrolling=False)
 
-    st.caption(t("kod_z_gry_info"))
-    wpisane = st.text_input(t("kod_z_gry_label"), key=f"pole_{klucz}")
-    if st.button(t("sprawdz"), key=f"btn_{klucz}"):
-        if wpisane.strip().lower() == str(etap_dane["odpowiedz"]).strip().lower():
-            return True
-        st.error(t("zle_kod_gry"))
-        return False
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
     return None
 
 
@@ -1919,12 +1936,12 @@ def renderuj_data(etap_dane):
 def renderuj_szachy(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(tt(etap_dane["tresc"]))
-    pokaz_szachownice(etap_dane["pozycja"])
-    st.caption(t("format_ruchu"))
+    st.caption(tt(etap_dane["format_info"]))
     wpisane = st.text_input(t("twoj_ruch"), key=f"pole_{klucz}")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
-        czyste = wpisane.strip().lower().replace(" ", "")
-        if czyste == str(etap_dane["odpowiedz"]).strip().lower():
+        oczyszczony = wpisane.replace(",", " ").replace("+", "").replace("#", "")
+        ruchy = [znormalizuj(tok) for tok in oczyszczony.split()]
+        if ruchy == etap_dane["odpowiedz"]:
             return True
         st.error(t("zle_sprobuj"))
         return False
@@ -1936,48 +1953,44 @@ def renderuj_szachy(etap_dane):
 # ======================================================================
 
 def pokaz_powitanie():
-    st.markdown("<div class='zamek-ikona'>🔒</div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:25vh;'></div>", unsafe_allow_html=True)
 
-    kolumny = st.columns(2)
-    with kolumny[0]:
-        if st.button("🇵🇱 Polski", key="jezyk_pl"):
-            st.session_state.jezyk = "pl"
-            st.rerun()
+    kolumny = st.columns([1, 1, 1])
     with kolumny[1]:
-        if st.button("🇬🇧 English", key="jezyk_en"):
-            st.session_state.jezyk = "en"
-            st.rerun()
+        kliknieto = st.button("🔒", key="zamek_btn")
 
-    st.markdown(f"<h1 class='tytul'>{tt(POWITANIE_TYTUL)}</h1>", unsafe_allow_html=True)
-    st.markdown(tt(WIADOMOSC_POWITALNA))
-
-    if st.button(t("rozpocznij"), key="start_btn"):
+    if kliknieto:
+        st.markdown(
+            "<div class='zamek-otwarty' style='font-size:4rem; margin-top:1rem;'>🔓</div>",
+            unsafe_allow_html=True,
+        )
+        time.sleep(0.7)
         st.session_state.ekran = "menu"
         st.session_state.czas_startu = time.time()
         zapisz_postep()
         st.rerun()
 
-    with st.expander(t("wznow_naglowek")):
-        kod_wznow = st.text_input(t("kod_label"), key="wznow_input")
-        if st.button(t("wznow_btn"), key="wznow_btn2"):
-            if wznow_z_kodu(kod_wznow):
-                st.success(t("wznow_ok"))
-            else:
-                st.error(t("nie_rozpoznaje"))
-
 
 def pokaz_menu():
+    kolumny_gora = st.columns([5, 1])
+    with kolumny_gora[1]:
+        inny_jezyk = "en" if st.session_state.jezyk == "pl" else "pl"
+        etykieta_jezyka = "🇬🇧" if st.session_state.jezyk == "pl" else "🇵🇱"
+        if st.button(etykieta_jezyka, key="przelacz_jezyk"):
+            st.session_state.jezyk = inny_jezyk
+            zapisz_postep()
+            st.rerun()
+
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
     rysuj_wisielca(st.session_state.bledy_wisielec)
 
-    kolumny = st.columns(2)
+    kolumny = st.columns(5)
     for i, etap_dane in enumerate(ETAPY):
         klucz = etap_dane["klucz"]
         rozwiazany = klucz in st.session_state.rozwiazane
         nieudany = klucz in st.session_state.nieudane
-        prefiks = "✅ " if rozwiazany else ("🔒 " if nieudany else "")
-        etykieta = prefiks + tt(etap_dane["tytul"])
-        with kolumny[i % 2]:
+        etykieta = "🔒" if nieudany else etap_dane["emoji"]
+        with kolumny[i % 5]:
             if st.button(
                 etykieta,
                 key=f"menu_{klucz}",
@@ -2024,6 +2037,10 @@ def pokaz_ekran_etapu(etap_dane):
     typ = etap_dane["typ"]
     if typ == "haslo":
         wynik = renderuj_haslo(etap_dane)
+    elif typ == "krzyzowka":
+        wynik = renderuj_krzyzowka(etap_dane)
+    elif typ == "rebus":
+        wynik = renderuj_rebus(etap_dane)
     elif typ == "quiz":
         wynik = renderuj_quiz(etap_dane)
     elif typ == "gra":
