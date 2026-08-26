@@ -56,6 +56,11 @@ I love you. ❤️
 }
 
 # Trudność mini-gry zręcznościowej — 3 poziomy, coraz trudniejsze.
+# Obrazki do rebusu (zdjecia od uzytkownika, male i zakodowane w base64,
+# zeby caly plik zostal jednym app.py bez osobnych zasobow do wgrania).
+REBUS_OBRAZ_LAMPA = "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"
+REBUS_OBRAZ_JAK = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAcFBQYFBAcGBgYIBwcICxILCwoKCxYPEA0SGhYbGhkWGRgcICgiHB4mHhgZIzAkJiorLS4tGyIyNTEsNSgsLSz/2wBDAQcICAsJCxULCxUsHRkdLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCwsLCz/wAARCACTANwDASIAAhEBAxEB/8QAHAAAAQUBAQEAAAAAAAAAAAAABAIDBQYHAAEI/8QAPRAAAgEDAwIDBgQEBQMFAQAAAQIDAAQRBRIhMUEGE1EiYXGBkaEUMkKxByNS0RUkweHxYoLwFiUzQ5Jy/8QAGQEAAwEBAQAAAAAAAAAAAAAAAQIDBAAF/8QAIxEAAgICAgMAAwEBAAAAAAAAAAECEQMhEjEEE0EiMlFhgf/aAAwDAQACEQMRAD8A+hAaUDSRSxVBEKFeg5pNe0rCLBrqpt54om8Ia4lp4glZ9KvpMWmokD+Ux/8Aqlx09zdx8DVwR1kQOjBlYZBByDQD0LzXZrq6uOPa6urw1xx2a6ksyqMsQB6mmvxduSQJUJAyee1dYB+upiK8t5jiKVH/AP5YGnQwIODXHdHprymWuURtj5HfNe+eoAO8EHoaNnUO15uGSOpFNm6hC5ZwD6HrVa1DUbka9D5GY7Y3EZlkLEDYqnIx7yR9KSWWMex4Y5T6LXTL3EKXEcDyqJZQSiZ5YDqcelRl/wCKNL07TJ72a4BihXJx1Y9gM9SarH8PtQfWBfeKtVnjS51F9lrAT/8ABbKfZUA92PtH14pnNf0HF/wvteUg3EWBmRQT0BIzTmcimtCiTSSMUuvCM0RRBFJIpdeGiAZI5pOKcYc0iigBIFKApI6UqkY4rbSgopApWKUIFrOi2Wv6RPpuoQia2nXay9CPQg9iOxrKHXxX/Cm4MYuJtU8PZ/lSMu/yh/S39J+x93StmpLqsiFHAZWGCCMgj0rglL0T+JematGu7COeDzjmrPFrNnMAVc8+6qP4v/hloUtpNf6fG2m3CAviEZjPxQ8D5YrH11/VfDl6+POZCAu53KBj6gZz0qTyKLplY4nNWj6hF1E3Qk/Kqh4s8Z/4dJ+FsfalY7N2f1egHf3msr0T+Kes3uoLZyRC3jaIs7thjj3fGpee0EhlvLve88vsiNTtESf0lv6iOuOccccmsufO1+MTX4/jRb5SEah4v1a5t3DXkjqMkso9nA9Mck/8VFWusvLqYH4u4l/DhmL+YQi8c+5jzyegPr0pu4tLjVNWWyi8t2eMBogdsNumRyxHJPHAHvzUbeeJNJtJLjQtJ3PdQh/MuSgz7KnuRjrjgDHPU1BJs2NqP+Bo8Sz2DSXNrPLbrApEYQH+Z02jLcsSSPdzVg0D+I97aXZaaczQXBLRqx4UYzyevJBx7qok2nXshtJVl84W80ySrJ/9vJ5J9cHjjqaMTTYrszz2jXUU5jCtbSAeyFHBT3/v2561X4/SclfaNVTx6dQXZPEkDA7g2Mqw6daNt7zUZdkkFu93ESdzwDIXnpj1Hess0G585Y2kYIGXLf0yKePNQ/ZlPTr2qVP8SJfCl5NbzwuzStsxEMbioGG+JBxn3UicpTqTBOMYwuCNJubG9kg8+2hlWZeqTDbu+poC5v7fSbd59UljSXbkwRSbnJ+uBWc3v8V7q5V983kcn2EXcc/07vWk6BpDeNL0S3ZvIrUDe8fJaQ+5uu33Dn31V+tblbIL2vrQ+7Xf8S9ZiMnnWnhuykHmBZOZX59gHvx+Y9h8q0OLVbN5RFaNblYhgKnYDgAf7elR9x+FstMihtY2hsoBtTywu34ADp/frUWjJc/5mCRFfGC7dCfe3Y9iDWPNlcnro14cKSt9lgu7piQbaNvMA3KVG7kdsd6N8O+K7ifUjZ3xQ8AIY1xn4jqKrkSyyWhiuEME2N2VkJUn49agtV1e40fVLMAyxHeCkmMqT3QkfvXYcsoStdAy4Yyi0zdOtdQGk363thDMoIDrnnqKPr3U72eI18Yg9a8NLNIIoi0IYcUinSKb2miATcX8Vs6qx60497BHGHdwF9TWfNr/AOJmXeeg70JqeqTXMflhiI6bgLzNOjvbd1BWRTn317NexQx7iwHzrMrSR7S3WZZDgds17eandXMikOVXHSu4IPJl+XXYJMhWGa8TUt5ILgVnDSzxS8MQx54NHI9w6iTzG9/NdxByZZvFd4zeHZUQghxg56V88+I7V7nUdSZ12DzkIGOQpQ5+hx9K22cm7024gEhZ2iOBnv61jviW4eHUESdQkkqBuB1wOf3ry8+sv/D1vGp4iu+HJvN8V2BclTKEMmehxzn7fatC8S6xFa2CB5BHjIU5/L3PxPf4/Csy0xmXXtIPRgzxE+hzx+4o3XNVEtoZnBkuDst4++2Rs7sD3BfvSzhymmVhk4xZbfCF/wCVIrupb8cDcSMRyBkhV+SIxPxql6PfQu0l/cRI9xcSOUxgbkT+YxJ9M7R8jVjjnFpZaoFO0w2DRq39A27AfixP7+tZxqMbQA2kSssaRrC8jf8A6Ye4ZPPrijBJtgySao0G6lddPsoEZ5WyZnbpvKBWJ/YfOlX/AIgS3uNPm8xvKvWKKyNhl/KysPeNpqOmu2j8I/iiuJ47ZyMdCW2r9yuarUUsureLNFsYlZltjFGW7Z6u3/npTximt/ATlx0jS7nTZ4bKbVbO7jW1ZfxTWzoT5L/r2Y6ISG47HFQWq6nb3E8aK8cfmxiRpQNzKhUHg/Lp9atl/KbXwyLbYPMQHBI+B2n0zzzWfeIZLTTNUhco0i+RtCg4yqu3U/L9qzw/J7KSfHRLSX2l7tLhSyDsxCxRMerHks5+mfcPhV30u9n0rSFu4ZnZopxliv5VPT5Zz9cVmnhK0m1nXY72dQzS7kiRRhYlHXHp6Z/vWyw2cNhJbW+4G2uE2TKeAykbSR8Dn7GkyqmkPjdq2EXeoJcWi6nBE7Wlz7N3BnmJv6l9/r6gdKh/8HSzaaRJmuLC8BKSJwUfupH3+vrTmlyzwadf2ZJ32+/GT3T+4BFD2WpGOCaFvbgkj85CxwQB69sj2lPyqErZZKugrQbvdDHZSSpI0chT2zjJ9Aex7j1r3xNosuoaXPPas4ngG9Yxzgg5H7H6mq6SlrrDXUMg8qdgsieh7cHuDirrpl9HfosscwSYMUJI43d1P2NTenYzVokfB3ib8Z4ctXYbGX+WwPYirjb6tHKyoDkms2ltxpsV2oTyVklEiAdiRyKAsvEM0N6HR+B2Ne740+eNM8LyY8Mjo2pTuGa4lR1xVU0HxM94+xtp+FSEtzK14VzhT0rRVESZIHak4oCLU4opPJmcKe2T1p838OeHWhZ1GLveZIZeCKI/FK8K5bmqLa65do5Etu5Ud8UYniHynXzImCk4ANP7Yk/TItr3UjIAH4Hai47omNSw6VXrfWvNlP8Ak5Aijk7aj7nxkqiRUiKhO54orJFnPFJFz/E5uVdj2qQjvovKKDgmsus/Fl5cKWjgLqD2qRt/FF3vHmWr4PurvZFB9Uvhf4LkRXKupzjqPWk3dlZahGY3jRt+UwVz/wCf7VSI9b1ZrgNHZuUJ4qQ1LV9VtoYHitHUgg/POajk4TLY/ZAr+teHYNL8QWcsECxqZw7BRgAkMenyqh6cWu/G1xaycxLMbhfQMqtj9/tW1SrPq2l2N5cwhJTcDcD0A6Z+mayzStM8rxdcXBDHzGZV+f8AtXmwk4uSfw9Rx5cWiUjhZ9LuN4DPczKW3dyo9kH3ZyflUTqmkJb6RcoQWlceczd2Gf8AWpqJW/A3k7qwWecpCB124wSP/O9Qet6zDHci4unEaSZBi/UFAwoA+Z+1NGLfQ02ktjUNwbrSLSJRuUKm8dSCoxj4An70Z4cijg/iBBEkQ8tVQx8c44H+hqLhV4703ca/yztkXH5TuUE/UGp/w1Lby+NYLlnARYCQcddvP7ftRnqLET2hcWtPqPj+9tw5NtGJCw6jhhg/SoaTSz4j1iFiW8hYVyB/TuZ/9ad8PowvPEMuQsxiYZHPO7Bx9as/hy0itrNIzlZBGkZbHbGCanOXD9Qwjy7LT4C0ewsplZlUTQNsVWIHs7ScjPXHNHeL7a6stNupIiEjtD58Tg9IiMNn4MFPwqp2d3JH4s01N4SWUAyBmwDtDA4+I4x8Kv8AOj31lPak5eSGRVRuTkjpSfNnfbIPR71das1u4gsd3LCVYE+yzgcZ+g+RqtxXosNTNhOpA3O0G4dQR/Mj+mSPep9aB8Mai+jvJDK+6KK5XIJ52FTn9hQus3Vvq17Jd2MzP5Tq7gqVKPnBP2BPvz60jhUqNClqw6NxcQMjDdIpMT+9kPX5rzU/ozS2eXLljJt3+pAzg/HHHyFVawuS92ZGGC+2QgH82AVyPlwfeBU60wleMQuVEijY47Men3qclQ62Xe+Q3nh6XcfMKIGDf1D9J+P9qzQ3UsdwyBWJBxkjrV+0G+lvbRoJAPbiDBenXhh/+gcVXD4f1Q33teWi7vXnFeh4U6i0zzPNhck0N6XrdzYTiSMkHuDU5d/xFWNBl184dcHFD6r4WibSy4uhHMB1qiQeF5LqeQy3ZIz2NbvYmYeDRO6t47u71hJDLgg8bTTEXiLWpIwwnl59DUhY+GNMit1jc7m+NTttp1rbQLGqKwHc1N5V8HUAOaSzkgjEMagP1470PKbISK8kIzGufy0lYfJk8sMG/MuaflSJGZZV9tgFU465rM2jVslTq9hHattiVsj+kVEQ2djqUpjezTywd7cDvSo7X/L7AoO4bVz69qP0+NoFJxkCuTQGmeQ6fYWUhEVqFU8flohfwiruFnuI/wCiiciSIvjgc09DJmJm8scdG9aNoFMZivNsJMVn7XwAoeea6ZcSQDnoKkYHfzenDcZxTrR+ZMJTgMo2g+6imhWmweF2u9HMLQmKQFvlxxWaanPb6Ndy3F0NspJAjXlnJPEa+89zWtwu5uAu1SoHpWA+KNZD+IbuQtkRSlVHfg1KOLnkZp93DGW+88IeI9dsLe8tXhiS2YMYIzjGRnJPfpiqvefwt8SzzG4uYxMz5CqD0BOcD61efCGq2+oaRa64upPZTWYNs0HQTJ2GPQE5/wCanb3XdQ1PT3ttP1aK2up+BN+Yp8PfVoPiqEl+W+zHdd0jW/CekoLoq0USIjRYBMLA5XPvwenoagrTWltbnbDlQRlfgeo+5q5+N7+z0zRm0SO5F1Mrs88hcyF3I5LHvzist08CS7VnUmPoR6A+lFJNWxHKpUjSPDUSR2cs652zlogTxgBNxz88VP6fdJfwTRRMA8LY49yjPH1qt+YdO0SONSD7BmPvPGPuKO8FzBrG4mCknDOq9x14+1Y5xu2bYOtAmtahNceLd4cqbRBKCP0+2pA+FadBfyXMUCWu0XEJRwHY4lT1BHoTj51lNm8d94wmhaQL+PgaJGPAD5Dp19dpHxrQPDWtWiNbPqCxW6Qn8OXHPbaytnoc8/IU01pEU9sgPHVg2malPexRFbK4O2XYfyMTkZHb1B6dqjvD+fKuV/ly+YMrMqgZPUbvTpWneIp9NazvLC9Es3mKQ+xAwgOMZz365x76zi10ptOWRQwbyoyC68BhjIbHwpW7VFYdjcErWjKgxt3MYWPYkbsH3dRRllfH8alo52QyjCMf0Z5X5Bsj51B+e34GXzCP5EgOfimf70lLtpbIb+JIiyq3fgkD/SklEdSo0nQdQY3EU36wcNjv7WG+/P8A3UrVp9Wj1icpuKBiAMVWdE1IrJExOC5MoB7Ekbh9R960S4nkF0AIQwJzk0/j6bRHyVaTKLqsmp32Iwsq+vBrrK2ntQo8tiRySRV5kjkkiIECjcOooNdyJl1QqB165rbZi4uyqX1/eJ+SNt3bimIdT1IxjcXU+mKte9SSxtwV9aGMC7iRCuCc0LR3FgGm3AeW4af9LbgT2yOBR12xmvUUEbJXfp7v+KgZ5pUuLq3h25RkVXPduvPx/tUtaySPdw7m3HcG2fmHvwazNl6D3CxLCiuRuO/cw6Y7VIW26HS1kfO5+R86r6TTXWpx26xlw8pB9rovY/SrQsaqqRMfzDafRcGuicxKKyR7Mbzs/LRcMbmHgjjqB2IoJcx3UieZzEMZ6591HaeHbTCXlMkhQsGI+1G9ii8MLdDkc5JFMeZJGFYjIPOaeXbPMyDJDIDjsPWky2ypHGdx4HGexo3RwLFqDm6YOQhAOPQ4HSsd8ZeHpNJ12TUPINxazyI5jKghic7vgRj71uNtFFK0oZA7Lg5xxj1oO906DUY7cOqkI4fBH9J/5prraOVPTPnxPEOn+U2LWH2Tjb5eAw9eMEVHXXiO5e/T/CJHtR/RuJX17k+laZ4g/hlpdzdTJby/h3UFgFH5uc4/es8m8Iz6ct3K5/IuxM+rHGfoGroZcchp4skSEjuJ9TuDLJIAzjDHHJqRstM2lAuCC3UV1lpP4aSMMeCSKLg1CK2lJbGB7Oc/P/SqylekLCPHbJLU7o/h4LZTkhgo+HpUn4Pk/BxYyAWnUD4cE/bNVVLv8VeIf0RlmJ9yqf8AWp6S7/w+C2ER9qZH2kepQDP7/WpOPw0KX0g9Uyt8XhY8KNpBwRzkc+tXHVtRVWF5Cyh72zhuZUxw0mwb+PepB+vpVGmfF0VY8BUz8iRU1rkyrq2nwRngWMPTuVBX+9O0nojey/6Drv8AieiS2l4zyJHsxKnLpGcquR+oAqB6jNA6VK76jJYTyLKMFNy9PQ493OahPCEvlWt+ruw32r7f+0h/9DSbe6a1v52VuYmzj3ZFZpK7NEHVAer2/wCDm8iQHDYR/eBlT9qBtrny7eSCUqyngt7+MH5jB+RqweOhE6WeownKTIzn496pUbmS2BH5mIU/DOaaKtAnqVGieECl3qNsHBPtYIzxz/xWs3MZSRGQ8dKzb+G2lSPO1wq+zCm0+5sZrRDMkU0W9SyFifnS41tsTM+kLiik2qrOC6tjjgVGx2qW0LeWu1Q7FgO53HJqQI3Xe8DCNtZSO/OP7UJ5c0ousOFKyMGXGffxVrM5GSNNIWwNmxiGBPp3r24voYnCvcQxHaDhiB86JhspPxcnmEMgOAx/V7I5+FAXGk200u9oYpTjGWGce6ghiKnAsJ7tmjWWd3YRIy5VeNu8j19PrRlg6wyT3czqilNq98nB+lQE03nLHKJN4hkEEjEnkn8pPvxx8V99EWc8ckKQnJRGMk+T26Yx9KRhTJTQbpU1WSUoA5jJaTHPoB9DVhimy80LEhXC47YIBziqjpTytejdGR5ygKzEAYJ7Z64FWOaFV1XbuVmiwpJbjAAycfOlQWHQt+J3SlfbKZGOC2Dj+1GWsyC2Z8kKR+U9jTbsYxbqSFK8MUXAYkDt8aQsv4m1mjRAkRYAmi9M5BSzeRMCwRQ3oaIkZpLeXaMlPaT0qPgWOaa4CEsEO5WPTpzijrZi0eSeCAOfU0oaE6fI8V025Tyv5V+9F3dsEMe0exsyPcaZgzb3ALsCc9+1LkvdltcSyj+VkEN6c46U62qEap6KJ4iuW0zxgZCdyNFnHrx/cVA6tFDcaJwwLSKxHPJOSCftVk8eWkksVvfhTvVNuPfzj7VnV7LKht5huCInTtgqcj96zxhfRuc6RCa3G9vahY/ZkEgTjtzVUeOSS5kDnIQEfStE1eKO5UXCjcfNyw+BB/aqPdsIpLjYvDnArbiloy5Y/Q+DbDYTOQOLc/MmkNeSTyWYJJ2naPdhaauUlna3socBpwFJPA5Pf6ZryWRDcI0IwgUsnbIA2g/E9arRNsVM4dXlYYAcAj3FjTtxK58QOSxKRozJk9FOSMfM0PJMgUwNwzuv70oriaEybtqJsYqMnG7+1dR1lj0y7W32rnOUETD3MpB/cUq5crqlwqc+ZEGI9xBoPT4beeRmjuDG+cFZgBzjsw+HcCnppJItVtZSvLIYvmOlZn2XT0Ea/c+Z4f02CQ7Q3mJnrt6H6VW9PjK3iROvKcsPtVs8S2QbQrKeJguZCSv9O7p9wRUf4W0ebWbmwKoTIJfw0w9FHQ/Tj5Cuh+lgknzNl8BWQtPDMc7KVe4ckjvjGB+1T81uoQK+0KZABn1PFN2ypplrb2yt7Ea7Txk9TzSry3EzyQgtkHepBwTjn6UIrROe2M/imjiRCgTy2Me4Nkc9P2FNzyNFfXHBVWKsQe/Y/cfemL+bFvHHt3wuxCuDhTx2HxobUGM9/p82f5cikc5wCQOvpyK5sCQp7gQ6jIiruEu32eewz17cZ+lLtRBaLJEZHmHmFgWOcA8gDHQDpig9Xnls8G0hEjKVaQlgGAGcnB649K9aRbhI5owUV0U4HQ8VydBaKVp+mS2EMb3koMU4dLiMZIO04EgJ64xuGOwpy38uxabdbmHgxqwO49yc/MY49aKmljiaWxgQhLWTYm8fnQrngn1BBz7xjmmdRtN1itzCkxi8tkfn2mwRsIPptPXvtOeaYn0OaTb3Nzr4mkjY+Q6vFMTkNGFzjPrnkfMVNi7knAmhIEkkmBkZIAUZA957fOoPw9+Jhj8hkkkiRhks2AV3A5B6Z4zxweas5tfw9zPkBQ0okTjoCuOB8RSyVDRJLT7iN7Dc0bmWHOQ5GVOR7PHBoa6nKNMpcyLG5BBxgDIBwB2oaEmKZDFzHIxYp1OTkEfUUDdSPaXEan2hIx9pORy/5focUt/Bv9JjTbom/uG34iy5OB+QY4oqGVt0qIx2xnAJPbHHNQ8txZ6Vfw2y3CsLnfIV5JAA4A+p494onTXjm0z8RubyshU45I5/8zRcWdyRYZ2bAmOPbRXwe3A/1pqZwLeZ5CAgZeM9u9C3Opu1pHGsayM5C7VOAigHHzoS3vJbl4oJ4jF7ZJyc4HoR9Kbi0JdkhrTQXKtHIMRCIMSf0jGc1k+r27SvMgOI922M/IcVp3iaF5I4ljGxXQK2PXsKzbUlzOkXUAMQT37f6faoQVNmuTuKIy0s8wJG+d49nk8H0+dV/UNHV7gmM4w2SPf61fNPMdlYT3cyK7TgW8G79LYy7/IYH/fUNeaU9zqbssnlQ43ux6Af39B1NaYvZF7RXruyOm6W107YM0TeWCOd5yuB8EJPxZahLQq88jSEbIYlQenrU5r18LmUCG3XyLUYQyDczMTknGcA/XGAO1Vi6v7me3ZWmcqzDKg4XA9w4q62Sk6Co2S4uGf0OR/58aLeRQWBIxnGfU+lRag2kccissiyflYdvUH0I9KejbzCD0A6fGi0KmTUcq287IOGwp+JP+1G28xcWkUo8wBwcHgjPcenWoCCYyXZLdSy5+XFTekKbnXgmM7TkD3gf7VmnovB2WDWLa6l1CKwj/mLKqiPI4P+/rV88G6ENPeOd1WGbYXl9kckHGRjtTegadb3d3BdXClHh4bjgkDKn79flVwJihicKpLCMOGxjgnHX5Gp41yQ2SXF0DXt2lxJEEBBGSSvIY84569qdmukyxHJ2bmZuMDIBx65qJu2kt7kLHHtQFXR/eOox9afvYrqewMofyNre1GAP5isvAz+nBp62RvQNIAdIUNJlMs6gjB+XpQepXG1DGAxKzCQ+zgAFe3PWpW7RbbSFt1XcUOELDJUgDH3z9ahbthNdxWhG1hEGBU8k+73Drj0NLTGs8a8N7cxQCPEwBVgJASQD9s80xDcXC2VusUg2KhUZTd0Yjr8qGSIxTtcwurTQr+kDcSTyuOwGaHWd4i0cRQKGJwzheTz0+dcFMK1izcxwzxgSGCQIZFwcIwBDfDt8MUZZwm7DQIpaN0MTgHI3fmB59+frTNpO3+A7QwIkHlOrjnCHOQfgwHzpnTrzCzI670kXB7eW2MZ+xpm9gStBEmm29h/l4nK2pGwW7ZIjJ6sG95JPPfjtRFxfDdbyBvM2FUZP1Af9X1P1oDxPq6R30C25EkqQqZsA/mbJGfkPvQJnDRyMFKuzbAzHBHcc/PHyotWBJIs6ER3jhhsA/mR+vXJ+Weaj2BivBcqHSOPALLkghiM8HsACeeKbtNVkuHCkYCn1wfzAfsfvU27RLIWNv5gdEi3IxUkn8x9COnGKRL8g/AW3g069bT9Vihcv7e6FnwVyCwUg84xjHXjHakabFKtu1uUKSSyCQQyDlQRnA9/HTsKL06WOTVbwOm0CMlcD9WDn2fgQOD2pi5vRp9nI8k5uGdhkZx8gDyOvyqt/BKPYrxGWQiEKxAHtHGOMc/CvYEKrLdRK8jkhQ2eB8B3+dRkV3/i1s0pkaJc5dEPLdhz0PTqc5qctpBBpuyOLlpAG/WcAfTNN8BRKtE97aLG+GeMjJH6QRz9qynWwy68Tvj8tCvCNnCjP159P9a021kmJSX8S7NcDiIkbPdjA4+tULxbZfhtXVjCsmSYGVh7MYY5HI7n17VmkqlZphuNAN8oNnbpLIVSJN3lry2W9o+4duT96irvUmZYYmwkKNuCj9/effXk+om/v53CFd7FtvXaoH/H0qIum3Y568g1WJOSA9SdfLaGPlslsj1NVyK1ldCu05JParRYxn8cFbkSd6nF0aJrtD5YG3lgBgE9qd5OAFFyKDBONP1RUmiE1s7L50R6OobOM9j76kpNPS3ll8ti9uHKqx4KnsD6HH1qIvNsmryYPG4gfWpyO6cRRz+X50csSiRezY9kjPrlciqSeiaW2BwwD8WoMixZ4ZnzhCD1OKtuh6fLHqiS+zlvbVlOVb4HuDVYaIGeIxPuikB2OR9QfeO4+FaD4Xtmn0iMglTbyeWV7rnn6ZrNlejRiWzRdOg/9qb2Tl1xkDJHvxREElzb6I6k75E/lpgDOccd++KbuJPK0kLBjzdpVQWwCffQMF0EkjaeGNYjPtbjGPQnn3Hmjj1EnkXJ2G6hrMN1ZiOFdxaZsoeCrADOR1Aye/XNLnmLWUcbe2qlVLbgB2H25qMuJbaLUJIpYszwkBnGTkHocem3A5qRS5jltgEjClnBVlHs5xleO3AA91Ue2T6QnUblbmcPFIhaEg8NyTnioa/WIKk8zgh2x5iYGMnGAewHPNe3s4imWAEYAZwU/U4yDkd+o47UzdQRPZvDKyoyKWUMM88cV1HAU4jhkkckYLAsQQSc45+xGcdQahkvbGQu00m/LnY2RyueOtHXE0cNlDMQ06Kfw8rkYwM7gcfFu/r76iGie4SNyGU7cEIdq5BI4AU0vG2G9FitY1F5e2+P5K2owueBkAn7mnZoY49Pyq4KsFHfjCn9ya6upZFInrIsyWxkG4yW8qsSeoVvZHyqHl/zHhiGaTl3gcMemcbcdPia6uoro76OWrtHqICnAEoT5Blx+9WwqI2uSo5KrJzz7WxRkeldXUr7AuhnRXYGM7jmRpA3PXGcVD5/FajZQTgSRmPOGHQ4Q5B7ck11dTfwAToSiNp1Uez+J24PIxk1L3bsNOs5QcO0vJ+DECurqouhfgRaIGLA8iMMVGentGonxuoNqzEZOYj88Ma6uqGTsvjKppmm2g18/wAkezJwMnH5gOlVe/YvdO7cs0pJ+ZNdXVSPQrPbVF/EQcDnFXWZFLq5VdwjGDj/AKa6uqWUeBjOoqE16VVGAH4HzqciUHwe7fqS/RVI4wCjEj6gV1dWp9Ih/ReigSzujjcpRnx7xjB+PJrVvC8SLp0xCgFtuffhq6urLmL4uib1BFMy5HRGcfEd6Hu2J0aUk5JcAk9cb8fsTXV1PHpCSAIVE1jpssvtvc20aylud4DvjP0FHiaRcuHYN5wXIPOBjA+5rq6qEmOauAgLKAD5i849QCfuKrqzSfiXG9sAL39TmurqcVgkMjf+ndScnLeUx5GckbgM+vAH0qf8MWdtdeHLSaaFGkdMkgYz9K6upZDI/9k="
+
 POZIOMY_GRY = [
     {"serca": 7, "czarne": 3, "kierunek": "dol", "predkosc": 130, "tempo": 650},
     {"serca": 10, "czarne": 5, "kierunek": "skos", "predkosc": 190, "tempo": 480},
@@ -75,8 +80,8 @@ POZIOMY_GRY = [
 ETAPY = [
     {
         "klucz": "gra",
-        "emoji": "🖤",
-        "tytul": {"pl": "🖤 Refleks", "en": "🖤 Reflexes"},
+        "emoji": "❤️",
+        "tytul": {"pl": "❤️ Refleks", "en": "❤️ Reflexes"},
         "typ": "gra",
     },
     {
@@ -113,34 +118,41 @@ ETAPY = [
         "tytul": {"pl": "🧩 Krzyżówka", "en": "🧩 Crossword"},
         "typ": "krzyzowka",
         "info": {
-            "pl": "Cztery wskazówki, cztery odpowiedzi. Dwie pierwsze to zwroty angielskie, dwie kolejne to dosłowne tłumaczenia — odgadnij, jakie to polskie wyrażenia.",
-            "en": "Four clues, four answers. The first two are English phrases, the next two are literal translations — figure out the Polish phrases behind them.",
+            "pl": "Cztery wskazówki. Pierwsze dwie: ułóż angielski zwrot z podanych słów. Kolejne dwie to dosłowne tłumaczenia — odgadnij polskie wyrażenie.",
+            "en": "Four clues. The first two: build the English phrase from the given words. The next two are literal translations — figure out the Polish phrase behind them.",
         },
-        # UWAGA: pytania 1 i 2 to MOJA interpretacja Twojego opisu (definicja
-        # zwrotu -> szukamy pasującego angielskiego idiomu), więc mogą nie
-        # trafić w to, co dokładnie miałeś na myśli — sprawdź i ewentualnie
-        # dopisz swoje warianty do listy "odpowiedzi" każdego pytania.
-        # Pytania 3 i 4 to ten sam mechanizm co "after birds" (dosłowne
-        # tłumaczenie -> szukamy polskiego oryginału), tu jestem pewniejszy.
+        # Pytania 1 i 2 to teraz "ulozanka": wybierasz slowa z rozwijanej
+        # listy w kolejnosci, zeby ulozyc zwrot. Poprawna odpowiedz jest
+        # jawnie w "odpowiedz" (lista slow po kolei) - jesli to nie ten
+        # zwrot, ktory mialas na mysli, podmien "odpowiedz" i dopasuj
+        # "slowa_pula" (musi zawierac wszystkie slowa z "odpowiedz").
         "pytania": [
             {
+                "typ": "ulozanka",
                 "wskazowka": {
-                    "pl": "Angielski zwrot używany, gdy coś się już stało i nie da się tego cofnąć.",
-                    "en": "An English phrase used when something has already happened and can't be undone.",
+                    "pl": "Ułóż z podanych słów angielski zwrot używany, gdy coś się już stało i nie da się tego cofnąć.",
+                    "en": "Arrange the given words into the English phrase used when something has already happened and can't be undone.",
                 },
-                "odpowiedzi": ["what's done is done", "whats done is done", "what is done is done"],
-            },
-            {
-                "wskazowka": {
-                    "pl": "Angielski zwrot na to, że coś jest nie tak.",
-                    "en": "An English phrase for when something is wrong.",
-                },
-                "odpowiedzi": [
-                    "something's wrong", "somethings wrong", "something is wrong",
-                    "something's not right", "somethings not right", "something is not right",
+                "odpowiedz": ["what's", "done", "is", "done"],
+                "slowa_pula": [
+                    "already", "done", "that's", "is", "gone", "what's",
+                    "cannot", "was", "finished", "undone", "happened", "over",
                 ],
             },
             {
+                "typ": "ulozanka",
+                "wskazowka": {
+                    "pl": "Ułóż z podanych słów angielski zwrot na to, że coś jest nie tak.",
+                    "en": "Arrange the given words into the English phrase for when something is wrong.",
+                },
+                "odpowiedz": ["something's", "wrong"],
+                "slowa_pula": [
+                    "strange", "wrong", "somebody's", "off", "something's",
+                    "right", "weird", "not", "broken", "odd",
+                ],
+            },
+            {
+                "typ": "tekst",
                 "wskazowka": {
                     "pl": "WHAT A VILLAGE — jakie to polskie, potoczne wyrażenie?",
                     "en": "WHAT A VILLAGE — that's a literal translation. What's the Polish slang expression?",
@@ -148,6 +160,7 @@ ETAPY = [
                 "odpowiedzi": ["ale wieś", "ale wies", "co za wieś", "co za wies"],
             },
             {
+                "typ": "tekst",
                 "wskazowka": {
                     "pl": "GREETINGS FROM MOUNTAIN — jakie to polskie wyrażenie?",
                     "en": "GREETINGS FROM MOUNTAIN — that's a literal translation. What's the Polish phrase?",
@@ -165,12 +178,15 @@ ETAPY = [
             "pl": "Każdy obrazek to jedno słowo — po brzmieniu, nie po znaczeniu. Złóż je w całe hasło.",
             "en": "Each picture stands for one word — by how it sounds, not what it means. Put them together.",
         },
-        # Trzeci element zostawiłem pusty — nie chciałem użyć wizerunku
-        # prawdziwej, nazwanej osoby publicznej w tej grze słownej (a o to
-        # chodziło w oryginalnym pomyśle). Podmień emoji i dopasuj
-        # "odpowiedz" na to, co chcesz tam mieć — reszta (lampa + jak) już
-        # działa i pasuje do "lampa jak ...".
-        "elementy": ["💡", "🐃", "❓"],
+        # Twoje zdjecia (lampa + "jak") juz tu sa. Trzeci element zostawiam
+        # jako emoji-placeholder — wizerunku Tuska nie uzyje w tej roli (patrz
+        # wiadomosc), ale mozesz tu wstawic co innego (inne zdjecie tym samym
+        # sposobem co ponizsze dwa, albo zwykle emoji) i dopasowac "odpowiedz".
+        "elementy": [
+            {"typ": "obraz", "dane": REBUS_OBRAZ_LAMPA},
+            {"typ": "obraz", "dane": REBUS_OBRAZ_JAK},
+            "❓",
+        ],
         "odpowiedz": "UZUPEŁNIJ",
     },
     {
@@ -423,11 +439,15 @@ TEKST = {
         "zatwierdz": "Zatwierdź (jedna próba!)",
         "twoja_odpowiedz": "Twoja odpowiedź:",
         "wybierz": "— wybierz —",
+        "slowo": "Słowo",
         "zle_sprobuj": "To nie to. Spróbuj jeszcze raz.",
         "zle_jedna_proba": "To nie ta data. Ta zagadka jest już zamknięta — była tylko jedna próba.",
         "wybierz_date": "Wybierz datę:",
         "jedna_proba_info": "⚠️ Masz tylko JEDNĄ próbę — wybierz uważnie.",
-        "wybierz_najpierw": "Najpierw wybierz datę.",
+        "wybierz_najpierw": "Najpierw wybierz pełną datę.",
+        "dzien": "Dzień",
+        "miesiac": "Miesiąc",
+        "rok": "Rok",
         "poprawnych": "Poprawnych",
         "twoj_ruch": "Twój ruch:",
         "ukonczone_btn": "✅ Ukończone!",
@@ -457,11 +477,15 @@ TEKST = {
         "zatwierdz": "Confirm (one attempt!)",
         "twoja_odpowiedz": "Your answer:",
         "wybierz": "— choose —",
+        "slowo": "Word",
         "zle_sprobuj": "Not quite. Try again.",
         "zle_jedna_proba": "Wrong date. This puzzle is now locked — you only got one attempt.",
         "wybierz_date": "Pick a date:",
         "jedna_proba_info": "⚠️ You only get ONE attempt — choose carefully.",
-        "wybierz_najpierw": "Pick a date first.",
+        "wybierz_najpierw": "Pick the full date first.",
+        "dzien": "Day",
+        "miesiac": "Month",
+        "rok": "Year",
         "poprawnych": "Correct",
         "twoj_ruch": "Your move:",
         "ukonczone_btn": "✅ Done!",
@@ -670,12 +694,12 @@ SZABLON_GRY = """
       osc.type = 'sine';
       osc.frequency.value = czestotliwosc;
       gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.16);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
       osc.start();
-      osc.stop(audioCtx.currentTime + 0.16);
+      osc.stop(audioCtx.currentTime + 0.2);
     } catch (e) {
       // dźwięk to dodatek — jego brak nie może zepsuć gry
     }
@@ -683,7 +707,7 @@ SZABLON_GRY = """
 
   function startMuzyka(tempoMs) {
     zatrzymajMuzyke();
-    var nuty = [220, 220, 277, 220];
+    var nuty = [220.00, 277.18, 329.63, 277.18];
     var i = 0;
     bipInterval = setInterval(function () {
       zagrajBip(nuty[i % nuty.length]);
@@ -733,7 +757,16 @@ SZABLON_GRY = """
     el.dataset.vx = vx;
     el.dataset.vy = vy;
 
-    el.addEventListener('click', function () { kliknieto(el); });
+    el.addEventListener('click', function () {
+      if (el.dataset.dotkniete) return;
+      kliknieto(el);
+    });
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      el.dataset.dotkniete = '1';
+      kliknieto(el);
+      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
+    }, { passive: false });
 
     gra.appendChild(el);
     aktywneElementy.push(el);
@@ -1104,6 +1137,23 @@ SZABLON_DRONA = """
     else if (typ === 'crash') zagrajTon(120, 0.35, 'sawtooth');
   }
 
+  var interwalMuzyki = null;
+  var NUTY_MUZYKI = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
+  function startMuzyke() {
+    zatrzymajMuzyke();
+    var i = 0;
+    interwalMuzyki = setInterval(function () {
+      zagrajTon(NUTY_MUZYKI[i % NUTY_MUZYKI.length], 0.22, 'triangle');
+      i++;
+    }, 340);
+  }
+  function zatrzymajMuzyke() {
+    if (interwalMuzyki) {
+      clearInterval(interwalMuzyki);
+      interwalMuzyki = null;
+    }
+  }
+
   function skok() {
     if (!trwa) return;
     dronVY = SILA_SKOKU;
@@ -1227,6 +1277,7 @@ SZABLON_DRONA = """
     trwa = true;
     rysuj();
     requestAnimationFrame(petla);
+    startMuzyke();
   }
 
   function zakonczGre(wygrana) {
@@ -1234,6 +1285,7 @@ SZABLON_DRONA = """
     przeszkody.forEach(function (p) { usunPrzeszkode(p); });
     przeszkody = [];
     nakladka.style.display = 'flex';
+    zatrzymajMuzyke();
 
     if (wygrana) {
       zagrajDzwiek('punkt');
@@ -1250,10 +1302,19 @@ SZABLON_DRONA = """
     }
   }
 
+  var pominDrugiSkok = false;
   gra.addEventListener('click', function () {
+    if (pominDrugiSkok) return;
     if (nakladka.style.display !== 'none') return;
     skok();
   });
+  gra.addEventListener('touchstart', function (e) {
+    if (nakladka.style.display !== 'none') return;
+    e.preventDefault();
+    pominDrugiSkok = true;
+    skok();
+    setTimeout(function () { pominDrugiSkok = false; }, 500);
+  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1514,6 +1575,24 @@ SZABLON_ZABY = """
     else if (typ === 'crash') zagrajTon(110, 0.35, 'sawtooth');
   }
 
+  var interwalMuzyki = null;
+  var NUTY_MUZYKI = [392.00, 0, 523.25, 392.00, 0, 659.25, 523.25, 0];
+  function startMuzyke() {
+    zatrzymajMuzyke();
+    var i = 0;
+    interwalMuzyki = setInterval(function () {
+      var nuta = NUTY_MUZYKI[i % NUTY_MUZYKI.length];
+      if (nuta > 0) zagrajTon(nuta, 0.09, 'square');
+      i++;
+    }, 190);
+  }
+  function zatrzymajMuzyke() {
+    if (interwalMuzyki) {
+      clearInterval(interwalMuzyki);
+      interwalMuzyki = null;
+    }
+  }
+
   function skok() {
     if (!trwa || !naZiemi) return;
     zabaVY = SILA_SKOKU;
@@ -1763,6 +1842,7 @@ SZABLON_ZABY = """
     trwa = true;
     rysuj();
     requestAnimationFrame(petla);
+    startMuzyke();
   }
 
   function zakonczGre(wygrana) {
@@ -1770,6 +1850,7 @@ SZABLON_ZABY = """
     przeszkody.forEach(function (p) { usunPrzeszkode(p); });
     przeszkody = [];
     nakladka.style.display = 'flex';
+    zatrzymajMuzyke();
 
     if (wygrana) {
       zagrajDzwiek('punkt');
@@ -1786,10 +1867,19 @@ SZABLON_ZABY = """
     }
   }
 
+  var pominDrugiSkok = false;
   gra.addEventListener('click', function () {
+    if (pominDrugiSkok) return;
     if (nakladka.style.display !== 'none') return;
     skok();
   });
+  gra.addEventListener('touchstart', function (e) {
+    if (nakladka.style.display !== 'none') return;
+    e.preventDefault();
+    pominDrugiSkok = true;
+    skok();
+    setTimeout(function () { pominDrugiSkok = false; }, 500);
+  }, { passive: false });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
@@ -1996,6 +2086,23 @@ SZABLON_MEMORY = """
     else if (typ === 'zle') zagrajTon(180, 0.2, 'sawtooth');
   }
 
+  var interwalMuzyki = null;
+  var NUTY_MUZYKI = [329.63, 392.00, 440.00, 392.00];
+  function startMuzyke() {
+    zatrzymajMuzyke();
+    var i = 0;
+    interwalMuzyki = setInterval(function () {
+      zagrajTon(NUTY_MUZYKI[i % NUTY_MUZYKI.length], 0.5, 'sine');
+      i++;
+    }, 900);
+  }
+  function zatrzymajMuzyke() {
+    if (interwalMuzyki) {
+      clearInterval(interwalMuzyki);
+      interwalMuzyki = null;
+    }
+  }
+
   function potasuj(tablica) {
     for (var i = tablica.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
@@ -2080,7 +2187,16 @@ SZABLON_MEMORY = """
     var el = document.createElement('div');
     el.className = 'karta';
     el.innerHTML = '<div class="karta-wnetrze"><div class="karta-tyl">🔒</div><div class="karta-przod">' + symbol + '</div></div>';
-    el.addEventListener('click', function () { kliknietoKarte(indeks); });
+    el.addEventListener('click', function () {
+      if (el.dataset.dotkniete) return;
+      kliknietoKarte(indeks);
+    });
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      el.dataset.dotkniete = '1';
+      kliknietoKarte(indeks);
+      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
+    }, { passive: false });
     return el;
   }
 
@@ -2108,6 +2224,7 @@ SZABLON_MEMORY = """
     aktualizujCzas();
     if (interwalCzasu) clearInterval(interwalCzasu);
     interwalCzasu = setInterval(tikCzasu, 1000);
+    startMuzyke();
   }
 
   function zakonczGre(wygrana) {
@@ -2117,6 +2234,7 @@ SZABLON_MEMORY = """
       interwalCzasu = null;
     }
     nakladka.style.display = 'flex';
+    zatrzymajMuzyke();
 
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Udało się!';
@@ -2363,7 +2481,16 @@ SZABLON_SIMON = """
   }
 
   przyciski.forEach(function (el, idx) {
-    el.addEventListener('click', function () { kliknietoKolor(idx); });
+    el.addEventListener('click', function () {
+      if (el.dataset.dotkniete) return;
+      kliknietoKolor(idx);
+    });
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      el.dataset.dotkniete = '1';
+      kliknietoKolor(idx);
+      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
+    }, { passive: false });
   });
 
   function rozpocznijGre() {
@@ -2644,7 +2771,16 @@ SZABLON_PIANO = """
   }
 
   pasy.forEach(function (el, idx) {
-    el.addEventListener('click', function () { kliknietoPas(idx); });
+    el.addEventListener('click', function () {
+      if (el.dataset.dotkniete) return;
+      kliknietoPas(idx);
+    });
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      el.dataset.dotkniete = '1';
+      kliknietoPas(idx);
+      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
+    }, { passive: false });
   });
 
   function rozpocznijGre() {
@@ -2809,6 +2945,21 @@ div.stButton > button:disabled {
     border: 1px solid rgba(212,175,55,0.35);
     border-radius: 12px;
 }
+
+/* Streamlit domyślnie chowa kolumny w jedną, pionową listę na wąskich
+   ekranach (telefony) - wymuszamy, żeby zawsze zostawały w rzędzie
+   i zawijały się jak prawdziwa siatka zamiast rozjeżdżać się do jednej
+   kolumny po lewej. */
+div[data-testid="stHorizontalBlock"] {
+    flex-direction: row !important;
+    flex-wrap: wrap !important;
+    gap: 0.4rem !important;
+}
+div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+    flex: 1 1 18% !important;
+    width: auto !important;
+    min-width: 56px !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -2970,21 +3121,43 @@ def renderuj_krzyzowka(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(tt(etap_dane.get("info", "")))
 
+    placeholder = t("wybierz")
     odpowiedzi_uzytkownika = []
     for idx, pytanie in enumerate(etap_dane["pytania"]):
         st.markdown(f"**{idx + 1}.** {tt(pytanie['wskazowka'])}")
-        wpisane = st.text_input(
-            t("twoja_odpowiedz"), key=f"{klucz}_pyt_{idx}", label_visibility="collapsed"
-        )
-        odpowiedzi_uzytkownika.append(wpisane)
+        typ_pytania = pytanie.get("typ", "tekst")
+
+        if typ_pytania == "ulozanka":
+            liczba_slow = len(pytanie["odpowiedz"])
+            wybrane_slowa = []
+            for i in range(liczba_slow):
+                wybor = st.selectbox(
+                    f"{t('slowo')} {i + 1}:",
+                    [placeholder] + pytanie["slowa_pula"],
+                    key=f"{klucz}_pyt_{idx}_slowo_{i}",
+                )
+                wybrane_slowa.append(wybor)
+            odpowiedzi_uzytkownika.append(wybrane_slowa)
+        else:
+            wpisane = st.text_input(
+                t("twoja_odpowiedz"), key=f"{klucz}_pyt_{idx}", label_visibility="collapsed"
+            )
+            odpowiedzi_uzytkownika.append(wpisane)
 
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
         wszystkie_poprawne = True
         for idx, pytanie in enumerate(etap_dane["pytania"]):
-            wpisana = znormalizuj(odpowiedzi_uzytkownika[idx])
-            akceptowane = [znormalizuj(a) for a in pytanie["odpowiedzi"]]
-            if wpisana not in akceptowane:
-                wszystkie_poprawne = False
+            typ_pytania = pytanie.get("typ", "tekst")
+            if typ_pytania == "ulozanka":
+                wybrane = [znormalizuj(w) for w in odpowiedzi_uzytkownika[idx]]
+                oczekiwane = [znormalizuj(w) for w in pytanie["odpowiedz"]]
+                if wybrane != oczekiwane:
+                    wszystkie_poprawne = False
+            else:
+                wpisana = znormalizuj(odpowiedzi_uzytkownika[idx])
+                akceptowane = [znormalizuj(a) for a in pytanie["odpowiedzi"]]
+                if wpisana not in akceptowane:
+                    wszystkie_poprawne = False
         if wszystkie_poprawne:
             return True
         st.error(t("zle_sprobuj"))
@@ -2996,12 +3169,18 @@ def renderuj_rebus(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(tt(etap_dane.get("info", "")))
 
-    emoji_html = "".join(
-        f"<span style='font-size:3rem; margin:0 0.3rem;'>{e}</span>"
-        for e in etap_dane["elementy"]
-    )
+    czesci_html = []
+    for e in etap_dane["elementy"]:
+        if isinstance(e, dict) and e.get("typ") == "obraz":
+            czesci_html.append(
+                f"<img src='data:image/jpeg;base64,{e['dane']}' "
+                f"style='height:5.5rem; margin:0 0.4rem; border-radius:8px; "
+                f"vertical-align:middle;' />"
+            )
+        else:
+            czesci_html.append(f"<span style='font-size:3rem; margin:0 0.3rem;'>{e}</span>")
     st.markdown(
-        f"<div style='text-align:center; margin:1rem 0;'>{emoji_html}</div>",
+        f"<div style='text-align:center; margin:1rem 0;'>{''.join(czesci_html)}</div>",
         unsafe_allow_html=True,
     )
 
@@ -3168,11 +3347,25 @@ def renderuj_data(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(tt(etap_dane["tresc"]))
     st.caption(t("jedna_proba_info"))
-    wybrana = st.date_input(t("wybierz_date"), key=f"data_{klucz}", value=None, format="DD.MM.YYYY")
+
+    placeholder = t("wybierz")
+    kol1, kol2, kol3 = st.columns(3)
+    with kol1:
+        dzien = st.selectbox(t("dzien"), [placeholder] + list(range(1, 32)), key=f"dzien_{klucz}")
+    with kol2:
+        miesiac = st.selectbox(t("miesiac"), [placeholder] + list(range(1, 13)), key=f"miesiac_{klucz}")
+    with kol3:
+        rok = st.selectbox(t("rok"), [placeholder] + list(range(2020, 2028)), key=f"rok_{klucz}")
+
     if st.button(t("zatwierdz"), key=f"btn_{klucz}"):
-        if wybrana is None:
+        if dzien == placeholder or miesiac == placeholder or rok == placeholder:
             st.warning(t("wybierz_najpierw"))
             return None
+        try:
+            wybrana = date(int(rok), int(miesiac), int(dzien))
+        except ValueError:
+            st.error(t("zle_jedna_proba"))
+            return False
         if wybrana == etap_dane["data"]:
             return True
         st.error(t("zle_jedna_proba"))
@@ -3219,15 +3412,6 @@ def pokaz_powitanie():
 
 
 def pokaz_menu():
-    kolumny_gora = st.columns([5, 1])
-    with kolumny_gora[1]:
-        inny_jezyk = "en" if st.session_state.jezyk == "pl" else "pl"
-        etykieta_jezyka = "🇬🇧" if st.session_state.jezyk == "pl" else "🇵🇱"
-        if st.button(etykieta_jezyka, key="przelacz_jezyk"):
-            st.session_state.jezyk = inny_jezyk
-            zapisz_postep()
-            st.rerun()
-
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
     rysuj_wisielca(st.session_state.bledy_wisielec)
     rysuj_serca(st.session_state.bledy_wisielec)
@@ -3237,7 +3421,12 @@ def pokaz_menu():
         klucz = etap_dane["klucz"]
         rozwiazany = klucz in st.session_state.rozwiazane
         nieudany = klucz in st.session_state.nieudane
-        etykieta = "🔒" if nieudany else etap_dane["emoji"]
+        if rozwiazany:
+            etykieta = etap_dane["emoji"] + " ✅"
+        elif nieudany:
+            etykieta = "🔒"
+        else:
+            etykieta = etap_dane["emoji"]
         with kolumny[i % 5]:
             if st.button(
                 etykieta,
