@@ -90,53 +90,49 @@ ETAPY = [
         "tytul": {"pl": "🧩 Krzyżówka", "en": "🧩 Crossword"},
         "typ": "krzyzowka",
         "info": {
-            "pl": "Cztery angielskie zwroty — to dosłowne tłumaczenia polskich wyrażeń. Ułóż z puli słów poniżej każde z tych polskich wyrażeń.",
-            "en": "Four English phrases — each a literal translation of a Polish expression. Arrange the Polish words below into each expression.",
+            "pl": "Cztery polskie wyrażenia — ułóż z angielskich słów poniżej ich dosłowne (i trochę bez sensu) tłumaczenie.",
+            "en": "Four Polish expressions — arrange the English words below into their literal (and slightly nonsensical) translation.",
         },
         # Jedna wspolna, duza pula slow dla wszystkich 4 pytan (nie musisz
         # "zuzywac" slowa - to samo slowo moze byc uzyte w wiecej niz jednym
         # pytaniu, bo kazda rozwijana lista jest niezalezna).
         "slowa_pula": [
-            "już", "po", "wieś", "coś", "z", "górze", "tak", "ale", "dobrze",
-            "ptakach", "nie", "raz", "jest", "spóźnione", "pozdrowienia", "u",
-            "źle", "góry", "wsi", "to",
+            "already", "after", "gone", "something", "is", "birds", "no",
+            "town", "yes", "what", "wrong", "a", "village", "hill",
+            "greetings", "from", "early", "mountain", "welcome", "done",
         ],
         "pytania": [
             {
                 "typ": "ulozanka",
-                "wskazowka": {"pl": "AFTER BIRDS", "en": "AFTER BIRDS"},
-                "podpowiedz": {
+                "wskazowka": {
                     "pl": "Coś się stało i nie da się tego cofnąć.",
                     "en": "Something happened and it can't be undone.",
                 },
-                "odpowiedz": ["po", "ptakach"],
+                "odpowiedz": ["after", "birds"],
             },
             {
                 "typ": "ulozanka",
-                "wskazowka": {"pl": "SOMETHING IS NO YES", "en": "SOMETHING IS NO YES"},
-                "podpowiedz": {
+                "wskazowka": {
                     "pl": "Gdy coś nie gra.",
                     "en": "When something's off.",
                 },
-                "odpowiedz": ["coś", "jest", "nie", "tak"],
+                "odpowiedz": ["something", "is", "no", "yes"],
             },
             {
                 "typ": "ulozanka",
-                "wskazowka": {"pl": "WHAT A VILLAGE", "en": "WHAT A VILLAGE"},
-                "podpowiedz": {
+                "wskazowka": {
                     "pl": "Coś wstydliwego.",
                     "en": "Something embarrassing.",
                 },
-                "odpowiedz": ["ale", "wieś"],
+                "odpowiedz": ["what", "a", "village"],
             },
             {
                 "typ": "ulozanka",
-                "wskazowka": {"pl": "GREETINGS FROM MOUNTAIN", "en": "GREETINGS FROM MOUNTAIN"},
-                "podpowiedz": {
+                "wskazowka": {
                     "pl": "Przedwczesne pozdrowienia.",
                     "en": "Premature greetings.",
                 },
-                "odpowiedz": ["pozdrowienia", "z", "góry"],
+                "odpowiedz": ["greetings", "from", "mountain"],
             },
         ],
     },
@@ -542,8 +538,10 @@ SZABLON_GRY = """
   }
   .item {
     position: absolute;
-    font-size: 34px;
+    font-size: 40px;
     line-height: 1;
+    padding: 10px;
+    margin: -10px;
     cursor: pointer;
     transition: transform 0.15s ease, opacity 0.15s ease, filter 0.2s ease;
   }
@@ -694,10 +692,18 @@ SZABLON_GRY = """
     var x, y, vx, vy;
 
     if (poziom.kierunek === 'gora') {
-      x = szer + 30;
-      y = wys + 30;
-      vx = -predkosc * 0.85;
-      vy = -predkosc;
+      var zPrawej = Math.random() < 0.5;
+      if (zPrawej) {
+        x = szer + 30;
+        y = losowo(10, wys - 40);
+        vx = -predkosc;
+        vy = losowo(-60, 60);
+      } else {
+        x = losowo(10, szer - 40);
+        y = wys + 30;
+        vx = losowo(-70, 70);
+        vy = -predkosc;
+      }
     } else if (poziom.kierunek === 'skos') {
       x = losowo(10, szer - 40);
       y = -40;
@@ -845,7 +851,7 @@ SZABLON_GRY = """
     if (wygrana) {
       if (aktualnyPoziom >= POZIOMY.length - 1) {
         nakladkaTytul.textContent = '🎉 Wygrałaś!';
-        nakladkaOpis.textContent = '';
+        nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
         nakladkaBtn.style.display = 'none';
       } else {
         var nastepny = aktualnyPoziom + 1;
@@ -1250,7 +1256,7 @@ SZABLON_DRONA = """
     if (wygrana) {
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = '';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajDzwiek('crash');
@@ -1815,7 +1821,7 @@ SZABLON_ZABY = """
     if (wygrana) {
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = '';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajDzwiek('crash');
@@ -1971,7 +1977,7 @@ SZABLON_MEMORY = """
 <body>
   <div id="panel">
     <span id="parNaEkranie">0 / 8</span>
-    <span id="czasNaEkranie">60s</span>
+    <span id="czasNaEkranie"></span>
     <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
@@ -2005,6 +2011,7 @@ SZABLON_MEMORY = """
   var interwalCzasu = null;
   var trwa = false;
   var wyciszone = false;
+  czasNaEkranie.textContent = CZAS_LIMIT + 's';
 
   var audioCtx = null;
 
@@ -2198,7 +2205,7 @@ SZABLON_MEMORY = """
 
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = '';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajDzwiek('zle');
@@ -2467,7 +2474,7 @@ SZABLON_SIMON = """
     nakladka.style.display = 'flex';
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = '';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
       nakladkaTytul.textContent = '❌ Zła kolejność...';
@@ -2762,7 +2769,7 @@ SZABLON_PIANO = """
     if (wygrana) {
       zagrajTon(1046.50, 0.5, 'triangle');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = '';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
       zagrajTon(140, 0.35, 'sawtooth');
