@@ -85,87 +85,58 @@ ETAPY = [
         "typ": "gra",
     },
     {
-        "klucz": "quiz",
-        "emoji": "💭",
-        "tytul": {"pl": "💭 Ile mnie znasz?", "en": "💭 How well do you know me?"},
-        "typ": "quiz",
-        "prog": 1.0,  # 1.0 = wymagane 100% poprawnych odpowiedzi
-        "pytania": [
-            {
-                "pytanie": "UZUPEŁNIJ np.: W jakim mieście był nasz pierwszy wspólny wyjazd?",
-                "opcje": ["UZUPEŁNIJ opcję A", "UZUPEŁNIJ opcję B", "UZUPEŁNIJ opcję C"],
-                "poprawna": 0,
-            },
-            {
-                # Uwaga: wiek Zoe wg lore LoL jest niejednoznaczny między źródłami
-                # (różne wiki podają 1398-1548 lat / "ponad tysiąc lat" / inne ramy) —
-                # dopisz dokładną liczbę/opcje, które Ty uznajesz za poprawne.
-                "pytanie": "Ile lat (wg lore) ma Zoe z League of Legends?",
-                "opcje": ["UZUPEŁNIJ — Twoja poprawna wersja", "UZUPEŁNIJ opcję B", "UZUPEŁNIJ opcję C"],
-                "poprawna": 0,
-            },
-            {
-                "pytanie": "UZUPEŁNIJ kolejne pytanie o Was...",
-                "opcje": ["Opcja A", "Opcja B", "Opcja C"],
-                "poprawna": 1,
-            },
-            # dodaj tyle pytań ile chcesz — po prostu kopiuj wzór powyżej
-        ],
-    },
-    {
         "klucz": "krzyzowka",
         "emoji": "🧩",
         "tytul": {"pl": "🧩 Krzyżówka", "en": "🧩 Crossword"},
         "typ": "krzyzowka",
         "info": {
-            "pl": "Cztery wskazówki. Pierwsze dwie: ułóż angielski zwrot z podanych słów. Kolejne dwie to dosłowne tłumaczenia — odgadnij polskie wyrażenie.",
-            "en": "Four clues. The first two: build the English phrase from the given words. The next two are literal translations — figure out the Polish phrase behind them.",
+            "pl": "Cztery angielskie zwroty — to dosłowne tłumaczenia polskich wyrażeń. Ułóż z puli słów poniżej każde z tych polskich wyrażeń.",
+            "en": "Four English phrases — each a literal translation of a Polish expression. Arrange the Polish words below into each expression.",
         },
-        # Pytania 1 i 2 to teraz "ulozanka": wybierasz slowa z rozwijanej
-        # listy w kolejnosci, zeby ulozyc zwrot. Poprawna odpowiedz jest
-        # jawnie w "odpowiedz" (lista slow po kolei) - jesli to nie ten
-        # zwrot, ktory mialas na mysli, podmien "odpowiedz" i dopasuj
-        # "slowa_pula" (musi zawierac wszystkie slowa z "odpowiedz").
+        # Jedna wspolna, duza pula slow dla wszystkich 4 pytan (nie musisz
+        # "zuzywac" slowa - to samo slowo moze byc uzyte w wiecej niz jednym
+        # pytaniu, bo kazda rozwijana lista jest niezalezna).
+        "slowa_pula": [
+            "już", "po", "wieś", "coś", "z", "górze", "tak", "ale", "dobrze",
+            "ptakach", "nie", "raz", "jest", "spóźnione", "pozdrowienia", "u",
+            "źle", "góry", "wsi", "to",
+        ],
         "pytania": [
             {
                 "typ": "ulozanka",
-                "wskazowka": {
-                    "pl": "Ułóż z podanych słów angielski zwrot używany, gdy coś się już stało i nie da się tego cofnąć.",
-                    "en": "Arrange the given words into the English phrase used when something has already happened and can't be undone.",
+                "wskazowka": {"pl": "AFTER BIRDS", "en": "AFTER BIRDS"},
+                "podpowiedz": {
+                    "pl": "Coś się stało i nie da się tego cofnąć.",
+                    "en": "Something happened and it can't be undone.",
                 },
-                "odpowiedz": ["what's", "done", "is", "done"],
-                "slowa_pula": [
-                    "already", "done", "that's", "is", "gone", "what's",
-                    "cannot", "was", "finished", "undone", "happened", "over",
-                ],
+                "odpowiedz": ["po", "ptakach"],
             },
             {
                 "typ": "ulozanka",
-                "wskazowka": {
-                    "pl": "Ułóż z podanych słów angielski zwrot na to, że coś jest nie tak.",
-                    "en": "Arrange the given words into the English phrase for when something is wrong.",
+                "wskazowka": {"pl": "SOMETHING IS NO YES", "en": "SOMETHING IS NO YES"},
+                "podpowiedz": {
+                    "pl": "Gdy coś nie gra.",
+                    "en": "When something's off.",
                 },
-                "odpowiedz": ["something's", "wrong"],
-                "slowa_pula": [
-                    "strange", "wrong", "somebody's", "off", "something's",
-                    "right", "weird", "not", "broken", "odd",
-                ],
+                "odpowiedz": ["coś", "jest", "nie", "tak"],
             },
             {
-                "typ": "tekst",
-                "wskazowka": {
-                    "pl": "WHAT A VILLAGE — jakie to polskie, potoczne wyrażenie?",
-                    "en": "WHAT A VILLAGE — that's a literal translation. What's the Polish slang expression?",
+                "typ": "ulozanka",
+                "wskazowka": {"pl": "WHAT A VILLAGE", "en": "WHAT A VILLAGE"},
+                "podpowiedz": {
+                    "pl": "Coś wstydliwego.",
+                    "en": "Something embarrassing.",
                 },
-                "odpowiedzi": ["ale wieś", "ale wies", "co za wieś", "co za wies"],
+                "odpowiedz": ["ale", "wieś"],
             },
             {
-                "typ": "tekst",
-                "wskazowka": {
-                    "pl": "GREETINGS FROM MOUNTAIN — jakie to polskie wyrażenie?",
-                    "en": "GREETINGS FROM MOUNTAIN — that's a literal translation. What's the Polish phrase?",
+                "typ": "ulozanka",
+                "wskazowka": {"pl": "GREETINGS FROM MOUNTAIN", "en": "GREETINGS FROM MOUNTAIN"},
+                "podpowiedz": {
+                    "pl": "Przedwczesne pozdrowienia.",
+                    "en": "Premature greetings.",
                 },
-                "odpowiedzi": ["pozdrowienia z góry", "pozdrowienia z gory"],
+                "odpowiedz": ["pozdrowienia", "z", "góry"],
             },
         ],
     },
@@ -187,7 +158,7 @@ ETAPY = [
             {"typ": "obraz", "dane": REBUS_OBRAZ_JAK},
             "❓",
         ],
-        "odpowiedz": "UZUPEŁNIJ",
+        "odpowiedz": "lampa jak skurwysyn",
     },
     {
         "klucz": "wordle",
@@ -205,17 +176,6 @@ ETAPY = [
             "en": "Play today's Wordle at nytimes.com/games/wordle and type the word you guessed. The app checks it automatically.",
         },
         "odpowiedz": "UZUPEŁNIJ",  # <- awaryjny kod ręczny, używany TYLKO gdy automatyczne pobranie zawiedzie
-    },
-    {
-        "klucz": "irl",
-        "emoji": "📍",
-        "tytul": {"pl": "📍 Wyprawa", "en": "📍 The trip"},
-        "typ": "haslo",
-        "tresc": {
-            "pl": "UZUPEŁNIJ: opisz konkretne miejsce i co ma tam znaleźć / sprawdzić.",
-            "en": "FILL IN: describe a specific place and what she needs to find / check there.",
-        },
-        "odpowiedz": "UZUPEŁNIJ",
     },
     {
         "klucz": "data",
@@ -2847,10 +2807,14 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
 .tytul {
     font-family: 'Cinzel', serif;
     text-align: center;
+    letter-spacing: 0.03em;
     background: linear-gradient(135deg, #e6c15c, #d4af37);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     animation: pojaw 0.9s ease;
+    padding-bottom: 0.7rem;
+    margin-bottom: 1.1rem;
+    border-bottom: 1px solid rgba(212,175,55,0.28);
 }
 
 @keyframes pojaw {
@@ -2911,23 +2875,57 @@ div.stButton > button {
     color: #16130a;
     border: none;
     border-radius: 30px;
-    padding: 0.55rem 1.4rem;
+    padding: 0.6rem 1.4rem;
     font-weight: 700;
-    transition: all 0.25s ease;
+    letter-spacing: 0.01em;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     width: 100%;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.35);
 }
 div.stButton > button:hover {
     transform: scale(1.02);
     box-shadow: 0 0 18px rgba(212,175,55,0.55);
+}
+div.stButton > button:active {
+    transform: scale(0.98);
 }
 div.stButton > button[kind="primary"] {
     background: linear-gradient(135deg, #4ade80, #22c55e) !important;
     color: #062e14 !important;
 }
 div.stButton > button:disabled {
-    opacity: 0.45;
-    background: #333 !important;
-    color: #999 !important;
+    opacity: 0.4;
+    background: #2a2a35 !important;
+    color: #8a8a8a !important;
+    box-shadow: none;
+}
+
+/* Kafelki nawigacji w siatce (menu etapów + kłódka na powitaniu) -
+   te same przyciski co wyzej, ale w kolumnach dostaja jezyk "medalionu
+   sejfowego", spojny z tarczami kodu na ekranie koncowym. */
+div[data-testid="stColumn"] div.stButton > button {
+    aspect-ratio: 1 / 1;
+    height: auto;
+    min-height: 3.2rem;
+    border-radius: 22%;
+    font-size: clamp(1.4rem, 7vw, 2.6rem);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(160deg, #f0dfa8, #d4af37 55%, #b8892a);
+    box-shadow:
+        inset 0 2px 3px rgba(255,255,255,0.4),
+        inset 0 -4px 7px rgba(0,0,0,0.3),
+        0 3px 10px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.18);
+}
+div[data-testid="stColumn"] div.stButton > button[kind="primary"] {
+    background: linear-gradient(160deg, #a9f0b8, #22c55e 55%, #158a3d) !important;
+}
+div[data-testid="stColumn"] div.stButton > button:disabled {
+    background: linear-gradient(160deg, #3a3a42, #26262c) !important;
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.3);
 }
 
 .stTextInput input {
@@ -2935,6 +2933,19 @@ div.stButton > button:disabled {
     border: 1px solid #d4af37 !important;
     background: #1a1a2e !important;
     color: #f5f5f0 !important;
+}
+
+[data-testid="stSelectbox"] > div > div {
+    border-radius: 12px !important;
+    border: 1px solid #d4af37 !important;
+    background: #1a1a2e !important;
+    color: #f5f5f0 !important;
+}
+
+div[data-testid="stAlert"] {
+    background: rgba(26,26,46,0.85) !important;
+    border: 1px solid rgba(212,175,55,0.4) !important;
+    border-radius: 12px !important;
 }
 
 .stProgress > div > div {
@@ -2988,7 +2999,7 @@ def rysuj_wisielca(liczba_bledow, mala=False):
     rozmiar = 70 if mala else 120
     wysokosc = int(rozmiar * 150 / 120)
     st.markdown(
-        f"<div style='text-align:center;'><svg width='{rozmiar}' height='{wysokosc}' "
+        f"<div style='text-align:center; margin:0.3rem 0;'><svg width='{rozmiar}' height='{wysokosc}' "
         f"viewBox='0 0 120 150'>{widoczne}</svg></div>",
         unsafe_allow_html=True,
     )
@@ -3006,7 +3017,7 @@ def rysuj_serca(liczba_bledow, mala=False):
         else:
             czesci.append(f"<span style='font-size:{rozmiar};'>❤️</span>")
     st.markdown(
-        f"<div style='text-align:center; letter-spacing:1px; margin-top:0.3rem;'>{''.join(czesci)}</div>",
+        f"<div style='text-align:center; letter-spacing:1px; margin:0.3rem 0 1.1rem;'>{''.join(czesci)}</div>",
         unsafe_allow_html=True,
     )
 
@@ -3122,18 +3133,22 @@ def renderuj_krzyzowka(etap_dane):
     st.markdown(tt(etap_dane.get("info", "")))
 
     placeholder = t("wybierz")
+    pula_wspolna = etap_dane.get("slowa_pula", [])
     odpowiedzi_uzytkownika = []
     for idx, pytanie in enumerate(etap_dane["pytania"]):
         st.markdown(f"**{idx + 1}.** {tt(pytanie['wskazowka'])}")
+        if pytanie.get("podpowiedz"):
+            st.caption(tt(pytanie["podpowiedz"]))
         typ_pytania = pytanie.get("typ", "tekst")
 
         if typ_pytania == "ulozanka":
+            pula = pytanie.get("slowa_pula", pula_wspolna)
             liczba_slow = len(pytanie["odpowiedz"])
             wybrane_slowa = []
             for i in range(liczba_slow):
                 wybor = st.selectbox(
                     f"{t('slowo')} {i + 1}:",
-                    [placeholder] + pytanie["slowa_pula"],
+                    [placeholder] + pula,
                     key=f"{klucz}_pyt_{idx}_slowo_{i}",
                 )
                 wybrane_slowa.append(wybor)
