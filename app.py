@@ -3827,6 +3827,7 @@ SZABLON_MINECRAFT = """
     transition: width 0.4s ease;
   }
   #obszarSwiata {
+    position: relative;
     flex: 0 0 auto;
     display: flex;
     justify-content: center;
@@ -3849,7 +3850,8 @@ SZABLON_MINECRAFT = """
   #zadanieDomu {
     display: flex;
     justify-content: center;
-    padding: 2px 8px;
+    padding: 6px 8px 10px;
+    border-top: 1px solid rgba(212,175,55,0.2);
   }
   #btnDom {
     background: linear-gradient(135deg, #7a5a2e, #5a3f1e);
@@ -3858,11 +3860,36 @@ SZABLON_MINECRAFT = """
     color: #f5f5f0;
     font-size: 12px;
     font-weight: 700;
-    padding: 7px 16px;
+    padding: 9px 16px;
     width: 100%;
     max-width: 300px;
   }
   #btnDom:active { transform: scale(0.97); }
+  #celZadania {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #e6c15c;
+    padding: 3px 8px 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  }
+  .btn-narzedzie {
+    position: absolute;
+    left: 6px;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    border: 2px solid #6b5530;
+    font-size: 16px;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+  }
+  .btn-narzedzie:active { transform: scale(0.93); }
+  .btn-narzedzie.aktywne { border-color: #fff; box-shadow: 0 0 10px rgba(230,193,92,0.7); }
+  #btnEkwipunekToggle { top: 6px; }
+  #btnRecepturyToggle { top: 44px; }
+  #btnPiecToggle { top: 82px; display: none; }
+  #btnPiecToggle.widoczny { display: block; }
   #sterowanie {
     display: flex;
     justify-content: center;
@@ -3892,15 +3919,70 @@ SZABLON_MINECRAFT = """
     height: 44px;
   }
   #ekwipunek {
-    flex: 1;
-    display: flex;
+    display: none;
+    flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 5px;
     padding: 6px 6px 10px;
-    flex-wrap: wrap;
     border-top: 1px solid rgba(212,175,55,0.2);
   }
+  #ekwipunek.widoczny { display: flex; }
+  #panelReceptur {
+    display: none;
+    padding: 8px 10px 12px;
+    border-top: 1px solid rgba(212,175,55,0.2);
+  }
+  #panelReceptur.widoczny { display: block; }
+  .karta-receptury {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(212,175,55,0.25);
+    border-radius: 10px;
+    padding: 6px 8px;
+    margin-bottom: 6px;
+  }
+  .karta-receptury .opis-receptury {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .karta-receptury .opis-receptury b { color: #e6c15c; }
+  .btn-wytworz {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    border: none;
+    border-radius: 8px;
+    color: #16130a;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 6px 10px;
+    white-space: nowrap;
+  }
+  .btn-wytworz:disabled { opacity: 0.35; }
+  #panelPieca {
+    display: none;
+    padding: 10px 12px 12px;
+    border-top: 1px solid rgba(212,175,55,0.2);
+    text-align: center;
+  }
+  #panelPieca.widoczny { display: block; }
+  #panelPieca .stan-pieca {
+    font-size: 12px;
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+  #btnPrzetop {
+    background: linear-gradient(135deg, #e67e3c, #c9502f);
+    border: none;
+    border-radius: 10px;
+    color: #fff3e0;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 9px 18px;
+  }
+  #btnPrzetop:disabled { opacity: 0.35; }
   .slot-bloku {
     position: relative;
     width: 40px; height: 40px;
@@ -3957,7 +4039,11 @@ SZABLON_MINECRAFT = """
       <span>🍗</span>
       <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
     </div>
+    <div id="celZadania">🎯 Cel: zbuduj dom</div>
     <div id="obszarSwiata">
+      <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
+      <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
+      <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       <canvas id="canvasSwiat" width="338" height="286"></canvas>
     </div>
     <div id="dziennikMc"></div>
@@ -3966,13 +4052,15 @@ SZABLON_MINECRAFT = """
       <button id="btnNowySwiat">🔄 Nowy świat</button>
       <button class="btn-ruch" id="btnPrawo">➡️</button>
     </div>
+    <div id="ekwipunek"></div>
+    <div id="panelReceptur"></div>
+    <div id="panelPieca"></div>
     <div id="zadanieDomu">
       <button id="btnDom">🏠 Zbuduj dom i sprawdź</button>
     </div>
-    <div id="ekwipunek"></div>
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
-      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok z paska na dole. Dotknij zwierzaka, żeby zdobyć jedzenie. Buduj, kop, baw się — bez presji, żadnego "wygrania".</p>
+      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień, węgiel i złoto wymagają kilofa — zrób go w recepturach (📖) z patyków i drewna. Piach da się przetopić na szyby w piecu (🔥), gdy jesteś blisko niego. Buduj, kop, baw się — bez presji, żadnego "wygrania".</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
   </div>
@@ -3983,6 +4071,11 @@ SZABLON_MINECRAFT = """
   var ctx = canvas.getContext('2d');
   var dziennikMc = document.getElementById('dziennikMc');
   var ekwipunekEl = document.getElementById('ekwipunek');
+  var panelReceptur = document.getElementById('panelReceptur');
+  var panelPieca = document.getElementById('panelPieca');
+  var btnEkwipunekToggle = document.getElementById('btnEkwipunekToggle');
+  var btnRecepturyToggle = document.getElementById('btnRecepturyToggle');
+  var btnPiecToggle = document.getElementById('btnPiecToggle');
   var btnLewo = document.getElementById('btnLewo');
   var btnPrawo = document.getElementById('btnPrawo');
   var btnNowySwiat = document.getElementById('btnNowySwiat');
@@ -4033,13 +4126,29 @@ SZABLON_MINECRAFT = """
   var KOLORY_BLOKOW = {
     trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
     drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
-    zloto: '#e6c15c', podloze: '#403f45',
+    zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
+    schodki: '#9c6a35', szyby: '#bfe6f0', piec: '#4a4a4a',
   };
   var NAZWY_BLOKOW = {
     trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
-    liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto',
+    liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto', piach: 'Piach',
+    schodki: 'Schodki', szyby: 'Szyby', piec: 'Piec',
+    patyk: 'Patyk', kilof: 'Kilof',
   };
-  var KOLEJNOSC_EKWIPUNKU = ['ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto'];
+  // Bloki, ktore mozna STAWIAC (patyk i kilof to skladniki/narzedzie, nie bloki)
+  var KOLEJNOSC_EKWIPUNKU = [
+    'ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
+    'piach', 'schodki', 'szyby', 'piec',
+  ];
+  // Bloki wymagajace kilofa do wykopania
+  var WYMAGA_KILOFA = { kamien: true, wegiel: true, zloto: true };
+
+  var RECEPTURY = [
+    { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 } },
+    { id: 'kilof', wyjscie: 'kilof', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 } },
+    { id: 'schodki', wyjscie: 'schodki', ileWyjscia: 4, skladniki: { drewno: 1 } },
+    { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
+  ];
 
   var world = [];
   var ekwipunek = {};
@@ -4084,6 +4193,21 @@ SZABLON_MINECRAFT = """
       }
     }
 
+    // piach - kilka losowych "plaz" (2-4 kolumny), zamiast trawy/wierzchniej
+    // ziemi w tych miejscach
+    var liczbaPlaz = 2 + Math.floor(Math.random() * 2);
+    for (var p = 0; p < liczbaPlaz; p++) {
+      var srodekX = Math.floor(losowo(4, SZEROKOSC_SWIATA - 4));
+      var szerokoscPlazy = 2 + Math.floor(Math.random() * 3);
+      for (var dx = -szerokoscPlazy; dx <= szerokoscPlazy; dx++) {
+        var px = srodekX + dx;
+        if (px < 0 || px >= SZEROKOSC_SWIATA) continue;
+        var pow2 = wysokoscPow[px];
+        world[px][pow2] = 'piach';
+        if (pow2 + 1 < WYSOKOSC_SWIATA) world[px][pow2 + 1] = 'piach';
+      }
+    }
+
     // drzewa
     for (var x = 2; x < SZEROKOSC_SWIATA - 2; x++) {
       if (world[x][wysokoscPow[x]] === 'trawa' && Math.random() < 0.14) {
@@ -4093,9 +4217,9 @@ SZABLON_MINECRAFT = """
           if (podstawa - i >= 0) world[x][podstawa - i] = 'drewno';
         }
         var topY = podstawa - wysDrzewa;
-        for (var dx = -1; dx <= 1; dx++) {
+        for (var dx2 = -1; dx2 <= 1; dx2++) {
           for (var dy = -2; dy <= 0; dy++) {
-            var lx = x + dx, ly = topY + dy;
+            var lx = x + dx2, ly = topY + dy;
             if (lx >= 0 && lx < SZEROKOSC_SWIATA && ly >= 0 && world[lx][ly] === 'powietrze') {
               world[lx][ly] = 'liscie';
             }
@@ -4155,6 +4279,7 @@ SZABLON_MINECRAFT = """
       return;
     }
     zastosujGrawitacje();
+    odswiezPiecWZasiegu();
     rysuj();
   }
 
@@ -4200,6 +4325,100 @@ SZABLON_MINECRAFT = """
       : 'linear-gradient(90deg, #e6a23c, #f0c869)';
   }
 
+  // ---------- RECEPTURY (crafting) ----------
+  function opisSkladnikow(skladniki) {
+    return Object.keys(skladniki).map(function (k) {
+      return skladniki[k] + '× ' + NAZWY_BLOKOW[k];
+    }).join(' + ');
+  }
+
+  function maSkladniki(skladniki) {
+    return Object.keys(skladniki).every(function (k) {
+      return (ekwipunek[k] || 0) >= skladniki[k];
+    });
+  }
+
+  function wytworz(przepis) {
+    if (!maSkladniki(przepis.skladniki)) return;
+    Object.keys(przepis.skladniki).forEach(function (k) {
+      ekwipunek[k] -= przepis.skladniki[k];
+    });
+    ekwipunek[przepis.wyjscie] = (ekwipunek[przepis.wyjscie] || 0) + przepis.ileWyjscia;
+    odswiezEkwipunek();
+    odswiezPanelReceptur();
+    pokazDziennikMc('🔨 Wytworzono: ' + przepis.ileWyjscia + '× ' + NAZWY_BLOKOW[przepis.wyjscie], 1600);
+    zagrajTon(420, 0.08, 'square');
+    setTimeout(function () { zagrajTon(560, 0.1, 'square'); }, 90);
+  }
+
+  function odswiezPanelReceptur() {
+    panelReceptur.innerHTML = '';
+    RECEPTURY.forEach(function (przepis) {
+      var karta = document.createElement('div');
+      karta.className = 'karta-receptury';
+      var opis = document.createElement('div');
+      opis.className = 'opis-receptury';
+      opis.innerHTML = opisSkladnikow(przepis.skladniki) + ' → <b>' +
+        przepis.ileWyjscia + '× ' + NAZWY_BLOKOW[przepis.wyjscie] + '</b>';
+      karta.appendChild(opis);
+      var btn = document.createElement('button');
+      btn.className = 'btn-wytworz';
+      btn.textContent = 'Wytwórz';
+      btn.disabled = !maSkladniki(przepis.skladniki);
+      btn.addEventListener('click', function () { wytworz(przepis); });
+      karta.appendChild(btn);
+      panelReceptur.appendChild(karta);
+    });
+  }
+
+  // ---------- PIEC (smelting piachu na szyby) ----------
+  function odswiezPiecWZasiegu() {
+    var znaleziono = false;
+    for (var x = graczX - ZASIEG; x <= graczX + ZASIEG && !znaleziono; x++) {
+      for (var y = graczY - ZASIEG; y <= graczY + ZASIEG; y++) {
+        if (x >= 0 && x < SZEROKOSC_SWIATA && y >= 0 && y < WYSOKOSC_SWIATA && world[x] && world[x][y] === 'piec') {
+          znaleziono = true;
+          break;
+        }
+      }
+    }
+    btnPiecToggle.classList.toggle('widoczny', znaleziono);
+    if (!znaleziono && panelPieca.classList.contains('widoczny')) {
+      panelPieca.classList.remove('widoczny');
+      btnPiecToggle.classList.remove('aktywne');
+    }
+  }
+
+  function przetopPiach() {
+    var maPaliwo = (ekwipunek.wegiel || 0) > 0 || (ekwipunek.drewno || 0) > 0;
+    if ((ekwipunek.piach || 0) <= 0 || !maPaliwo) return;
+    ekwipunek.piach--;
+    if ((ekwipunek.wegiel || 0) > 0) {
+      ekwipunek.wegiel--;
+    } else {
+      ekwipunek.drewno--;
+    }
+    ekwipunek.szyby = (ekwipunek.szyby || 0) + 1;
+    odswiezEkwipunek();
+    odswiezPanelPieca();
+    pokazDziennikMc('🔥 Piach zamienia się w szkło!', 1600);
+    zagrajTon(300, 0.1, 'sawtooth');
+    setTimeout(function () { zagrajTon(700, 0.12, 'triangle'); }, 130);
+  }
+
+  function odswiezPanelPieca() {
+    var piach = ekwipunek.piach || 0;
+    var wegiel = ekwipunek.wegiel || 0;
+    var drewno = ekwipunek.drewno || 0;
+    var mozna = piach > 0 && (wegiel > 0 || drewno > 0);
+    panelPieca.innerHTML =
+      '<div class="stan-pieca">🏖️ Piach: ' + piach +
+      '<br>🪨 Węgiel: ' + wegiel + ' &nbsp; 🪵 Drewno (jako paliwo): ' + drewno + '</div>' +
+      '<button id="btnPrzetop"' + (mozna ? '' : ' disabled') + '>🔥 Przetop (1 piach + 1 paliwo → 1 szyby)</button>';
+    var btn = document.getElementById('btnPrzetop');
+    if (btn) btn.addEventListener('click', przetopPiach);
+  }
+
   // ---------- RYSOWANIE ----------
   function rysujTeksture(x, y, blok) {
     var kolor = KOLORY_BLOKOW[blok];
@@ -4223,6 +4442,21 @@ SZABLON_MINECRAFT = """
       ctx.strokeStyle = 'rgba(0,0,0,0.25)';
       ctx.beginPath(); ctx.moveTo(x + 6, y); ctx.lineTo(x + 6, y + KOMORKA); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x + 19, y); ctx.lineTo(x + 19, y + KOMORKA); ctx.stroke();
+    } else if (blok === 'schodki') {
+      ctx.fillStyle = 'rgba(0,0,0,0.28)';
+      ctx.fillRect(x + KOMORKA / 2, y, KOMORKA / 2, KOMORKA / 2);
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.strokeRect(x + KOMORKA / 2 + 0.5, y + 0.5, KOMORKA / 2 - 1, KOMORKA / 2 - 1);
+    } else if (blok === 'szyby') {
+      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + KOMORKA - 2, y + KOMORKA - 2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + KOMORKA - 2, y + 2); ctx.lineTo(x + 2, y + KOMORKA - 2); ctx.stroke();
+    } else if (blok === 'piec') {
+      ctx.fillStyle = '#e67e3c';
+      ctx.fillRect(x + 8, y + 14, KOMORKA - 16, 9);
+      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctx.strokeRect(x + 8.5, y + 14.5, KOMORKA - 17, 8);
     }
   }
 
@@ -4358,11 +4592,17 @@ SZABLON_MINECRAFT = """
       return;
     }
     if (blok !== 'powietrze') {
+      if (WYMAGA_KILOFA[blok] && (ekwipunek.kilof || 0) <= 0) {
+        pokazDziennikMc('⛏️ Potrzebujesz kilofa, żeby to kopać! Zrób go w recepturach.', 2000);
+        dzwiekBlokada();
+        return;
+      }
       world[wx][wy] = 'powietrze';
       dodajDoEkwipunku(blok, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania();
       zastosujGrawitacje();
+      odswiezPiecWZasiegu();
       rysuj();
     } else {
       if (wx === graczX && wy === graczY) return;
@@ -4376,6 +4616,7 @@ SZABLON_MINECRAFT = """
       odswiezEkwipunek();
       pokazDziennikMc('🧱 Postawiono: ' + NAZWY_BLOKOW[wybranyBlok], 1000);
       dzwiekStawiania();
+      odswiezPiecWZasiegu();
       rysuj();
     }
   }
@@ -4424,6 +4665,43 @@ SZABLON_MINECRAFT = """
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
     wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  // ---------- PANELE: EKWIPUNEK / RECEPTURY / PIEC (przelacznik, jeden na raz) ----------
+  function schowajWszystkiePanele() {
+    ekwipunekEl.classList.remove('widoczny');
+    panelReceptur.classList.remove('widoczny');
+    panelPieca.classList.remove('widoczny');
+    btnEkwipunekToggle.classList.remove('aktywne');
+    btnRecepturyToggle.classList.remove('aktywne');
+    btnPiecToggle.classList.remove('aktywne');
+  }
+  btnEkwipunekToggle.addEventListener('click', function () {
+    var otwarty = ekwipunekEl.classList.contains('widoczny');
+    schowajWszystkiePanele();
+    if (!otwarty) {
+      ekwipunekEl.classList.add('widoczny');
+      btnEkwipunekToggle.classList.add('aktywne');
+    }
+  });
+  btnRecepturyToggle.addEventListener('click', function () {
+    var otwarty = panelReceptur.classList.contains('widoczny');
+    schowajWszystkiePanele();
+    if (!otwarty) {
+      odswiezPanelReceptur();
+      panelReceptur.classList.add('widoczny');
+      btnRecepturyToggle.classList.add('aktywne');
+    }
+  });
+  btnPiecToggle.addEventListener('click', function () {
+    if (!btnPiecToggle.classList.contains('widoczny')) return;
+    var otwarty = panelPieca.classList.contains('widoczny');
+    schowajWszystkiePanele();
+    if (!otwarty) {
+      odswiezPanelPieca();
+      panelPieca.classList.add('widoczny');
+      btnPiecToggle.classList.add('aktywne');
+    }
   });
 
   // ---------- GŁÓD (czysto smakowy - bez kary, tylko zabawne komunikaty) ----------
@@ -4481,6 +4759,8 @@ SZABLON_MINECRAFT = """
     generujSwiat();
     odswiezEkwipunek();
     aktualizujPasekGlodu();
+    odswiezPiecWZasiegu();
+    schowajWszystkiePanele();
     rysuj();
   }
 
@@ -5213,11 +5493,15 @@ def pokaz_przycisk_resetu():
             st.rerun()
     else:
         st.warning(t("reset_ostrzezenie"))
-        if st.button(t("reset_potwierdz"), key="reset_confirm"):
-            if os.path.exists(PLIK_STANU):
-                os.remove(PLIK_STANU)
-            st.session_state.clear()
-            st.rerun()
+        st.markdown(
+            f"<a href='?resetuj=tak' target='_self' style='display:block; "
+            f"text-align:center; text-decoration:none; "
+            f"background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; "
+            f"padding:0.6rem 1.4rem; border-radius:30px; font-weight:700; "
+            f"letter-spacing:0.01em; box-shadow:0 3px 10px rgba(0,0,0,0.35); "
+            f"margin-bottom:0.5rem;'>{t('reset_potwierdz')}</a>",
+            unsafe_allow_html=True,
+        )
         if st.button(t("reset_anuluj"), key="reset_cancel"):
             st.session_state.potwierdz_reset = False
             st.rerun()
