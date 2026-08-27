@@ -67,6 +67,7 @@ ZDJECIA_GALERIA = [
     ZDJECIE_AUTO, ZDJECIE_SMIECH, ZDJECIE_OKTOBERFEST,
 ]
 
+REBUS_OBRAZ_TUSK = "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"
 REBUS_OBRAZ_LAMPA = "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"
 REBUS_OBRAZ_JAK = "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"
 
@@ -95,8 +96,8 @@ ETAPY = [
     },
     {
         "klucz": "krzyzowka",
-        "emoji": "🧩",
-        "tytul": {"pl": "🧩 Krzyżówka", "en": "🧩 Crossword"},
+        "emoji": "🇬🇧",
+        "tytul": {"pl": "🇬🇧 Krzyżówka", "en": "🇬🇧 Crossword"},
         "typ": "krzyzowka",
         "info": {
             "pl": "Cztery polskie wyrażenia — ułóż z angielskich słów poniżej ich dosłowne (i trochę bez sensu) tłumaczenie.",
@@ -147,28 +148,24 @@ ETAPY = [
     },
     {
         "klucz": "rebus",
-        "emoji": "🖼️",
-        "tytul": {"pl": "🖼️ Rebus", "en": "🖼️ Rebus"},
+        "emoji": "🆁",
+        "tytul": {"pl": "🆁 Rebus", "en": "🆁 Rebus"},
         "typ": "rebus",
         "info": {
             "pl": "Każdy obrazek to jedno słowo — po brzmieniu, nie po znaczeniu. Złóż je w całe hasło.",
             "en": "Each picture stands for one word — by how it sounds, not what it means. Put them together.",
         },
-        # Twoje zdjecia (lampa + "jak") juz tu sa. Trzeci element zostawiam
-        # jako emoji-placeholder — wizerunku Tuska nie uzyje w tej roli (patrz
-        # wiadomosc), ale mozesz tu wstawic co innego (inne zdjecie tym samym
-        # sposobem co ponizsze dwa, albo zwykle emoji) i dopasowac "odpowiedz".
         "elementy": [
             {"typ": "obraz", "dane": REBUS_OBRAZ_LAMPA},
             {"typ": "obraz", "dane": REBUS_OBRAZ_JAK},
-            "❓",
+            {"typ": "obraz", "dane": REBUS_OBRAZ_TUSK},
         ],
-        "odpowiedz": "lampa jak skurwysyn",
+        "odpowiedz": "lampa jak tusk",
     },
     {
         "klucz": "wordle",
-        "emoji": "🟩",
-        "tytul": {"pl": "🟩 Wordle dnia", "en": "🟩 Today's Wordle"},
+        "emoji": "🆆",
+        "tytul": {"pl": "🆆 Wordle dnia", "en": "🆆 Today's Wordle"},
         "typ": "wordle",
         # Aplikacja SAMA pobiera dzisiejsze słowo z (angielskiego) NYT Wordle —
         # nie musisz nic wpisywać. Nie znalazłem podobnie niezawodnego,
@@ -201,31 +198,38 @@ ETAPY = [
         "typ": "szachy",
         "tresc": {
             "pl": (
-                "Białe zaczynają. Znajdź 3 posunięcia białych, z których "
-                "każde wymusza jedyną możliwą odpowiedź, a trzecie to mat."
+                "Mat Beniowskiego. Białe zaczynają. Znajdź 5 posunięć "
+                "białych, z których każde wymusza jedyną możliwą "
+                "odpowiedź, a piąte to mat."
             ),
             "en": (
-                "White to move. Find White's 3 moves, each forcing the "
-                "only possible reply, with the third being checkmate."
+                "Beniowski's mate. White to move. Find White's 5 moves, "
+                "each forcing the only possible reply, with the fifth "
+                "being checkmate."
             ),
         },
-        # Pozycja w PELNI zweryfikowana wlasnym silnikiem (nie na pamiec):
-        # legalnosc kazdego ruchu, jednoznacznosc kazdej odpowiedzi czarnych,
-        # mat na koncu, ORAZ brak szybszego matu w 1 lub 2 posunieciach.
-        # Piony e4/g4/e5/g5 to czysto dekoracyjne, w pelni zablokowane
-        # wypelnienie planszy - nie maja zadnego wplywu na przebieg.
-        # 1. Kc6+  (jedyna odpowiedz: Kb8)
-        # 2. Qa2   (jedyna odpowiedz: Kc8)
-        # 3. Qa8#  (mat)
+        # Mat Beniowskiego - pozycja od uzytkownika (FEN:
+        # rr4k1/6pp/2Q5/3KN3/8/q7/8/8), z JEDNA dodana figura: biale
+        # goniec c5. Bez niego 1.He6+ NIE wymuszalo Kh8 (Kf8 tez byloby
+        # legalne) - goniec pilnuje pola f8 po przekatnej a3-f8 i przez
+        # cala kombinacje ani razu sie nie rusza.
+        #
+        # W PELNI zweryfikowane wlasnym silnikiem, KAZDY z 5 krokow:
+        # 1. Qe6+  (jedyna odpowiedz: Kh8)
+        # 2. Nf7+  (jedyna odpowiedz: Kg8)
+        # 3. Nh6+  (jedyna odpowiedz: Kh8)
+        # 4. Qg8+  (poswiecenie hetmana; jedyna odpowiedz: Rxg8)
+        # 5. Nf7#  (mat - zero legalnych ruchow czarnych)
         "figury": {
-            "d5": "K", "a1": "Q", "e4": "P", "g4": "P",
-            "a8": "k", "e5": "p", "g5": "p",
+            "d5": "K", "c6": "Q", "e5": "N", "c5": "B",
+            "g8": "k", "a8": "r", "b8": "r", "a3": "q",
+            "g7": "p", "h7": "p",
         },
         "format_info": {
-            "pl": "Zapisz same ruchy białych, oddzielone spacjami, np. Kc6 Qa2 Qa8",
-            "en": "Write only White's moves, separated by spaces, e.g. Kc6 Qa2 Qa8",
+            "pl": "Zapisz same ruchy białych, oddzielone spacjami, np. Qe6 Nf7 Nh6 Qg8 Nf7",
+            "en": "Write only White's moves, separated by spaces, e.g. Qe6 Nf7 Nh6 Qg8 Nf7",
         },
-        "odpowiedz": ["kc6", "qa2", "qa8"],
+        "odpowiedz": ["qe6", "nf7", "nh6", "qg8", "nf7"],
     },
     {
         "klucz": "dron",
@@ -247,8 +251,8 @@ ETAPY = [
     },
     {
         "klucz": "simon",
-        "emoji": "🎵",
-        "tytul": {"pl": "🎵 Simon", "en": "🎵 Simon"},
+        "emoji": "🎨",
+        "tytul": {"pl": "🎨 Simon", "en": "🎨 Simon"},
         "typ": "simon",
     },
     {
@@ -398,6 +402,18 @@ ETAPY = [
             },
         ],
     },
+    {
+        "klucz": "bitwa",
+        "emoji": "⚔️",
+        "tytul": {"pl": "⚔️ Bitwa", "en": "⚔️ Battle"},
+        "typ": "bitwa",
+    },
+    {
+        "klucz": "minecraft",
+        "emoji": "⛏️",
+        "tytul": {"pl": "⛏️ Prosty Minecraft", "en": "⛏️ Simple Minecraft"},
+        "typ": "minecraft",
+    },
 ]
 
 PLIK_STANU = "stan_gry.json"
@@ -436,6 +452,10 @@ TEKST = {
         "przegrana_tytul": "Koniec gry",
         "przegrana_wiadomosc": "Pozdro, poćwicz 😏\n\nWisielec dobił do końca — wszystko zaczynasz od nowa.",
         "zacznij_od_nowa": "Zacznij od nowa",
+        "reset_btn": "🔄 Resetuj wszystko",
+        "reset_ostrzezenie": "⚠️ To usunie CAŁY postęp (wszystkie rozwiązane etapy) i nie da się tego cofnąć. Na pewno?",
+        "reset_potwierdz": "Tak, resetuj wszystko",
+        "reset_anuluj": "Anuluj",
         "kod_do_sejfu": "Kod do sejfu:",
         "ukonczone_w": "Ukończone w",
         "min": "min",
@@ -469,6 +489,10 @@ TEKST = {
         "przegrana_tytul": "Game over",
         "przegrana_wiadomosc": "Nice try, go practice 😏\n\nThe hangman is complete — everything starts over.",
         "zacznij_od_nowa": "Start over",
+        "reset_btn": "🔄 Reset everything",
+        "reset_ostrzezenie": "⚠️ This deletes ALL progress (every solved stage) and can't be undone. Are you sure?",
+        "reset_potwierdz": "Yes, reset everything",
+        "reset_anuluj": "Cancel",
         "kod_do_sejfu": "Safe code:",
         "ukonczone_w": "Completed in",
         "min": "min",
@@ -2801,6 +2825,1680 @@ SZABLON_PIANO = """
 </html>
 """
 
+SZABLON_BITWA = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    color: #f5f5f0;
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 15px;
+    padding: 2px 9px;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+    display: flex;
+    flex-direction: column;
+  }
+  #poziomEtykieta {
+    text-align: center;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    opacity: 0.75;
+    padding: 3px 0 0;
+  }
+  #wrogowie {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 4px 2px;
+    flex-wrap: wrap;
+  }
+  .karta-wroga {
+    background: rgba(255,255,255,0.04);
+    border: 2px solid #5a4a2e;
+    border-radius: 10px;
+    padding: 4px 5px 5px;
+    text-align: center;
+    width: 84px;
+    transition: border-color 0.2s, transform 0.15s;
+  }
+  .karta-wroga.cel-mozliwy {
+    border-color: #e6c15c;
+    cursor: pointer;
+  }
+  .karta-wroga {
+    transition: opacity 0.5s ease, filter 0.5s ease;
+  }
+  .karta-wroga.padl { opacity: 0.22; filter: grayscale(1); }
+  .karta-wroga canvas { display: block; margin: 0 auto; image-rendering: pixelated; }
+  .nazwa-wroga { font-size: 10px; font-weight: 700; margin-top: 2px; line-height: 1.15; min-height: 22px; }
+  .znaczniki-wroga { display: flex; justify-content: center; gap: 3px; font-size: 11px; margin: 2px 0; }
+  .pasek-hp-tlo {
+    background: #2a1010;
+    border-radius: 6px;
+    height: 7px;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.4);
+  }
+  .pasek-hp-wypelnienie {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f87171);
+    transition: width 0.35s ease;
+  }
+
+  @keyframes bujanie {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
+  }
+  #canvasGracza, .karta-wroga canvas {
+    animation: bujanie 2.6s ease-in-out infinite;
+  }
+  .karta-wroga.padl canvas { animation: none; }
+
+  @keyframes trafienieMigniecie {
+    0% { filter: brightness(1) saturate(1); }
+    30% { filter: brightness(2.8) saturate(0.2); }
+    100% { filter: brightness(1) saturate(1); }
+  }
+  .migniecie canvas { animation: trafienieMigniecie 0.35s ease !important; }
+
+  @keyframes wstrzas {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-5px); }
+    40% { transform: translateX(4px); }
+    60% { transform: translateX(-3px); }
+    80% { transform: translateX(2px); }
+  }
+  .wstrzas { animation: wstrzas 0.35s ease; }
+
+  .tekst-obrazen {
+    position: absolute;
+    font-weight: 800;
+    font-size: 15px;
+    font-family: 'Poppins', sans-serif;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9), 0 0 8px currentColor;
+    pointer-events: none;
+    z-index: 8;
+    animation: unosOb 0.9s ease-out forwards;
+    white-space: nowrap;
+  }
+  @keyframes unosOb {
+    0% { transform: translateY(0) scale(0.7); opacity: 0; }
+    15% { transform: translateY(-6px) scale(1.2); opacity: 1; }
+    100% { transform: translateY(-40px) scale(1); opacity: 0; }
+  }
+
+  .czastka {
+    position: absolute;
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 7;
+    animation: czastkaLot 0.6s ease-out forwards;
+  }
+  @keyframes czastkaLot {
+    0% { transform: translate(0,0) scale(1); opacity: 1; }
+    100% { transform: translate(var(--dx), var(--dy)) scale(0.15); opacity: 0; }
+  }
+
+  #srodekAreny {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 90px;
+    background:
+      radial-gradient(ellipse 70px 30px at 27% 88%, rgba(230,193,92,0.14), transparent 70%),
+      radial-gradient(ellipse 90px 35px at 76% 88%, rgba(230,193,92,0.14), transparent 70%),
+      linear-gradient(180deg, transparent 0%, transparent 55%, rgba(90,74,46,0.28) 100%);
+    border-top: 1px solid rgba(212,175,55,0.14);
+    border-bottom: 1px solid rgba(212,175,55,0.14);
+  }
+  #dziennik {
+    position: absolute;
+    top: 6px; left: 8px; right: 8px;
+    text-align: center;
+    font-size: 12px;
+    color: #e6c15c;
+    min-height: 16px;
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+  #graczOtoczenie {
+    text-align: center;
+  }
+  #graczOtoczenie canvas { image-rendering: pixelated; }
+  #paskiGracza {
+    width: 130px;
+    margin: 4px auto 0;
+  }
+  .etykieta-hp { font-size: 10px; opacity: 0.8; text-align: center; margin-top: 1px; }
+  #panelAkcji {
+    padding: 6px 8px 10px;
+    border-top: 1px solid rgba(212,175,55,0.25);
+  }
+  #podpowiedzTury {
+    text-align: center;
+    font-size: 12px;
+    opacity: 0.8;
+    margin-bottom: 6px;
+    min-height: 15px;
+  }
+  .siatka-akcji {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .btn-akcji {
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 1px solid #5a4a2e;
+    border-radius: 10px;
+    color: #f5f5f0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 8px 2px;
+    line-height: 1.3;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  }
+  .btn-akcji .duza-ikona { font-size: 18px; display: block; margin-bottom: 2px; }
+  .btn-akcji:disabled { opacity: 0.3; }
+  .btn-akcji:active:not(:disabled) { transform: scale(0.94); }
+  .btn-akcji.aktywny {
+    border-color: #e6c15c;
+    background: linear-gradient(135deg, #5a4a2e, #3a3020);
+    box-shadow: 0 0 12px rgba(230,193,92,0.55);
+  }
+  #nakladka {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(13,13,13,0.96);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 22px;
+  }
+  #nakladka h2 { font-size: 21px; margin: 0 0 8px; color: #e6c15c; }
+  #nakladka p { margin: 0 0 6px; font-size: 13px; opacity: 0.85; max-width: 280px; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none; padding: 10px 24px; border-radius: 30px;
+    font-weight: 700; color: #1a1a1a; cursor: pointer; font-size: 14px; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span>⚔️ Bitwa</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="poziomEtykieta">POZIOM 1 / 3</div>
+    <div id="wrogowie"></div>
+    <div id="srodekAreny">
+      <div id="dziennik"></div>
+      <div id="graczOtoczenie">
+        <canvas id="canvasGracza" width="72" height="88"></canvas>
+        <div id="paskiGracza">
+          <div class="pasek-hp-tlo"><div class="pasek-hp-wypelnienie" id="hpGraczaPasek" style="background:linear-gradient(90deg,#4ade80,#22c55e);"></div></div>
+          <div class="etykieta-hp" id="hpGraczaTekst">30 / 30</div>
+        </div>
+      </div>
+    </div>
+    <div id="panelAkcji">
+      <div id="podpowiedzTury">Wybierz pierwszą akcję</div>
+      <div class="siatka-akcji" id="siatkaAkcji"></div>
+    </div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Bitwa</h2>
+      <p id="nakladkaOpis">Ogień pokonuje się lodem, lód ogniem. Tarcze blokują strzały — użyj miecza. Włócznicy kontratakują miecz — użyj łuku. Łucznicy cofają się — użyj łuku albo podejdź dwa razy.</p>
+      <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var wrogowieEl = document.getElementById('wrogowie');
+  var canvasGracza = document.getElementById('canvasGracza');
+  var graczOtoczenie = document.getElementById('graczOtoczenie');
+  var ctxGracza = canvasGracza.getContext('2d');
+  var hpGraczaPasek = document.getElementById('hpGraczaPasek');
+  var hpGraczaTekst = document.getElementById('hpGraczaTekst');
+  var dziennik = document.getElementById('dziennik');
+  var podpowiedzTury = document.getElementById('podpowiedzTury');
+  var siatkaAkcji = document.getElementById('siatkaAkcji');
+  var poziomEtykieta = document.getElementById('poziomEtykieta');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  var wyciszone = false;
+  var audioCtx = null;
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { audioCtx = null; }
+  }
+  function zagrajTon(f, czas, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czas);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czas);
+    } catch (e) {}
+  }
+  function dzwiekTrafienia() { zagrajTon(180, 0.12, 'sawtooth'); }
+  function dzwiekNieskuteczne() { zagrajTon(300, 0.08, 'square'); setTimeout(function(){zagrajTon(220,0.08,'square');}, 90); }
+  function dzwiekBlok() { zagrajTon(140, 0.15, 'triangle'); }
+  function dzwiekZgon() { zagrajTon(110, 0.3, 'sawtooth'); }
+  function dzwiekZwyciestwo() {
+    [523, 659, 784, 1046].forEach(function(f, i) {
+      setTimeout(function () { zagrajTon(f, 0.2, 'triangle'); }, i * 130);
+    });
+  }
+  function dzwiekPorazka() {
+    [300, 260, 220, 160].forEach(function(f, i) {
+      setTimeout(function () { zagrajTon(f, 0.25, 'sawtooth'); }, i * 140);
+    });
+  }
+
+  // ---------- RYSOWANIE POSTACI (blokowy styl pikselowy, na canvas) ----------
+  function prostokat(ctx, x, y, w, h, kolor) {
+    ctx.fillStyle = kolor;
+    ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+
+  function prostokatGradient(ctx, x, y, w, h, kolorGora, kolorDol) {
+    var grad = ctx.createLinearGradient(0, y, 0, y + h);
+    grad.addColorStop(0, kolorGora);
+    grad.addColorStop(1, kolorDol);
+    ctx.fillStyle = grad;
+    ctx.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h));
+  }
+
+  function rysujGracza(ctx, w, h) {
+    ctx.clearRect(0, 0, w, h);
+    var cx = w / 2;
+    // cien
+    prostokat(ctx, cx - 16, h - 8, 32, 6, 'rgba(0,0,0,0.35)');
+    // nogi
+    prostokatGradient(ctx, cx - 10, h - 30, 8, 22, '#4a3a28', '#2a2016');
+    prostokatGradient(ctx, cx + 2, h - 30, 8, 22, '#4a3a28', '#2a2016');
+    // tors (zbroja) - gradient dla glebi
+    prostokatGradient(ctx, cx - 14, h - 58, 28, 30, '#9797ae', '#4f4f62');
+    prostokat(ctx, cx - 14, h - 58, 28, 6, '#c4c4d8');
+    // polysk na torsie (swiatlo z gory-lewej)
+    prostokat(ctx, cx - 12, h - 54, 3, 22, 'rgba(255,255,255,0.22)');
+    // pas zloty
+    prostokatGradient(ctx, cx - 14, h - 34, 28, 5, '#f0dfa8', '#b8892a');
+    // ramiona
+    prostokatGradient(ctx, cx - 20, h - 56, 7, 18, '#6c6c82', '#404050');
+    prostokatGradient(ctx, cx + 13, h - 56, 7, 18, '#6c6c82', '#404050');
+    // tarcza na plecach (lewa strona)
+    ctx.beginPath();
+    ctx.ellipse(cx - 23, h - 46, 6, 9, 0, 0, Math.PI * 2);
+    var gradTarcza = ctx.createRadialGradient(cx - 25, h - 49, 1, cx - 23, h - 46, 9);
+    gradTarcza.addColorStop(0, '#a9723f');
+    gradTarcza.addColorStop(1, '#7a4f22');
+    ctx.fillStyle = gradTarcza;
+    ctx.fill();
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // luk na plecach (prawa strona)
+    ctx.beginPath();
+    ctx.arc(cx + 24, h - 46, 10, Math.PI * 0.35, Math.PI * 1.65);
+    ctx.strokeStyle = '#8b5a2b';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    // glowa
+    prostokatGradient(ctx, cx - 9, h - 76, 18, 18, '#f6d6ae', '#e0b585');
+    // helm
+    prostokatGradient(ctx, cx - 10, h - 80, 20, 8, '#a8a8bc', '#71718a');
+    prostokat(ctx, cx - 10, h - 80, 20, 3, '#e6c15c');
+    // oczy
+    prostokat(ctx, cx - 5, h - 68, 3, 3, '#2b2b2b');
+    prostokat(ctx, cx + 2, h - 68, 3, 3, '#2b2b2b');
+    // rumience (odrobina zycia na twarzy)
+    prostokat(ctx, cx - 8, h - 64, 3, 2, 'rgba(230,120,110,0.35)');
+    prostokat(ctx, cx + 5, h - 64, 3, 2, 'rgba(230,120,110,0.35)');
+    // miecz w prawej dloni
+    ctx.save();
+    ctx.translate(cx + 18, h - 44);
+    ctx.rotate(-0.35);
+    prostokatGradient(ctx, -2, -26, 4, 26, '#f0f0f8', '#a8a8ba');
+    prostokat(ctx, -5, -2, 10, 5, '#d4af37');
+    prostokat(ctx, -2, 3, 4, 8, '#5a3d20');
+    ctx.restore();
+  }
+
+  var TYP_PALETA = {
+    ogien: { glowny: '#c94f4f', jasny: '#ff8c42', ciemny: '#7a2e2e' },
+    lod:   { glowny: '#4f8fc9', jasny: '#8fd4ff', ciemny: '#2e5a7a' },
+  };
+
+  function rysujWroga(ctx, w, h, wrog) {
+    ctx.clearRect(0, 0, w, h);
+    var pal = TYP_PALETA[wrog.zywiol];
+    var cx = w / 2;
+    var skala = wrog.typ === 'boss' ? 1.3 : 1;
+    ctx.save();
+    ctx.translate(cx, h);
+    ctx.scale(skala, skala);
+    ctx.translate(-cx, -h);
+
+    prostokat(ctx, cx - 14, h - 6, 28, 5, 'rgba(0,0,0,0.35)');
+    // nogi
+    prostokatGradient(ctx, cx - 9, h - 26, 7, 20, pal.glowny, pal.ciemny);
+    prostokatGradient(ctx, cx + 2, h - 26, 7, 20, pal.glowny, pal.ciemny);
+    // tors - gradient jasny->glowny dla glebi + poswiata zywiolu u dolu
+    prostokatGradient(ctx, cx - 13, h - 52, 26, 28, pal.jasny, pal.glowny);
+    prostokat(ctx, cx - 13, h - 52, 26, 5, pal.jasny);
+    prostokat(ctx, cx - 11, h - 48, 3, 20, 'rgba(255,255,255,0.20)');
+    // ramiona
+    prostokatGradient(ctx, cx - 18, h - 50, 6, 16, pal.glowny, pal.ciemny);
+    prostokatGradient(ctx, cx + 12, h - 50, 6, 16, pal.glowny, pal.ciemny);
+    // glowa
+    prostokatGradient(ctx, cx - 8, h - 70, 16, 16, '#ecd2b0', '#cfa878');
+    prostokat(ctx, cx - 9, h - 74, 18, 7, pal.ciemny);
+    // oczy (swiecace kolorem zywiolu, z poswiata)
+    ctx.shadowColor = pal.jasny;
+    ctx.shadowBlur = 4;
+    prostokat(ctx, cx - 5, h - 62, 3, 3, pal.jasny);
+    prostokat(ctx, cx + 2, h - 62, 3, 3, pal.jasny);
+    ctx.shadowBlur = 0;
+
+    if (wrog.typ === 'dystans') {
+      ctx.beginPath();
+      ctx.arc(cx + 17, h - 40, 11, Math.PI * 0.3, Math.PI * 1.7);
+      ctx.strokeStyle = '#8b5a2b';
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+      ctx.strokeStyle = pal.jasny;
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(cx + 17 + 11 * Math.cos(Math.PI * 0.3), h - 40 + 11 * Math.sin(Math.PI * 0.3));
+      ctx.lineTo(cx + 17 + 11 * Math.cos(Math.PI * 1.7), h - 40 + 11 * Math.sin(Math.PI * 1.7));
+      ctx.stroke();
+    } else if (wrog.typ === 'tarcza') {
+      ctx.beginPath();
+      ctx.ellipse(cx - 20, h - 40, 7, 11, 0, 0, Math.PI * 2);
+      ctx.fillStyle = pal.ciemny;
+      ctx.fill();
+      ctx.strokeStyle = pal.jasny;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    } else if (wrog.typ === 'dzida') {
+      ctx.save();
+      ctx.translate(cx + 16, h - 30);
+      ctx.rotate(-0.3);
+      prostokat(ctx, -2, -46, 4, 46, '#8b5a2b');
+      ctx.beginPath();
+      ctx.moveTo(-5, -46); ctx.lineTo(0, -58); ctx.lineTo(5, -46);
+      ctx.closePath();
+      ctx.fillStyle = '#d8d8e0';
+      ctx.fill();
+      ctx.restore();
+    } else if (wrog.typ === 'boss') {
+      // korona z kolcow
+      for (var i = -1; i <= 1; i++) {
+        ctx.beginPath();
+        ctx.moveTo(cx + i * 7 - 3, h - 74);
+        ctx.lineTo(cx + i * 7, h - 86);
+        ctx.lineTo(cx + i * 7 + 3, h - 74);
+        ctx.closePath();
+        ctx.fillStyle = '#d4af37';
+        ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.ellipse(cx - 20, h - 40, 7, 12, 0, 0, Math.PI * 2);
+      ctx.fillStyle = pal.ciemny;
+      ctx.fill();
+      ctx.strokeStyle = pal.jasny;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.save();
+      ctx.translate(cx + 17, h - 30);
+      ctx.rotate(-0.3);
+      prostokat(ctx, -2, -46, 4, 46, '#4a3020');
+      ctx.beginPath();
+      ctx.moveTo(-6, -46); ctx.lineTo(0, -60); ctx.lineTo(6, -46);
+      ctx.closePath();
+      ctx.fillStyle = pal.jasny;
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.restore();
+  }
+
+  // ---------- DANE POZIOMOW ----------
+  function nowyWrog(nazwa, typ, zywiol, hp) {
+    return {
+      nazwa: nazwa, typ: typ, zywiol: zywiol, hp: hp, hpMax: hp,
+      dystans: (typ === 'dystans') ? 'daleko' : 'blisko',
+      zyje: true,
+    };
+  }
+
+  var DEFINICJE_POZIOMOW = [
+    function () {
+      return [
+        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
+        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 14),
+      ];
+    },
+    function () {
+      return [
+        nowyWrog('Włócznik\\nOgnisty', 'dzida', 'ogien', 16),
+        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 18),
+        nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 14),
+      ];
+    },
+    function () {
+      return [
+        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 46), { boss: true }),
+      ];
+    },
+  ];
+
+  var NAZWY_AKCJI = {
+    miecz_ogien: { ikona: '🔥⚔️', etykieta: 'Miecz\\nOgnisty' },
+    miecz_lod: { ikona: '❄️⚔️', etykieta: 'Miecz\\nLodowy' },
+    luk_ogien: { ikona: '🔥🏹', etykieta: 'Strzała\\nOgnista' },
+    luk_lod: { ikona: '❄️🏹', etykieta: 'Strzała\\nLodowa' },
+    podejdz: { ikona: '👟', etykieta: 'Podejdź' },
+    blok: { ikona: '🛡️', etykieta: 'Blok' },
+  };
+
+  // ---------- STAN GRY ----------
+  var poziomIndeks = 0;
+  var wrogowie = [];
+  var graczHp = 30, graczHpMax = 30;
+  var akcjaWTurze = 0; // 0 = wybor 1. akcji, 1 = wybor 2. akcji, 2 = tura wroga
+  var akcjaOczekujacaTyp = null; // gdy wybrano akcje wymagajaca celu, czekamy na klikniecie wroga
+  var blokAktywny = false;
+  var trwa = false;
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+  function losowaLiczba(min, max) { return Math.floor(losowo(min, max + 1)); }
+
+  // ---------- EFEKTY WIZUALNE (latajace obrazenia, czastki, mignieciе) ----------
+  function pozycjaWzgledemAreny(el) {
+    var r1 = el.getBoundingClientRect();
+    var r2 = gra.getBoundingClientRect();
+    return { x: r1.left - r2.left + r1.width / 2, y: r1.top - r2.top + r1.height / 2 };
+  }
+
+  function pokazLatajaceObrazenia(el, tekst, kolor) {
+    var pos = pozycjaWzgledemAreny(el);
+    var span = document.createElement('div');
+    span.className = 'tekst-obrazen';
+    span.style.left = (pos.x - 20) + 'px';
+    span.style.top = (pos.y - 32) + 'px';
+    span.style.color = kolor;
+    span.textContent = tekst;
+    gra.appendChild(span);
+    setTimeout(function () { span.remove(); }, 950);
+  }
+
+  var KOLORY_CZASTEK = {
+    ogien: ['#ff8c42', '#c94f4f', '#ffcf6b'],
+    lod: ['#8fd4ff', '#4f8fc9', '#c9f0ff'],
+    nieskuteczne: ['#8a8a92', '#aaaaaa', '#66666e'],
+    trafienie: ['#e6c15c', '#fff3cf', '#d4af37'],
+  };
+
+  function rozbryzgCzastek(el, paletaKluc, liczba) {
+    var pos = pozycjaWzgledemAreny(el);
+    var kolory = KOLORY_CZASTEK[paletaKluc] || KOLORY_CZASTEK.trafienie;
+    for (var i = 0; i < liczba; i++) {
+      var cz = document.createElement('div');
+      cz.className = 'czastka';
+      var kat = Math.random() * Math.PI * 2;
+      var dyst = 16 + Math.random() * 24;
+      cz.style.setProperty('--dx', (Math.cos(kat) * dyst) + 'px');
+      cz.style.setProperty('--dy', (Math.sin(kat) * dyst) + 'px');
+      cz.style.left = (pos.x - 2) + 'px';
+      cz.style.top = (pos.y - 2) + 'px';
+      cz.style.background = kolory[Math.floor(Math.random() * kolory.length)];
+      gra.appendChild(cz);
+      (function (cz) { setTimeout(function () { cz.remove(); }, 650); })(cz);
+    }
+  }
+
+  function zamigajISzarpnij(elKarty) {
+    elKarty.classList.remove('migniecie', 'wstrzas');
+    void elKarty.offsetWidth; // wymuszenie przeplywu, zeby animacja zadzialala ponownie
+    elKarty.classList.add('migniecie', 'wstrzas');
+    setTimeout(function () { elKarty.classList.remove('migniecie', 'wstrzas'); }, 400);
+  }
+
+  function pokazDziennik(tekst, czasMs) {
+    dziennik.textContent = tekst;
+    clearTimeout(pokazDziennik._t);
+    pokazDziennik._t = setTimeout(function () {
+      if (dziennik.textContent === tekst) dziennik.textContent = '';
+    }, czasMs || 1600);
+  }
+
+  function aktualizujPaskiGracza() {
+    var proc = Math.max(0, graczHp / graczHpMax * 100);
+    hpGraczaPasek.style.width = proc + '%';
+    hpGraczaTekst.textContent = graczHp + ' / ' + graczHpMax;
+    if (proc < 30) {
+      hpGraczaPasek.style.background = 'linear-gradient(90deg,#ef4444,#f87171)';
+    } else {
+      hpGraczaPasek.style.background = 'linear-gradient(90deg,#4ade80,#22c55e)';
+    }
+  }
+
+  function zywiolEtykieta(z) { return z === 'ogien' ? '🔥' : '❄️'; }
+  function typEtykieta(t) {
+    if (t === 'dystans') return '🏹';
+    if (t === 'tarcza') return '🛡️';
+    if (t === 'dzida') return '🔱';
+    if (t === 'boss') return '👑';
+    return '';
+  }
+
+  function zbudujWrogow() {
+    wrogowieEl.innerHTML = '';
+    wrogowie.forEach(function (wrog, idx) {
+      var karta = document.createElement('div');
+      karta.className = 'karta-wroga';
+      karta.dataset.idx = idx;
+
+      var canvas = document.createElement('canvas');
+      canvas.width = 56; canvas.height = 72;
+      karta.appendChild(canvas);
+      wrog._canvas = canvas;
+
+      var nazwaEl = document.createElement('div');
+      nazwaEl.className = 'nazwa-wroga';
+      nazwaEl.textContent = wrog.nazwa.replace('\\n', ' ');
+      karta.appendChild(nazwaEl);
+
+      var znaczniki = document.createElement('div');
+      znaczniki.className = 'znaczniki-wroga';
+      znaczniki.innerHTML =
+        '<span>' + zywiolEtykieta(wrog.zywiol) + '</span>' +
+        '<span>' + typEtykieta(wrog.typ) + '</span>' +
+        '<span>' + (wrog.dystans === 'daleko' ? '↔️' : '') + '</span>';
+      karta.appendChild(znaczniki);
+
+      var paskoTlo = document.createElement('div');
+      paskoTlo.className = 'pasek-hp-tlo';
+      var paskoWyp = document.createElement('div');
+      paskoWyp.className = 'pasek-hp-wypelnienie';
+      paskoTlo.appendChild(paskoWyp);
+      karta.appendChild(paskoTlo);
+      wrog._paskoWyp = paskoWyp;
+
+      karta.addEventListener('click', function () { kliknietoWroga(idx); });
+      wrogowieEl.appendChild(karta);
+      wrog._karta = karta;
+
+      rysujWroga(canvas.getContext('2d'), 56, 72, wrog);
+    });
+    odswiezKartyWrogow();
+  }
+
+  function odswiezKartyWrogow() {
+    wrogowie.forEach(function (wrog) {
+      var proc = Math.max(0, wrog.hp / wrog.hpMax * 100);
+      wrog._paskoWyp.style.width = proc + '%';
+      wrog._karta.classList.toggle('padl', !wrog.zyje);
+      var mozeBycCelem = wrog.zyje && akcjaOczekujacaTyp !== null;
+      wrog._karta.classList.toggle('cel-mozliwy', mozeBycCelem);
+      var znaczniki = wrog._karta.querySelector('.znaczniki-wroga');
+      znaczniki.innerHTML =
+        '<span>' + zywiolEtykieta(wrog.zywiol) + '</span>' +
+        '<span>' + typEtykieta(wrog.typ) + '</span>' +
+        '<span>' + (wrog.dystans === 'daleko' ? '↔️daleko' : '') + '</span>';
+    });
+  }
+
+  function zyjacyWrogowie() { return wrogowie.filter(function (w) { return w.zyje; }); }
+
+  // ---------- BUDOWA PRZYCISKOW AKCJI ----------
+  function zbudujPrzyciskiAkcji() {
+    siatkaAkcji.innerHTML = '';
+    Object.keys(NAZWY_AKCJI).forEach(function (klucz) {
+      var info = NAZWY_AKCJI[klucz];
+      var btn = document.createElement('button');
+      btn.className = 'btn-akcji';
+      btn.dataset.akcja = klucz;
+      btn.innerHTML = '<span class="duza-ikona">' + info.ikona + '</span>' + info.etykieta.replace('\\n', '<br>');
+      btn.addEventListener('click', function () { wybranoAkcje(klucz); });
+      siatkaAkcji.appendChild(btn);
+    });
+  }
+
+  function ustawStanPrzyciskow() {
+    var przyciski = siatkaAkcji.querySelectorAll('.btn-akcji');
+    przyciski.forEach(function (btn) {
+      var klucz = btn.dataset.akcja;
+      var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null;
+      if (klucz === 'miecz_ogien' || klucz === 'miecz_lod' || klucz === 'luk_ogien' || klucz === 'luk_lod' || klucz === 'podejdz') {
+        var maCelDlaTegoRuchu = zyjacyWrogowie().some(function (w) {
+          if (klucz === 'podejdz') return w.dystans === 'daleko';
+          if (klucz.indexOf('miecz_') === 0) return w.dystans === 'blisko';
+          return true; // luk dziala z kazdej odleglosci
+        });
+        if (!maCelDlaTegoRuchu) zablokuj = true;
+      }
+      btn.disabled = zablokuj;
+      btn.classList.toggle('aktywny', akcjaOczekujacaTyp === klucz);
+    });
+  }
+
+  function wybranoAkcje(klucz) {
+    if (!trwa || akcjaWTurze >= 2) return;
+    inicjujDzwiek();
+    if (klucz === 'blok') {
+      blokAktywny = true;
+      akcjaWTurze++;
+      pokazDziennik('🛡️ Podnosisz tarczę do obrony!', 1400);
+      poTurzeAkcji();
+      return;
+    }
+    akcjaOczekujacaTyp = klucz;
+    ustawStanPrzyciskow();
+    odswiezKartyWrogow();
+    podpowiedzTury.textContent = 'Wybierz cel na liście powyżej';
+  }
+
+  function kliknietoWroga(idx) {
+    if (!trwa || akcjaOczekujacaTyp === null) return;
+    var wrog = wrogowie[idx];
+    if (!wrog || !wrog.zyje) return;
+
+    var typ = akcjaOczekujacaTyp;
+    if (typ === 'podejdz') {
+      if (wrog.dystans !== 'daleko') return;
+      wrog.dystans = 'blisko';
+      pokazDziennik('👟 Podchodzisz do: ' + wrog.nazwa.replace('\\n', ' '), 1400);
+      zagrajTon(260, 0.1, 'triangle');
+    } else if (typ.indexOf('miecz_') === 0) {
+      if (wrog.dystans !== 'blisko') return;
+      wykonajAtak(wrog, 'miecz', typ === 'miecz_ogien' ? 'ogien' : 'lod');
+    } else if (typ.indexOf('luk_') === 0) {
+      wykonajAtak(wrog, 'luk', typ === 'luk_ogien' ? 'ogien' : 'lod');
+    }
+
+    akcjaOczekujacaTyp = null;
+    akcjaWTurze++;
+    odswiezKartyWrogow();
+    poTurzeAkcji();
+  }
+
+  function przeciwnyZywiol(z) { return z === 'ogien' ? 'lod' : 'ogien'; }
+
+  function wykonajAtak(wrog, bron, zywiolAtaku) {
+    var trafienieOK = zywiolAtaku === przeciwnyZywiol(wrog.zywiol);
+    var obrazenia;
+
+    if (!trafienieOK) {
+      obrazenia = 1;
+    } else if (bron === 'luk' && wrog.typ === 'tarcza') {
+      obrazenia = 1;
+    } else if (bron === 'luk' && wrog.typ === 'boss') {
+      obrazenia = 4; // boss blokuje CZESC obrazen od luku
+    } else {
+      obrazenia = 8;
+    }
+
+    wrog.hp -= obrazenia;
+    zamigajISzarpnij(wrog._karta);
+
+    if (!trafienieOK) {
+      pokazDziennik('❌ NIESKUTECZNE! Zły żywioł — ' + obrazenia + ' obr.', 1500);
+      pokazLatajaceObrazenia(wrog._karta, 'nieskuteczne', '#9a9aa2');
+      rozbryzgCzastek(wrog._karta, 'nieskuteczne', 5);
+      dzwiekNieskuteczne();
+    } else if (bron === 'luk' && (wrog.typ === 'tarcza' || wrog.typ === 'boss')) {
+      pokazDziennik('🛡️ Tarcza blokuje strzałę! Tylko ' + obrazenia + ' obr.', 1500);
+      pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia + ' 🛡️', '#c9c9d4');
+      rozbryzgCzastek(wrog._karta, 'nieskuteczne', 6);
+      dzwiekNieskuteczne();
+    } else {
+      pokazDziennik('💥 Trafienie! ' + obrazenia + ' obrażeń.', 1300);
+      pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia, '#fbbf24');
+      rozbryzgCzastek(wrog._karta, zywiolAtaku, 9);
+      dzwiekTrafienia();
+    }
+
+    if (bron === 'miecz' && (wrog.typ === 'dzida' || wrog.typ === 'boss')) {
+      var kontra = wrog.typ === 'boss' ? 5 : 4;
+      graczHp -= kontra;
+      aktualizujPaskiGracza();
+      setTimeout(function () {
+        zamigajISzarpnij(graczOtoczenie);
+        pokazLatajaceObrazenia(graczOtoczenie, '-' + kontra, '#f87171');
+        rozbryzgCzastek(graczOtoczenie, 'trafienie', 6);
+        pokazDziennik('🔱 Kontratak! Tracisz ' + kontra + ' HP.', 1400);
+      }, 700);
+    }
+
+    if (wrog.hp <= 0) {
+      wrog.hp = 0;
+      wrog.zyje = false;
+      rozbryzgCzastek(wrog._karta, zywiolAtaku, 14);
+    }
+    odswiezKartyWrogow();
+
+    if (graczHp <= 0) {
+      setTimeout(sprawdzKoniecGry, 900);
+    }
+  }
+
+  function poTurzeAkcji() {
+    ustawStanPrzyciskow();
+    if (sprawdzKoniecGry()) return;
+
+    if (akcjaWTurze >= 2) {
+      podpowiedzTury.textContent = 'Wróg atakuje...';
+      setTimeout(turaWroga, 900);
+    } else {
+      podpowiedzTury.textContent = 'Wybierz drugą akcję (albo tę samą jeszcze raz)';
+    }
+  }
+
+  function turaWroga() {
+    var zyjacy = zyjacyWrogowie();
+    var opoznienie = 0;
+    zyjacy.forEach(function (wrog) {
+      var liczbaAtakow = (wrog.typ === 'boss') ? 2 : 1;
+      for (var i = 0; i < liczbaAtakow; i++) {
+        (function (wrog) {
+          setTimeout(function () {
+            if (graczHp <= 0) return;
+            var dmg = wrog.typ === 'dystans' ? losowaLiczba(4, 6) :
+                      wrog.typ === 'tarcza' ? losowaLiczba(5, 7) :
+                      wrog.typ === 'dzida' ? losowaLiczba(6, 8) :
+                      losowaLiczba(5, 8);
+            if (blokAktywny) {
+              dmg = Math.ceil(dmg / 2);
+            }
+            graczHp -= dmg;
+            if (graczHp < 0) graczHp = 0;
+            aktualizujPaskiGracza();
+            zamigajISzarpnij(graczOtoczenie);
+            pokazLatajaceObrazenia(graczOtoczenie, '-' + dmg, blokAktywny ? '#c9c9d4' : '#f87171');
+            rozbryzgCzastek(graczOtoczenie, blokAktywny ? 'nieskuteczne' : 'trafienie', blokAktywny ? 4 : 7);
+            pokazDziennik((wrog.nazwa.replace('\\n', ' ')) + ' atakuje! -' + dmg + ' HP' + (blokAktywny ? ' (zablokowane)' : ''), 1300);
+            zagrajTon(150, 0.12, 'sawtooth');
+          }, opoznienie);
+        })(wrog);
+        opoznienie += 750;
+      }
+    });
+
+    // Lucznicy "cofaja sie" na koniec swojej tury (kiting)
+    setTimeout(function () {
+      zyjacy.forEach(function (wrog) {
+        if (wrog.typ === 'dystans' && wrog.zyje) {
+          wrog.dystans = 'daleko';
+        }
+      });
+      // boss zmienia zywiol co runde
+      var boss = wrogowie.find(function (w) { return w.typ === 'boss'; });
+      if (boss && boss.zyje) {
+        boss.zywiol = przeciwnyZywiol(boss.zywiol);
+        rysujWroga(boss._canvas.getContext('2d'), 56, 72, boss);
+        pokazDziennik('👑 Strażnik zmienia żywioł na ' + zywiolEtykieta(boss.zywiol) + '!', 1600);
+      }
+      odswiezKartyWrogow();
+      akcjaWTurze = 0;
+      blokAktywny = false;
+      podpowiedzTury.textContent = 'Wybierz pierwszą akcję';
+      ustawStanPrzyciskow();
+      if (!sprawdzKoniecGry()) {
+        // nic
+      }
+    }, opoznienie + 200);
+  }
+
+  function sprawdzKoniecGry() {
+    if (graczHp <= 0) {
+      trwa = false;
+      dzwiekPorazka();
+      nakladka.style.display = 'flex';
+      nakladkaTytul.textContent = '💀 Porażka...';
+      nakladkaOpis.textContent = 'Ten poziom wygrał tym razem. Spróbuj jeszcze raz — ten sam poziom, od nowa.';
+      nakladkaBtn.textContent = 'Spróbuj ponownie';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); graczHp = graczHpMax; rozpocznijPoziom(poziomIndeks); };
+      return true;
+    }
+    if (zyjacyWrogowie().length === 0) {
+      trwa = false;
+      if (poziomIndeks >= DEFINICJE_POZIOMOW.length - 1) {
+        dzwiekZwyciestwo();
+        nakladka.style.display = 'flex';
+        nakladkaTytul.textContent = '🎉 Zwycięstwo!';
+        nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+        nakladkaBtn.style.display = 'none';
+      } else {
+        dzwiekZwyciestwo();
+        nakladka.style.display = 'flex';
+        nakladkaTytul.textContent = '✅ Poziom pokonany!';
+        nakladkaOpis.textContent = 'Odrobina wytchnienia przed kolejnym poziomem.';
+        nakladkaBtn.textContent = 'Następny poziom ▶';
+        nakladkaBtn.style.display = 'inline-block';
+        nakladkaBtn.onclick = function () {
+          inicjujDzwiek();
+          graczHp = Math.min(graczHpMax, graczHp + 10);
+          rozpocznijPoziom(poziomIndeks + 1);
+        };
+      }
+      return true;
+    }
+    return false;
+  }
+
+  function rozpocznijPoziom(idx) {
+    poziomIndeks = idx;
+    wrogowie = DEFINICJE_POZIOMOW[idx]();
+    akcjaWTurze = 0;
+    akcjaOczekujacaTyp = null;
+    blokAktywny = false;
+    poziomEtykieta.textContent = 'POZIOM ' + (idx + 1) + ' / ' + DEFINICJE_POZIOMOW.length +
+      (wrogowie.length === 1 && wrogowie[0].typ === 'boss' ? '  —  BOSS' : '');
+    nakladka.style.display = 'none';
+    trwa = true;
+    aktualizujPaskiGracza();
+    zbudujWrogow();
+    podpowiedzTury.textContent = 'Wybierz pierwszą akcję';
+    ustawStanPrzyciskow();
+    rysujGracza(ctxGracza, 72, 88);
+  }
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  zbudujPrzyciskiAkcji();
+  rysujGracza(ctxGracza, 72, 88);
+  graczHp = graczHpMax;
+  aktualizujPaskiGracza();
+
+  nakladkaBtn.onclick = function () {
+    inicjujDzwiek();
+    graczHp = graczHpMax;
+    rozpocznijPoziom(0);
+  };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_MINECRAFT = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    color: #f5f5f0;
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 15px;
+    padding: 2px 9px;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 630px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+    display: flex;
+    flex-direction: column;
+  }
+  #pasekGloduOtoczka {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 2px 0 0;
+    font-size: 11px;
+  }
+  #pasekGloduTlo {
+    width: 130px;
+    height: 9px;
+    background: #2a1c10;
+    border: 1px solid rgba(0,0,0,0.4);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  #pasekGloduWypelnienie {
+    height: 100%;
+    background: linear-gradient(90deg, #e6a23c, #f0c869);
+    transition: width 0.4s ease;
+  }
+  #obszarSwiata {
+    flex: 0 0 auto;
+    display: flex;
+    justify-content: center;
+    padding: 4px 0 2px;
+  }
+  #canvasSwiat {
+    border-radius: 10px;
+    border: 2px solid #6b5530;
+    image-rendering: pixelated;
+    touch-action: none;
+  }
+  #dziennikMc {
+    text-align: center;
+    font-size: 12px;
+    color: #e6c15c;
+    min-height: 16px;
+    margin: 2px 0;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
+  #zadanieDomu {
+    display: flex;
+    justify-content: center;
+    padding: 2px 8px;
+  }
+  #btnDom {
+    background: linear-gradient(135deg, #7a5a2e, #5a3f1e);
+    border: 1px solid #d4af37;
+    border-radius: 10px;
+    color: #f5f5f0;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 7px 16px;
+    width: 100%;
+    max-width: 300px;
+  }
+  #btnDom:active { transform: scale(0.97); }
+  #sterowanie {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0;
+  }
+  .btn-ruch {
+    width: 56px; height: 44px;
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    border: none;
+    border-radius: 12px;
+    font-size: 22px;
+    font-weight: 700;
+    color: #1a1a1a;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+  }
+  .btn-ruch:active { transform: scale(0.94); }
+  #btnNowySwiat {
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 1px solid #5a4a2e;
+    border-radius: 12px;
+    color: #f5f5f0;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 0 12px;
+    height: 44px;
+  }
+  #ekwipunek {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 6px 10px;
+    flex-wrap: wrap;
+    border-top: 1px solid rgba(212,175,55,0.2);
+  }
+  .slot-bloku {
+    position: relative;
+    width: 40px; height: 40px;
+    border-radius: 8px;
+    border: 2px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .slot-bloku.wybrany {
+    border-color: #e6c15c;
+    box-shadow: 0 0 8px rgba(230,193,92,0.6);
+  }
+  .slot-bloku .ikonka-bloku {
+    width: 26px; height: 26px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.35);
+  }
+  .slot-bloku .licznik-bloku {
+    position: absolute;
+    bottom: -3px; right: -3px;
+    background: #16130a;
+    border: 1px solid #d4af37;
+    border-radius: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 4px;
+    color: #f5f5f0;
+    min-width: 14px;
+    text-align: center;
+  }
+  #nakladka {
+    position: absolute; inset: 0; z-index: 10;
+    background: rgba(13,13,13,0.96);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 22px;
+  }
+  #nakladka h2 { font-size: 21px; margin: 0 0 8px; color: #e6c15c; }
+  #nakladka p { margin: 0 0 6px; font-size: 13px; opacity: 0.85; max-width: 280px; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none; padding: 10px 24px; border-radius: 30px;
+    font-weight: 700; color: #1a1a1a; cursor: pointer; font-size: 14px; margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span>⛏️ Prosty Minecraft</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="pasekGloduOtoczka">
+      <span>🍗</span>
+      <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
+    </div>
+    <div id="obszarSwiata">
+      <canvas id="canvasSwiat" width="338" height="286"></canvas>
+    </div>
+    <div id="dziennikMc"></div>
+    <div id="sterowanie">
+      <button class="btn-ruch" id="btnLewo">⬅️</button>
+      <button id="btnNowySwiat">🔄 Nowy świat</button>
+      <button class="btn-ruch" id="btnPrawo">➡️</button>
+    </div>
+    <div id="zadanieDomu">
+      <button id="btnDom">🏠 Zbuduj dom i sprawdź</button>
+    </div>
+    <div id="ekwipunek"></div>
+    <div id="nakladka">
+      <h2>⛏️ Prosty Minecraft</h2>
+      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok z paska na dole. Dotknij zwierzaka, żeby zdobyć jedzenie. Buduj, kop, baw się — bez presji, żadnego "wygrania".</p>
+      <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var canvas = document.getElementById('canvasSwiat');
+  var ctx = canvas.getContext('2d');
+  var dziennikMc = document.getElementById('dziennikMc');
+  var ekwipunekEl = document.getElementById('ekwipunek');
+  var btnLewo = document.getElementById('btnLewo');
+  var btnPrawo = document.getElementById('btnPrawo');
+  var btnNowySwiat = document.getElementById('btnNowySwiat');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+  var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
+  var btnDom = document.getElementById('btnDom');
+
+  var wyciszone = false;
+  var audioCtx = null;
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    } catch (e) { audioCtx = null; }
+  }
+  function zagrajTon(f, czas, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czas);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czas);
+    } catch (e) {}
+  }
+  function dzwiekKopania() { zagrajTon(140, 0.09, 'square'); }
+  function dzwiekStawiania() { zagrajTon(320, 0.08, 'triangle'); }
+  function dzwiekBlokada() { zagrajTon(200, 0.06, 'sawtooth'); }
+  function dzwiekJedzenia() {
+    zagrajTon(500, 0.06, 'square');
+    setTimeout(function () { zagrajTon(650, 0.08, 'square'); }, 90);
+  }
+
+  // ---------- SWIAT ----------
+  var SZEROKOSC_SWIATA = 48;
+  var WYSOKOSC_SWIATA = 22;
+  var KOMORKA = 26;
+  var WIDOCZNE_KOLUMNY = 13;
+  var WIDOCZNE_WIERSZE = 11;
+  var ZASIEG = 2;
+
+  var KOLORY_BLOKOW = {
+    trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
+    drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
+    zloto: '#e6c15c', podloze: '#403f45',
+  };
+  var NAZWY_BLOKOW = {
+    trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
+    liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto',
+  };
+  var KOLEJNOSC_EKWIPUNKU = ['ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto'];
+
+  var world = [];
+  var ekwipunek = {};
+  var wybranyBlok = 'ziemia';
+  var graczX = 0, graczY = 0;
+  var kameraX = 0, kameraY = 0;
+  var trwa = false;
+
+  var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka', kierunek: 1/-1}
+  var GLOD_MAX = 10;
+  var graczGlod = GLOD_MAX;
+  var probyDomu = 0;
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+
+  function generujSwiat() {
+    world = [];
+    for (var x = 0; x < SZEROKOSC_SWIATA; x++) world.push(new Array(WYSOKOSC_SWIATA));
+
+    var wysokoscPow = [];
+    var biezaca = 10;
+    for (var x = 0; x < SZEROKOSC_SWIATA; x++) {
+      if (Math.random() < 0.3) biezaca += (Math.random() < 0.5 ? -1 : 1);
+      biezaca = Math.max(7, Math.min(13, biezaca));
+      wysokoscPow.push(biezaca);
+    }
+
+    for (var x = 0; x < SZEROKOSC_SWIATA; x++) {
+      var pow = wysokoscPow[x];
+      for (var y = 0; y < WYSOKOSC_SWIATA; y++) {
+        var blok;
+        if (y < pow) blok = 'powietrze';
+        else if (y === pow) blok = 'trawa';
+        else if (y < pow + 4) blok = 'ziemia';
+        else if (y < WYSOKOSC_SWIATA - 1) {
+          var r = Math.random();
+          blok = (r < 0.045) ? 'wegiel' : (r < 0.065) ? 'zloto' : 'kamien';
+        } else {
+          blok = 'podloze';
+        }
+        world[x][y] = blok;
+      }
+    }
+
+    // drzewa
+    for (var x = 2; x < SZEROKOSC_SWIATA - 2; x++) {
+      if (world[x][wysokoscPow[x]] === 'trawa' && Math.random() < 0.14) {
+        var podstawa = wysokoscPow[x];
+        var wysDrzewa = 3;
+        for (var i = 1; i <= wysDrzewa; i++) {
+          if (podstawa - i >= 0) world[x][podstawa - i] = 'drewno';
+        }
+        var topY = podstawa - wysDrzewa;
+        for (var dx = -1; dx <= 1; dx++) {
+          for (var dy = -2; dy <= 0; dy++) {
+            var lx = x + dx, ly = topY + dy;
+            if (lx >= 0 && lx < SZEROKOSC_SWIATA && ly >= 0 && world[lx][ly] === 'powietrze') {
+              world[lx][ly] = 'liscie';
+            }
+          }
+        }
+      }
+    }
+
+    graczX = Math.floor(SZEROKOSC_SWIATA / 2);
+    graczY = wysokoscPow[graczX] - 1;
+
+    zespawnujZwierzeta(wysokoscPow);
+  }
+
+  function zespawnujZwierzeta(wysokoscPow) {
+    zwierzeta = [];
+    var typy = ['krowa', 'swinka'];
+    var probyLosowania = 0;
+    while (zwierzeta.length < 4 && probyLosowania < 40) {
+      probyLosowania++;
+      var x = Math.floor(losowo(3, SZEROKOSC_SWIATA - 3));
+      var y = wysokoscPow[x] - 1;
+      if (world[x] && world[x][y] === 'powietrze' && Math.abs(x - Math.floor(SZEROKOSC_SWIATA / 2)) > 2) {
+        zwierzeta.push({
+          x: x, y: y,
+          typ: typy[Math.floor(Math.random() * typy.length)],
+          kierunek: Math.random() < 0.5 ? -1 : 1,
+        });
+      }
+    }
+  }
+
+  function jestPuste(x, y) {
+    if (x < 0 || x >= SZEROKOSC_SWIATA || y < 0 || y >= WYSOKOSC_SWIATA) return false;
+    return world[x][y] === 'powietrze';
+  }
+
+  function zastosujGrawitacje() {
+    var bezpiecznik = 0;
+    while (graczY + 1 < WYSOKOSC_SWIATA && jestPuste(graczX, graczY + 1) && bezpiecznik < WYSOKOSC_SWIATA) {
+      graczY++;
+      bezpiecznik++;
+    }
+  }
+
+  function ruszSie(dx) {
+    if (!trwa) return;
+    var nowyX = graczX + dx;
+    if (nowyX < 0 || nowyX >= SZEROKOSC_SWIATA) return;
+
+    if (jestPuste(nowyX, graczY)) {
+      graczX = nowyX;
+    } else if (jestPuste(nowyX, graczY - 1) && jestPuste(graczX, graczY - 1) && graczY - 1 >= 0) {
+      graczX = nowyX;
+      graczY -= 1;
+    } else {
+      return;
+    }
+    zastosujGrawitacje();
+    rysuj();
+  }
+
+  function pokazDziennikMc(tekst, czasMs) {
+    dziennikMc.textContent = tekst;
+    clearTimeout(pokazDziennikMc._t);
+    pokazDziennikMc._t = setTimeout(function () {
+      if (dziennikMc.textContent === tekst) dziennikMc.textContent = '';
+    }, czasMs || 1300);
+  }
+
+  function odswiezEkwipunek() {
+    ekwipunekEl.innerHTML = '';
+    KOLEJNOSC_EKWIPUNKU.forEach(function (klucz) {
+      var slot = document.createElement('div');
+      slot.className = 'slot-bloku' + (klucz === wybranyBlok ? ' wybrany' : '');
+      var ikonka = document.createElement('div');
+      ikonka.className = 'ikonka-bloku';
+      ikonka.style.background = KOLORY_BLOKOW[klucz];
+      slot.appendChild(ikonka);
+      var licznik = document.createElement('div');
+      licznik.className = 'licznik-bloku';
+      licznik.textContent = ekwipunek[klucz] || 0;
+      slot.appendChild(licznik);
+      slot.addEventListener('click', function () {
+        wybranyBlok = klucz;
+        odswiezEkwipunek();
+      });
+      ekwipunekEl.appendChild(slot);
+    });
+  }
+
+  function dodajDoEkwipunku(blok, ile) {
+    ekwipunek[blok] = (ekwipunek[blok] || 0) + ile;
+    odswiezEkwipunek();
+  }
+
+  function aktualizujPasekGlodu() {
+    var proc = Math.max(0, graczGlod / GLOD_MAX * 100);
+    pasekGloduWypelnienie.style.width = proc + '%';
+    pasekGloduWypelnienie.style.background = graczGlod <= 2
+      ? 'linear-gradient(90deg, #ef4444, #f87171)'
+      : 'linear-gradient(90deg, #e6a23c, #f0c869)';
+  }
+
+  // ---------- RYSOWANIE ----------
+  function rysujTeksture(x, y, blok) {
+    var kolor = KOLORY_BLOKOW[blok];
+    ctx.fillStyle = kolor;
+    ctx.fillRect(x, y, KOMORKA, KOMORKA);
+    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, KOMORKA - 1, KOMORKA - 1);
+    ctx.fillStyle = 'rgba(255,255,255,0.14)';
+    ctx.fillRect(x + 2, y + 2, KOMORKA - 4, 3);
+    if (blok === 'trawa') {
+      ctx.fillStyle = 'rgba(255,255,255,0.10)';
+      for (var i = 0; i < 3; i++) {
+        ctx.fillRect(x + 4 + i * 7, y + 4, 3, 2);
+      }
+    } else if (blok === 'wegiel' || blok === 'zloto') {
+      ctx.fillStyle = blok === 'wegiel' ? '#111' : '#fff3cf';
+      ctx.beginPath(); ctx.arc(x + 8, y + 9, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + 17, y + 16, 2.5, 0, Math.PI * 2); ctx.fill();
+    } else if (blok === 'drewno') {
+      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+      ctx.beginPath(); ctx.moveTo(x + 6, y); ctx.lineTo(x + 6, y + KOMORKA); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(x + 19, y); ctx.lineTo(x + 19, y + KOMORKA); ctx.stroke();
+    }
+  }
+
+  function rysujGraczaMc(x, y) {
+    var cx = x + KOMORKA / 2;
+    ctx.fillStyle = '#3a2c1e';
+    ctx.fillRect(cx - 7, y + KOMORKA - 9, 5, 9);
+    ctx.fillRect(cx + 2, y + KOMORKA - 9, 5, 9);
+    var gradTors = ctx.createLinearGradient(0, y + 6, 0, y + KOMORKA - 8);
+    gradTors.addColorStop(0, '#9797ae');
+    gradTors.addColorStop(1, '#4f4f62');
+    ctx.fillStyle = gradTors;
+    ctx.fillRect(cx - 9, y + 6, 18, KOMORKA - 14);
+    ctx.fillStyle = '#f2c9a1';
+    ctx.fillRect(cx - 6, y - 6, 12, 12);
+    ctx.fillStyle = '#6b4a2a';
+    ctx.fillRect(cx - 7, y - 8, 14, 4);
+    ctx.fillStyle = '#2b2b2b';
+    ctx.fillRect(cx - 4, y - 2, 2, 2);
+    ctx.fillRect(cx + 2, y - 2, 2, 2);
+  }
+
+  function rysujZwierze(x, y, typ, kierunek) {
+    var lustro = kierunek < 0;
+    ctx.save();
+    if (lustro) {
+      ctx.translate(x + KOMORKA, 0);
+      ctx.scale(-1, 1);
+      x = 0;
+    }
+    if (typ === 'krowa') {
+      ctx.fillStyle = '#f5f2e8';
+      ctx.fillRect(x + 3, y + 11, KOMORKA - 8, 11);
+      ctx.fillStyle = '#3a2c1e';
+      ctx.fillRect(x + 7, y + 12, 5, 4);
+      ctx.fillRect(x + 15, y + 16, 4, 4);
+      ctx.fillStyle = '#3a2c1e';
+      ctx.fillRect(x + 1, y + 8, 9, 8);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x + 2, y + 10, 2, 2);
+      ctx.fillStyle = '#e0a898';
+      ctx.fillRect(x + 2, y + 14, 4, 2);
+    } else {
+      ctx.fillStyle = '#f2a6b0';
+      ctx.fillRect(x + 3, y + 12, KOMORKA - 8, 10);
+      ctx.fillStyle = '#e88a9a';
+      ctx.fillRect(x + 1, y + 9, 9, 8);
+      ctx.fillStyle = '#c9707f';
+      ctx.fillRect(x + 1, y + 13, 4, 3);
+      ctx.fillStyle = '#2b2b2b';
+      ctx.fillRect(x + 3, y + 11, 2, 2);
+    }
+    ctx.restore();
+  }
+
+  function przeliczKamere() {
+    kameraX = Math.max(0, Math.min(SZEROKOSC_SWIATA - WIDOCZNE_KOLUMNY, graczX - Math.floor(WIDOCZNE_KOLUMNY / 2)));
+    kameraY = Math.max(0, Math.min(WYSOKOSC_SWIATA - WIDOCZNE_WIERSZE, graczY - Math.floor(WIDOCZNE_WIERSZE / 2)));
+  }
+
+  function rysuj() {
+    przeliczKamere();
+    ctx.fillStyle = '#87ceeb';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (var vx = 0; vx < WIDOCZNE_KOLUMNY; vx++) {
+      for (var vy = 0; vy < WIDOCZNE_WIERSZE; vy++) {
+        var wx = kameraX + vx, wy = kameraY + vy;
+        if (wx < 0 || wx >= SZEROKOSC_SWIATA || wy < 0 || wy >= WYSOKOSC_SWIATA) continue;
+        var blok = world[wx][wy];
+        if (blok && blok !== 'powietrze') {
+          rysujTeksture(vx * KOMORKA, vy * KOMORKA, blok);
+        }
+        var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
+        if (dyst <= ZASIEG && !(wx === graczX && wy === graczY)) {
+          ctx.strokeStyle = 'rgba(230,193,92,0.35)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(vx * KOMORKA + 1, vy * KOMORKA + 1, KOMORKA - 2, KOMORKA - 2);
+        }
+      }
+    }
+
+    zwierzeta.forEach(function (zw) {
+      var wx = zw.x - kameraX, wy = zw.y - kameraY;
+      if (wx >= -1 && wx <= WIDOCZNE_KOLUMNY && wy >= -1 && wy <= WIDOCZNE_WIERSZE) {
+        rysujZwierze(wx * KOMORKA, wy * KOMORKA, zw.typ, zw.kierunek);
+      }
+    });
+
+    rysujGraczaMc((graczX - kameraX) * KOMORKA, (graczY - kameraY) * KOMORKA);
+  }
+
+  // ---------- KOPANIE / STAWIANIE ----------
+  function obslugaDotkniecia(clientX, clientY) {
+    if (!trwa) return;
+    var rect = canvas.getBoundingClientRect();
+    var px = clientX - rect.left;
+    var py = clientY - rect.top;
+    var vx = Math.floor(px / KOMORKA);
+    var vy = Math.floor(py / KOMORKA);
+    var wx = kameraX + vx, wy = kameraY + vy;
+    if (wx < 0 || wx >= SZEROKOSC_SWIATA || wy < 0 || wy >= WYSOKOSC_SWIATA) return;
+
+    var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
+    if (dyst > ZASIEG) {
+      pokazDziennikMc('Za daleko!', 1000);
+      dzwiekBlokada();
+      return;
+    }
+
+    var idxZw = -1;
+    for (var i = 0; i < zwierzeta.length; i++) {
+      if (zwierzeta[i].x === wx && zwierzeta[i].y === wy) { idxZw = i; break; }
+    }
+    if (idxZw !== -1) {
+      var zw = zwierzeta[idxZw];
+      zwierzeta.splice(idxZw, 1);
+      graczGlod = Math.min(GLOD_MAX, graczGlod + 4);
+      aktualizujPasekGlodu();
+      var teksty = zw.typ === 'krowa'
+        ? ['🐄 Krowa: "Muuu... i po krowie." Stek zdobyty!', '🥩 Krowa dała stek. Przepraszam, krowo.']
+        : ['🐷 Świnka kwiknęła po raz ostatni. Szynka zdobyta!', '🍖 Świnka zamieniła się w szynkę.'];
+      pokazDziennikMc(teksty[Math.floor(Math.random() * teksty.length)], 1900);
+      dzwiekJedzenia();
+      rysuj();
+      return;
+    }
+
+    var blok = world[wx][wy];
+    if (blok === 'podloze') {
+      pokazDziennikMc('Podłoże skalne — niezniszczalne.', 1200);
+      dzwiekBlokada();
+      return;
+    }
+    if (blok !== 'powietrze') {
+      world[wx][wy] = 'powietrze';
+      dodajDoEkwipunku(blok, 1);
+      pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
+      dzwiekKopania();
+      zastosujGrawitacje();
+      rysuj();
+    } else {
+      if (wx === graczX && wy === graczY) return;
+      if ((ekwipunek[wybranyBlok] || 0) <= 0) {
+        pokazDziennikMc('Brak zapasu: ' + NAZWY_BLOKOW[wybranyBlok], 1200);
+        dzwiekBlokada();
+        return;
+      }
+      world[wx][wy] = wybranyBlok;
+      ekwipunek[wybranyBlok]--;
+      odswiezEkwipunek();
+      pokazDziennikMc('🧱 Postawiono: ' + NAZWY_BLOKOW[wybranyBlok], 1000);
+      dzwiekStawiania();
+      rysuj();
+    }
+  }
+
+  var pominKlikCanvas = false;
+  canvas.addEventListener('click', function (e) {
+    if (pominKlikCanvas) return;
+    obslugaDotkniecia(e.clientX, e.clientY);
+  });
+  canvas.addEventListener('touchstart', function (e) {
+    e.preventDefault();
+    pominKlikCanvas = true;
+    var dotyk = e.touches[0];
+    obslugaDotkniecia(dotyk.clientX, dotyk.clientY);
+    setTimeout(function () { pominKlikCanvas = false; }, 500);
+  }, { passive: false });
+
+  // ---------- PRZYCISKI RUCHU (przytrzymanie = powtarzanie) ----------
+  function nasluchujPrzytrzymanie(el, funkcja) {
+    var interwal = null;
+    function start(e) {
+      if (e) e.preventDefault();
+      if (interwal) return;
+      funkcja();
+      interwal = setInterval(funkcja, 220);
+    }
+    function stop() {
+      if (interwal) { clearInterval(interwal); interwal = null; }
+    }
+    el.addEventListener('touchstart', start, { passive: false });
+    el.addEventListener('touchend', stop);
+    el.addEventListener('touchcancel', stop);
+    el.addEventListener('mousedown', start);
+    el.addEventListener('mouseup', stop);
+    el.addEventListener('mouseleave', stop);
+  }
+  nasluchujPrzytrzymanie(btnLewo, function () { ruszSie(-1); });
+  nasluchujPrzytrzymanie(btnPrawo, function () { ruszSie(1); });
+
+  btnNowySwiat.addEventListener('click', function () {
+    inicjujDzwiek();
+    rozpocznijSwiat();
+    pokazDziennikMc('🔄 Nowy świat wygenerowany!', 1400);
+  });
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  // ---------- GŁÓD (czysto smakowy - bez kary, tylko zabawne komunikaty) ----------
+  setInterval(function () {
+    if (!trwa) return;
+    graczGlod = Math.max(0, graczGlod - 1);
+    aktualizujPasekGlodu();
+    if (graczGlod === 3) pokazDziennikMc('😋 Robi się głodno... może czas na stek?', 1800);
+    if (graczGlod === 0) pokazDziennikMc('🤤 W brzuchu strasznie burczy! Znajdź jakieś zwierzę.', 2000);
+  }, 25000);
+
+  // ---------- WEDROWANIE ZWIERZAT ----------
+  setInterval(function () {
+    if (!trwa) return;
+    var cokolwiekZmienione = false;
+    zwierzeta.forEach(function (zw) {
+      var bezpiecznik = 0;
+      while (zw.y + 1 < WYSOKOSC_SWIATA && jestPuste(zw.x, zw.y + 1) && bezpiecznik < WYSOKOSC_SWIATA) {
+        zw.y++;
+        bezpiecznik++;
+      }
+      if (Math.random() < 0.5) {
+        var nx = zw.x + zw.kierunek;
+        if (nx >= 0 && nx < SZEROKOSC_SWIATA && jestPuste(nx, zw.y) && !jestPuste(nx, zw.y + 1)) {
+          zw.x = nx;
+        } else {
+          zw.kierunek *= -1;
+        }
+        cokolwiekZmienione = true;
+      }
+    });
+    if (cokolwiekZmienione) rysuj();
+  }, 1800);
+
+  // ---------- ZADANIE-ZART: "ZBUDUJ DOM" ----------
+  btnDom.addEventListener('click', function () {
+    if (!trwa) return;
+    inicjujDzwiek();
+    probyDomu++;
+    if (probyDomu === 1) {
+      pokazDziennikMc('🏠 Hmm... to ma być dom? Postaraj się bardziej!', 2400);
+      zagrajTon(220, 0.15, 'sawtooth');
+    } else {
+      pokazDziennikMc('🏠 Piękny dom! Zaliczone! 🎉', 2400);
+      zagrajTon(660, 0.15, 'triangle');
+      setTimeout(function () { zagrajTon(880, 0.2, 'triangle'); }, 150);
+    }
+  });
+
+  function rozpocznijSwiat() {
+    ekwipunek = {};
+    wybranyBlok = 'ziemia';
+    graczGlod = GLOD_MAX;
+    probyDomu = 0;
+    generujSwiat();
+    odswiezEkwipunek();
+    aktualizujPasekGlodu();
+    rysuj();
+  }
+
+  rozpocznijSwiat();
+
+  nakladkaBtn.onclick = function () {
+    inicjujDzwiek();
+    trwa = true;
+    nakladka.style.display = 'none';
+    rysuj();
+  };
+</script>
+</body>
+</html>
+"""
+
 # ======================================================================
 # STYL APLIKACJI
 # ======================================================================
@@ -3336,6 +5034,26 @@ def renderuj_piano(etap_dane):
     return None
 
 
+def renderuj_bitwa(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_BITWA, height=640, scrolling=False)
+
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
+    return None
+
+
+def renderuj_minecraft(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_MINECRAFT, height=720, scrolling=False)
+
+    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        return True
+    return None
+
+
 @st.cache_data(ttl=300)  # 5 minut - dość świeżo, a nie odpytuje API bez przerwy
 def pobierz_dzisiejszy_wordle():
     """Próbuje pobrać dzisiejsze słowo z (angielskiego) NYT Wordle.
@@ -3479,6 +5197,23 @@ def renderuj_szachy(etap_dane):
 # EKRANY
 # ======================================================================
 
+def pokaz_przycisk_resetu():
+    if not st.session_state.get("potwierdz_reset", False):
+        if st.button(t("reset_btn"), key="reset_start"):
+            st.session_state.potwierdz_reset = True
+            st.rerun()
+    else:
+        st.warning(t("reset_ostrzezenie"))
+        if st.button(t("reset_potwierdz"), key="reset_confirm"):
+            if os.path.exists(PLIK_STANU):
+                os.remove(PLIK_STANU)
+            st.session_state.clear()
+            st.rerun()
+        if st.button(t("reset_anuluj"), key="reset_cancel"):
+            st.session_state.potwierdz_reset = False
+            st.rerun()
+
+
 def pokaz_powitanie():
     st.markdown("<div style='height:25vh;'></div>", unsafe_allow_html=True)
 
@@ -3531,6 +5266,9 @@ def pokaz_menu():
             st.session_state.ekran = "final"
             st.rerun()
 
+    st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
+    pokaz_przycisk_resetu()
+
 
 def pokaz_ekran_etapu(etap_dane):
     klucz = etap_dane["klucz"]
@@ -3577,6 +5315,10 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_data(etap_dane)
     elif typ == "szachy":
         wynik = renderuj_szachy(etap_dane)
+    elif typ == "bitwa":
+        wynik = renderuj_bitwa(etap_dane)
+    elif typ == "minecraft":
+        wynik = renderuj_minecraft(etap_dane)
     else:
         wynik = None
 
@@ -3622,6 +5364,9 @@ def pokaz_final():
     if st.button(t("wroc_do_menu"), key="powrot_final"):
         st.session_state.ekran = "menu"
         st.rerun()
+
+    st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
+    pokaz_przycisk_resetu()
 
 
 def pokaz_przegrana():
