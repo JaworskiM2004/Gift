@@ -456,6 +456,9 @@ TEKST = {
         "reset_ostrzezenie": "⚠️ To usunie CAŁY postęp (wszystkie rozwiązane etapy) i nie da się tego cofnąć. Na pewno?",
         "reset_potwierdz": "Tak, resetuj wszystko",
         "reset_anuluj": "Anuluj",
+        "napewno_bitwa": "Na pewno pokonałaś bossa? Jeśli nie, wróć do gry.",
+        "tak_pokonalam": "Tak, pokonałam!",
+        "jeszcze_nie": "Jeszcze nie",
         "kod_do_sejfu": "Kod do sejfu:",
         "ukonczone_w": "Ukończone w",
         "min": "min",
@@ -493,6 +496,9 @@ TEKST = {
         "reset_ostrzezenie": "⚠️ This deletes ALL progress (every solved stage) and can't be undone. Are you sure?",
         "reset_potwierdz": "Yes, reset everything",
         "reset_anuluj": "Cancel",
+        "napewno_bitwa": "Are you sure you defeated the boss? If not, go back to the game.",
+        "tak_pokonalam": "Yes, I defeated it!",
+        "jeszcze_nie": "Not yet",
         "kod_do_sejfu": "Safe code:",
         "ukonczone_w": "Completed in",
         "min": "min",
@@ -3075,7 +3081,7 @@ SZABLON_BITWA = """
     </div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Bitwa</h2>
-      <p id="nakladkaOpis">Ogień pokonuje się lodem, lód ogniem. Tarcze blokują strzały — użyj miecza. Włócznicy kontratakują miecz — użyj łuku. Łucznicy cofają się — użyj łuku albo podejdź dwa razy.</p>
+      <p id="nakladkaOpis">Ogień pokonuje się lodem, lód ogniem. Tarcze blokują strzały — użyj miecza. Włócznicy kontratakują miecz — użyj łuku. Fiolka leczenia działa raz na całą rozgrywkę — użyj jej mądrze.</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
   </div>
@@ -3308,7 +3314,6 @@ SZABLON_BITWA = """
   function nowyWrog(nazwa, typ, zywiol, hp) {
     return {
       nazwa: nazwa, typ: typ, zywiol: zywiol, hp: hp, hpMax: hp,
-      dystans: (typ === 'dystans') ? 'daleko' : 'blisko',
       zyje: true,
     };
   }
@@ -3339,7 +3344,7 @@ SZABLON_BITWA = """
     miecz_lod: { ikona: '❄️⚔️', etykieta: 'Miecz\\nLodowy' },
     luk_ogien: { ikona: '🔥🏹', etykieta: 'Strzała\\nOgnista' },
     luk_lod: { ikona: '❄️🏹', etykieta: 'Strzała\\nLodowa' },
-    podejdz: { ikona: '👟', etykieta: 'Podejdź' },
+    fiolka: { ikona: '🧪', etykieta: 'Fiolka\\nLeczenia' },
     blok: { ikona: '🛡️', etykieta: 'Blok' },
   };
 
@@ -3350,6 +3355,7 @@ SZABLON_BITWA = """
   var akcjaWTurze = 0; // 0 = wybor 1. akcji, 1 = wybor 2. akcji, 2 = tura wroga
   var akcjaOczekujacaTyp = null; // gdy wybrano akcje wymagajaca celu, czekamy na klikniecie wroga
   var blokAktywny = false;
+  var fiolkaUzyta = false; // jednorazowa na CALY przebieg (3 poziomy), NIE resetuje sie miedzy poziomami
   var trwa = false;
 
   function losowo(min, max) { return Math.random() * (max - min) + min; }
@@ -3455,8 +3461,7 @@ SZABLON_BITWA = """
       znaczniki.className = 'znaczniki-wroga';
       znaczniki.innerHTML =
         '<span>' + zywiolEtykieta(wrog.zywiol) + '</span>' +
-        '<span>' + typEtykieta(wrog.typ) + '</span>' +
-        '<span>' + (wrog.dystans === 'daleko' ? '↔️' : '') + '</span>';
+        '<span>' + typEtykieta(wrog.typ) + '</span>';
       karta.appendChild(znaczniki);
 
       var paskoTlo = document.createElement('div');
@@ -3486,8 +3491,7 @@ SZABLON_BITWA = """
       var znaczniki = wrog._karta.querySelector('.znaczniki-wroga');
       znaczniki.innerHTML =
         '<span>' + zywiolEtykieta(wrog.zywiol) + '</span>' +
-        '<span>' + typEtykieta(wrog.typ) + '</span>' +
-        '<span>' + (wrog.dystans === 'daleko' ? '↔️daleko' : '') + '</span>';
+        '<span>' + typEtykieta(wrog.typ) + '</span>';
     });
   }
 
@@ -3512,14 +3516,7 @@ SZABLON_BITWA = """
     przyciski.forEach(function (btn) {
       var klucz = btn.dataset.akcja;
       var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null;
-      if (klucz === 'miecz_ogien' || klucz === 'miecz_lod' || klucz === 'luk_ogien' || klucz === 'luk_lod' || klucz === 'podejdz') {
-        var maCelDlaTegoRuchu = zyjacyWrogowie().some(function (w) {
-          if (klucz === 'podejdz') return w.dystans === 'daleko';
-          if (klucz.indexOf('miecz_') === 0) return w.dystans === 'blisko';
-          return true; // luk dziala z kazdej odleglosci
-        });
-        if (!maCelDlaTegoRuchu) zablokuj = true;
-      }
+      if (klucz === 'fiolka' && fiolkaUzyta) zablokuj = true;
       btn.disabled = zablokuj;
       btn.classList.toggle('aktywny', akcjaOczekujacaTyp === klucz);
     });
@@ -3535,6 +3532,19 @@ SZABLON_BITWA = """
       poTurzeAkcji();
       return;
     }
+    if (klucz === 'fiolka') {
+      if (fiolkaUzyta) return;
+      fiolkaUzyta = true;
+      graczHp = graczHpMax;
+      aktualizujPaskiGracza();
+      akcjaWTurze++;
+      pokazDziennik('🧪 Fiolka leczenia! HP w pełni odnowione.', 1800);
+      zagrajTon(500, 0.1, 'triangle');
+      setTimeout(function () { zagrajTon(700, 0.15, 'triangle'); }, 110);
+      ustawStanPrzyciskow();
+      poTurzeAkcji();
+      return;
+    }
     akcjaOczekujacaTyp = klucz;
     ustawStanPrzyciskow();
     odswiezKartyWrogow();
@@ -3547,13 +3557,7 @@ SZABLON_BITWA = """
     if (!wrog || !wrog.zyje) return;
 
     var typ = akcjaOczekujacaTyp;
-    if (typ === 'podejdz') {
-      if (wrog.dystans !== 'daleko') return;
-      wrog.dystans = 'blisko';
-      pokazDziennik('👟 Podchodzisz do: ' + wrog.nazwa.replace('\\n', ' '), 1400);
-      zagrajTon(260, 0.1, 'triangle');
-    } else if (typ.indexOf('miecz_') === 0) {
-      if (wrog.dystans !== 'blisko') return;
+    if (typ.indexOf('miecz_') === 0) {
       wykonajAtak(wrog, 'miecz', typ === 'miecz_ogien' ? 'ogien' : 'lod');
     } else if (typ.indexOf('luk_') === 0) {
       wykonajAtak(wrog, 'luk', typ === 'luk_ogien' ? 'ogien' : 'lod');
@@ -3667,13 +3671,7 @@ SZABLON_BITWA = """
       }
     });
 
-    // Lucznicy "cofaja sie" na koniec swojej tury (kiting)
     setTimeout(function () {
-      zyjacy.forEach(function (wrog) {
-        if (wrog.typ === 'dystans' && wrog.zyje) {
-          wrog.dystans = 'daleko';
-        }
-      });
       // boss zmienia zywiol co runde
       var boss = wrogowie.find(function (w) { return w.typ === 'boss'; });
       if (boss && boss.zyje) {
@@ -5039,8 +5037,19 @@ def renderuj_bitwa(etap_dane):
 
     components.html(SZABLON_BITWA, height=640, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
+    stan_klucz = f"potwierdz_ukonczone_{klucz}"
+    if not st.session_state.get(stan_klucz, False):
+        if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+            st.session_state[stan_klucz] = True
+            st.rerun()
+    else:
+        st.caption(t("napewno_bitwa"))
+        if st.button(t("tak_pokonalam"), key=f"btn_tak_{klucz}"):
+            st.session_state[stan_klucz] = False
+            return True
+        if st.button(t("jeszcze_nie"), key=f"btn_nie_{klucz}"):
+            st.session_state[stan_klucz] = False
+            st.rerun()
     return None
 
 
