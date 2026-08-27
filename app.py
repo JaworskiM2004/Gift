@@ -3929,6 +3929,22 @@ SZABLON_MINECRAFT = """
   #btnRecepturyToggle { top: 44px; }
   #btnPiecToggle { top: 82px; display: none; }
   #btnPiecToggle.widoczny { display: block; }
+  #btnNowySwiat {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    left: auto;
+    width: 34px; height: 34px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 2px solid #5a4a2e;
+    color: #f5f5f0;
+    font-size: 16px;
+    z-index: 5;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    padding: 0;
+  }
+  #btnNowySwiat:active { transform: scale(0.93); }
   #sterowanie {
     display: flex;
     justify-content: center;
@@ -3947,26 +3963,28 @@ SZABLON_MINECRAFT = """
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
   }
   .btn-ruch:active { transform: scale(0.94); }
-  #btnNowySwiat {
-    background: linear-gradient(135deg, #3a3550, #262038);
-    border: 1px solid #5a4a2e;
-    border-radius: 12px;
-    color: #f5f5f0;
-    font-size: 12px;
-    font-weight: 600;
-    padding: 0 12px;
-    height: 44px;
-  }
   #ekwipunek {
     display: none;
+    padding: 6px 8px 10px;
+    border-top: 1px solid rgba(212,175,55,0.2);
+  }
+  #ekwipunek.widoczny { display: block; }
+  .naglowek-ekwipunku {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.65;
+    text-align: center;
+    margin: 6px 0 4px;
+  }
+  .wiersz-ekwipunku {
+    display: flex;
     flex-wrap: wrap;
     justify-content: center;
     align-items: center;
     gap: 5px;
-    padding: 6px 6px 10px;
-    border-top: 1px solid rgba(212,175,55,0.2);
   }
-  #ekwipunek.widoczny { display: flex; }
+  .slot-narzedzie { cursor: default; }
   #panelReceptur {
     display: none;
     padding: 8px 10px 12px;
@@ -3975,29 +3993,46 @@ SZABLON_MINECRAFT = """
   #panelReceptur.widoczny { display: block; }
   .karta-receptury {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
+    flex-direction: column;
+    gap: 6px;
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(212,175,55,0.25);
     border-radius: 10px;
-    padding: 6px 8px;
-    margin-bottom: 6px;
+    padding: 8px;
+    margin-bottom: 7px;
   }
-  .karta-receptury .opis-receptury {
-    font-size: 11px;
-    line-height: 1.4;
+  .wiersz-receptury {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
   }
-  .karta-receptury .opis-receptury b { color: #e6c15c; }
+  .mini-skladnik {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+  }
+  .mini-licznik {
+    font-size: 10px;
+    font-weight: 700;
+    color: #e6c15c;
+  }
+  .znak-receptury {
+    font-size: 13px;
+    opacity: 0.7;
+    padding: 0 1px;
+  }
   .btn-wytworz {
     background: linear-gradient(135deg, #e6c15c, #d4af37);
     border: none;
     border-radius: 8px;
     color: #16130a;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
-    padding: 6px 10px;
-    white-space: nowrap;
+    padding: 7px 10px;
+    width: 100%;
   }
   .btn-wytworz:disabled { opacity: 0.35; }
   #panelPieca {
@@ -4020,7 +4055,7 @@ SZABLON_MINECRAFT = """
     font-size: 12px;
     font-weight: 700;
     padding: 8px 16px;
-    margin-top: 3px;
+    width: 100%;
   }
   .btn-przetop:disabled { opacity: 0.35; }
   .slot-bloku {
@@ -4090,12 +4125,12 @@ SZABLON_MINECRAFT = """
       <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
       <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
+      <button id="btnNowySwiat" title="Nowy świat">🔄</button>
       <canvas id="canvasSwiat" width="338" height="286"></canvas>
     </div>
     <div id="dziennikMc"></div>
     <div id="sterowanie">
       <button class="btn-ruch" id="btnLewo">⬅️</button>
-      <button id="btnNowySwiat">🔄 Nowy świat</button>
       <button class="btn-ruch" id="btnPrawo">➡️</button>
     </div>
     <div id="ekwipunek"></div>
@@ -4194,6 +4229,41 @@ SZABLON_MINECRAFT = """
     'ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
     'piach', 'schodki', 'szyby', 'piec',
   ];
+
+  // ---------- IKONY (prawdziwa tekstura dla blokow, emoji dla reszty) ----------
+  var BLOKI_Z_TEKSTURA = {};
+  Object.keys(KOLORY_BLOKOW).forEach(function (k) { BLOKI_Z_TEKSTURA[k] = true; });
+  var IKONY_PRZEDMIOTOW = {
+    patyk: '🪵', pioro: '🪶', nici: '🧵', zelazo: '🔩', strzala: '➶',
+    kilofDrewniany: '⛏️', kilofKamienny: '⛏️', kilofZelazny: '⛏️',
+    mieczDrewniany: '🗡️', mieczKamienny: '🗡️', mieczZelazny: '⚔️', mieczDiamentowy: '⚔️',
+    luk: '🏹',
+  };
+
+  function stworzIkonkeElementu(klucz, rozmiarPx) {
+    rozmiarPx = rozmiarPx || 26;
+    if (BLOKI_Z_TEKSTURA[klucz]) {
+      var miniCanvas = document.createElement('canvas');
+      miniCanvas.width = KOMORKA;
+      miniCanvas.height = KOMORKA;
+      miniCanvas.style.width = rozmiarPx + 'px';
+      miniCanvas.style.height = rozmiarPx + 'px';
+      miniCanvas.style.borderRadius = '4px';
+      miniCanvas.style.imageRendering = 'pixelated';
+      rysujTeksture(miniCanvas.getContext('2d'), 0, 0, klucz);
+      return miniCanvas;
+    }
+    var span = document.createElement('span');
+    span.textContent = IKONY_PRZEDMIOTOW[klucz] || '❔';
+    span.style.fontSize = Math.round(rozmiarPx * 0.78) + 'px';
+    span.style.display = 'inline-flex';
+    span.style.alignItems = 'center';
+    span.style.justifyContent = 'center';
+    span.style.width = rozmiarPx + 'px';
+    span.style.height = rozmiarPx + 'px';
+    span.style.lineHeight = '1';
+    return span;
+  }
 
   // ---------- POZIOMY NARZEDZI ----------
   // 0 = gole rece, 1 = drewniany, 2 = kamienny, 3 = zelazny
@@ -4397,13 +4467,19 @@ SZABLON_MINECRAFT = """
 
   function odswiezEkwipunek() {
     ekwipunekEl.innerHTML = '';
+
+    var naglowekBlokow = document.createElement('div');
+    naglowekBlokow.className = 'naglowek-ekwipunku';
+    naglowekBlokow.textContent = '🧱 Bloki do stawiania — dotknij, żeby wybrać';
+    ekwipunekEl.appendChild(naglowekBlokow);
+
+    var wierszBlokow = document.createElement('div');
+    wierszBlokow.className = 'wiersz-ekwipunku';
     KOLEJNOSC_EKWIPUNKU.forEach(function (klucz) {
       var slot = document.createElement('div');
       slot.className = 'slot-bloku' + (klucz === wybranyBlok ? ' wybrany' : '');
-      var ikonka = document.createElement('div');
-      ikonka.className = 'ikonka-bloku';
-      ikonka.style.background = KOLORY_BLOKOW[klucz];
-      slot.appendChild(ikonka);
+      slot.title = NAZWY_BLOKOW[klucz];
+      slot.appendChild(stworzIkonkeElementu(klucz, 28));
       var licznik = document.createElement('div');
       licznik.className = 'licznik-bloku';
       licznik.textContent = ekwipunek[klucz] || 0;
@@ -4412,8 +4488,34 @@ SZABLON_MINECRAFT = """
         wybranyBlok = klucz;
         odswiezEkwipunek();
       });
-      ekwipunekEl.appendChild(slot);
+      wierszBlokow.appendChild(slot);
     });
+    ekwipunekEl.appendChild(wierszBlokow);
+
+    var narzedziaSurowce = Object.keys(NAZWY_BLOKOW).filter(function (k) {
+      return !BLOKI_Z_TEKSTURA[k] && (ekwipunek[k] || 0) > 0;
+    });
+    if (narzedziaSurowce.length > 0) {
+      var naglowekNarz = document.createElement('div');
+      naglowekNarz.className = 'naglowek-ekwipunku';
+      naglowekNarz.textContent = '🎒 Narzędzia i surowce';
+      ekwipunekEl.appendChild(naglowekNarz);
+
+      var wierszNarz = document.createElement('div');
+      wierszNarz.className = 'wiersz-ekwipunku';
+      narzedziaSurowce.forEach(function (klucz) {
+        var slot = document.createElement('div');
+        slot.className = 'slot-bloku slot-narzedzie';
+        slot.title = NAZWY_BLOKOW[klucz];
+        slot.appendChild(stworzIkonkeElementu(klucz, 28));
+        var licznik = document.createElement('div');
+        licznik.className = 'licznik-bloku';
+        licznik.textContent = ekwipunek[klucz];
+        slot.appendChild(licznik);
+        wierszNarz.appendChild(slot);
+      });
+      ekwipunekEl.appendChild(wierszNarz);
+    }
   }
 
   function dodajDoEkwipunku(blok, ile) {
@@ -4435,12 +4537,6 @@ SZABLON_MINECRAFT = """
   }
 
   // ---------- RECEPTURY (crafting) ----------
-  function opisSkladnikow(skladniki) {
-    return Object.keys(skladniki).map(function (k) {
-      return skladniki[k] + '× ' + NAZWY_BLOKOW[k];
-    }).join(' + ');
-  }
-
   function maSkladniki(skladniki) {
     return Object.keys(skladniki).every(function (k) {
       return (ekwipunek[k] || 0) >= skladniki[k];
@@ -4460,19 +4556,48 @@ SZABLON_MINECRAFT = """
     setTimeout(function () { zagrajTon(560, 0.1, 'square'); }, 90);
   }
 
+  function stworzMiniSkladnik(klucz, ile) {
+    var mini = document.createElement('div');
+    mini.className = 'mini-skladnik';
+    mini.title = NAZWY_BLOKOW[klucz];
+    mini.appendChild(stworzIkonkeElementu(klucz, 24));
+    var licznik = document.createElement('span');
+    licznik.className = 'mini-licznik';
+    licznik.textContent = '×' + ile;
+    mini.appendChild(licznik);
+    return mini;
+  }
+
+  function stworzWierszReceptury(skladniki, wyjscie, ileWyjscia) {
+    var wiersz = document.createElement('div');
+    wiersz.className = 'wiersz-receptury';
+    var klucze = Object.keys(skladniki);
+    klucze.forEach(function (k, idx) {
+      wiersz.appendChild(stworzMiniSkladnik(k, skladniki[k]));
+      if (idx < klucze.length - 1) {
+        var plus = document.createElement('span');
+        plus.className = 'znak-receptury';
+        plus.textContent = '+';
+        wiersz.appendChild(plus);
+      }
+    });
+    var strzalka = document.createElement('span');
+    strzalka.className = 'znak-receptury';
+    strzalka.textContent = '→';
+    wiersz.appendChild(strzalka);
+    wiersz.appendChild(stworzMiniSkladnik(wyjscie, ileWyjscia));
+    return wiersz;
+  }
+
   function odswiezPanelReceptur() {
     panelReceptur.innerHTML = '';
     RECEPTURY.forEach(function (przepis) {
       var karta = document.createElement('div');
       karta.className = 'karta-receptury';
-      var opis = document.createElement('div');
-      opis.className = 'opis-receptury';
-      opis.innerHTML = opisSkladnikow(przepis.skladniki) + ' → <b>' +
-        przepis.ileWyjscia + '× ' + NAZWY_BLOKOW[przepis.wyjscie] + '</b>';
-      karta.appendChild(opis);
+      karta.appendChild(stworzWierszReceptury(przepis.skladniki, przepis.wyjscie, przepis.ileWyjscia));
       var btn = document.createElement('button');
       btn.className = 'btn-wytworz';
-      btn.textContent = 'Wytwórz';
+      btn.textContent = '🔨 Wytwórz ' + NAZWY_BLOKOW[przepis.wyjscie];
       btn.disabled = !maSkladniki(przepis.skladniki);
       btn.addEventListener('click', function () { wytworz(przepis); });
       karta.appendChild(btn);
@@ -4521,69 +4646,89 @@ SZABLON_MINECRAFT = """
   }
 
   function odswiezPanelPieca() {
+    panelPieca.innerHTML = '';
     var wegiel = ekwipunek.wegiel || 0;
     var drewno = ekwipunek.drewno || 0;
-    var html = '<div class="stan-pieca">🪨 Węgiel: ' + wegiel +
-      ' &nbsp; 🪵 Drewno (jako paliwo): ' + drewno + '</div>';
+
+    var etykietaPaliwa = document.createElement('div');
+    etykietaPaliwa.className = 'naglowek-ekwipunku';
+    etykietaPaliwa.textContent = 'Paliwo (wystarczy jedno z tych dwóch)';
+    panelPieca.appendChild(etykietaPaliwa);
+
+    var paliwoWiersz = document.createElement('div');
+    paliwoWiersz.className = 'wiersz-receptury';
+    paliwoWiersz.style.marginBottom = '10px';
+    paliwoWiersz.appendChild(stworzMiniSkladnik('wegiel', wegiel));
+    var lub = document.createElement('span');
+    lub.className = 'znak-receptury';
+    lub.textContent = 'lub';
+    paliwoWiersz.appendChild(lub);
+    paliwoWiersz.appendChild(stworzMiniSkladnik('drewno', drewno));
+    panelPieca.appendChild(paliwoWiersz);
+
     PRZEPISY_PIECA.forEach(function (przepis) {
       var ile = ekwipunek[przepis.surowiec] || 0;
       var mozna = ile > 0 && (wegiel > 0 || drewno > 0);
-      html += '<div style="margin-bottom:8px;">' +
-        przepis.ikonaSurowca + ' ' + NAZWY_BLOKOW[przepis.surowiec] + ': ' + ile +
-        '<br><button class="btn-przetop" data-id="' + przepis.id + '"' + (mozna ? '' : ' disabled') + '>' +
-        '🔥 Przetop → ' + NAZWY_BLOKOW[przepis.wyjscie] + '</button></div>';
-    });
-    panelPieca.innerHTML = html;
-    panelPieca.querySelectorAll('.btn-przetop').forEach(function (btn) {
-      var przepis = PRZEPISY_PIECA.filter(function (p) { return p.id === btn.dataset.id; })[0];
+      var skladnikObj = {};
+      skladnikObj[przepis.surowiec] = 1;
+
+      var karta = document.createElement('div');
+      karta.className = 'karta-receptury';
+      karta.appendChild(stworzWierszReceptury(skladnikObj, przepis.wyjscie, 1));
+      var btn = document.createElement('button');
+      btn.className = 'btn-przetop';
+      btn.textContent = '🔥 Przetop → ' + NAZWY_BLOKOW[przepis.wyjscie];
+      btn.disabled = !mozna;
       btn.addEventListener('click', function () { przetop(przepis); });
+      karta.appendChild(btn);
+      panelPieca.appendChild(karta);
     });
   }
 
   // ---------- RYSOWANIE ----------
-  function rysujTeksture(x, y, blok) {
+  function rysujTeksture(ctxDocelowy, x, y, blok) {
     var kolor = KOLORY_BLOKOW[blok];
-    ctx.fillStyle = kolor;
-    ctx.fillRect(x, y, KOMORKA, KOMORKA);
-    ctx.strokeStyle = 'rgba(0,0,0,0.18)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(x + 0.5, y + 0.5, KOMORKA - 1, KOMORKA - 1);
-    ctx.fillStyle = 'rgba(255,255,255,0.14)';
-    ctx.fillRect(x + 2, y + 2, KOMORKA - 4, 3);
+    ctxDocelowy.fillStyle = kolor;
+    ctxDocelowy.fillRect(x, y, KOMORKA, KOMORKA);
+    ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.18)';
+    ctxDocelowy.lineWidth = 1;
+    ctxDocelowy.strokeRect(x + 0.5, y + 0.5, KOMORKA - 1, KOMORKA - 1);
+    ctxDocelowy.fillStyle = 'rgba(255,255,255,0.14)';
+    ctxDocelowy.fillRect(x + 2, y + 2, KOMORKA - 4, 3);
     if (blok === 'trawa') {
-      ctx.fillStyle = 'rgba(255,255,255,0.10)';
+      ctxDocelowy.fillStyle = 'rgba(255,255,255,0.10)';
       for (var i = 0; i < 3; i++) {
-        ctx.fillRect(x + 4 + i * 7, y + 4, 3, 2);
+        ctxDocelowy.fillRect(x + 4 + i * 7, y + 4, 3, 2);
       }
     } else if (blok === 'wegiel' || blok === 'zloto' || blok === 'rudaZelaza' || blok === 'diament') {
       var kolorKropek = { wegiel: '#111', zloto: '#fff3cf', rudaZelaza: '#e0a888', diament: '#e0fffb' };
-      ctx.fillStyle = kolorKropek[blok];
-      ctx.beginPath(); ctx.arc(x + 8, y + 9, 3, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(x + 17, y + 16, 2.5, 0, Math.PI * 2); ctx.fill();
+      ctxDocelowy.fillStyle = kolorKropek[blok];
+      ctxDocelowy.beginPath(); ctxDocelowy.arc(x + 8, y + 9, 3, 0, Math.PI * 2); ctxDocelowy.fill();
+      ctxDocelowy.beginPath(); ctxDocelowy.arc(x + 17, y + 16, 2.5, 0, Math.PI * 2); ctxDocelowy.fill();
     } else if (blok === 'drewno' || blok === 'drewnoBrzozy') {
-      ctx.strokeStyle = blok === 'drewnoBrzozy' ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.25)';
-      ctx.beginPath(); ctx.moveTo(x + 6, y); ctx.lineTo(x + 6, y + KOMORKA); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x + 19, y); ctx.lineTo(x + 19, y + KOMORKA); ctx.stroke();
+      ctxDocelowy.strokeStyle = blok === 'drewnoBrzozy' ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.25)';
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + 6, y); ctxDocelowy.lineTo(x + 6, y + KOMORKA); ctxDocelowy.stroke();
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + 19, y); ctxDocelowy.lineTo(x + 19, y + KOMORKA); ctxDocelowy.stroke();
       if (blok === 'drewnoBrzozy') {
-        ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(x + 10, y + 5, 6, 2);
-        ctx.fillRect(x + 10, y + 15, 6, 2);
+        ctxDocelowy.fillStyle = 'rgba(0,0,0,0.3)';
+        ctxDocelowy.fillRect(x + 10, y + 5, 6, 2);
+        ctxDocelowy.fillRect(x + 10, y + 15, 6, 2);
       }
     } else if (blok === 'schodki') {
-      ctx.fillStyle = 'rgba(0,0,0,0.28)';
-      ctx.fillRect(x + KOMORKA / 2, y, KOMORKA / 2, KOMORKA / 2);
-      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
-      ctx.strokeRect(x + KOMORKA / 2 + 0.5, y + 0.5, KOMORKA / 2 - 1, KOMORKA / 2 - 1);
+      ctxDocelowy.fillStyle = 'rgba(0,0,0,0.28)';
+      ctxDocelowy.fillRect(x + KOMORKA / 2, y, KOMORKA / 2, KOMORKA / 2);
+      ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctxDocelowy.strokeRect(x + KOMORKA / 2 + 0.5, y + 0.5, KOMORKA / 2 - 1, KOMORKA / 2 - 1);
     } else if (blok === 'szyby') {
-      ctx.strokeStyle = 'rgba(255,255,255,0.5)';
-      ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(x + 2, y + 2); ctx.lineTo(x + KOMORKA - 2, y + KOMORKA - 2); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x + KOMORKA - 2, y + 2); ctx.lineTo(x + 2, y + KOMORKA - 2); ctx.stroke();
+      ctxDocelowy.strokeStyle = 'rgba(255,255,255,0.5)';
+      ctxDocelowy.lineWidth = 1;
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + 2, y + 2); ctxDocelowy.lineTo(x + KOMORKA - 2, y + KOMORKA - 2); ctxDocelowy.stroke();
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + KOMORKA - 2, y + 2); ctxDocelowy.lineTo(x + 2, y + KOMORKA - 2); ctxDocelowy.stroke();
     } else if (blok === 'piec') {
-      ctx.fillStyle = '#e67e3c';
-      ctx.fillRect(x + 8, y + 14, KOMORKA - 16, 9);
-      ctx.strokeStyle = 'rgba(0,0,0,0.4)';
-      ctx.strokeRect(x + 8.5, y + 14.5, KOMORKA - 17, 8);
+      ctxDocelowy.fillStyle = '#e67e3c';
+      ctxDocelowy.fillRect(x + 8, y + 14, KOMORKA - 16, 9);
+      ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.4)';
+      ctxDocelowy.strokeRect(x + 8.5, y + 14.5, KOMORKA - 17, 8);
     }
   }
 
@@ -4707,7 +4852,7 @@ SZABLON_MINECRAFT = """
         if (wx < 0 || wx >= SZEROKOSC_SWIATA || wy < 0 || wy >= WYSOKOSC_SWIATA) continue;
         var blok = world[wx][wy];
         if (blok && blok !== 'powietrze') {
-          rysujTeksture(vx * KOMORKA, vy * KOMORKA, blok);
+          rysujTeksture(ctx, vx * KOMORKA, vy * KOMORKA, blok);
         }
         var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
         if (dyst <= ZASIEG && !(wx === graczX && wy === graczY)) {
