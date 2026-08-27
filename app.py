@@ -459,6 +459,13 @@ TEKST = {
         "napewno_bitwa": "Na pewno pokonałaś bossa? Jeśli nie, wróć do gry.",
         "tak_pokonalam": "Tak, pokonałam!",
         "jeszcze_nie": "Jeszcze nie",
+        "tak_ukonczylam": "Tak, ukończyłam!",
+        "napewno_dron": "Na pewno ukończyłaś cały lot bez rozbicia?",
+        "napewno_zaba": "Na pewno żabka doskoczyła do końca?",
+        "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
+        "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
+        "napewno_piano": "Na pewno zagrałaś całą melodię bez pudła?",
+        "napewno_gra": "Na pewno złapałaś wszystkie serca na wszystkich poziomach?",
         "kod_do_sejfu": "Kod do sejfu:",
         "ukonczone_w": "Ukończone w",
         "min": "min",
@@ -499,6 +506,13 @@ TEKST = {
         "napewno_bitwa": "Are you sure you defeated the boss? If not, go back to the game.",
         "tak_pokonalam": "Yes, I defeated it!",
         "jeszcze_nie": "Not yet",
+        "tak_ukonczylam": "Yes, I completed it!",
+        "napewno_dron": "Are you sure you finished the whole flight without crashing?",
+        "napewno_zaba": "Are you sure the frog made it all the way?",
+        "napewno_memory": "Are you sure you matched all pairs in time?",
+        "napewno_simon": "Are you sure you repeated the whole sequence?",
+        "napewno_piano": "Are you sure you played the whole melody without a miss?",
+        "napewno_gra": "Are you sure you caught all the hearts on every level?",
         "kod_do_sejfu": "Safe code:",
         "ukonczone_w": "Completed in",
         "min": "min",
@@ -3321,8 +3335,8 @@ SZABLON_BITWA = """
   var DEFINICJE_POZIOMOW = [
     function () {
       return [
-        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
-        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 14),
+        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 6),
+        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 7),
       ];
     },
     function () {
@@ -3330,6 +3344,7 @@ SZABLON_BITWA = """
         nowyWrog('Włócznik\\nOgnisty', 'dzida', 'ogien', 16),
         nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 18),
         nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 14),
+        nowyWrog('Tarczownik\\nOgnisty', 'tarcza', 'ogien', 18),
       ];
     },
     function () {
@@ -3356,6 +3371,8 @@ SZABLON_BITWA = """
   var akcjaOczekujacaTyp = null; // gdy wybrano akcje wymagajaca celu, czekamy na klikniecie wroga
   var blokAktywny = false;
   var fiolkaUzyta = false; // jednorazowa na CALY przebieg (3 poziomy), NIE resetuje sie miedzy poziomami
+  var mnoznikObrazen = 1; // "level up" po 2. poziomie -> 1.25
+  var REGEN_NA_TURE = 2; // pasywne odnowienie HP na poczatku kazdej tury gracza
   var trwa = false;
 
   function losowo(min, max) { return Math.random() * (max - min) + min; }
@@ -3584,6 +3601,7 @@ SZABLON_BITWA = """
     } else {
       obrazenia = 8;
     }
+    obrazenia = Math.round(obrazenia * mnoznikObrazen);
 
     wrog.hp -= obrazenia;
     zamigajISzarpnij(wrog._karta);
@@ -3606,7 +3624,7 @@ SZABLON_BITWA = """
     }
 
     if (bron === 'miecz' && (wrog.typ === 'dzida' || wrog.typ === 'boss')) {
-      var kontra = wrog.typ === 'boss' ? 5 : 4;
+      var kontra = wrog.typ === 'boss' ? 2 : 4;
       graczHp -= kontra;
       aktualizujPaskiGracza();
       setTimeout(function () {
@@ -3682,11 +3700,14 @@ SZABLON_BITWA = """
       odswiezKartyWrogow();
       akcjaWTurze = 0;
       blokAktywny = false;
+      if (sprawdzKoniecGry()) return;
+      // pasywna regeneracja na poczatku nowej tury (tylko jesli gracz przezyl runde)
+      if (graczHp < graczHpMax) {
+        graczHp = Math.min(graczHpMax, graczHp + REGEN_NA_TURE);
+        aktualizujPaskiGracza();
+      }
       podpowiedzTury.textContent = 'Wybierz pierwszą akcję';
       ustawStanPrzyciskow();
-      if (!sprawdzKoniecGry()) {
-        // nic
-      }
     }, opoznienie + 200);
   }
 
@@ -3711,14 +3732,21 @@ SZABLON_BITWA = """
         nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
         nakladkaBtn.style.display = 'none';
       } else {
+        var terazKonczySieDrugiPoziom = (poziomIndeks === 1);
         dzwiekZwyciestwo();
         nakladka.style.display = 'flex';
         nakladkaTytul.textContent = '✅ Poziom pokonany!';
-        nakladkaOpis.textContent = 'Odrobina wytchnienia przed kolejnym poziomem.';
+        nakladkaOpis.textContent = terazKonczySieDrugiPoziom
+          ? 'Czujesz się silniejsza! +25% do maks. HP i +25% do obrażeń przed starciem z bossem.'
+          : 'Odrobina wytchnienia przed kolejnym poziomem.';
         nakladkaBtn.textContent = 'Następny poziom ▶';
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.onclick = function () {
           inicjujDzwiek();
+          if (terazKonczySieDrugiPoziom) {
+            graczHpMax = Math.round(graczHpMax * 1.25);
+            mnoznikObrazen = 1.25;
+          }
           graczHp = Math.min(graczHpMax, graczHp + 10);
           rozpocznijPoziom(poziomIndeks + 1);
         };
@@ -3809,12 +3837,18 @@ SZABLON_MINECRAFT = """
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 6px;
+    gap: 14px;
     padding: 2px 0 0;
     font-size: 11px;
+    flex-wrap: wrap;
   }
-  #pasekGloduTlo {
-    width: 130px;
+  .mini-pasek-otoczka {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  #pasekGloduTlo, #pasekHpTlo {
+    width: 110px;
     height: 9px;
     background: #2a1c10;
     border: 1px solid rgba(0,0,0,0.4);
@@ -3824,6 +3858,11 @@ SZABLON_MINECRAFT = """
   #pasekGloduWypelnienie {
     height: 100%;
     background: linear-gradient(90deg, #e6a23c, #f0c869);
+    transition: width 0.4s ease;
+  }
+  #pasekHpWypelnienie {
+    height: 100%;
+    background: linear-gradient(90deg, #ef4444, #f87171);
     transition: width 0.4s ease;
   }
   #obszarSwiata {
@@ -3973,16 +4012,17 @@ SZABLON_MINECRAFT = """
     margin-bottom: 8px;
     line-height: 1.6;
   }
-  #btnPrzetop {
+  .btn-przetop {
     background: linear-gradient(135deg, #e67e3c, #c9502f);
     border: none;
     border-radius: 10px;
     color: #fff3e0;
     font-size: 12px;
     font-weight: 700;
-    padding: 9px 18px;
+    padding: 8px 16px;
+    margin-top: 3px;
   }
-  #btnPrzetop:disabled { opacity: 0.35; }
+  .btn-przetop:disabled { opacity: 0.35; }
   .slot-bloku {
     position: relative;
     width: 40px; height: 40px;
@@ -4036,8 +4076,14 @@ SZABLON_MINECRAFT = """
   </div>
   <div id="gra">
     <div id="pasekGloduOtoczka">
-      <span>🍗</span>
-      <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
+      <div class="mini-pasek-otoczka">
+        <span>❤️</span>
+        <div id="pasekHpTlo"><div id="pasekHpWypelnienie" style="width:100%;"></div></div>
+      </div>
+      <div class="mini-pasek-otoczka">
+        <span>🍗</span>
+        <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
+      </div>
     </div>
     <div id="celZadania">🎯 Cel: zbuduj dom</div>
     <div id="obszarSwiata">
@@ -4060,7 +4106,7 @@ SZABLON_MINECRAFT = """
     </div>
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
-      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień, węgiel i złoto wymagają kilofa — zrób go w recepturach (📖) z patyków i drewna. Piach da się przetopić na szyby w piecu (🔥), gdy jesteś blisko niego. Buduj, kop, baw się — bez presji, żadnego "wygrania".</p>
+      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień, węgiel i złoto wymagają kilofa (im lepszy, tym głębsze surowce). Piach da się przetopić na szyby w piecu (🔥). W nocy pojawiają się potwory — dotknij ich, żeby zaatakować mieczem (z bliska) albo łukiem (z daleka). Buduj, kop, walcz, baw się — bez presji, żadnego "wygrania".</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
   </div>
@@ -4083,6 +4129,7 @@ SZABLON_MINECRAFT = """
   var nakladkaBtn = document.getElementById('nakladkaBtn');
   var wyciszBtn = document.getElementById('wyciszBtn');
   var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
+  var pasekHpWypelnienie = document.getElementById('pasekHpWypelnienie');
   var btnDom = document.getElementById('btnDom');
 
   var wyciszone = false;
@@ -4128,24 +4175,61 @@ SZABLON_MINECRAFT = """
     drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
     zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
     schodki: '#9c6a35', szyby: '#bfe6f0', piec: '#4a4a4a',
+    rudaZelaza: '#b8927a', diament: '#7ee8e0', drewnoBrzozy: '#e8ddc8',
   };
   var NAZWY_BLOKOW = {
     trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
     liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto', piach: 'Piach',
     schodki: 'Schodki', szyby: 'Szyby', piec: 'Piec',
-    patyk: 'Patyk', kilof: 'Kilof',
+    patyk: 'Patyk', rudaZelaza: 'Ruda żelaza', zelazo: 'Żelazo',
+    diament: 'Diament', pioro: 'Pióro', nici: 'Nici', strzala: 'Strzała',
+    kilofDrewniany: 'Kilof drewniany', kilofKamienny: 'Kilof kamienny',
+    kilofZelazny: 'Kilof żelazny',
+    mieczDrewniany: 'Miecz drewniany', mieczKamienny: 'Miecz kamienny',
+    mieczZelazny: 'Miecz żelazny', mieczDiamentowy: 'Miecz diamentowy',
+    luk: 'Łuk', drewnoBrzozy: 'Drewno brzozy',
   };
-  // Bloki, ktore mozna STAWIAC (patyk i kilof to skladniki/narzedzie, nie bloki)
+  // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
     'ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
     'piach', 'schodki', 'szyby', 'piec',
   ];
-  // Bloki wymagajace kilofa do wykopania
-  var WYMAGA_KILOFA = { kamien: true, wegiel: true, zloto: true };
+
+  // ---------- POZIOMY NARZEDZI ----------
+  // 0 = gole rece, 1 = drewniany, 2 = kamienny, 3 = zelazny
+  var POZIOM_KILOFA = { kilofDrewniany: 1, kilofKamienny: 2, kilofZelazny: 3 };
+  var WYMAGANY_POZIOM_KILOFA = { kamien: 1, wegiel: 1, zloto: 1, rudaZelaza: 2, diament: 3 };
+  function najlepszyPoziomKilofa() {
+    var poziom = 0;
+    Object.keys(POZIOM_KILOFA).forEach(function (k) {
+      if ((ekwipunek[k] || 0) > 0) poziom = Math.max(poziom, POZIOM_KILOFA[k]);
+    });
+    return poziom;
+  }
+
+  // obrazenia zadawane potworom - im lepszy miecz, tym wiecej
+  var OBRAZENIA_MIECZA = {
+    brak: 1, mieczDrewniany: 4, mieczKamienny: 5, mieczZelazny: 6, mieczDiamentowy: 7,
+  };
+  var KOLEJNOSC_MIECZY = ['mieczDiamentowy', 'mieczZelazny', 'mieczKamienny', 'mieczDrewniany'];
+  function najlepszyMiecz() {
+    for (var i = 0; i < KOLEJNOSC_MIECZY.length; i++) {
+      if ((ekwipunek[KOLEJNOSC_MIECZY[i]] || 0) > 0) return KOLEJNOSC_MIECZY[i];
+    }
+    return 'brak';
+  }
 
   var RECEPTURY = [
     { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 } },
-    { id: 'kilof', wyjscie: 'kilof', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 } },
+    { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 } },
+    { id: 'kilofKamienny', wyjscie: 'kilofKamienny', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 } },
+    { id: 'kilofZelazny', wyjscie: 'kilofZelazny', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 } },
+    { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 } },
+    { id: 'mieczKamienny', wyjscie: 'mieczKamienny', ileWyjscia: 1, skladniki: { patyk: 1, kamien: 2 } },
+    { id: 'mieczZelazny', wyjscie: 'mieczZelazny', ileWyjscia: 1, skladniki: { patyk: 1, zelazo: 2 } },
+    { id: 'mieczDiamentowy', wyjscie: 'mieczDiamentowy', ileWyjscia: 1, skladniki: { patyk: 1, diament: 2 } },
+    { id: 'luk', wyjscie: 'luk', ileWyjscia: 1, skladniki: { pioro: 1, nici: 1, patyk: 1 } },
+    { id: 'strzala', wyjscie: 'strzala', ileWyjscia: 4, skladniki: { patyk: 1, kamien: 1 } },
     { id: 'schodki', wyjscie: 'schodki', ileWyjscia: 4, skladniki: { drewno: 1 } },
     { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
   ];
@@ -4157,10 +4241,27 @@ SZABLON_MINECRAFT = """
   var kameraX = 0, kameraY = 0;
   var trwa = false;
 
-  var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka', kierunek: 1/-1}
+  var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka'/'kurczak', kierunek: 1/-1}
   var GLOD_MAX = 10;
   var graczGlod = GLOD_MAX;
   var probyDomu = 0;
+
+  // ---------- HP GRACZA, DZIEN/NOC, POTWORY ----------
+  var GRACZ_HP_MAX = 20;
+  var graczHp = GRACZ_HP_MAX;
+  var czasSwiata = 0; // rosnie co "tick" (patrz interwal nizej)
+  var DLUGOSC_DNIA = 55;   // "tickow" (1 tick = 1 sekunda)
+  var DLUGOSC_NOCY = 35;
+  var PELNY_CYKL = DLUGOSC_DNIA + DLUGOSC_NOCY;
+  var bylaNocPoprzednioTick = false;
+  var potwory = []; // {x, y, typ: 'zombie'/'szkielet'/'pajak', hp, hpMax}
+  var HP_POTWORA = { zombie: 12, szkielet: 10, pajak: 8 };
+  var MAX_POTWOROW = 3;
+  var OBRAZENIA_LUKU = 4;
+
+  function czyNoc() {
+    return (czasSwiata % PELNY_CYKL) >= DLUGOSC_DNIA;
+  }
 
   function losowo(min, max) { return Math.random() * (max - min) + min; }
 
@@ -4185,7 +4286,8 @@ SZABLON_MINECRAFT = """
         else if (y < pow + 4) blok = 'ziemia';
         else if (y < WYSOKOSC_SWIATA - 1) {
           var r = Math.random();
-          blok = (r < 0.045) ? 'wegiel' : (r < 0.065) ? 'zloto' : 'kamien';
+          blok = (r < 0.045) ? 'wegiel' : (r < 0.065) ? 'zloto' :
+                 (r < 0.10) ? 'rudaZelaza' : (r < 0.11) ? 'diament' : 'kamien';
         } else {
           blok = 'podloze';
         }
@@ -4208,13 +4310,15 @@ SZABLON_MINECRAFT = """
       }
     }
 
-    // drzewa
+    // drzewa - dab (drewno) lub brzoza (drewnoBrzozy, wizualna odmiana -
+    // po wykopaniu i tak trafia do tego samego zasobu "drewno")
     for (var x = 2; x < SZEROKOSC_SWIATA - 2; x++) {
       if (world[x][wysokoscPow[x]] === 'trawa' && Math.random() < 0.14) {
         var podstawa = wysokoscPow[x];
         var wysDrzewa = 3;
+        var typPnia = Math.random() < 0.35 ? 'drewnoBrzozy' : 'drewno';
         for (var i = 1; i <= wysDrzewa; i++) {
-          if (podstawa - i >= 0) world[x][podstawa - i] = 'drewno';
+          if (podstawa - i >= 0) world[x][podstawa - i] = typPnia;
         }
         var topY = podstawa - wysDrzewa;
         for (var dx2 = -1; dx2 <= 1; dx2++) {
@@ -4236,7 +4340,7 @@ SZABLON_MINECRAFT = """
 
   function zespawnujZwierzeta(wysokoscPow) {
     zwierzeta = [];
-    var typy = ['krowa', 'swinka'];
+    var typy = ['krowa', 'swinka', 'kurczak'];
     var probyLosowania = 0;
     while (zwierzeta.length < 4 && probyLosowania < 40) {
       probyLosowania++;
@@ -4325,6 +4429,11 @@ SZABLON_MINECRAFT = """
       : 'linear-gradient(90deg, #e6a23c, #f0c869)';
   }
 
+  function aktualizujPasekHp() {
+    var proc = Math.max(0, graczHp / GRACZ_HP_MAX * 100);
+    pasekHpWypelnienie.style.width = proc + '%';
+  }
+
   // ---------- RECEPTURY (crafting) ----------
   function opisSkladnikow(skladniki) {
     return Object.keys(skladniki).map(function (k) {
@@ -4389,34 +4498,46 @@ SZABLON_MINECRAFT = """
     }
   }
 
-  function przetopPiach() {
+  var PRZEPISY_PIECA = [
+    { id: 'szyby', surowiec: 'piach', ikonaSurowca: '🏖️', wyjscie: 'szyby' },
+    { id: 'zelazo', surowiec: 'rudaZelaza', ikonaSurowca: '🪨', wyjscie: 'zelazo' },
+  ];
+
+  function przetop(przepis) {
     var maPaliwo = (ekwipunek.wegiel || 0) > 0 || (ekwipunek.drewno || 0) > 0;
-    if ((ekwipunek.piach || 0) <= 0 || !maPaliwo) return;
-    ekwipunek.piach--;
+    if ((ekwipunek[przepis.surowiec] || 0) <= 0 || !maPaliwo) return;
+    ekwipunek[przepis.surowiec]--;
     if ((ekwipunek.wegiel || 0) > 0) {
       ekwipunek.wegiel--;
     } else {
       ekwipunek.drewno--;
     }
-    ekwipunek.szyby = (ekwipunek.szyby || 0) + 1;
+    ekwipunek[przepis.wyjscie] = (ekwipunek[przepis.wyjscie] || 0) + 1;
     odswiezEkwipunek();
     odswiezPanelPieca();
-    pokazDziennikMc('🔥 Piach zamienia się w szkło!', 1600);
+    pokazDziennikMc('🔥 ' + NAZWY_BLOKOW[przepis.surowiec] + ' zamienia się w ' + NAZWY_BLOKOW[przepis.wyjscie] + '!', 1600);
     zagrajTon(300, 0.1, 'sawtooth');
     setTimeout(function () { zagrajTon(700, 0.12, 'triangle'); }, 130);
   }
 
   function odswiezPanelPieca() {
-    var piach = ekwipunek.piach || 0;
     var wegiel = ekwipunek.wegiel || 0;
     var drewno = ekwipunek.drewno || 0;
-    var mozna = piach > 0 && (wegiel > 0 || drewno > 0);
-    panelPieca.innerHTML =
-      '<div class="stan-pieca">🏖️ Piach: ' + piach +
-      '<br>🪨 Węgiel: ' + wegiel + ' &nbsp; 🪵 Drewno (jako paliwo): ' + drewno + '</div>' +
-      '<button id="btnPrzetop"' + (mozna ? '' : ' disabled') + '>🔥 Przetop (1 piach + 1 paliwo → 1 szyby)</button>';
-    var btn = document.getElementById('btnPrzetop');
-    if (btn) btn.addEventListener('click', przetopPiach);
+    var html = '<div class="stan-pieca">🪨 Węgiel: ' + wegiel +
+      ' &nbsp; 🪵 Drewno (jako paliwo): ' + drewno + '</div>';
+    PRZEPISY_PIECA.forEach(function (przepis) {
+      var ile = ekwipunek[przepis.surowiec] || 0;
+      var mozna = ile > 0 && (wegiel > 0 || drewno > 0);
+      html += '<div style="margin-bottom:8px;">' +
+        przepis.ikonaSurowca + ' ' + NAZWY_BLOKOW[przepis.surowiec] + ': ' + ile +
+        '<br><button class="btn-przetop" data-id="' + przepis.id + '"' + (mozna ? '' : ' disabled') + '>' +
+        '🔥 Przetop → ' + NAZWY_BLOKOW[przepis.wyjscie] + '</button></div>';
+    });
+    panelPieca.innerHTML = html;
+    panelPieca.querySelectorAll('.btn-przetop').forEach(function (btn) {
+      var przepis = PRZEPISY_PIECA.filter(function (p) { return p.id === btn.dataset.id; })[0];
+      btn.addEventListener('click', function () { przetop(przepis); });
+    });
   }
 
   // ---------- RYSOWANIE ----------
@@ -4434,14 +4555,20 @@ SZABLON_MINECRAFT = """
       for (var i = 0; i < 3; i++) {
         ctx.fillRect(x + 4 + i * 7, y + 4, 3, 2);
       }
-    } else if (blok === 'wegiel' || blok === 'zloto') {
-      ctx.fillStyle = blok === 'wegiel' ? '#111' : '#fff3cf';
+    } else if (blok === 'wegiel' || blok === 'zloto' || blok === 'rudaZelaza' || blok === 'diament') {
+      var kolorKropek = { wegiel: '#111', zloto: '#fff3cf', rudaZelaza: '#e0a888', diament: '#e0fffb' };
+      ctx.fillStyle = kolorKropek[blok];
       ctx.beginPath(); ctx.arc(x + 8, y + 9, 3, 0, Math.PI * 2); ctx.fill();
       ctx.beginPath(); ctx.arc(x + 17, y + 16, 2.5, 0, Math.PI * 2); ctx.fill();
-    } else if (blok === 'drewno') {
-      ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+    } else if (blok === 'drewno' || blok === 'drewnoBrzozy') {
+      ctx.strokeStyle = blok === 'drewnoBrzozy' ? 'rgba(0,0,0,0.35)' : 'rgba(0,0,0,0.25)';
       ctx.beginPath(); ctx.moveTo(x + 6, y); ctx.lineTo(x + 6, y + KOMORKA); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(x + 19, y); ctx.lineTo(x + 19, y + KOMORKA); ctx.stroke();
+      if (blok === 'drewnoBrzozy') {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(x + 10, y + 5, 6, 2);
+        ctx.fillRect(x + 10, y + 15, 6, 2);
+      }
     } else if (blok === 'schodki') {
       ctx.fillStyle = 'rgba(0,0,0,0.28)';
       ctx.fillRect(x + KOMORKA / 2, y, KOMORKA / 2, KOMORKA / 2);
@@ -4499,7 +4626,7 @@ SZABLON_MINECRAFT = """
       ctx.fillRect(x + 2, y + 10, 2, 2);
       ctx.fillStyle = '#e0a898';
       ctx.fillRect(x + 2, y + 14, 4, 2);
-    } else {
+    } else if (typ === 'swinka') {
       ctx.fillStyle = '#f2a6b0';
       ctx.fillRect(x + 3, y + 12, KOMORKA - 8, 10);
       ctx.fillStyle = '#e88a9a';
@@ -4508,8 +4635,60 @@ SZABLON_MINECRAFT = """
       ctx.fillRect(x + 1, y + 13, 4, 3);
       ctx.fillStyle = '#2b2b2b';
       ctx.fillRect(x + 3, y + 11, 2, 2);
+    } else if (typ === 'kurczak') {
+      ctx.fillStyle = '#f5f5f0';
+      ctx.fillRect(x + 6, y + 12, 12, 10);
+      ctx.fillStyle = '#f5f5f0';
+      ctx.fillRect(x + 3, y + 8, 8, 8);
+      ctx.fillStyle = '#e6a23c';
+      ctx.fillRect(x + 1, y + 11, 4, 2);
+      ctx.fillStyle = '#c9502f';
+      ctx.fillRect(x + 5, y + 6, 3, 3);
+      ctx.fillStyle = '#2b2b2b';
+      ctx.fillRect(x + 4, y + 10, 2, 2);
     }
     ctx.restore();
+  }
+
+  function rysujPotwora(x, y, typ) {
+    if (typ === 'zombie') {
+      ctx.fillStyle = '#4a8f5a';
+      ctx.fillRect(x + 7, y + 6, 12, 10);
+      ctx.fillStyle = '#3a3550';
+      ctx.fillRect(x + 6, y + 15, 14, 13);
+      ctx.fillStyle = '#2a2a35';
+      ctx.fillRect(x + 6, y + 27, 5, 8);
+      ctx.fillRect(x + 15, y + 27, 5, 8);
+      ctx.fillStyle = '#000';
+      ctx.fillRect(x + 9, y + 9, 2, 2);
+      ctx.fillRect(x + 15, y + 9, 2, 2);
+    } else if (typ === 'szkielet') {
+      ctx.fillStyle = '#e8e4d8';
+      ctx.fillRect(x + 7, y + 6, 12, 9);
+      ctx.fillRect(x + 8, y + 15, 10, 12);
+      ctx.fillRect(x + 6, y + 27, 4, 8);
+      ctx.fillRect(x + 16, y + 27, 4, 8);
+      ctx.fillStyle = '#111';
+      ctx.fillRect(x + 9, y + 9, 2, 2);
+      ctx.fillRect(x + 15, y + 9, 2, 2);
+      // luk
+      ctx.strokeStyle = '#8b5a2b';
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(x + 22, y + 18, 8, Math.PI * 0.3, Math.PI * 1.7); ctx.stroke();
+    } else if (typ === 'pajak') {
+      ctx.fillStyle = '#1c1420';
+      ctx.beginPath(); ctx.ellipse(x + 13, y + 20, 10, 7, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#1c1420';
+      ctx.lineWidth = 1.5;
+      for (var i = 0; i < 4; i++) {
+        var kx = x + 5 + i * 6;
+        ctx.beginPath(); ctx.moveTo(kx, y + 20); ctx.lineTo(kx - 4, y + 28); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(kx, y + 20); ctx.lineTo(kx + 2, y + 29); ctx.stroke();
+      }
+      ctx.fillStyle = '#c94f4f';
+      ctx.beginPath(); ctx.arc(x + 9, y + 17, 1.6, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(x + 17, y + 17, 1.6, 0, Math.PI * 2); ctx.fill();
+    }
   }
 
   function przeliczKamere() {
@@ -4519,7 +4698,7 @@ SZABLON_MINECRAFT = """
 
   function rysuj() {
     przeliczKamere();
-    ctx.fillStyle = '#87ceeb';
+    ctx.fillStyle = czyNoc() ? '#0e1533' : '#87ceeb';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (var vx = 0; vx < WIDOCZNE_KOLUMNY; vx++) {
@@ -4543,6 +4722,13 @@ SZABLON_MINECRAFT = """
       var wx = zw.x - kameraX, wy = zw.y - kameraY;
       if (wx >= -1 && wx <= WIDOCZNE_KOLUMNY && wy >= -1 && wy <= WIDOCZNE_WIERSZE) {
         rysujZwierze(wx * KOMORKA, wy * KOMORKA, zw.typ, zw.kierunek);
+      }
+    });
+
+    potwory.forEach(function (p) {
+      var wx = p.x - kameraX, wy = p.y - kameraY;
+      if (wx >= -1 && wx <= WIDOCZNE_KOLUMNY && wy >= -1 && wy <= WIDOCZNE_WIERSZE) {
+        rysujPotwora(wx * KOMORKA, wy * KOMORKA, p.typ);
       }
     });
 
@@ -4576,12 +4762,27 @@ SZABLON_MINECRAFT = """
       zwierzeta.splice(idxZw, 1);
       graczGlod = Math.min(GLOD_MAX, graczGlod + 4);
       aktualizujPasekGlodu();
-      var teksty = zw.typ === 'krowa'
-        ? ['🐄 Krowa: "Muuu... i po krowie." Stek zdobyty!', '🥩 Krowa dała stek. Przepraszam, krowo.']
-        : ['🐷 Świnka kwiknęła po raz ostatni. Szynka zdobyta!', '🍖 Świnka zamieniła się w szynkę.'];
+      var teksty;
+      if (zw.typ === 'krowa') {
+        teksty = ['🐄 Krowa: "Muuu... i po krowie." Stek zdobyty!', '🥩 Krowa dała stek. Przepraszam, krowo.'];
+      } else if (zw.typ === 'swinka') {
+        teksty = ['🐷 Świnka kwiknęła po raz ostatni. Szynka zdobyta!', '🍖 Świnka zamieniła się w szynkę.'];
+      } else {
+        teksty = ['🐔 Kurczak zdobyty! Pióro trafia do ekwipunku.', '🪶 Kurczak dał pióro (i trochę mięsa).'];
+        dodajDoEkwipunku('pioro', 1);
+      }
       pokazDziennikMc(teksty[Math.floor(Math.random() * teksty.length)], 1900);
       dzwiekJedzenia();
       rysuj();
+      return;
+    }
+
+    var idxPot = -1;
+    for (var j = 0; j < potwory.length; j++) {
+      if (potwory[j].x === wx && potwory[j].y === wy) { idxPot = j; break; }
+    }
+    if (idxPot !== -1) {
+      atakujPotwora(idxPot, dyst);
       return;
     }
 
@@ -4592,13 +4793,16 @@ SZABLON_MINECRAFT = """
       return;
     }
     if (blok !== 'powietrze') {
-      if (WYMAGA_KILOFA[blok] && (ekwipunek.kilof || 0) <= 0) {
-        pokazDziennikMc('⛏️ Potrzebujesz kilofa, żeby to kopać! Zrób go w recepturach.', 2000);
+      var wymaganyPoziom = WYMAGANY_POZIOM_KILOFA[blok] || 0;
+      if (wymaganyPoziom > 0 && najlepszyPoziomKilofa() < wymaganyPoziom) {
+        var nazwyPoziomow = { 1: 'drewnianego', 2: 'kamiennego', 3: 'żelaznego' };
+        pokazDziennikMc('⛏️ Potrzebujesz co najmniej kilofa ' + nazwyPoziomow[wymaganyPoziom] + '!', 2000);
         dzwiekBlokada();
         return;
       }
       world[wx][wy] = 'powietrze';
-      dodajDoEkwipunku(blok, 1);
+      var surowiecDoEkwipunku = (blok === 'drewnoBrzozy') ? 'drewno' : blok;
+      dodajDoEkwipunku(surowiecDoEkwipunku, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania();
       zastosujGrawitacje();
@@ -4618,6 +4822,45 @@ SZABLON_MINECRAFT = """
       dzwiekStawiania();
       odswiezPiecWZasiegu();
       rysuj();
+    }
+  }
+
+  // ---------- WALKA: ATAK GRACZA NA POTWORA ----------
+  function wykonajAtakNaPotwora(idx, obrazenia, opisNarzedzia) {
+    var p = potwory[idx];
+    p.hp -= obrazenia;
+    zagrajTon(200, 0.1, 'sawtooth');
+    if (p.hp <= 0) {
+      var nazwaTyp = { zombie: 'Zombie', szkielet: 'Szkielet', pajak: 'Pająk' }[p.typ];
+      var dropInfo = '';
+      if (p.typ === 'pajak') {
+        dodajDoEkwipunku('nici', 1);
+        dropInfo = ' Zostawił nici.';
+      }
+      potwory.splice(idx, 1);
+      pokazDziennikMc('💀 ' + nazwaTyp + ' pokonany (' + opisNarzedzia + ')!' + dropInfo, 1800);
+      zagrajTon(500, 0.15, 'triangle');
+    } else {
+      pokazDziennikMc('⚔️ Trafienie ' + opisNarzedzia + '! -' + obrazenia + ' HP potwora.', 1400);
+    }
+    rysuj();
+  }
+
+  function atakujPotwora(idx, dyst) {
+    if (dyst <= 1) {
+      var uzytyMiecz = najlepszyMiecz();
+      var obrazenia = OBRAZENIA_MIECZA[uzytyMiecz];
+      var opis = uzytyMiecz === 'brak' ? 'gołymi rękami' : NAZWY_BLOKOW[uzytyMiecz].toLowerCase();
+      wykonajAtakNaPotwora(idx, obrazenia, opis);
+    } else {
+      if ((ekwipunek.luk || 0) <= 0 || (ekwipunek.strzala || 0) <= 0) {
+        pokazDziennikMc('🏹 Za daleko na pięści! Potrzebujesz łuku i strzał.', 1900);
+        dzwiekBlokada();
+        return;
+      }
+      ekwipunek.strzala--;
+      odswiezEkwipunek();
+      wykonajAtakNaPotwora(idx, OBRAZENIA_LUKU, 'łukiem');
     }
   }
 
@@ -4736,6 +4979,101 @@ SZABLON_MINECRAFT = """
     if (cokolwiekZmienione) rysuj();
   }, 1800);
 
+  // ---------- DZIEN / NOC + SPAWN POTWOROW ----------
+  function znajdzPowierzchnieKolumny(x) {
+    var y = 0;
+    while (y < WYSOKOSC_SWIATA && world[x][y] === 'powietrze') y++;
+    return y; // pierwszy NIE-powietrzny blok w tej kolumnie
+  }
+
+  function zespawnujPotwora() {
+    var typy = ['zombie', 'szkielet', 'pajak'];
+    var typ = typy[Math.floor(Math.random() * typy.length)];
+    var probyLosowania = 0;
+    while (probyLosowania < 20) {
+      probyLosowania++;
+      var dx = Math.round(losowo(-10, 10));
+      var x = graczX + dx;
+      if (x < 1 || x >= SZEROKOSC_SWIATA - 1 || Math.abs(dx) < 4) continue;
+      var y = znajdzPowierzchnieKolumny(x);
+      if (y <= 0 || y >= WYSOKOSC_SWIATA) continue;
+      potwory.push({ x: x, y: y - 1, typ: typ, hp: HP_POTWORA[typ], hpMax: HP_POTWORA[typ] });
+      return;
+    }
+  }
+
+  setInterval(function () {
+    if (!trwa) return;
+    czasSwiata++;
+    var terazNoc = czyNoc();
+    if (terazNoc && !bylaNocPoprzednioTick) {
+      pokazDziennikMc('🌙 Zapada noc... uważaj na potwory!', 2200);
+    } else if (!terazNoc && bylaNocPoprzednioTick) {
+      potwory = [];
+      pokazDziennikMc('☀️ Wschodzi słońce, potwory znikają.', 2000);
+    }
+    bylaNocPoprzednioTick = terazNoc;
+
+    if (terazNoc && potwory.length < MAX_POTWOROW && Math.random() < 0.4) {
+      zespawnujPotwora();
+    }
+    rysuj();
+  }, 1000);
+
+  // ---------- AI POTWOROW: PODCHODZENIE I ATAK ----------
+  function zadajObrazeniaGraczowi(dmg, opis) {
+    graczHp = Math.max(0, graczHp - dmg);
+    aktualizujPasekHp();
+    pokazDziennikMc('💢 ' + opis + ' -' + dmg + ' HP', 1400);
+    zagrajTon(150, 0.12, 'sawtooth');
+    if (graczHp <= 0) {
+      graczHp = GRACZ_HP_MAX;
+      aktualizujPasekHp();
+      setTimeout(function () {
+        pokazDziennikMc('😵 Zemdlałaś ze zmęczenia... Budzisz się z pełnym HP.', 2400);
+      }, 400);
+    }
+  }
+
+  function przesunPotworaWStronGracza(p) {
+    var dx = graczX > p.x ? 1 : (graczX < p.x ? -1 : 0);
+    var nowyX = p.x + dx;
+    if (dx !== 0 && nowyX >= 0 && nowyX < SZEROKOSC_SWIATA && jestPuste(nowyX, p.y)) {
+      p.x = nowyX;
+    }
+    var bezpiecznik = 0;
+    while (p.y + 1 < WYSOKOSC_SWIATA && jestPuste(p.x, p.y + 1) && bezpiecznik < WYSOKOSC_SWIATA) {
+      p.y++;
+      bezpiecznik++;
+    }
+  }
+
+  setInterval(function () {
+    if (!trwa || potwory.length === 0) return;
+    var jakisRuch = false;
+    for (var i = potwory.length - 1; i >= 0; i--) {
+      var p = potwory[i];
+      var dystDoGracza = Math.max(Math.abs(p.x - graczX), Math.abs(p.y - graczY));
+      if (p.typ === 'szkielet') {
+        if (dystDoGracza <= 6 && dystDoGracza > 0) {
+          zadajObrazeniaGraczowi(3, 'Szkielet strzela!');
+        } else {
+          przesunPotworaWStronGracza(p);
+          jakisRuch = true;
+        }
+      } else {
+        if (dystDoGracza <= 1) {
+          var dmg = p.typ === 'zombie' ? 3 : 2;
+          zadajObrazeniaGraczowi(dmg, (p.typ === 'zombie' ? 'Zombie' : 'Pająk') + ' atakuje!');
+        } else {
+          przesunPotworaWStronGracza(p);
+          jakisRuch = true;
+        }
+      }
+    }
+    if (jakisRuch) rysuj();
+  }, 1300);
+
   // ---------- ZADANIE-ZART: "ZBUDUJ DOM" ----------
   btnDom.addEventListener('click', function () {
     if (!trwa) return;
@@ -4756,9 +5094,14 @@ SZABLON_MINECRAFT = """
     wybranyBlok = 'ziemia';
     graczGlod = GLOD_MAX;
     probyDomu = 0;
+    graczHp = GRACZ_HP_MAX;
+    czasSwiata = 0;
+    bylaNocPoprzednioTick = false;
+    potwory = [];
     generujSwiat();
     odswiezEkwipunek();
     aktualizujPasekGlodu();
+    aktualizujPasekHp();
     odswiezPiecWZasiegu();
     schowajWszystkiePanele();
     rysuj();
@@ -5257,8 +5600,24 @@ def renderuj_gra(etap_dane):
     html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
     components.html(html, height=520, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_gra"))
+
+
+def pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, pytanie, tekst_tak=None):
+    tekst_tak = tekst_tak or t("tak_ukonczylam")
+    stan_klucz = f"potwierdz_ukonczone_{klucz}"
+    if not st.session_state.get(stan_klucz, False):
+        if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+            st.session_state[stan_klucz] = True
+            st.rerun()
+    else:
+        st.caption(pytanie)
+        if st.button(tekst_tak, key=f"btn_tak_{klucz}"):
+            st.session_state[stan_klucz] = False
+            return True
+        if st.button(t("jeszcze_nie"), key=f"btn_nie_{klucz}"):
+            st.session_state[stan_klucz] = False
+            st.rerun()
     return None
 
 
@@ -5267,9 +5626,7 @@ def renderuj_dron(etap_dane):
 
     components.html(SZABLON_DRONA, height=520, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dron"))
 
 
 def renderuj_zaba(etap_dane):
@@ -5277,9 +5634,7 @@ def renderuj_zaba(etap_dane):
 
     components.html(SZABLON_ZABY, height=520, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_zaba"))
 
 
 def renderuj_memory(etap_dane):
@@ -5287,9 +5642,7 @@ def renderuj_memory(etap_dane):
 
     components.html(SZABLON_MEMORY, height=560, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_memory"))
 
 
 def renderuj_simon(etap_dane):
@@ -5297,9 +5650,7 @@ def renderuj_simon(etap_dane):
 
     components.html(SZABLON_SIMON, height=480, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_simon"))
 
 
 def renderuj_piano(etap_dane):
@@ -5307,9 +5658,7 @@ def renderuj_piano(etap_dane):
 
     components.html(SZABLON_PIANO, height=520, scrolling=False)
 
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        return True
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano"))
 
 
 def renderuj_bitwa(etap_dane):
@@ -5317,20 +5666,7 @@ def renderuj_bitwa(etap_dane):
 
     components.html(SZABLON_BITWA, height=640, scrolling=False)
 
-    stan_klucz = f"potwierdz_ukonczone_{klucz}"
-    if not st.session_state.get(stan_klucz, False):
-        if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-            st.session_state[stan_klucz] = True
-            st.rerun()
-    else:
-        st.caption(t("napewno_bitwa"))
-        if st.button(t("tak_pokonalam"), key=f"btn_tak_{klucz}"):
-            st.session_state[stan_klucz] = False
-            return True
-        if st.button(t("jeszcze_nie"), key=f"btn_nie_{klucz}"):
-            st.session_state[stan_klucz] = False
-            st.rerun()
-    return None
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_bitwa"), t("tak_pokonalam"))
 
 
 def renderuj_minecraft(etap_dane):
