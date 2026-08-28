@@ -6028,7 +6028,6 @@ def wstaw_styl():
 #MainMenu, footer, header {visibility: hidden;}
 
 .stApp {
-    position: relative;
     background: radial-gradient(circle at 50% -10%, #241b3a 0%, #0d0d0d 55%, #050505 100%);
     color: #f5f5f0;
     font-family: 'Poppins', sans-serif;
@@ -6042,15 +6041,17 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     color: #e6c15c;
 }
 
-/* Kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu */
+/* Kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu.
+   Zwykly element w normalnym przeplywie strony (nie absolute), wyrownany
+   do prawej flexboxem - prostsze i bezpieczniejsze niz nakladka. */
+.kokarda-rog-wiersz {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: -1.6rem;
+}
 .kokarda-rog {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.6rem;
     width: 54px;
     height: 54px;
-    z-index: 5;
-    pointer-events: none;
     opacity: 0.92;
 }
 
@@ -6332,7 +6333,7 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
 
 def svg_kokarda():
     """Zlota kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu."""
-    return """<svg class='kokarda-rog' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    return """<div class='kokarda-rog-wiersz'><svg class='kokarda-rog' width="54" height="54" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
       <defs>
         <linearGradient id="gradKokarda" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stop-color="#f5e6b8"/>
@@ -6345,12 +6346,12 @@ def svg_kokarda():
       <circle cx="50" cy="38" r="10" fill="#f0dfa8" stroke="#8a6a1f" stroke-width="1"/>
       <path d="M42 44 L34 72 L44 62 L50 72 L44 44 Z" fill="url(#gradKokarda)"/>
       <path d="M58 44 L50 72 L56 62 L66 72 L58 44 Z" fill="url(#gradKokarda)"/>
-    </svg>"""
+    </svg></div>"""
 
 
 def svg_serce_zawijas():
     """Serduszko z cienkim zawijasem - motyw z karnetow."""
-    return """<svg class='ikona-serce-zawijas' viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+    return """<svg class='ikona-serce-zawijas' width="34" height="38" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
       <path d="M20,35 A15,15 0,0,1 50,35 A15,15 0,0,1 80,35 Q80,60 50,82 Q20,60 20,35 Z"
             fill="none" stroke="#d4af37" stroke-width="4" stroke-linejoin="round"/>
       <path d="M42,78 C 30,85 18,95 22,106" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>
