@@ -938,8 +938,11 @@ SZABLON_GRY = """
     if (wygrana) {
       if (aktualnyPoziom >= POZIOMY.length - 1) {
         nakladkaTytul.textContent = '🎉 Wygrałaś!';
-        nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+        nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
         nakladkaBtn.style.display = 'none';
+        if (window.parent) {
+          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        }
       } else {
         var nastepny = aktualnyPoziom + 1;
         nakladkaTytul.textContent = '🎉 Poziom ' + (aktualnyPoziom + 1) + ' ukończony!';
@@ -1989,8 +1992,11 @@ SZABLON_ZABY = """
       nakladka.style.display = 'flex';
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     } else {
       var szer = gra.clientWidth;
       eksplodujZabe(szer * ZABA_X, zabaDol);
@@ -2371,8 +2377,11 @@ SZABLON_MEMORY = """
 
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     } else {
       zagrajDzwiek('zle');
       nakladkaTytul.textContent = '⏱️ Czas minął!';
@@ -2630,8 +2639,11 @@ SZABLON_SIMON = """
     nakladka.style.display = 'flex';
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     } else {
       nakladkaTytul.textContent = '❌ Zła kolejność...';
       nakladkaOpis.textContent = 'Doszłaś do ' + sekwencja.length + ' / ' + CEL_DLUGOSC + '. Spróbuj jeszcze raz.';
@@ -2965,9 +2977,12 @@ SZABLON_PIANO = """
     if (wygrana) {
       zagrajTon(1046.50, 0.5, 'triangle');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
       btnZmienPiosenke.style.display = 'none';
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     } else {
       zagrajTon(140, 0.35, 'sawtooth');
       nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
@@ -3529,6 +3544,7 @@ SZABLON_BITWA = """
   var fiolkaUzyta = false; // jednorazowa na CALY przebieg (3 poziomy), NIE resetuje sie miedzy poziomami
   var mnoznikObrazen = 1; // "level up" po 2. poziomie -> 1.25
   var REGEN_NA_TURE = 2; // pasywne odnowienie HP na poczatku kazdej tury gracza
+  var liczbaPorazek = 0; // ile razy zginela (na caly przebieg), zglaszane automatycznie przy wygranej
   var trwa = false;
 
   function losowo(min, max) { return Math.random() * (max - min) + min; }
@@ -3870,6 +3886,7 @@ SZABLON_BITWA = """
   function sprawdzKoniecGry() {
     if (graczHp <= 0) {
       trwa = false;
+      liczbaPorazek++;
       dzwiekPorazka();
       nakladka.style.display = 'flex';
       nakladkaTytul.textContent = '💀 Porażka...';
@@ -3885,8 +3902,11 @@ SZABLON_BITWA = """
         dzwiekZwyciestwo();
         nakladka.style.display = 'flex';
         nakladkaTytul.textContent = '🎉 Zwycięstwo!';
-        nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+        nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
         nakladkaBtn.style.display = 'none';
+        if (window.parent) {
+          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: { zaliczono: true, porazki: liczbaPorazek } }, '*');
+        }
       } else {
         var terazKonczySieDrugiPoziom = (poziomIndeks === 1);
         dzwiekZwyciestwo();
@@ -3969,7 +3989,7 @@ SZABLON_MINECRAFT = """
   #gra {
     position: relative;
     width: 100%;
-    height: 630px;
+    height: 674px;
     overflow: hidden;
     border-radius: 16px;
     border: 2px solid #d4af37;
@@ -4082,8 +4102,8 @@ SZABLON_MINECRAFT = """
   #zadanieDomu {
     display: flex;
     justify-content: center;
-    padding: 22px 8px 10px;
-    margin-top: 8px;
+    padding: 38px 8px 10px;
+    margin-top: 20px;
     border-top: 1px solid rgba(212,175,55,0.2);
   }
   #btnDom {
@@ -4147,11 +4167,11 @@ SZABLON_MINECRAFT = """
     padding: 4px 0;
   }
   .btn-ruch {
-    width: 56px; height: 44px;
+    width: 84px; height: 60px;
     background: linear-gradient(135deg, #e6c15c, #d4af37);
     border: none;
-    border-radius: 12px;
-    font-size: 22px;
+    border-radius: 14px;
+    font-size: 30px;
     font-weight: 700;
     color: #1a1a1a;
     box-shadow: 0 3px 8px rgba(0,0,0,0.4);
@@ -5667,6 +5687,20 @@ html, body {
     background: #050505 !important;
 }
 
+/* Wylacza domyslne obramowanie/podswietlenie na WSZYSTKICH iframe'ach na
+   stronie - dotyczy m.in. zewnetrznej ramki, ktora sam Streamlit tworzy
+   wokol komponentow (declare_component), a ktorej wygladu nie da sie
+   ustawic z poziomu samego komponentu. */
+iframe {
+    border: none !important;
+    outline: none !important;
+    background: transparent !important;
+    -webkit-tap-highlight-color: transparent !important;
+}
+[data-testid="stCustomComponentV1"] {
+    background: transparent !important;
+}
+
 .stApp {
     background: radial-gradient(circle at 50% -10%, #241b3a 0%, #0d0d0d 55%, #050505 100%);
     color: #f5f5f0;
@@ -6198,10 +6232,13 @@ def renderuj_quiz(etap_dane):
 
 def renderuj_gra(etap_dane):
     klucz = etap_dane["klucz"]
-
     html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
-    components.html(html, height=520, scrolling=False)
 
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(html, 520, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    components.html(html, height=520, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_gra"), etykieta_bledow=t("bledy_etykieta_gra"))
 
 
@@ -6246,47 +6283,66 @@ def renderuj_dron(etap_dane):
 def renderuj_zaba(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_ZABY, height=520, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_ZABY, 520, key=f"kmp_{klucz}")
+        return True if wynik else None
 
+    components.html(SZABLON_ZABY, height=520, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_zaba"), etykieta_bledow=t("bledy_etykieta_zaba"))
 
 
 def renderuj_memory(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_MEMORY, height=560, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_MEMORY, 560, key=f"kmp_{klucz}")
+        return True if wynik else None
 
+    components.html(SZABLON_MEMORY, height=560, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_memory"), etykieta_bledow=t("bledy_etykieta_memory"))
 
 
 def renderuj_simon(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_SIMON, height=480, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_SIMON, 480, key=f"kmp_{klucz}")
+        return True if wynik else None
 
+    components.html(SZABLON_SIMON, height=480, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_simon"), etykieta_bledow=t("bledy_etykieta_simon"))
 
 
 def renderuj_piano(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_PIANO, height=520, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_PIANO, 520, key=f"kmp_{klucz}")
+        return True if wynik else None
 
+    components.html(SZABLON_PIANO, height=520, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano"), etykieta_bledow=t("bledy_etykieta_piano"))
 
 
 def renderuj_bitwa(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_BITWA, height=640, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_BITWA, 640, key=f"kmp_{klucz}")
+        if wynik:
+            if isinstance(wynik, dict) and "porazki" in wynik:
+                st.session_state.bledy_per_etap[klucz] = int(wynik["porazki"])
+            return True
+        return None
 
+    components.html(SZABLON_BITWA, height=640, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_bitwa"), t("tak_pokonalam"), etykieta_bledow=t("bledy_etykieta_bitwa"))
 
 
 def renderuj_minecraft(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_MINECRAFT, height=720, scrolling=False)
+    components.html(SZABLON_MINECRAFT, height=764, scrolling=False)
 
     liczba_smierci = st.number_input(
         t("bledy_etykieta_minecraft"), min_value=0, max_value=999, value=0, step=1, key=f"bledy_input_{klucz}"
