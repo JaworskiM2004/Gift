@@ -5805,21 +5805,6 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     color: #e6c15c;
 }
 
-/* Kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu.
-   Zwykly element w normalnym przeplywie strony, wyrownany do prawej
-   flexboxem - emoji zamiast recznego SVG (niezawodne wyswietlanie). */
-.kokarda-rog-wiersz {
-    display: flex;
-    justify-content: flex-end;
-    margin-bottom: -0.8rem;
-}
-.kokarda-rog {
-    font-size: 2.6rem;
-    line-height: 1;
-    opacity: 0.92;
-    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
-}
-
 /* Separator pod tytulem: linia - serduszko - linia, jak pod "KARNET" */
 .separator-serce {
     display: flex;
@@ -6022,6 +6007,29 @@ div[data-testid="stColumn"] div.stButton > button {
         0 3px 10px rgba(0,0,0,0.4);
     border: 1px solid rgba(255,255,255,0.18);
 }
+/* Klodka na powitaniu - jedyne miejsce w calej aplikacji z 3 rownymi
+   kolumnami i przyciskiem posrodku - delikatna pulsujaca poswiata,
+   wyrozniajaca ja jako glowny przycisk startowy. Selektor celowo
+   wyklucza uklady z 4+ kolumnami (siatka menu), zeby jej nie tknac. */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)):not(:has(> div[data-testid="stColumn"]:nth-child(4))) div.stButton > button {
+    animation: pulsujZamek 2.4s ease-in-out infinite;
+}
+@keyframes pulsujZamek {
+    0%, 100% {
+        box-shadow:
+            inset 0 2px 3px rgba(255,255,255,0.4),
+            inset 0 -4px 7px rgba(0,0,0,0.3),
+            0 3px 10px rgba(0,0,0,0.4),
+            0 0 0px rgba(230,193,92,0);
+    }
+    50% {
+        box-shadow:
+            inset 0 2px 3px rgba(255,255,255,0.4),
+            inset 0 -4px 7px rgba(0,0,0,0.3),
+            0 3px 10px rgba(0,0,0,0.4),
+            0 0 28px rgba(230,193,92,0.75);
+    }
+}
 /* W siatce MENU (4+ kolumn w rzedzie) kafelki maja byc mniejsze i gesciej
    upakowane - poza siatka menu (np. klodka powitalna w 3 kolumnach)
    zostaje wieksza, bardziej "hero" wersja zdefiniowana wyzej. */
@@ -6085,11 +6093,6 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
 }
 </style>
 """, unsafe_allow_html=True)
-
-
-def svg_kokarda():
-    """Zlota kokarda w rogu - emoji zamiast recznego SVG (niezawodne wyswietlanie)."""
-    return "<div class='kokarda-rog-wiersz'><span class='kokarda-rog'>🎀</span></div>"
 
 
 def separator_serce():
@@ -6577,8 +6580,7 @@ def pokaz_przycisk_resetu():
 
 
 def pokaz_powitanie():
-    st.markdown(svg_kokarda(), unsafe_allow_html=True)
-    st.markdown("<div style='height:22vh;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='height:44vh;'></div>", unsafe_allow_html=True)
 
     kolumny = st.columns([1, 1, 1])
     with kolumny[1]:
@@ -6597,7 +6599,6 @@ def pokaz_powitanie():
 
 
 def pokaz_menu():
-    st.markdown(svg_kokarda(), unsafe_allow_html=True)
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
     st.markdown(separator_serce(), unsafe_allow_html=True)
 
@@ -6720,7 +6721,6 @@ def pokaz_rozpiske_bledow():
 
 def pokaz_final():
     st.balloons()
-    st.markdown(svg_kokarda(), unsafe_allow_html=True)
     st.markdown("<div class='zamek-otwarty'>🔓</div>", unsafe_allow_html=True)
     st.markdown(tt(WIADOMOSC_KONCOWA), unsafe_allow_html=True)
     st.markdown(separator_serce(), unsafe_allow_html=True)
