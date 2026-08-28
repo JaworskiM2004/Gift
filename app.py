@@ -692,6 +692,13 @@ SZABLON_GRY = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -1126,6 +1133,13 @@ SZABLON_DRONA = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -1564,6 +1578,13 @@ SZABLON_ZABY = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -2076,6 +2097,13 @@ SZABLON_MEMORY = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -2418,6 +2446,13 @@ SZABLON_SIMON = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -2705,6 +2740,13 @@ SZABLON_PIANO = """
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
       }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) {
       audioCtx = null;
     }
@@ -3124,6 +3166,11 @@ SZABLON_BITWA = """
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) { audioCtx = null; }
   }
   function zagrajTon(f, czas, typ) {
@@ -3335,16 +3382,16 @@ SZABLON_BITWA = """
   var DEFINICJE_POZIOMOW = [
     function () {
       return [
-        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 6),
-        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 7),
+        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
+        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 14),
       ];
     },
     function () {
       return [
-        nowyWrog('Włócznik\\nOgnisty', 'dzida', 'ogien', 16),
-        nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 18),
-        nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 14),
-        nowyWrog('Tarczownik\\nOgnisty', 'tarcza', 'ogien', 18),
+        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
+        nowyWrog('Włócznik\\nLodowy', 'dzida', 'lod', 14),
+        nowyWrog('Tarczownik\\nOgnisty', 'tarcza', 'ogien', 15),
+        nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 12),
       ];
     },
     function () {
@@ -3886,10 +3933,61 @@ SZABLON_MINECRAFT = """
     margin: 2px 0;
     text-shadow: 0 1px 3px rgba(0,0,0,0.8);
   }
+  .tekst-obrazen-mc {
+    position: absolute;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fbbf24;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+    pointer-events: none;
+    z-index: 6;
+    animation: unosObMc 0.85s ease-out forwards;
+    white-space: nowrap;
+  }
+  @keyframes unosObMc {
+    0% { transform: translateY(0); opacity: 0; }
+    15% { transform: translateY(-4px); opacity: 1; }
+    100% { transform: translateY(-26px); opacity: 0; }
+  }
+  #nakladkaSmierc {
+    position: absolute; inset: 0; z-index: 12;
+    background: rgba(74,8,8,0.95);
+    display: none; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 22px;
+  }
+  #nakladkaSmierc h2 { font-size: 22px; margin: 0 0 8px; color: #ffb4b4; }
+  #nakladkaSmierc p { margin: 0 0 14px; font-size: 13px; opacity: 0.92; max-width: 280px; color: #ffe0e0; }
+  #btnRespawn {
+    background: linear-gradient(135deg, #ff6b6b, #c92a2a);
+    border: none; padding: 11px 28px; border-radius: 30px;
+    font-weight: 700; color: #fff; font-size: 15px;
+  }
+  #btnRespawn:active { transform: scale(0.96); }
+  #hudNarzedzi {
+    position: absolute;
+    left: 6px;
+    bottom: 6px;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .slot-hud {
+    width: 32px; height: 32px;
+    border-radius: 7px;
+    background: rgba(20,16,10,0.82);
+    border: 2px solid #6b5530;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  }
+  .slot-hud.widoczny { display: flex; }
   #zadanieDomu {
     display: flex;
     justify-content: center;
-    padding: 6px 8px 10px;
+    padding: 22px 8px 10px;
+    margin-top: 8px;
     border-top: 1px solid rgba(212,175,55,0.2);
   }
   #btnDom {
@@ -3967,6 +4065,9 @@ SZABLON_MINECRAFT = """
     display: none;
     padding: 6px 8px 10px;
     border-top: 1px solid rgba(212,175,55,0.2);
+    max-height: 260px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #ekwipunek.widoczny { display: block; }
   .naglowek-ekwipunku {
@@ -3989,6 +4090,9 @@ SZABLON_MINECRAFT = """
     display: none;
     padding: 8px 10px 12px;
     border-top: 1px solid rgba(212,175,55,0.2);
+    max-height: 260px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #panelReceptur.widoczny { display: block; }
   .karta-receptury {
@@ -4040,6 +4144,9 @@ SZABLON_MINECRAFT = """
     padding: 10px 12px 12px;
     border-top: 1px solid rgba(212,175,55,0.2);
     text-align: center;
+    max-height: 260px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
   #panelPieca.widoczny { display: block; }
   #panelPieca .stan-pieca {
@@ -4127,6 +4234,10 @@ SZABLON_MINECRAFT = """
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       <button id="btnNowySwiat" title="Nowy świat">🔄</button>
       <canvas id="canvasSwiat" width="338" height="286"></canvas>
+      <div id="hudNarzedzi">
+        <div class="slot-hud" id="hudKilof"></div>
+        <div class="slot-hud" id="hudMiecz"></div>
+      </div>
     </div>
     <div id="dziennikMc"></div>
     <div id="sterowanie">
@@ -4141,8 +4252,13 @@ SZABLON_MINECRAFT = """
     </div>
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
-      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień, węgiel i złoto wymagają kilofa (im lepszy, tym głębsze surowce). Piach da się przetopić na szyby w piecu (🔥). W nocy pojawiają się potwory — dotknij ich, żeby zaatakować mieczem (z bliska) albo łukiem (z daleka). Buduj, kop, walcz, baw się — bez presji, żadnego "wygrania".</p>
+      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień i węgiel wymagają kilofa, złoto kilofa żelaznego (im lepszy kilof, tym głębsze surowce). Piach da się przetopić na szyby w piecu (🔥). W nocy pojawiają się potwory — dotknij ich, żeby zaatakować mieczem (z bliska) albo łukiem (z daleka). Buduj, kop, walcz, baw się — bez presji, żadnego "wygrania".</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+    </div>
+    <div id="nakladkaSmierc">
+      <h2>💀 Zginęłaś!</h2>
+      <p>Twoje rzeczy zostały w grobie tam, gdzie zginęłaś — wróć po nie później, dotykając grobu. Odradzasz się w bezpiecznym miejscu.</p>
+      <button id="btnRespawn">🔄 Odrodź się</button>
     </div>
   </div>
 
@@ -4166,6 +4282,11 @@ SZABLON_MINECRAFT = """
   var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
   var pasekHpWypelnienie = document.getElementById('pasekHpWypelnienie');
   var btnDom = document.getElementById('btnDom');
+  var obszarSwiata = document.getElementById('obszarSwiata');
+  var nakladkaSmierc = document.getElementById('nakladkaSmierc');
+  var btnRespawn = document.getElementById('btnRespawn');
+  var hudKilof = document.getElementById('hudKilof');
+  var hudMiecz = document.getElementById('hudMiecz');
 
   var wyciszone = false;
   var audioCtx = null;
@@ -4173,6 +4294,13 @@ SZABLON_MINECRAFT = """
     try {
       if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
       if (audioCtx.state === 'suspended') audioCtx.resume();
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym geście dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
     } catch (e) { audioCtx = null; }
   }
   function zagrajTon(f, czas, typ) {
@@ -4196,10 +4324,29 @@ SZABLON_MINECRAFT = """
     zagrajTon(500, 0.06, 'square');
     setTimeout(function () { zagrajTon(650, 0.08, 'square'); }, 90);
   }
+  function dzwiekAtaku() { zagrajTon(220, 0.09, 'sawtooth'); }
+  function dzwiekPotworaSmierc() {
+    zagrajTon(180, 0.1, 'sawtooth');
+    setTimeout(function () { zagrajTon(90, 0.18, 'sawtooth'); }, 90);
+  }
+  function dzwiekSmierci() {
+    [260, 220, 180, 130].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.28, 'sawtooth'); }, i * 160);
+    });
+  }
+  function dzwiekRespawn() {
+    [392, 523, 659].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.15, 'triangle'); }, i * 110);
+    });
+  }
+  function dzwiekGrobu() {
+    zagrajTon(440, 0.1, 'triangle');
+    setTimeout(function () { zagrajTon(660, 0.14, 'triangle'); }, 120);
+  }
 
   // ---------- SWIAT ----------
-  var SZEROKOSC_SWIATA = 48;
-  var WYSOKOSC_SWIATA = 22;
+  var SZEROKOSC_SWIATA = 90;
+  var WYSOKOSC_SWIATA = 34;
   var KOMORKA = 26;
   var WIDOCZNE_KOLUMNY = 13;
   var WIDOCZNE_WIERSZE = 11;
@@ -4223,6 +4370,7 @@ SZABLON_MINECRAFT = """
     mieczDrewniany: 'Miecz drewniany', mieczKamienny: 'Miecz kamienny',
     mieczZelazny: 'Miecz żelazny', mieczDiamentowy: 'Miecz diamentowy',
     luk: 'Łuk', drewnoBrzozy: 'Drewno brzozy',
+    zbrojaZelazna: 'Zbroja żelazna', zbrojaDiamentowa: 'Zbroja diamentowa',
   };
   // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
@@ -4237,7 +4385,7 @@ SZABLON_MINECRAFT = """
     patyk: '🪵', pioro: '🪶', nici: '🧵', zelazo: '🔩', strzala: '➶',
     kilofDrewniany: '⛏️', kilofKamienny: '⛏️', kilofZelazny: '⛏️',
     mieczDrewniany: '🗡️', mieczKamienny: '🗡️', mieczZelazny: '⚔️', mieczDiamentowy: '⚔️',
-    luk: '🏹',
+    luk: '🏹', zbrojaZelazna: '🥋', zbrojaDiamentowa: '🦺',
   };
 
   function stworzIkonkeElementu(klucz, rozmiarPx) {
@@ -4268,7 +4416,7 @@ SZABLON_MINECRAFT = """
   // ---------- POZIOMY NARZEDZI ----------
   // 0 = gole rece, 1 = drewniany, 2 = kamienny, 3 = zelazny
   var POZIOM_KILOFA = { kilofDrewniany: 1, kilofKamienny: 2, kilofZelazny: 3 };
-  var WYMAGANY_POZIOM_KILOFA = { kamien: 1, wegiel: 1, zloto: 1, rudaZelaza: 2, diament: 3 };
+  var WYMAGANY_POZIOM_KILOFA = { kamien: 1, wegiel: 1, zloto: 3, rudaZelaza: 2, diament: 3 };
   function najlepszyPoziomKilofa() {
     var poziom = 0;
     Object.keys(POZIOM_KILOFA).forEach(function (k) {
@@ -4302,6 +4450,8 @@ SZABLON_MINECRAFT = """
     { id: 'strzala', wyjscie: 'strzala', ileWyjscia: 4, skladniki: { patyk: 1, kamien: 1 } },
     { id: 'schodki', wyjscie: 'schodki', ileWyjscia: 4, skladniki: { drewno: 1 } },
     { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
+    { id: 'zbrojaZelazna', wyjscie: 'zbrojaZelazna', ileWyjscia: 1, skladniki: { zelazo: 5 } },
+    { id: 'zbrojaDiamentowa', wyjscie: 'zbrojaDiamentowa', ileWyjscia: 1, skladniki: { diament: 5 } },
   ];
 
   var world = [];
@@ -4328,6 +4478,9 @@ SZABLON_MINECRAFT = """
   var HP_POTWORA = { zombie: 12, szkielet: 10, pajak: 8 };
   var MAX_POTWOROW = 3;
   var OBRAZENIA_LUKU = 4;
+  var groby = []; // {x, y, przedmioty: {...}}
+  var spawnX = 0, spawnY = 0; // bezpieczne miejsce odrodzenia (poczatek swiata)
+  var PANCERZ_REDUKCJA = { zbrojaZelazna: 0.30, zbrojaDiamentowa: 0.60 };
 
   function czyNoc() {
     return (czasSwiata % PELNY_CYKL) >= DLUGOSC_DNIA;
@@ -4355,9 +4508,20 @@ SZABLON_MINECRAFT = """
         else if (y === pow) blok = 'trawa';
         else if (y < pow + 4) blok = 'ziemia';
         else if (y < WYSOKOSC_SWIATA - 1) {
+          // im glebiej w kamieniu, tym cenniejsze (i rzadsze) rudy
+          var glebokosc = y - (pow + 4);
           var r = Math.random();
-          blok = (r < 0.045) ? 'wegiel' : (r < 0.065) ? 'zloto' :
-                 (r < 0.10) ? 'rudaZelaza' : (r < 0.11) ? 'diament' : 'kamien';
+          if (r < 0.05) {
+            blok = 'wegiel'; // wegiel wystepuje na kazdej glebokosci
+          } else if (glebokosc >= 5 && r < 0.07) {
+            blok = 'rudaZelaza';
+          } else if (glebokosc >= 11 && r < 0.076) {
+            blok = 'zloto';
+          } else if (glebokosc >= 16 && r < 0.0805) {
+            blok = 'diament'; // bardzo rzadki, tylko blisko dna
+          } else {
+            blok = 'kamien';
+          }
         } else {
           blok = 'podloze';
         }
@@ -4404,6 +4568,8 @@ SZABLON_MINECRAFT = """
 
     graczX = Math.floor(SZEROKOSC_SWIATA / 2);
     graczY = wysokoscPow[graczX] - 1;
+    spawnX = graczX;
+    spawnY = graczY;
 
     zespawnujZwierzeta(wysokoscPow);
   }
@@ -4551,9 +4717,38 @@ SZABLON_MINECRAFT = """
     ekwipunek[przepis.wyjscie] = (ekwipunek[przepis.wyjscie] || 0) + przepis.ileWyjscia;
     odswiezEkwipunek();
     odswiezPanelReceptur();
+    aktualizujHudNarzedzi();
     pokazDziennikMc('🔨 Wytworzono: ' + przepis.ileWyjscia + '× ' + NAZWY_BLOKOW[przepis.wyjscie], 1600);
     zagrajTon(420, 0.08, 'square');
     setTimeout(function () { zagrajTon(560, 0.1, 'square'); }, 90);
+  }
+
+  // ---------- HUD NARZEDZI (lewy dolny rog - aktualnie najlepszy kilof/miecz) ----------
+  var KOLEJNOSC_KILOFOW_HUD = ['kilofZelazny', 'kilofKamienny', 'kilofDrewniany'];
+
+  function aktualizujHudNarzedzi() {
+    var najlepszyKilof = null;
+    for (var i = 0; i < KOLEJNOSC_KILOFOW_HUD.length; i++) {
+      if ((ekwipunek[KOLEJNOSC_KILOFOW_HUD[i]] || 0) > 0) { najlepszyKilof = KOLEJNOSC_KILOFOW_HUD[i]; break; }
+    }
+    hudKilof.innerHTML = '';
+    if (najlepszyKilof) {
+      hudKilof.appendChild(stworzIkonkeElementu(najlepszyKilof, 24));
+      hudKilof.title = NAZWY_BLOKOW[najlepszyKilof];
+      hudKilof.classList.add('widoczny');
+    } else {
+      hudKilof.classList.remove('widoczny');
+    }
+
+    var najlepszyMieczHud = najlepszyMiecz();
+    hudMiecz.innerHTML = '';
+    if (najlepszyMieczHud !== 'brak') {
+      hudMiecz.appendChild(stworzIkonkeElementu(najlepszyMieczHud, 24));
+      hudMiecz.title = NAZWY_BLOKOW[najlepszyMieczHud];
+      hudMiecz.classList.add('widoczny');
+    } else {
+      hudMiecz.classList.remove('widoczny');
+    }
   }
 
   function stworzMiniSkladnik(klucz, ile) {
@@ -4836,9 +5031,53 @@ SZABLON_MINECRAFT = """
     }
   }
 
+  function rysujPasekHpPotwora(x, y, p) {
+    var szerokosc = KOMORKA - 6;
+    var px = x + 3, py = y - 6;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(px, py, szerokosc, 4);
+    var proc = Math.max(0, p.hp / p.hpMax);
+    ctx.fillStyle = proc > 0.35 ? '#e04848' : '#ff2222';
+    ctx.fillRect(px, py, szerokosc * proc, 4);
+  }
+
+  function rysujGrob(x, y) {
+    ctx.fillStyle = '#5a5a68';
+    ctx.fillRect(x + 6, y + 12, KOMORKA - 12, KOMORKA - 14);
+    ctx.beginPath();
+    ctx.arc(x + KOMORKA / 2, y + 12, (KOMORKA - 12) / 2, Math.PI, 0);
+    ctx.fillStyle = '#6e6e7e';
+    ctx.fill();
+    ctx.fillStyle = '#2b2b35';
+    ctx.font = 'bold 8px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('RIP', x + KOMORKA / 2, y + 21);
+    ctx.textAlign = 'left';
+  }
+
   function przeliczKamere() {
     kameraX = Math.max(0, Math.min(SZEROKOSC_SWIATA - WIDOCZNE_KOLUMNY, graczX - Math.floor(WIDOCZNE_KOLUMNY / 2)));
     kameraY = Math.max(0, Math.min(WYSOKOSC_SWIATA - WIDOCZNE_WIERSZE, graczY - Math.floor(WIDOCZNE_WIERSZE / 2)));
+  }
+
+  // pozycja na EKRANIE (px, wzgledem #obszarSwiata) dla danej komorki SWIATA
+  function pozycjaFlotujaca(wx, wy) {
+    return {
+      x: canvas.offsetLeft + (wx - kameraX) * KOMORKA + KOMORKA / 2,
+      y: canvas.offsetTop + (wy - kameraY) * KOMORKA,
+    };
+  }
+
+  function pokazLatajaceObrazeniaSwiat(wx, wy, tekst, kolor) {
+    var pos = pozycjaFlotujaca(wx, wy);
+    var span = document.createElement('div');
+    span.className = 'tekst-obrazen-mc';
+    span.style.left = (pos.x - 16) + 'px';
+    span.style.top = (pos.y - 12) + 'px';
+    span.style.color = kolor;
+    span.textContent = tekst;
+    obszarSwiata.appendChild(span);
+    setTimeout(function () { span.remove(); }, 850);
   }
 
   function rysuj() {
@@ -4870,10 +5109,18 @@ SZABLON_MINECRAFT = """
       }
     });
 
+    groby.forEach(function (g) {
+      var wx = g.x - kameraX, wy = g.y - kameraY;
+      if (wx >= -1 && wx <= WIDOCZNE_KOLUMNY && wy >= -1 && wy <= WIDOCZNE_WIERSZE) {
+        rysujGrob(wx * KOMORKA, wy * KOMORKA);
+      }
+    });
+
     potwory.forEach(function (p) {
       var wx = p.x - kameraX, wy = p.y - kameraY;
       if (wx >= -1 && wx <= WIDOCZNE_KOLUMNY && wy >= -1 && wy <= WIDOCZNE_WIERSZE) {
         rysujPotwora(wx * KOMORKA, wy * KOMORKA, p.typ);
+        rysujPasekHpPotwora(wx * KOMORKA, wy * KOMORKA, p);
       }
     });
 
@@ -4918,6 +5165,24 @@ SZABLON_MINECRAFT = """
       }
       pokazDziennikMc(teksty[Math.floor(Math.random() * teksty.length)], 1900);
       dzwiekJedzenia();
+      rysuj();
+      return;
+    }
+
+    var idxGrob = -1;
+    for (var g = 0; g < groby.length; g++) {
+      if (groby[g].x === wx && groby[g].y === wy) { idxGrob = g; break; }
+    }
+    if (idxGrob !== -1) {
+      var grob = groby[idxGrob];
+      Object.keys(grob.przedmioty).forEach(function (k) {
+        ekwipunek[k] = (ekwipunek[k] || 0) + grob.przedmioty[k];
+      });
+      groby.splice(idxGrob, 1);
+      odswiezEkwipunek();
+      aktualizujHudNarzedzi();
+      pokazDziennikMc('⚰️ Grób wykopany! Odzyskane rzeczy dołączyły do ekwipunku.', 2200);
+      dzwiekGrobu();
       rysuj();
       return;
     }
@@ -4974,7 +5239,8 @@ SZABLON_MINECRAFT = """
   function wykonajAtakNaPotwora(idx, obrazenia, opisNarzedzia) {
     var p = potwory[idx];
     p.hp -= obrazenia;
-    zagrajTon(200, 0.1, 'sawtooth');
+    pokazLatajaceObrazeniaSwiat(p.x, p.y, '-' + obrazenia, '#fbbf24');
+    dzwiekAtaku();
     if (p.hp <= 0) {
       var nazwaTyp = { zombie: 'Zombie', szkielet: 'Szkielet', pajak: 'Pająk' }[p.typ];
       var dropInfo = '';
@@ -4984,7 +5250,7 @@ SZABLON_MINECRAFT = """
       }
       potwory.splice(idx, 1);
       pokazDziennikMc('💀 ' + nazwaTyp + ' pokonany (' + opisNarzedzia + ')!' + dropInfo, 1800);
-      zagrajTon(500, 0.15, 'triangle');
+      dzwiekPotworaSmierc();
     } else {
       pokazDziennikMc('⚔️ Trafienie ' + opisNarzedzia + '! -' + obrazenia + ' HP potwora.', 1400);
     }
@@ -5166,18 +5432,34 @@ SZABLON_MINECRAFT = """
   }, 1000);
 
   // ---------- AI POTWOROW: PODCHODZENIE I ATAK ----------
+  function pancerzRedukcjaProc() {
+    if ((ekwipunek.zbrojaDiamentowa || 0) > 0) return PANCERZ_REDUKCJA.zbrojaDiamentowa;
+    if ((ekwipunek.zbrojaZelazna || 0) > 0) return PANCERZ_REDUKCJA.zbrojaZelazna;
+    return 0;
+  }
+
   function zadajObrazeniaGraczowi(dmg, opis) {
+    var redukcja = pancerzRedukcjaProc();
+    if (redukcja > 0) dmg = Math.max(1, Math.round(dmg * (1 - redukcja)));
     graczHp = Math.max(0, graczHp - dmg);
     aktualizujPasekHp();
-    pokazDziennikMc('💢 ' + opis + ' -' + dmg + ' HP', 1400);
+    pokazDziennikMc('💢 ' + opis + ' -' + dmg + ' HP' + (redukcja > 0 ? ' (zbroja pochłonęła część!)' : ''), 1400);
+    pokazLatajaceObrazeniaSwiat(graczX, graczY, '-' + dmg, '#f87171');
     zagrajTon(150, 0.12, 'sawtooth');
     if (graczHp <= 0) {
-      graczHp = GRACZ_HP_MAX;
-      aktualizujPasekHp();
-      setTimeout(function () {
-        pokazDziennikMc('😵 Zemdlałaś ze zmęczenia... Budzisz się z pełnym HP.', 2400);
-      }, 400);
+      wywolajSmierc();
     }
+  }
+
+  function wywolajSmierc() {
+    trwa = false;
+    dzwiekSmierci();
+    groby.push({ x: graczX, y: graczY, przedmioty: Object.assign({}, ekwipunek) });
+    ekwipunek = {};
+    odswiezEkwipunek();
+    schowajWszystkiePanele();
+    nakladkaSmierc.style.display = 'flex';
+    rysuj();
   }
 
   function przesunPotworaWStronGracza(p) {
@@ -5243,12 +5525,15 @@ SZABLON_MINECRAFT = """
     czasSwiata = 0;
     bylaNocPoprzednioTick = false;
     potwory = [];
+    groby = [];
     generujSwiat();
     odswiezEkwipunek();
     aktualizujPasekGlodu();
     aktualizujPasekHp();
+    aktualizujHudNarzedzi();
     odswiezPiecWZasiegu();
     schowajWszystkiePanele();
+    nakladkaSmierc.style.display = 'none';
     rysuj();
   }
 
@@ -5260,6 +5545,20 @@ SZABLON_MINECRAFT = """
     nakladka.style.display = 'none';
     rysuj();
   };
+
+  btnRespawn.addEventListener('click', function () {
+    inicjujDzwiek();
+    graczHp = GRACZ_HP_MAX;
+    aktualizujPasekHp();
+    graczX = spawnX;
+    graczY = spawnY;
+    zastosujGrawitacje();
+    nakladkaSmierc.style.display = 'none';
+    trwa = true;
+    dzwiekRespawn();
+    pokazDziennikMc('✨ Odrodzona! Twój grób czeka gdzieś w świecie.', 2200);
+    rysuj();
+  });
 </script>
 </body>
 </html>
@@ -5426,7 +5725,7 @@ div[data-testid="stColumn"] div.stButton > button {
     height: auto;
     min-height: 3.2rem;
     border-radius: 22%;
-    font-size: clamp(1.4rem, 7vw, 2.6rem);
+    font-size: clamp(2.2rem, 15vw, 4.8rem);
     padding: 0;
     display: flex;
     align-items: center;
@@ -5437,6 +5736,12 @@ div[data-testid="stColumn"] div.stButton > button {
         inset 0 -4px 7px rgba(0,0,0,0.3),
         0 3px 10px rgba(0,0,0,0.4);
     border: 1px solid rgba(255,255,255,0.18);
+}
+/* W siatce MENU (4+ kolumn w rzedzie) kafelki maja byc mniejsze i gesciej
+   upakowane - poza siatka menu (np. klodka powitalna w 3 kolumnach)
+   zostaje wieksza, bardziej "hero" wersja zdefiniowana wyzej. */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) div.stButton > button {
+    font-size: clamp(1.4rem, 7vw, 2.6rem) !important;
 }
 div[data-testid="stColumn"] div.stButton > button[kind="primary"] {
     background: linear-gradient(160deg, #a9f0b8, #22c55e 55%, #158a3d) !important;
@@ -5478,10 +5783,14 @@ div[data-testid="stAlert"] {
 /* Streamlit domyślnie chowa kolumny w jedną, pionową listę na wąskich
    ekranach (telefony) - wymuszamy, żeby zawsze zostawały w rzędzie
    i zawijały się jak prawdziwa siatka zamiast rozjeżdżać się do jednej
-   kolumny po lewej. */
+   kolumny po lewej. justify-content:center dba o to, żeby jakikolwiek
+   niewykorzystany margines (np. przy zaokrągleniach szerokości) rozkładał
+   się po obu stronach zamiast zostawac po lewej - stąd wczesniej krzywo
+   wyśrodkowana kłódka na powitaniu. */
 div[data-testid="stHorizontalBlock"] {
     flex-direction: row !important;
     flex-wrap: wrap !important;
+    justify-content: center !important;
     gap: 0.4rem !important;
 }
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
