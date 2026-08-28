@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; overflow: hidden; background: transparent; }
+  #gra-wewnetrzna {
+    width: 100%;
+    border: none;
+    display: block;
+  }
+</style>
+</head>
+<body>
+  <iframe id="gra-wewnetrzna" scrolling="no"></iframe>
+
+<script>
+  // ----------------------------------------------------------------
+  // MOST: implementacja protokolu "Streamlit Components v1" w czystym
+  // JS (bez React/npm) - pozwala PRAWDZIWEJ grze (osadzonej ponizej,
+  // we WEWNETRZNYM iframe) zglosic wynik z powrotem do Pythona.
+  //
+  // Dwa kanaly wiadomosci na tej samej stronie:
+  //  1) OD Streamlit (nadrzedny kontekst strony) - typy "streamlit:*"
+  //  2) OD gry-dziecka (wewnetrzny iframe ponizej) - wlasny typ
+  //     "streamlit-child:zaliczono", ktory KAZDA gra wysyla raz,
+  //     kiedy wykryje wygrana.
+  // ----------------------------------------------------------------
+
+  var SET_COMPONENT_VALUE = "streamlit:setComponentValue";
+  var RENDER = "streamlit:render";
+  var COMPONENT_READY = "streamlit:componentReady";
+  var SET_FRAME_HEIGHT = "streamlit:setFrameHeight";
+
+  var ramkaGry = document.getElementById('gra-wewnetrzna');
+  var wysokoscRamki = 560;
+  var jujWypelniona = false;
+  var jujZaliczono = false;
+
+  function _wyslijDoStreamlit(typ, dane) {
+    var wychodzace = Object.assign({
+      isStreamlitMessage: true,
+      type: typ,
+    }, dane || {});
+    window.parent.postMessage(wychodzace, "*");
+  }
+
+  function ustawWysokoscRamki(wysokosc) {
+    _wyslijDoStreamlit(SET_FRAME_HEIGHT, { height: wysokosc });
+  }
+
+  function zglosWynikDoPythona(wartosc) {
+    _wyslijDoStreamlit(SET_COMPONENT_VALUE, { value: wartosc, dataType: "json" });
+  }
+
+  window.addEventListener("message", function (event) {
+    var dane = event.data;
+    if (!dane || typeof dane !== "object") return;
+
+    // Kanal 1: wiadomosc OD Streamlit (przekazuje argumenty z Pythona)
+    if (dane.type === RENDER) {
+      var argumenty = dane.args || {};
+      if (argumenty.wysokosc) {
+        wysokoscRamki = argumenty.wysokosc;
+      }
+      if (!jujWypelniona && typeof argumenty.html_gry === "string") {
+        ramkaGry.setAttribute("srcdoc", argumenty.html_gry);
+        ramkaGry.style.height = wysokoscRamki + "px";
+        jujWypelniona = true;
+      }
+      ustawWysokoscRamki(wysokoscRamki);
+      return;
+    }
+
+    // Kanal 2: wiadomosc OD GRY (wewnetrzny iframe) - zaliczenie etapu.
+    // Sprawdzamy zrodlo (musi pochodzic z naszego wlasnego <iframe>),
+    // zeby przypadkiem nie zareagowac na cudza wiadomosc.
+    if (dane.type === "streamlit-child:zaliczono" && event.source === ramkaGry.contentWindow) {
+      if (!jujZaliczono) {
+        jujZaliczono = true;
+        zglosWynikDoPythona(dane.wartosc === undefined ? true : dane.wartosc);
+      }
+    }
+  });
+
+  _wyslijDoStreamlit(COMPONENT_READY, { apiVersion: 1 });
+
+  window.addEventListener("load", function () {
+    window.setTimeout(function () { ustawWysokoscRamki(wysokoscRamki); }, 0);
+  });
+</script>
+</body>
+</html>
