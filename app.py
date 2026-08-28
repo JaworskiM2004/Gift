@@ -414,6 +414,12 @@ ETAPY = [
         "tytul": {"pl": "⛏️ Prosty Minecraft", "en": "⛏️ Simple Minecraft"},
         "typ": "minecraft",
     },
+    {
+        "klucz": "piano2",
+        "emoji": "🎼",
+        "tytul": {"pl": "🎼 Panie Janie", "en": "🎼 Frère Jacques"},
+        "typ": "piano2",
+    },
 ]
 
 PLIK_STANU = "stan_gry.json"
@@ -449,14 +455,21 @@ TEKST = {
         "menu_tytul": "Wybierz etap",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
         "zobacz_kod": "Zobacz kod do sejfu 🔓",
-        "przegrana_tytul": "Koniec gry",
-        "przegrana_wiadomosc": "Pozdro, poćwicz 😏\n\nWisielec dobił do końca — wszystko zaczynasz od nowa.",
-        "zacznij_od_nowa": "Zacznij od nowa",
         "reset_btn": "🔄 Resetuj wszystko",
         "reset_ostrzezenie": "⚠️ To usunie CAŁY postęp (wszystkie rozwiązane etapy) i nie da się tego cofnąć. Na pewno?",
         "reset_potwierdz": "Tak, resetuj wszystko",
         "reset_anuluj": "Anuluj",
         "napewno_bitwa": "Na pewno pokonałaś bossa? Jeśli nie, wróć do gry.",
+        "bledy_etykieta_gra": "Ile razy złapałaś czarną kulkę albo upuściłaś serduszko?",
+        "bledy_etykieta_dron": "Ile razy się rozbiłaś?",
+        "bledy_etykieta_zaba": "Ile razy żabka wpadła na przeszkodę?",
+        "bledy_etykieta_memory": "Ile było pomyłek przy dopasowywaniu par?",
+        "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
+        "bledy_etykieta_piano": "Ile razy nie trafiłaś nuty?",
+        "bledy_etykieta_piano2": "Ile razy nie trafiłaś nuty?",
+        "bledy_etykieta_bitwa": "Ile razy przegrałaś i zaczynałaś poziom od nowa?",
+        "bledy_etykieta_minecraft": "Ile razy zginęłaś?",
+        "rozpiska_tytul": "📊 Ile było pomyłek po drodze",
         "tak_pokonalam": "Tak, pokonałam!",
         "jeszcze_nie": "Jeszcze nie",
         "tak_ukonczylam": "Tak, ukończyłam!",
@@ -465,6 +478,7 @@ TEKST = {
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
         "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
         "napewno_piano": "Na pewno zagrałaś całą melodię bez pudła?",
+        "napewno_piano2": "Na pewno zagrałaś całą melodię bez pudła?",
         "napewno_gra": "Na pewno złapałaś wszystkie serca na wszystkich poziomach?",
         "kod_do_sejfu": "Kod do sejfu:",
         "ukonczone_w": "Ukończone w",
@@ -496,14 +510,21 @@ TEKST = {
         "menu_tytul": "Choose a stage",
         "wszystko_rozwiazane": "🎉 You solved everything!",
         "zobacz_kod": "See the safe code 🔓",
-        "przegrana_tytul": "Game over",
-        "przegrana_wiadomosc": "Nice try, go practice 😏\n\nThe hangman is complete — everything starts over.",
-        "zacznij_od_nowa": "Start over",
         "reset_btn": "🔄 Reset everything",
         "reset_ostrzezenie": "⚠️ This deletes ALL progress (every solved stage) and can't be undone. Are you sure?",
         "reset_potwierdz": "Yes, reset everything",
         "reset_anuluj": "Cancel",
         "napewno_bitwa": "Are you sure you defeated the boss? If not, go back to the game.",
+        "bledy_etykieta_gra": "How many times did you catch a black ball or drop a heart?",
+        "bledy_etykieta_dron": "How many times did you crash?",
+        "bledy_etykieta_zaba": "How many times did the frog hit an obstacle?",
+        "bledy_etykieta_memory": "How many mismatched pairs did you have?",
+        "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
+        "bledy_etykieta_piano": "How many notes did you miss?",
+        "bledy_etykieta_piano2": "How many notes did you miss?",
+        "bledy_etykieta_bitwa": "How many times did you lose and restart a level?",
+        "bledy_etykieta_minecraft": "How many times did you die?",
+        "rozpiska_tytul": "📊 How many mistakes along the way",
         "tak_pokonalam": "Yes, I defeated it!",
         "jeszcze_nie": "Not yet",
         "tak_ukonczylam": "Yes, I completed it!",
@@ -512,6 +533,7 @@ TEKST = {
         "napewno_memory": "Are you sure you matched all pairs in time?",
         "napewno_simon": "Are you sure you repeated the whole sequence?",
         "napewno_piano": "Are you sure you played the whole melody without a miss?",
+        "napewno_piano2": "Are you sure you played the whole melody without a miss?",
         "napewno_gra": "Are you sure you caught all the hearts on every level?",
         "kod_do_sejfu": "Safe code:",
         "ukonczone_w": "Completed in",
@@ -2887,6 +2909,311 @@ SZABLON_PIANO = """
 </html>
 """
 
+SZABLON_PIANO2 = """
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  body {
+    margin: 0;
+    font-family: -apple-system, 'Poppins', sans-serif;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    overflow: hidden;
+  }
+  #panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  .wycisz-btn {
+    background: none;
+    border: 1px solid rgba(212,175,55,0.4);
+    border-radius: 20px;
+    color: #f5f5f0;
+    font-size: 16px;
+    padding: 2px 10px;
+    cursor: pointer;
+  }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 420px;
+    overflow: hidden;
+    border-radius: 16px;
+    border: 2px solid #d4af37;
+  }
+  #pasy {
+    display: flex;
+    width: 100%;
+    height: 100%;
+  }
+  .pas {
+    flex: 1;
+    position: relative;
+    border-right: 1px solid rgba(212,175,55,0.15);
+    cursor: pointer;
+  }
+  .pas:last-child { border-right: none; }
+  #linia-trafien {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 54px;
+    height: 2px;
+    background: rgba(212,175,55,0.35);
+    z-index: 1;
+    pointer-events: none;
+  }
+  .kafelek {
+    position: absolute;
+    height: 70px;
+    background: linear-gradient(135deg, #2a2a3d, #0d0d0d);
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    z-index: 3;
+    pointer-events: none;
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: rgba(13,13,13,0.95);
+    color: #e6c15c;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 24px;
+  }
+  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
+  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
+  button.gra-btn {
+    background: linear-gradient(135deg,#e6c15c,#d4af37);
+    border: none;
+    padding: 10px 26px;
+    border-radius: 30px;
+    font-weight: 700;
+    color: #1a1a1a;
+    cursor: pointer;
+    font-size: 15px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+  <div id="panel">
+    <span id="postepNaEkranie">0 / 32</span>
+    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+  </div>
+  <div id="gra">
+    <div id="pasy">
+      <div class="pas" data-idx="0"></div>
+      <div class="pas" data-idx="1"></div>
+      <div class="pas" data-idx="2"></div>
+      <div class="pas" data-idx="3"></div>
+    </div>
+    <div id="linia-trafien"></div>
+    <div id="nakladka">
+      <h2 id="nakladkaTytul">Piano Tiles: Panie Janie</h2>
+      <p id="nakladkaOpis"></p>
+      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+    </div>
+  </div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var pasy = document.querySelectorAll('.pas');
+  var postepNaEkranie = document.getElementById('postepNaEkranie');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var wyciszBtn = document.getElementById('wyciszBtn');
+
+  // "Panie Janie" (Frere Jacques) - solmizacja: do re mi do (x2) |
+  // mi fa sol (x2) | sol la sol fa mi do (x2) | do sol(niz.) do(niz.) (x2)
+  var NUTY = [
+    523.25, 587.33, 659.25, 523.25, 523.25, 587.33, 659.25, 523.25,
+    659.25, 698.46, 784.00, 659.25, 698.46, 784.00,
+    784.00, 880.00, 784.00, 698.46, 659.25, 523.25, 784.00, 880.00, 784.00, 698.46, 659.25, 523.25,
+    523.25, 392.00, 261.63, 523.25, 392.00, 261.63
+  ];
+
+  var LICZBA_PASOW = 4;
+  var PREDKOSC_START = 420;
+  var PREDKOSC_PRZYROST = 10;
+  var WYSOKOSC_KAFELKA = 70;
+
+  var indeksNuty = 0;
+  var aktywnyKafelek = null;
+  var trwa = false;
+  var czasOstatni = null;
+  var wyciszone = false;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
+      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
+      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
+      var cicheZrodlo = audioCtx.createBufferSource();
+      cicheZrodlo.buffer = cichyBufor;
+      cicheZrodlo.connect(audioCtx.destination);
+      cicheZrodlo.start(0);
+    } catch (e) {
+      audioCtx = null;
+    }
+  }
+
+  function zagrajTon(czestotliwosc, czasTrwania, typ) {
+    if (!audioCtx || wyciszone) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ;
+      osc.frequency.value = czestotliwosc;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start();
+      osc.stop(audioCtx.currentTime + czasTrwania);
+    } catch (e) {
+      // dzwiek to dodatek - jego brak nie moze zepsuc gry
+    }
+  }
+
+  function aktualizujPostep() {
+    postepNaEkranie.textContent = indeksNuty + ' / ' + NUTY.length;
+  }
+
+  function usunAktywnyKafelek() {
+    if (aktywnyKafelek && aktywnyKafelek.el.parentNode) {
+      aktywnyKafelek.el.remove();
+    }
+    aktywnyKafelek = null;
+  }
+
+  function stworzKafelek() {
+    var pas = Math.floor(Math.random() * LICZBA_PASOW);
+    var szerPasa = gra.clientWidth / LICZBA_PASOW;
+    var el = document.createElement('div');
+    el.className = 'kafelek';
+    el.style.width = (szerPasa - 8) + 'px';
+    el.style.left = (pas * szerPasa + 4) + 'px';
+    el.style.top = (-WYSOKOSC_KAFELKA - 10) + 'px';
+    gra.appendChild(el);
+    aktywnyKafelek = { pas: pas, y: -WYSOKOSC_KAFELKA - 10, el: el };
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
+    czasOstatni = czas;
+
+    var wys = gra.clientHeight;
+    var predkosc = PREDKOSC_START + indeksNuty * PREDKOSC_PRZYROST;
+
+    if (aktywnyKafelek) {
+      aktywnyKafelek.y += predkosc * dt;
+      aktywnyKafelek.el.style.top = aktywnyKafelek.y + 'px';
+      if (aktywnyKafelek.y > wys) {
+        zakonczGre(false, 'ucieklo');
+        return;
+      }
+    }
+
+    requestAnimationFrame(petla);
+  }
+
+  function kliknietoPas(pas) {
+    if (!trwa) return;
+    if (aktywnyKafelek && aktywnyKafelek.pas === pas) {
+      zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
+      usunAktywnyKafelek();
+      indeksNuty++;
+      aktualizujPostep();
+      if (indeksNuty >= NUTY.length) {
+        zakonczGre(true);
+      } else {
+        stworzKafelek();
+      }
+    } else {
+      zakonczGre(false, 'zly-pas');
+    }
+  }
+
+  pasy.forEach(function (el, idx) {
+    el.addEventListener('click', function () {
+      if (el.dataset.dotkniete) return;
+      kliknietoPas(idx);
+    });
+    el.addEventListener('touchstart', function (e) {
+      e.preventDefault();
+      el.dataset.dotkniete = '1';
+      kliknietoPas(idx);
+      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
+    }, { passive: false });
+  });
+
+  function rozpocznijGre() {
+    indeksNuty = 0;
+    aktualizujPostep();
+    usunAktywnyKafelek();
+    czasOstatni = null;
+    nakladka.style.display = 'none';
+    trwa = true;
+    stworzKafelek();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana, powod) {
+    trwa = false;
+    usunAktywnyKafelek();
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      zagrajTon(1046.50, 0.5, 'triangle');
+      nakladkaTytul.textContent = '🎉 Udało się!';
+      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaBtn.style.display = 'none';
+    } else {
+      zagrajTon(140, 0.35, 'sawtooth');
+      nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
+      nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + '. Spróbuj jeszcze raz.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  wyciszBtn.addEventListener('click', function () {
+    wyciszone = !wyciszone;
+    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
+  });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
 SZABLON_BITWA = """
 <!DOCTYPE html>
 <html>
@@ -4214,7 +4541,10 @@ SZABLON_MINECRAFT = """
 <body>
   <div id="panel">
     <span>⛏️ Prosty Minecraft</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+    <div style="display:flex; gap:6px;">
+      <button class="wycisz-btn" id="btnTestDzwieku" style="font-size:11px; padding:4px 8px;">🔔 Test</button>
+      <button class="wycisz-btn" id="wyciszBtn">🔊</button>
+    </div>
   </div>
   <div id="gra">
     <div id="pasekGloduOtoczka">
@@ -4279,6 +4609,7 @@ SZABLON_MINECRAFT = """
   var nakladka = document.getElementById('nakladka');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
   var wyciszBtn = document.getElementById('wyciszBtn');
+  var btnTestDzwieku = document.getElementById('btnTestDzwieku');
   var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
   var pasekHpWypelnienie = document.getElementById('pasekHpWypelnienie');
   var btnDom = document.getElementById('btnDom');
@@ -5321,6 +5652,15 @@ SZABLON_MINECRAFT = """
     wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
   });
 
+  btnTestDzwieku.addEventListener('click', function () {
+    inicjujDzwiek();
+    var stan = audioCtx ? audioCtx.state : 'BRAK KONTEKSTU AUDIO';
+    pokazDziennikMc('🔔 Stan: ' + stan + (wyciszone ? ' | UWAGA: dźwięk WYCISZONY przyciskiem 🔇!' : ' | dźwięk włączony'), 3200);
+    zagrajTon(880, 0.3, 'sine');
+    setTimeout(function () { zagrajTon(1046, 0.3, 'sine'); }, 320);
+    setTimeout(function () { zagrajTon(1318, 0.35, 'sine'); }, 640);
+  });
+
   // ---------- PANELE: EKWIPUNEK / RECEPTURY / PIEC (przelacznik, jeden na raz) ----------
   function schowajWszystkiePanele() {
     ekwipunekEl.classList.remove('widoczny');
@@ -5571,17 +5911,63 @@ SZABLON_MINECRAFT = """
 def wstaw_styl():
     st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Poppins:wght@400;500;600;700&family=Dancing+Script:wght@600;700&display=swap');
 
 #MainMenu, footer, header {visibility: hidden;}
 
 .stApp {
+    position: relative;
     background: radial-gradient(circle at 50% -10%, #241b3a 0%, #0d0d0d 55%, #050505 100%);
     color: #f5f5f0;
     font-family: 'Poppins', sans-serif;
 }
 
 h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
+
+.podpis-skrypt {
+    font-family: 'Dancing Script', cursive;
+    font-weight: 700;
+    color: #e6c15c;
+}
+
+/* Kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu */
+.kokarda-rog {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.6rem;
+    width: 54px;
+    height: 54px;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.92;
+}
+
+/* Serduszko z zawijasem - motyw z karnetow, uzywane jako mala ozdoba */
+.ikona-serce-zawijas {
+    display: block;
+    margin: 0 auto 0.3rem;
+    width: 34px;
+    height: 38px;
+    opacity: 0.85;
+}
+
+/* Separator pod tytulem: linia - serduszko - linia, jak pod "KARNET" */
+.separator-serce {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.7rem;
+    color: #d4af37;
+    font-size: 0.85rem;
+    margin: -0.5rem 0 1rem;
+}
+.separator-serce::before, .separator-serce::after {
+    content: '';
+    flex: 1;
+    max-width: 70px;
+    height: 1px;
+    background: rgba(212,175,55,0.4);
+}
 
 .tytul {
     font-family: 'Cinzel', serif;
@@ -5592,7 +5978,7 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     -webkit-text-fill-color: transparent;
     animation: pojaw 0.9s ease;
     padding-bottom: 0.7rem;
-    margin-bottom: 1.1rem;
+    margin-bottom: 0;
     border-bottom: 1px solid rgba(212,175,55,0.28);
 }
 
@@ -5638,6 +6024,47 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     box-shadow: inset 0 2px 5px rgba(0,0,0,0.6), 0 0 12px rgba(212,175,55,0.35);
 }
 
+.karta-rozpiski {
+    max-width: 420px;
+    margin: 1.6rem auto 0.5rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 14px;
+    padding: 0.9rem 1.1rem;
+}
+.rozpiska-tytul {
+    text-align: center;
+    font-family: 'Cinzel', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #e6c15c;
+    margin-bottom: 0.6rem;
+}
+.wiersz-rozpiski {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.4rem 0.2rem;
+    font-size: 0.9rem;
+    border-bottom: 1px solid rgba(212,175,55,0.14);
+}
+.wiersz-rozpiski:last-child {
+    border-bottom: none;
+}
+.rozpiska-etap {
+    opacity: 0.9;
+}
+.rozpiska-liczba {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    color: #e6c15c;
+    background: rgba(212,175,55,0.12);
+    border-radius: 20px;
+    min-width: 1.8rem;
+    text-align: center;
+    padding: 0.1rem 0.5rem;
+}
+
 .szachownica {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
@@ -5674,17 +6101,6 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     border-radius: 10px;
     border: 2px solid #d4af37;
     box-shadow: 0 3px 10px rgba(0,0,0,0.45);
-}
-
-.serce-peka {
-    display: inline-block;
-    animation: peknij 0.5s ease;
-}
-@keyframes peknij {
-    0% { transform: scale(1.6); opacity: 0.4; }
-    40% { transform: scale(0.85) rotate(-8deg); }
-    70% { transform: scale(1.1) rotate(5deg); }
-    100% { transform: scale(1) rotate(0deg); }
 }
 
 div.stButton > button {
@@ -5802,51 +6218,36 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
 """, unsafe_allow_html=True)
 
 
-# ======================================================================
-# WISIELEC — wspólny licznik pomyłek (10 elementów)
-# ======================================================================
-
-WISIELEC_CZESCI = [
-    '<line x1="10" y1="140" x2="70" y2="140" stroke="#e6c15c" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="30" y1="140" x2="30" y2="10" stroke="#e6c15c" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="30" y1="10" x2="90" y2="10" stroke="#e6c15c" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="90" y1="10" x2="90" y2="25" stroke="#e6c15c" stroke-width="4" stroke-linecap="round"/>',
-    '<circle cx="90" cy="36" r="11" stroke="#ff6b6b" stroke-width="4" fill="none"/>',
-    '<line x1="90" y1="47" x2="90" y2="85" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="90" y1="57" x2="70" y2="72" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="90" y1="57" x2="110" y2="72" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="90" y1="85" x2="75" y2="112" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round"/>',
-    '<line x1="90" y1="85" x2="105" y2="112" stroke="#ff6b6b" stroke-width="4" stroke-linecap="round"/>',
-]
-
-
-def rysuj_wisielca(liczba_bledow, mala=False):
-    liczba_bledow = max(0, min(10, liczba_bledow))
-    widoczne = "".join(WISIELEC_CZESCI[:liczba_bledow])
-    rozmiar = 70 if mala else 120
-    wysokosc = int(rozmiar * 150 / 120)
-    st.markdown(
-        f"<div style='text-align:center; margin:0.3rem 0;'><svg width='{rozmiar}' height='{wysokosc}' "
-        f"viewBox='0 0 120 150'>{widoczne}</svg></div>",
-        unsafe_allow_html=True,
-    )
+def svg_kokarda():
+    """Zlota kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu."""
+    return """<svg class='kokarda-rog' viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="gradKokarda" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#f5e6b8"/>
+          <stop offset="50%" stop-color="#e6c15c"/>
+          <stop offset="100%" stop-color="#b8892a"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="30" cy="35" rx="22" ry="16" transform="rotate(-25 30 35)" fill="url(#gradKokarda)" stroke="#8a6a1f" stroke-width="1"/>
+      <ellipse cx="70" cy="35" rx="22" ry="16" transform="rotate(25 70 35)" fill="url(#gradKokarda)" stroke="#8a6a1f" stroke-width="1"/>
+      <circle cx="50" cy="38" r="10" fill="#f0dfa8" stroke="#8a6a1f" stroke-width="1"/>
+      <path d="M42 44 L34 72 L44 62 L50 72 L44 44 Z" fill="url(#gradKokarda)"/>
+      <path d="M58 44 L50 72 L56 62 L66 72 L58 44 Z" fill="url(#gradKokarda)"/>
+    </svg>"""
 
 
-def rysuj_serca(liczba_bledow, mala=False):
-    liczba_bledow = max(0, min(10, liczba_bledow))
-    rozmiar = "1.15rem" if mala else "1.5rem"
-    czesci = []
-    for i in range(10):
-        if i < liczba_bledow - 1:
-            czesci.append(f"<span style='font-size:{rozmiar};'>💔</span>")
-        elif i == liczba_bledow - 1:
-            czesci.append(f"<span class='serce-peka' style='font-size:{rozmiar};'>💔</span>")
-        else:
-            czesci.append(f"<span style='font-size:{rozmiar};'>❤️</span>")
-    st.markdown(
-        f"<div style='text-align:center; letter-spacing:1px; margin:0.3rem 0 1.1rem;'>{''.join(czesci)}</div>",
-        unsafe_allow_html=True,
-    )
+def svg_serce_zawijas():
+    """Serduszko z cienkim zawijasem - motyw z karnetow."""
+    return """<svg class='ikona-serce-zawijas' viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
+      <path d="M20,35 A15,15 0,0,1 50,35 A15,15 0,0,1 80,35 Q80,60 50,82 Q20,60 20,35 Z"
+            fill="none" stroke="#d4af37" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M42,78 C 30,85 18,95 22,106" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>
+    </svg>"""
+
+
+def separator_serce():
+    """Separator linia-serduszko-linia, jak pod 'KARNET' na fizycznych karnetach."""
+    return "<div class='separator-serce'>♡</div>"
 
 
 # ======================================================================
@@ -5864,17 +6265,34 @@ def wczytaj_zapisany_stan():
     return None
 
 
+def koduj_bledy_per_etap(slownik):
+    return ",".join(f"{k}:{v}" for k, v in sorted(slownik.items()) if v)
+
+
+def dekoduj_bledy_per_etap(tekst):
+    wynik = {}
+    if not tekst:
+        return wynik
+    for czesc in tekst.split(","):
+        if ":" not in czesc:
+            continue
+        klucz, _, wartosc = czesc.partition(":")
+        if klucz and wartosc.isdigit():
+            wynik[klucz] = int(wartosc)
+    return wynik
+
+
 def zapisz_postep():
     st.query_params["r"] = ",".join(sorted(st.session_state.rozwiazane))
     st.query_params["n"] = ",".join(sorted(st.session_state.nieudane))
-    st.query_params["b"] = str(st.session_state.bledy_wisielec)
+    st.query_params["b"] = koduj_bledy_per_etap(st.session_state.bledy_per_etap)
     st.query_params["j"] = st.session_state.jezyk
     if st.session_state.czas_startu:
         st.query_params["t"] = str(st.session_state.czas_startu)
     dane = {
         "rozwiazane": list(st.session_state.rozwiazane),
         "nieudane": list(st.session_state.nieudane),
-        "bledy_wisielec": st.session_state.bledy_wisielec,
+        "bledy_per_etap": st.session_state.bledy_per_etap,
         "jezyk": st.session_state.jezyk,
         "czas_startu": st.session_state.czas_startu,
     }
@@ -5893,8 +6311,8 @@ def zainicjuj_stan():
     rozwiazane_url = set(x for x in r.split(",") if x)
     n = st.query_params.get("n", "")
     nieudane_url = set(x for x in n.split(",") if x)
-    b = st.query_params.get("b")
-    bledy_url = int(b) if b and b.isdigit() else 0
+    b = st.query_params.get("b", "")
+    bledy_url = dekoduj_bledy_per_etap(b)
     j = st.query_params.get("j")
     jezyk_url = j if j in ("pl", "en") else None
     t_param = st.query_params.get("t")
@@ -5903,20 +6321,23 @@ def zainicjuj_stan():
     zapisane = wczytaj_zapisany_stan() or {}
     rozwiazane_plik = set(zapisane.get("rozwiazane", []))
     nieudane_plik = set(zapisane.get("nieudane", []))
-    bledy_plik = zapisane.get("bledy_wisielec", 0)
+    bledy_plik = zapisane.get("bledy_per_etap", {})
     jezyk_plik = zapisane.get("jezyk")
     czas_plik = zapisane.get("czas_startu")
 
     st.session_state.rozwiazane = rozwiazane_url | rozwiazane_plik
     st.session_state.nieudane = nieudane_url | nieudane_plik
-    st.session_state.bledy_wisielec = max(bledy_url, bledy_plik)
+    bledy_polaczone = dict(bledy_plik)
+    for klucz_etapu, wartosc in bledy_url.items():
+        bledy_polaczone[klucz_etapu] = max(bledy_polaczone.get(klucz_etapu, 0), wartosc)
+    st.session_state.bledy_per_etap = bledy_polaczone
     st.session_state.jezyk = jezyk_url or jezyk_plik or "pl"
     st.session_state.czas_startu = czas_url or czas_plik
 
     juz_zaczela = bool(
         jezyk_url or jezyk_plik
         or st.session_state.rozwiazane or st.session_state.nieudane
-        or st.session_state.bledy_wisielec
+        or st.session_state.bledy_per_etap
     )
     st.session_state.ekran = "menu" if juz_zaczela else "powitanie"
 
@@ -6054,10 +6475,10 @@ def renderuj_gra(etap_dane):
     html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
     components.html(html, height=520, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_gra"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_gra"), etykieta_bledow=t("bledy_etykieta_gra"))
 
 
-def pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, pytanie, tekst_tak=None):
+def pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, pytanie, tekst_tak=None, etykieta_bledow=None):
     tekst_tak = tekst_tak or t("tak_ukonczylam")
     stan_klucz = f"potwierdz_ukonczone_{klucz}"
     if not st.session_state.get(stan_klucz, False):
@@ -6066,8 +6487,15 @@ def pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, pytanie, tekst_tak=None):
             st.rerun()
     else:
         st.caption(pytanie)
+        liczba_bledow = None
+        if etykieta_bledow:
+            liczba_bledow = st.number_input(
+                etykieta_bledow, min_value=0, max_value=999, value=0, step=1, key=f"bledy_input_{klucz}"
+            )
         if st.button(tekst_tak, key=f"btn_tak_{klucz}"):
             st.session_state[stan_klucz] = False
+            if etykieta_bledow:
+                st.session_state.bledy_per_etap[klucz] = int(liczba_bledow)
             return True
         if st.button(t("jeszcze_nie"), key=f"btn_nie_{klucz}"):
             st.session_state[stan_klucz] = False
@@ -6080,7 +6508,7 @@ def renderuj_dron(etap_dane):
 
     components.html(SZABLON_DRONA, height=520, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dron"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dron"), etykieta_bledow=t("bledy_etykieta_dron"))
 
 
 def renderuj_zaba(etap_dane):
@@ -6088,7 +6516,7 @@ def renderuj_zaba(etap_dane):
 
     components.html(SZABLON_ZABY, height=520, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_zaba"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_zaba"), etykieta_bledow=t("bledy_etykieta_zaba"))
 
 
 def renderuj_memory(etap_dane):
@@ -6096,7 +6524,7 @@ def renderuj_memory(etap_dane):
 
     components.html(SZABLON_MEMORY, height=560, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_memory"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_memory"), etykieta_bledow=t("bledy_etykieta_memory"))
 
 
 def renderuj_simon(etap_dane):
@@ -6104,7 +6532,7 @@ def renderuj_simon(etap_dane):
 
     components.html(SZABLON_SIMON, height=480, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_simon"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_simon"), etykieta_bledow=t("bledy_etykieta_simon"))
 
 
 def renderuj_piano(etap_dane):
@@ -6112,7 +6540,15 @@ def renderuj_piano(etap_dane):
 
     components.html(SZABLON_PIANO, height=520, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano"), etykieta_bledow=t("bledy_etykieta_piano"))
+
+
+def renderuj_piano2(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    components.html(SZABLON_PIANO2, height=520, scrolling=False)
+
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano2"), etykieta_bledow=t("bledy_etykieta_piano2"))
 
 
 def renderuj_bitwa(etap_dane):
@@ -6120,7 +6556,7 @@ def renderuj_bitwa(etap_dane):
 
     components.html(SZABLON_BITWA, height=640, scrolling=False)
 
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_bitwa"), t("tak_pokonalam"))
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_bitwa"), t("tak_pokonalam"), etykieta_bledow=t("bledy_etykieta_bitwa"))
 
 
 def renderuj_minecraft(etap_dane):
@@ -6128,7 +6564,11 @@ def renderuj_minecraft(etap_dane):
 
     components.html(SZABLON_MINECRAFT, height=720, scrolling=False)
 
+    liczba_smierci = st.number_input(
+        t("bledy_etykieta_minecraft"), min_value=0, max_value=999, value=0, step=1, key=f"bledy_input_{klucz}"
+    )
     if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+        st.session_state.bledy_per_etap[klucz] = int(liczba_smierci)
         return True
     return None
 
@@ -6298,7 +6738,9 @@ def pokaz_przycisk_resetu():
 
 
 def pokaz_powitanie():
-    st.markdown("<div style='height:25vh;'></div>", unsafe_allow_html=True)
+    st.markdown(svg_kokarda(), unsafe_allow_html=True)
+    st.markdown("<div style='height:14vh;'></div>", unsafe_allow_html=True)
+    st.markdown(svg_serce_zawijas(), unsafe_allow_html=True)
 
     kolumny = st.columns([1, 1, 1])
     with kolumny[1]:
@@ -6317,9 +6759,9 @@ def pokaz_powitanie():
 
 
 def pokaz_menu():
+    st.markdown(svg_kokarda(), unsafe_allow_html=True)
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
-    rysuj_wisielca(st.session_state.bledy_wisielec)
-    rysuj_serca(st.session_state.bledy_wisielec)
+    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     kolumny = st.columns(5)
     for i, etap_dane in enumerate(ETAPY):
@@ -6360,9 +6802,8 @@ def pokaz_ekran_etapu(etap_dane):
         st.session_state.ekran = "menu"
         st.rerun()
 
-    rysuj_wisielca(st.session_state.bledy_wisielec, mala=True)
-    rysuj_serca(st.session_state.bledy_wisielec, mala=True)
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
+    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     if klucz in st.session_state.rozwiazane:
         st.success(t("rozwiazane_status"))
@@ -6392,6 +6833,8 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_simon(etap_dane)
     elif typ == "piano":
         wynik = renderuj_piano(etap_dane)
+    elif typ == "piano2":
+        wynik = renderuj_piano2(etap_dane)
     elif typ == "wordle":
         wynik = renderuj_wordle(etap_dane)
     elif typ == "data":
@@ -6411,19 +6854,40 @@ def pokaz_ekran_etapu(etap_dane):
         st.balloons()
         st.rerun()
     elif wynik is False:
-        st.session_state.bledy_wisielec += 1
+        st.session_state.bledy_per_etap[klucz] = st.session_state.bledy_per_etap.get(klucz, 0) + 1
         if etap_dane.get("jedna_proba"):
             st.session_state.nieudane.add(klucz)
         zapisz_postep()
-        if st.session_state.bledy_wisielec >= 10:
-            st.session_state.ekran = "przegrana"
-            st.rerun()
+
+
+def pokaz_rozpiske_bledow():
+    wiersze = []
+    for etap_dane in ETAPY:
+        klucz = etap_dane["klucz"]
+        liczba = st.session_state.bledy_per_etap.get(klucz, 0)
+        wiersze.append(
+            f"<div class='wiersz-rozpiski'>"
+            f"<span class='rozpiska-etap'>{tt(etap_dane['tytul'])}</span>"
+            f"<span class='rozpiska-liczba'>{liczba}</span>"
+            f"</div>"
+        )
+    st.markdown(
+        f"""
+        <div class='karta-rozpiski'>
+          <div class='rozpiska-tytul'>{t('rozpiska_tytul')}</div>
+          {''.join(wiersze)}
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def pokaz_final():
     st.balloons()
+    st.markdown(svg_kokarda(), unsafe_allow_html=True)
     st.markdown("<div class='zamek-otwarty'>🔓</div>", unsafe_allow_html=True)
     st.markdown(tt(WIADOMOSC_KONCOWA), unsafe_allow_html=True)
+    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     kod_koncowy = KOD_SEJFU
     tarcze = "".join(f"<div class='cyfra-tarcza'>{c}</div>" for c in kod_koncowy)
@@ -6444,29 +6908,14 @@ def pokaz_final():
         minuty = (time.time() - st.session_state.czas_startu) / 60
         st.caption(f"⏱️ {t('ukonczone_w')} {minuty:.1f} {t('min')}")
 
+    pokaz_rozpiske_bledow()
+
     if st.button(t("wroc_do_menu"), key="powrot_final"):
         st.session_state.ekran = "menu"
         st.rerun()
 
     st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
     pokaz_przycisk_resetu()
-
-
-def pokaz_przegrana():
-    rysuj_wisielca(10)
-    rysuj_serca(10)
-    st.markdown(f"<h1 class='tytul'>{t('przegrana_tytul')}</h1>", unsafe_allow_html=True)
-    st.markdown(t("przegrana_wiadomosc"))
-    if st.button(t("zacznij_od_nowa"), key="restart_btn"):
-        jezyk = st.session_state.jezyk
-        st.session_state.rozwiazane = set()
-        st.session_state.nieudane = set()
-        st.session_state.bledy_wisielec = 0
-        st.session_state.czas_startu = None
-        st.session_state.jezyk = jezyk
-        st.session_state.ekran = "menu"
-        zapisz_postep()
-        st.rerun()
 
 
 # ======================================================================
@@ -6493,8 +6942,6 @@ def main():
 
     if ekran == "powitanie":
         pokaz_powitanie()
-    elif ekran == "przegrana":
-        pokaz_przegrana()
     elif ekran == "final":
         pokaz_final()
     elif ekran.startswith("etap:"):
