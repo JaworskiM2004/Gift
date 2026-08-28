@@ -414,12 +414,6 @@ ETAPY = [
         "tytul": {"pl": "⛏️ Prosty Minecraft", "en": "⛏️ Simple Minecraft"},
         "typ": "minecraft",
     },
-    {
-        "klucz": "piano2",
-        "emoji": "🎼",
-        "tytul": {"pl": "🎼 Panie Janie", "en": "🎼 Frère Jacques"},
-        "typ": "piano2",
-    },
 ]
 
 PLIK_STANU = "stan_gry.json"
@@ -466,7 +460,6 @@ TEKST = {
         "bledy_etykieta_memory": "Ile było pomyłek przy dopasowywaniu par?",
         "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
         "bledy_etykieta_piano": "Ile razy nie trafiłaś nuty?",
-        "bledy_etykieta_piano2": "Ile razy nie trafiłaś nuty?",
         "bledy_etykieta_bitwa": "Ile razy przegrałaś i zaczynałaś poziom od nowa?",
         "bledy_etykieta_minecraft": "Ile razy zginęłaś?",
         "rozpiska_tytul": "📊 Ile było pomyłek po drodze",
@@ -478,7 +471,6 @@ TEKST = {
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
         "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
         "napewno_piano": "Na pewno zagrałaś całą melodię bez pudła?",
-        "napewno_piano2": "Na pewno zagrałaś całą melodię bez pudła?",
         "napewno_gra": "Na pewno złapałaś wszystkie serca na wszystkich poziomach?",
         "kod_do_sejfu": "Kod do sejfu:",
         "ukonczone_w": "Ukończone w",
@@ -521,7 +513,6 @@ TEKST = {
         "bledy_etykieta_memory": "How many mismatched pairs did you have?",
         "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
         "bledy_etykieta_piano": "How many notes did you miss?",
-        "bledy_etykieta_piano2": "How many notes did you miss?",
         "bledy_etykieta_bitwa": "How many times did you lose and restart a level?",
         "bledy_etykieta_minecraft": "How many times did you die?",
         "rozpiska_tytul": "📊 How many mistakes along the way",
@@ -533,7 +524,6 @@ TEKST = {
         "napewno_memory": "Are you sure you matched all pairs in time?",
         "napewno_simon": "Are you sure you repeated the whole sequence?",
         "napewno_piano": "Are you sure you played the whole melody without a miss?",
-        "napewno_piano2": "Are you sure you played the whole melody without a miss?",
         "napewno_gra": "Are you sure you caught all the hearts on every level?",
         "kod_do_sejfu": "Safe code:",
         "ukonczone_w": "Completed in",
@@ -2814,314 +2804,32 @@ SZABLON_PIANO = """
     font-size: 15px;
     margin-top: 10px;
   }
-</style>
-</head>
-<body>
-  <div id="panel">
-    <span id="postepNaEkranie">0 / 18</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
-  </div>
-  <div id="gra">
-    <div id="pasy">
-      <div class="pas" data-idx="0"></div>
-      <div class="pas" data-idx="1"></div>
-      <div class="pas" data-idx="2"></div>
-      <div class="pas" data-idx="3"></div>
-    </div>
-    <div id="linia-trafien"></div>
-    <div id="nakladka">
-      <h2 id="nakladkaTytul">Piano Tiles</h2>
-      <p id="nakladkaOpis"></p>
-      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
-    </div>
-  </div>
-
-<script>
-  var gra = document.getElementById('gra');
-  var pasy = document.querySelectorAll('.pas');
-  var postepNaEkranie = document.getElementById('postepNaEkranie');
-  var nakladka = document.getElementById('nakladka');
-  var nakladkaTytul = document.getElementById('nakladkaTytul');
-  var nakladkaOpis = document.getElementById('nakladkaOpis');
-  var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
-
-  // "Wlazl kotek na plotek" - solmizacja: sol mi mi fa re re do mi sol
-  // (powtorzone), czyli G E E F D D C E G G E E F D D C E C.
-  var NUTY = [
-    784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 784.00,
-    784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 523.25
-  ];
-
-  var LICZBA_PASOW = 4;
-  var PREDKOSC_START = 420;
-  var PREDKOSC_PRZYROST = 10;
-  var WYSOKOSC_KAFELKA = 70;
-
-  var indeksNuty = 0;
-  var aktywnyKafelek = null;
-  var trwa = false;
-  var czasOstatni = null;
-  var wyciszone = false;
-
-  var audioCtx = null;
-
-  function inicjujDzwiek() {
-    try {
-      if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-      }
-      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
-      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
-      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
-      var cicheZrodlo = audioCtx.createBufferSource();
-      cicheZrodlo.buffer = cichyBufor;
-      cicheZrodlo.connect(audioCtx.destination);
-      cicheZrodlo.start(0);
-    } catch (e) {
-      audioCtx = null;
-    }
-  }
-
-  function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx || wyciszone) return;
-    try {
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = typ;
-      osc.frequency.value = czestotliwosc;
-      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + czasTrwania);
-    } catch (e) {
-      // dzwiek to dodatek - jego brak nie moze zepsuc gry
-    }
-  }
-
-  function aktualizujPostep() {
-    postepNaEkranie.textContent = indeksNuty + ' / ' + NUTY.length;
-  }
-
-  function usunAktywnyKafelek() {
-    if (aktywnyKafelek && aktywnyKafelek.el.parentNode) {
-      aktywnyKafelek.el.remove();
-    }
-    aktywnyKafelek = null;
-  }
-
-  function stworzKafelek() {
-    var pas = Math.floor(Math.random() * LICZBA_PASOW);
-    var szerPasa = gra.clientWidth / LICZBA_PASOW;
-    var el = document.createElement('div');
-    el.className = 'kafelek';
-    el.style.width = (szerPasa - 8) + 'px';
-    el.style.left = (pas * szerPasa + 4) + 'px';
-    el.style.top = (-WYSOKOSC_KAFELKA - 10) + 'px';
-    gra.appendChild(el);
-    aktywnyKafelek = { pas: pas, y: -WYSOKOSC_KAFELKA - 10, el: el };
-  }
-
-  function petla(czas) {
-    if (!trwa) { czasOstatni = null; return; }
-    if (czasOstatni === null) czasOstatni = czas;
-    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
-    czasOstatni = czas;
-
-    var wys = gra.clientHeight;
-    var predkosc = PREDKOSC_START + indeksNuty * PREDKOSC_PRZYROST;
-
-    if (aktywnyKafelek) {
-      aktywnyKafelek.y += predkosc * dt;
-      aktywnyKafelek.el.style.top = aktywnyKafelek.y + 'px';
-      if (aktywnyKafelek.y > wys) {
-        zakonczGre(false, 'ucieklo');
-        return;
-      }
-    }
-
-    requestAnimationFrame(petla);
-  }
-
-  function kliknietoPas(pas) {
-    if (!trwa) return;
-    if (aktywnyKafelek && aktywnyKafelek.pas === pas) {
-      zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
-      usunAktywnyKafelek();
-      indeksNuty++;
-      aktualizujPostep();
-      if (indeksNuty >= NUTY.length) {
-        zakonczGre(true);
-      } else {
-        stworzKafelek();
-      }
-    } else {
-      zakonczGre(false, 'zly-pas');
-    }
-  }
-
-  pasy.forEach(function (el, idx) {
-    el.addEventListener('click', function () {
-      if (el.dataset.dotkniete) return;
-      kliknietoPas(idx);
-    });
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      el.dataset.dotkniete = '1';
-      kliknietoPas(idx);
-      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
-    }, { passive: false });
-  });
-
-  function rozpocznijGre() {
-    indeksNuty = 0;
-    aktualizujPostep();
-    usunAktywnyKafelek();
-    czasOstatni = null;
-    nakladka.style.display = 'none';
-    trwa = true;
-    stworzKafelek();
-    requestAnimationFrame(petla);
-  }
-
-  function zakonczGre(wygrana, powod) {
-    trwa = false;
-    usunAktywnyKafelek();
-    nakladka.style.display = 'flex';
-
-    if (wygrana) {
-      zagrajTon(1046.50, 0.5, 'triangle');
-      nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
-      nakladkaBtn.style.display = 'none';
-    } else {
-      zagrajTon(140, 0.35, 'sawtooth');
-      nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
-      nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + '. Spróbuj jeszcze raz.';
-      nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = 'Jeszcze raz';
-      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
-    }
-  }
-
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
-</script>
-</body>
-</html>
-"""
-
-SZABLON_PIANO2 = """
-<!DOCTYPE html>
-<html>
-<head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
-  body {
-    margin: 0;
-    font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
-    overflow: hidden;
-  }
-  #panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 16px;
-    color: #f5f5f0;
-    font-size: 15px;
-    font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
-  }
-  #gra {
-    position: relative;
-    width: 100%;
-    height: 420px;
-    overflow: hidden;
-    border-radius: 16px;
-    border: 2px solid #d4af37;
-  }
-  #pasy {
-    display: flex;
-    width: 100%;
-    height: 100%;
-  }
-  .pas {
-    flex: 1;
-    position: relative;
-    border-right: 1px solid rgba(212,175,55,0.15);
-    cursor: pointer;
-  }
-  .pas:last-child { border-right: none; }
-  #linia-trafien {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 54px;
-    height: 2px;
-    background: rgba(212,175,55,0.35);
-    z-index: 1;
-    pointer-events: none;
-  }
-  .kafelek {
-    position: absolute;
-    height: 70px;
-    background: linear-gradient(135deg, #2a2a3d, #0d0d0d);
-    border: 2px solid #d4af37;
-    border-radius: 8px;
-    z-index: 3;
-    pointer-events: none;
-  }
-  #nakladka {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    background: rgba(13,13,13,0.95);
-    color: #e6c15c;
+  #wyborPiosenki {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-  }
-  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
-  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
-  button.gra-btn {
-    background: linear-gradient(135deg,#e6c15c,#d4af37);
-    border: none;
-    padding: 10px 26px;
-    border-radius: 30px;
-    font-weight: 700;
-    color: #1a1a1a;
-    cursor: pointer;
-    font-size: 15px;
+    gap: 10px;
     margin-top: 10px;
+    width: 100%;
+  }
+  #wyborPiosenki button.gra-btn {
+    margin-top: 0;
+    width: 100%;
+  }
+  #btnZmienPiosenke {
+    background: none;
+    border: none;
+    color: #e6c15c;
+    text-decoration: underline;
+    margin-top: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    display: none;
   }
 </style>
 </head>
 <body>
   <div id="panel">
-    <span id="postepNaEkranie">0 / 32</span>
+    <span id="postepNaEkranie">🎹</span>
     <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
@@ -3133,9 +2841,14 @@ SZABLON_PIANO2 = """
     </div>
     <div id="linia-trafien"></div>
     <div id="nakladka">
-      <h2 id="nakladkaTytul">Piano Tiles: Panie Janie</h2>
-      <p id="nakladkaOpis"></p>
-      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+      <h2 id="nakladkaTytul">🎹 Piano Tiles</h2>
+      <p id="nakladkaOpis">Wybierz melodię:</p>
+      <div id="wyborPiosenki">
+        <button class="gra-btn" id="btnPiosenkaKotek">🐱 Wlazł kotek</button>
+        <button class="gra-btn" id="btnPiosenkaJanie">🎼 Panie Janie</button>
+      </div>
+      <button class="gra-btn" id="nakladkaBtn" style="display:none;">Jeszcze raz</button>
+      <button id="btnZmienPiosenke">🔄 Zmień melodię</button>
     </div>
   </div>
 
@@ -3149,14 +2862,35 @@ SZABLON_PIANO2 = """
   var nakladkaBtn = document.getElementById('nakladkaBtn');
   var wyciszBtn = document.getElementById('wyciszBtn');
 
-  // "Panie Janie" (Frere Jacques) - solmizacja: do re mi do (x2) |
-  // mi fa sol (x2) | sol la sol fa mi do (x2) | do sol(niz.) do(niz.) (x2)
-  var NUTY = [
-    523.25, 587.33, 659.25, 523.25, 523.25, 587.33, 659.25, 523.25,
-    659.25, 698.46, 784.00, 659.25, 698.46, 784.00,
-    784.00, 880.00, 784.00, 698.46, 659.25, 523.25, 784.00, 880.00, 784.00, 698.46, 659.25, 523.25,
-    523.25, 392.00, 261.63, 523.25, 392.00, 261.63
-  ];
+  var wyborPiosenki = document.getElementById('wyborPiosenki');
+  var btnPiosenkaKotek = document.getElementById('btnPiosenkaKotek');
+  var btnPiosenkaJanie = document.getElementById('btnPiosenkaJanie');
+  var btnZmienPiosenke = document.getElementById('btnZmienPiosenke');
+
+  // Dwie melodie do wyboru - ta sama mechanika gry, inne nuty.
+  var PIOSENKI = {
+    kotek: {
+      // "Wlazl kotek na plotek" - solmizacja: sol mi mi fa re re do mi sol (x2)
+      nazwa: 'Wlazł kotek',
+      nuty: [
+        784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 784.00,
+        784.00, 659.25, 659.25, 698.46, 587.33, 587.33, 523.25, 659.25, 523.25
+      ]
+    },
+    janie: {
+      // "Panie Janie" (Frere Jacques) - solmizacja: do re mi do (x2) |
+      // mi fa sol (x2) | sol la sol fa mi do (x2) | do sol(niz.) do(niz.) (x2)
+      nazwa: 'Panie Janie',
+      nuty: [
+        523.25, 587.33, 659.25, 523.25, 523.25, 587.33, 659.25, 523.25,
+        659.25, 698.46, 784.00, 659.25, 698.46, 784.00,
+        784.00, 880.00, 784.00, 698.46, 659.25, 523.25, 784.00, 880.00, 784.00, 698.46, 659.25, 523.25,
+        523.25, 392.00, 261.63, 523.25, 392.00, 261.63
+      ]
+    }
+  };
+  var piosenkaAktywna = 'kotek';
+  var NUTY = PIOSENKI[piosenkaAktywna].nuty;
 
   var LICZBA_PASOW = 4;
   var PREDKOSC_START = 420;
@@ -3299,32 +3033,57 @@ SZABLON_PIANO2 = """
     trwa = false;
     usunAktywnyKafelek();
     nakladka.style.display = 'flex';
+    wyborPiosenki.style.display = 'none';
 
     if (wygrana) {
       zagrajTon(1046.50, 0.5, 'triangle');
       nakladkaTytul.textContent = '🎉 Udało się!';
       nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
+      btnZmienPiosenke.style.display = 'none';
     } else {
       zagrajTon(140, 0.35, 'sawtooth');
       nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
-      nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + '. Spróbuj jeszcze raz.';
+      nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + ' (' + PIOSENKI[piosenkaAktywna].nazwa + '). Spróbuj jeszcze raz.';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = 'Jeszcze raz';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+      btnZmienPiosenke.style.display = 'inline-block';
     }
   }
+
+  function wybierzPiosenke(klucz) {
+    piosenkaAktywna = klucz;
+    NUTY = PIOSENKI[klucz].nuty;
+    wyborPiosenki.style.display = 'none';
+    nakladkaBtn.style.display = 'none';
+    btnZmienPiosenke.style.display = 'none';
+    inicjujDzwiek();
+    rozpocznijGre();
+  }
+
+  btnPiosenkaKotek.addEventListener('click', function () { wybierzPiosenke('kotek'); });
+  btnPiosenkaJanie.addEventListener('click', function () { wybierzPiosenke('janie'); });
+
+  btnZmienPiosenke.addEventListener('click', function () {
+    trwa = false;
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🎹 Piano Tiles';
+    nakladkaOpis.textContent = 'Wybierz melodię:';
+    wyborPiosenki.style.display = 'flex';
+    nakladkaBtn.style.display = 'none';
+    btnZmienPiosenke.style.display = 'none';
+  });
 
   wyciszBtn.addEventListener('click', function () {
     wyciszone = !wyciszone;
     wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
   });
-
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
 </body>
 </html>
 """
+
 
 SZABLON_BITWA = """
 <!DOCTYPE html>
@@ -6027,10 +5786,15 @@ def wstaw_styl():
 
 #MainMenu, footer, header {visibility: hidden;}
 
+html, body {
+    background: #050505 !important;
+}
+
 .stApp {
     background: radial-gradient(circle at 50% -10%, #241b3a 0%, #0d0d0d 55%, #050505 100%);
     color: #f5f5f0;
     font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
 }
 
 h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
@@ -6042,26 +5806,18 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
 }
 
 /* Kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu.
-   Zwykly element w normalnym przeplywie strony (nie absolute), wyrownany
-   do prawej flexboxem - prostsze i bezpieczniejsze niz nakladka. */
+   Zwykly element w normalnym przeplywie strony, wyrownany do prawej
+   flexboxem - emoji zamiast recznego SVG (niezawodne wyswietlanie). */
 .kokarda-rog-wiersz {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: -1.6rem;
+    margin-bottom: -0.8rem;
 }
 .kokarda-rog {
-    width: 54px;
-    height: 54px;
+    font-size: 2.6rem;
+    line-height: 1;
     opacity: 0.92;
-}
-
-/* Serduszko z zawijasem - motyw z karnetow, uzywane jako mala ozdoba */
-.ikona-serce-zawijas {
-    display: block;
-    margin: 0 auto 0.3rem;
-    width: 34px;
-    height: 38px;
-    opacity: 0.85;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
 }
 
 /* Separator pod tytulem: linia - serduszko - linia, jak pod "KARNET" */
@@ -6332,30 +6088,8 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
 
 
 def svg_kokarda():
-    """Zlota kokarda w rogu - jak na fizycznych karnetach z tego samego prezentu."""
-    return """<div class='kokarda-rog-wiersz'><svg class='kokarda-rog' width="54" height="54" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <linearGradient id="gradKokarda" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#f5e6b8"/>
-          <stop offset="50%" stop-color="#e6c15c"/>
-          <stop offset="100%" stop-color="#b8892a"/>
-        </linearGradient>
-      </defs>
-      <ellipse cx="30" cy="35" rx="22" ry="16" transform="rotate(-25 30 35)" fill="url(#gradKokarda)" stroke="#8a6a1f" stroke-width="1"/>
-      <ellipse cx="70" cy="35" rx="22" ry="16" transform="rotate(25 70 35)" fill="url(#gradKokarda)" stroke="#8a6a1f" stroke-width="1"/>
-      <circle cx="50" cy="38" r="10" fill="#f0dfa8" stroke="#8a6a1f" stroke-width="1"/>
-      <path d="M42 44 L34 72 L44 62 L50 72 L44 44 Z" fill="url(#gradKokarda)"/>
-      <path d="M58 44 L50 72 L56 62 L66 72 L58 44 Z" fill="url(#gradKokarda)"/>
-    </svg></div>"""
-
-
-def svg_serce_zawijas():
-    """Serduszko z cienkim zawijasem - motyw z karnetow."""
-    return """<svg class='ikona-serce-zawijas' width="34" height="38" viewBox="0 0 100 110" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20,35 A15,15 0,0,1 50,35 A15,15 0,0,1 80,35 Q80,60 50,82 Q20,60 20,35 Z"
-            fill="none" stroke="#d4af37" stroke-width="4" stroke-linejoin="round"/>
-      <path d="M42,78 C 30,85 18,95 22,106" fill="none" stroke="#d4af37" stroke-width="3" stroke-linecap="round"/>
-    </svg>"""
+    """Zlota kokarda w rogu - emoji zamiast recznego SVG (niezawodne wyswietlanie)."""
+    return "<div class='kokarda-rog-wiersz'><span class='kokarda-rog'>🎀</span></div>"
 
 
 def separator_serce():
@@ -6656,14 +6390,6 @@ def renderuj_piano(etap_dane):
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano"), etykieta_bledow=t("bledy_etykieta_piano"))
 
 
-def renderuj_piano2(etap_dane):
-    klucz = etap_dane["klucz"]
-
-    components.html(SZABLON_PIANO2, height=520, scrolling=False)
-
-    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_piano2"), etykieta_bledow=t("bledy_etykieta_piano2"))
-
-
 def renderuj_bitwa(etap_dane):
     klucz = etap_dane["klucz"]
 
@@ -6852,8 +6578,7 @@ def pokaz_przycisk_resetu():
 
 def pokaz_powitanie():
     st.markdown(svg_kokarda(), unsafe_allow_html=True)
-    st.markdown("<div style='height:14vh;'></div>", unsafe_allow_html=True)
-    st.markdown(svg_serce_zawijas(), unsafe_allow_html=True)
+    st.markdown("<div style='height:22vh;'></div>", unsafe_allow_html=True)
 
     kolumny = st.columns([1, 1, 1])
     with kolumny[1]:
@@ -6946,8 +6671,6 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_simon(etap_dane)
     elif typ == "piano":
         wynik = renderuj_piano(etap_dane)
-    elif typ == "piano2":
-        wynik = renderuj_piano2(etap_dane)
     elif typ == "wordle":
         wynik = renderuj_wordle(etap_dane)
     elif typ == "data":
