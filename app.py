@@ -1431,14 +1431,29 @@ SZABLON_ZABY = """
     border-radius: 16px;
     border: 2px solid #d4af37;
     cursor: pointer;
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+  }
+  #siatkaTla {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(212,175,55,0.10) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(212,175,55,0.10) 1px, transparent 1px);
+    background-size: 36px 36px;
+    z-index: 0;
+    pointer-events: none;
   }
   #podloze {
     position: absolute;
     bottom: 0;
     left: 0;
     right: 0;
-    height: 8px;
-    background: linear-gradient(90deg, #d4af37, #f0dfa8, #d4af37);
+    height: 26px;
+    background: repeating-linear-gradient(
+        135deg, #1c1830 0px, #1c1830 13px, #262244 13px, #262244 26px
+    );
+    border-top: 3px solid #e6c15c;
+    box-shadow: 0 -3px 14px rgba(230,193,92,0.55), inset 0 2px 4px rgba(0,0,0,0.5);
     z-index: 1;
   }
   #zaba {
@@ -1446,6 +1461,17 @@ SZABLON_ZABY = """
     font-size: 34px;
     line-height: 1;
     z-index: 5;
+  }
+  #zabaWizual {
+    display: inline-block;
+    transform-origin: 50% 50%;
+  }
+  @keyframes obracanieSkoku {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .zaba-w-locie {
+    animation: obracanieSkoku 0.55s linear infinite;
   }
   #wynikNaEkranie {
     position: absolute;
@@ -1468,17 +1494,24 @@ SZABLON_ZABY = """
   .kolec {
     position: absolute;
     bottom: 0;
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-bottom: 35px solid #d4af37;
-    filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
+    width: 30px;
+    height: 35px;
+    background: linear-gradient(155deg, #fff3cf 0%, #e6c15c 45%, #a9781f 100%);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+    filter: drop-shadow(0 0 7px rgba(230,193,92,0.65));
+  }
+  .kolec::after {
+    content: '';
+    position: absolute;
+    left: 46%; top: 8%;
+    width: 8%; height: 55%;
+    background: rgba(255,255,255,0.55);
+    clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
   }
   .kolec-wysoki {
-    border-bottom-width: 100px;
-    border-bottom-color: #e6738a;
-    filter: drop-shadow(0 0 4px rgba(230,115,138,0.5));
+    height: 100px;
+    background: linear-gradient(155deg, #ffd9e2 0%, #e6738a 45%, #a13b52 100%);
+    filter: drop-shadow(0 0 8px rgba(230,115,138,0.7));
   }
   .kontener-sufit {
     position: absolute;
@@ -1489,20 +1522,44 @@ SZABLON_ZABY = """
     position: absolute;
     bottom: 0;
     left: 0;
-    width: 0;
-    height: 0;
-    border-left: 15px solid transparent;
-    border-right: 15px solid transparent;
-    border-top: 35px solid #d4af37;
-    filter: drop-shadow(0 0 4px rgba(212,175,55,0.4));
+    width: 30px;
+    height: 35px;
+    background: linear-gradient(25deg, #fff3cf 0%, #e6c15c 45%, #a9781f 100%);
+    clip-path: polygon(50% 100%, 100% 0%, 0% 0%);
+    filter: drop-shadow(0 0 7px rgba(230,193,92,0.65));
   }
   .platforma {
     position: absolute;
-    height: 14px;
-    background: linear-gradient(180deg, #e8d9b5, #a9834f);
-    border: 2px solid #d4af37;
+    height: 16px;
+    background: linear-gradient(180deg, #f0dfa8, #b8892a);
+    border: 2px solid #e6c15c;
     border-radius: 4px;
+    box-shadow: 0 0 8px rgba(230,193,92,0.4), inset 0 2px 3px rgba(255,255,255,0.4);
     z-index: 2;
+  }
+  .czastka-sladu {
+    position: absolute;
+    width: 6px; height: 6px;
+    background: #e6c15c;
+    border-radius: 2px;
+    z-index: 4;
+    pointer-events: none;
+    animation: znikanieSladu 0.4s ease-out forwards;
+  }
+  @keyframes znikanieSladu {
+    from { opacity: 0.75; transform: translate(-50%, -100%) scale(1); }
+    to { opacity: 0; transform: translate(-50%, -70%) scale(0.3); }
+  }
+  .czastka-eksplozji {
+    position: absolute;
+    width: 7px; height: 7px;
+    z-index: 6;
+    pointer-events: none;
+    animation: eksplozjaCzastki 0.55s ease-out forwards;
+  }
+  @keyframes eksplozjaCzastki {
+    0% { transform: translate(-50%,-50%) rotate(0deg) scale(1); opacity: 1; }
+    100% { transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy))) rotate(180deg) scale(0.2); opacity: 0; }
   }
   #nakladka {
     position: absolute;
@@ -1538,9 +1595,10 @@ SZABLON_ZABY = """
     <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
+    <div id="siatkaTla"></div>
     <div id="podloze"></div>
     <div id="wynikNaEkranie">0</div>
-    <div id="zaba">🐸</div>
+    <div id="zaba"><span id="zabaWizual">🐸</span></div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Żaba</h2>
       <p id="nakladkaOpis"></p>
@@ -1551,6 +1609,8 @@ SZABLON_ZABY = """
 <script>
   var gra = document.getElementById('gra');
   var zaba = document.getElementById('zaba');
+  var zabaWizual = document.getElementById('zabaWizual');
+  var siatkaTla = document.getElementById('siatkaTla');
   var wynikNaEkranie = document.getElementById('wynikNaEkranie');
   var nakladka = document.getElementById('nakladka');
   var nakladkaTytul = document.getElementById('nakladkaTytul');
@@ -1563,7 +1623,7 @@ SZABLON_ZABY = """
   var ZABA_WYSOKOSC = 30;
   var GRAWITACJA = 2200;
   var SILA_SKOKU = -620;
-  var PODLOZE_WYSOKOSC = 8;
+  var PODLOZE_WYSOKOSC = 26;
   var KOLEC_SZEROKOSC = 30;
   var KOLEC_WYSOKOSC = 35;
   var KOLEC_WYSOKOSC_WYSOKI = 100;
@@ -1584,6 +1644,8 @@ SZABLON_ZABY = """
   var przeszkody = [];
   var wynik = 0;
   var trwa = false;
+  var pozycjaSiatkiX = 0;
+  var czasOdCzastkiSladu = 0;
   var czasOstatni = null;
   var czasOdSpawnu = 0;
   var wyciszone = false;
@@ -1775,11 +1837,38 @@ SZABLON_ZABY = """
     wynikNaEkranie.textContent = wynik;
   }
 
+  function emitujCzastkeSladu(x, y) {
+    var cz = document.createElement('div');
+    cz.className = 'czastka-sladu';
+    cz.style.left = x + 'px';
+    cz.style.top = y + 'px';
+    gra.appendChild(cz);
+    setTimeout(function () { cz.remove(); }, 400);
+  }
+
+  function eksplodujZabe(x, y) {
+    var kolory = ['#e6c15c', '#f0dfa8', '#e6738a', '#ffffff'];
+    for (var i = 0; i < 12; i++) {
+      var cz = document.createElement('div');
+      cz.className = 'czastka-eksplozji';
+      var kat = Math.random() * Math.PI * 2;
+      var dyst = 22 + Math.random() * 45;
+      cz.style.setProperty('--dx', (Math.cos(kat) * dyst) + 'px');
+      cz.style.setProperty('--dy', (Math.sin(kat) * dyst) + 'px');
+      cz.style.left = x + 'px';
+      cz.style.top = (y - ZABA_WYSOKOSC / 2) + 'px';
+      cz.style.background = kolory[Math.floor(Math.random() * kolory.length)];
+      gra.appendChild(cz);
+      (function (cz) { setTimeout(function () { cz.remove(); }, 600); })(cz);
+    }
+  }
+
   function rysuj() {
     var szer = gra.clientWidth;
     zaba.style.left = (szer * ZABA_X) + 'px';
     zaba.style.top = zabaDol + 'px';
     zaba.style.transform = 'translate(-50%, -100%)';
+    zabaWizual.classList.toggle('zaba-w-locie', !naZiemi);
   }
 
   // Zwraca Y powierzchni, na ktorej zabka moze aktualnie stac w danym X.
@@ -1827,6 +1916,19 @@ SZABLON_ZABY = """
 
     var mnoznik = 1 + Math.min(wynik, 25) * 0.025;
     var predkoscAktualna = PREDKOSC_START * mnoznik;
+
+    pozycjaSiatkiX -= predkoscAktualna * 0.5 * dt;
+    siatkaTla.style.backgroundPosition = pozycjaSiatkiX + 'px 0';
+
+    if (!naZiemi) {
+      czasOdCzastkiSladu += dt;
+      if (czasOdCzastkiSladu >= 0.045) {
+        czasOdCzastkiSladu = 0;
+        emitujCzastkeSladu(zabaXpx, zabaDol);
+      }
+    } else {
+      czasOdCzastkiSladu = 0;
+    }
 
     czasOdSpawnu += dt;
     var odstepAktualny = (ODSTEP_SPAWN_START / mnoznik) * losowo(0.85, 1.25);
@@ -1899,7 +2001,9 @@ SZABLON_ZABY = """
     zabaVY = 0;
     naZiemi = true;
     czasOdSpawnu = 0;
+    czasOdCzastkiSladu = 0;
     czasOstatni = null;
+    zaba.style.visibility = 'visible';
     nakladka.style.display = 'none';
     trwa = true;
     rysuj();
@@ -1909,23 +2013,31 @@ SZABLON_ZABY = """
 
   function zakonczGre(wygrana) {
     trwa = false;
-    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
-    przeszkody = [];
-    nakladka.style.display = 'flex';
     zatrzymajMuzyke();
 
     if (wygrana) {
+      przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+      przeszkody = [];
+      nakladka.style.display = 'flex';
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
       nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
       nakladkaBtn.style.display = 'none';
     } else {
+      var szer = gra.clientWidth;
+      eksplodujZabe(szer * ZABA_X, zabaDol);
+      zaba.style.visibility = 'hidden';
       zagrajDzwiek('crash');
-      nakladkaTytul.textContent = '🐸💥 Żaba nie doskoczyła...';
-      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-      nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = 'Jeszcze raz';
-      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+      setTimeout(function () {
+        przeszkody.forEach(function (p) { usunPrzeszkode(p); });
+        przeszkody = [];
+        nakladka.style.display = 'flex';
+        nakladkaTytul.textContent = '🐸💥 Żaba nie doskoczyła...';
+        nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+        nakladkaBtn.style.display = 'inline-block';
+        nakladkaBtn.textContent = 'Jeszcze raz';
+        nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+      }, 450);
     }
   }
 
