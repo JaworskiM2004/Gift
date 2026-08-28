@@ -30,6 +30,35 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 # ======================================================================
+# KOMPONENT-MOST — automatyczne wykrywanie ukończenia gry (bez ręcznego
+# przycisku "Ukończone"). WYMAGA osobnego pliku obok app.py:
+#     components/gra_wynik/index.html
+# (dokładna zawartość tego pliku — patrz wiadomość, w której go dostałaś)
+#
+# Zabezpieczenie: jeśli ten plik jeszcze nie istnieje w repozytorium
+# (np. dodałaś nowy app.py, zanim zdążyłaś dodać drugi plik), CAŁA
+# aplikacja NIE ma się wysypać — ma się grzecznie cofnąć do starego,
+# ręcznego przycisku "Ukończone" dla dotkniętych gier.
+# ======================================================================
+try:
+    _KOMPONENT_WYNIKU = components.declare_component(
+        "gra_z_wynikiem",
+        path=os.path.join(os.path.dirname(os.path.abspath(__file__)), "components", "gra_wynik"),
+    )
+except Exception:
+    _KOMPONENT_WYNIKU = None
+
+
+def gra_z_wynikiem(html_gry, wysokosc, key):
+    """Osadza gre (html_gry) w moscie, ktory automatycznie zglasza Pythonowi,
+    kiedy gra sama wykryje wygrana - bez potrzeby klikania 'Ukonczone'.
+    Zwraca None jesli komponent-most jest niedostepny (patrz wyzej)."""
+    if _KOMPONENT_WYNIKU is None:
+        return None
+    return _KOMPONENT_WYNIKU(html_gry=html_gry, wysokosc=wysokosc, key=key, default=None)
+
+
+# ======================================================================
 # 🔧🔧🔧  KONFIGURACJA — TU WSZYSTKO ZMIENIASZ NA SWOJE  🔧🔧🔧
 # ======================================================================
 
@@ -584,15 +613,6 @@ SZABLON_GRY = """
     font-size: 15px;
     font-weight: 600;
   }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
-  }
   #gra {
     position: relative;
     width: 100%;
@@ -659,7 +679,6 @@ SZABLON_GRY = """
 <body>
   <div id="panel">
     <span id="poziomEtykieta">Poziom 1</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="nakladka">
@@ -679,7 +698,6 @@ SZABLON_GRY = """
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
   var poziomEtykieta = document.getElementById('poziomEtykieta');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var aktualnyPoziom = 0;
   var poziom = null;
@@ -689,7 +707,6 @@ SZABLON_GRY = """
   var interwalSpawn = null;
   var trwa = false;
   var ostatniCzas = null;
-  var wyciszone = false;
 
   var audioCtx = null;
   var bipInterval = null;
@@ -717,7 +734,7 @@ SZABLON_GRY = """
   }
 
   function zagrajBip(czestotliwosc) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -902,10 +919,8 @@ SZABLON_GRY = """
 
     requestAnimationFrame(petlaAnimacji);
 
-    if (!wyciszone) {
-      inicjujDzwiek();
-      startMuzyka(poziom.tempo);
-    }
+    inicjujDzwiek();
+    startMuzyka(poziom.tempo);
   }
 
   function opisPoziomu(indeks) {
@@ -942,17 +957,6 @@ SZABLON_GRY = """
     }
   }
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-    if (wyciszone) {
-      zatrzymajMuzyke();
-    } else if (trwa) {
-      inicjujDzwiek();
-      startMuzyka(poziom.tempo);
-    }
-  });
-
   nakladkaBtn.onclick = function () { inicjujDzwiek(); startPoziom(0); };
 </script>
 </body>
@@ -988,15 +992,6 @@ SZABLON_DRONA = """
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
   }
   #gra {
     position: relative;
@@ -1081,7 +1076,6 @@ SZABLON_DRONA = """
 <body>
   <div id="panel">
     <span>🛸 Dron</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="wynikNaEkranie">0</div>
@@ -1110,7 +1104,6 @@ SZABLON_DRONA = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var DRON_X = 0.25;
   var DRON_R = 14;
@@ -1131,7 +1124,6 @@ SZABLON_DRONA = """
   var trwa = false;
   var czasOstatni = null;
   var czasOdSpawnu = 0;
-  var wyciszone = false;
 
   var audioCtx = null;
 
@@ -1158,7 +1150,7 @@ SZABLON_DRONA = """
   }
 
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -1335,8 +1327,11 @@ SZABLON_DRONA = """
     if (wygrana) {
       zagrajDzwiek('punkt');
       nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Zjedź niżej i kliknij "Ukończone" pod grą, żeby to zaliczyć ⬇️';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     } else {
       zagrajDzwiek('crash');
       nakladkaTytul.textContent = '💥 Rozbity dron...';
@@ -1360,11 +1355,6 @@ SZABLON_DRONA = """
     skok();
     setTimeout(function () { pominDrugiSkok = false; }, 500);
   }, { passive: false });
-
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
@@ -1403,15 +1393,6 @@ SZABLON_ZABY = """
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
   }
   #gra {
     position: relative;
@@ -1582,7 +1563,6 @@ SZABLON_ZABY = """
 <body>
   <div id="panel">
     <span>🐸 Żaba</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="siatkaTla"></div>
@@ -1606,7 +1586,6 @@ SZABLON_ZABY = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var ZABA_X = 0.22;
   var ZABA_R = 14;
@@ -1638,7 +1617,6 @@ SZABLON_ZABY = """
   var czasOdCzastkiSladu = 0;
   var czasOstatni = null;
   var czasOdSpawnu = 0;
-  var wyciszone = false;
 
   var audioCtx = null;
 
@@ -1665,7 +1643,7 @@ SZABLON_ZABY = """
   }
 
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2045,11 +2023,6 @@ SZABLON_ZABY = """
     setTimeout(function () { pominDrugiSkok = false; }, 500);
   }, { passive: false });
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
 </body>
@@ -2077,15 +2050,6 @@ SZABLON_MEMORY = """
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
   }
   #gra {
     position: relative;
@@ -2176,7 +2140,6 @@ SZABLON_MEMORY = """
   <div id="panel">
     <span id="parNaEkranie">0 / 8</span>
     <span id="czasNaEkranie"></span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="siatka"></div>
@@ -2195,7 +2158,6 @@ SZABLON_MEMORY = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var SYMBOLE = ['🍎', '🎈', '🎵', '🌙', '⭐', '🔑', '💎', '🦋'];
   var CEL_PAR = SYMBOLE.length;
@@ -2208,7 +2170,6 @@ SZABLON_MEMORY = """
   var pozostalyCzas = CZAS_LIMIT;
   var interwalCzasu = null;
   var trwa = false;
-  var wyciszone = false;
   czasNaEkranie.textContent = CZAS_LIMIT + 's';
 
   var audioCtx = null;
@@ -2234,7 +2195,7 @@ SZABLON_MEMORY = """
   }
 
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2422,11 +2383,6 @@ SZABLON_MEMORY = """
     }
   }
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
 </body>
@@ -2454,15 +2410,6 @@ SZABLON_SIMON = """
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
   }
   #gra {
     position: relative;
@@ -2526,7 +2473,6 @@ SZABLON_SIMON = """
 <body>
   <div id="panel">
     <span id="dlugoscNaEkranie">0 / 8</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="siatkaKolorow">
@@ -2549,7 +2495,6 @@ SZABLON_SIMON = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var CZESTOTLIWOSCI = [330, 415, 494, 262];
   var CEL_DLUGOSC = 8;
@@ -2558,7 +2503,6 @@ SZABLON_SIMON = """
   var pozycjaGracza = 0;
   var trwaOdtwarzanie = false;
   var trwa = false;
-  var wyciszone = false;
 
   var audioCtx = null;
 
@@ -2583,7 +2527,7 @@ SZABLON_SIMON = """
   }
 
   function zagrajTon(czestotliwosc, czasTrwania) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2697,11 +2641,6 @@ SZABLON_SIMON = """
     }
   }
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
 </body>
@@ -2729,15 +2668,6 @@ SZABLON_PIANO = """
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 16px;
-    padding: 2px 10px;
-    cursor: pointer;
   }
   #gra {
     position: relative;
@@ -2830,7 +2760,6 @@ SZABLON_PIANO = """
 <body>
   <div id="panel">
     <span id="postepNaEkranie">🎹</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="pasy">
@@ -2860,7 +2789,6 @@ SZABLON_PIANO = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
   var wyborPiosenki = document.getElementById('wyborPiosenki');
   var btnPiosenkaKotek = document.getElementById('btnPiosenkaKotek');
@@ -2901,7 +2829,6 @@ SZABLON_PIANO = """
   var aktywnyKafelek = null;
   var trwa = false;
   var czasOstatni = null;
-  var wyciszone = false;
 
   var audioCtx = null;
 
@@ -2926,7 +2853,7 @@ SZABLON_PIANO = """
   }
 
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -3074,11 +3001,6 @@ SZABLON_PIANO = """
     nakladkaBtn.style.display = 'none';
     btnZmienPiosenke.style.display = 'none';
   });
-
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
 </script>
 </body>
 </html>
@@ -3106,14 +3028,6 @@ SZABLON_BITWA = """
     padding: 8px 14px;
     font-size: 14px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 15px;
-    padding: 2px 9px;
   }
   #gra {
     position: relative;
@@ -3314,7 +3228,6 @@ SZABLON_BITWA = """
 <body>
   <div id="panel">
     <span>⚔️ Bitwa</span>
-    <button class="wycisz-btn" id="wyciszBtn">🔊</button>
   </div>
   <div id="gra">
     <div id="poziomEtykieta">POZIOM 1 / 3</div>
@@ -3356,9 +3269,7 @@ SZABLON_BITWA = """
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
 
-  var wyciszone = false;
   var audioCtx = null;
   function inicjujDzwiek() {
     try {
@@ -3372,7 +3283,7 @@ SZABLON_BITWA = """
     } catch (e) { audioCtx = null; }
   }
   function zagrajTon(f, czas, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -4018,11 +3929,6 @@ SZABLON_BITWA = """
     rysujGracza(ctxGracza, 72, 88);
   }
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
   zbudujPrzyciskiAkcji();
   rysujGracza(ctxGracza, 72, 88);
   graczHp = graczHpMax;
@@ -4059,14 +3965,6 @@ SZABLON_MINECRAFT = """
     padding: 8px 14px;
     font-size: 14px;
     font-weight: 600;
-  }
-  .wycisz-btn {
-    background: none;
-    border: 1px solid rgba(212,175,55,0.4);
-    border-radius: 20px;
-    color: #f5f5f0;
-    font-size: 15px;
-    padding: 2px 9px;
   }
   #gra {
     position: relative;
@@ -4412,10 +4310,6 @@ SZABLON_MINECRAFT = """
 <body>
   <div id="panel">
     <span>⛏️ Prosty Minecraft</span>
-    <div style="display:flex; gap:6px;">
-      <button class="wycisz-btn" id="btnTestDzwieku" style="font-size:11px; padding:4px 8px;">🔔 Test</button>
-      <button class="wycisz-btn" id="wyciszBtn">🔊</button>
-    </div>
   </div>
   <div id="gra">
     <div id="pasekGloduOtoczka">
@@ -4479,8 +4373,6 @@ SZABLON_MINECRAFT = """
   var btnNowySwiat = document.getElementById('btnNowySwiat');
   var nakladka = document.getElementById('nakladka');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
-  var wyciszBtn = document.getElementById('wyciszBtn');
-  var btnTestDzwieku = document.getElementById('btnTestDzwieku');
   var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
   var pasekHpWypelnienie = document.getElementById('pasekHpWypelnienie');
   var btnDom = document.getElementById('btnDom');
@@ -4490,7 +4382,6 @@ SZABLON_MINECRAFT = """
   var hudKilof = document.getElementById('hudKilof');
   var hudMiecz = document.getElementById('hudMiecz');
 
-  var wyciszone = false;
   var audioCtx = null;
   function inicjujDzwiek() {
     try {
@@ -4506,7 +4397,7 @@ SZABLON_MINECRAFT = """
     } catch (e) { audioCtx = null; }
   }
   function zagrajTon(f, czas, typ) {
-    if (!audioCtx || wyciszone) return;
+    if (!audioCtx) return;
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -5518,20 +5409,6 @@ SZABLON_MINECRAFT = """
     pokazDziennikMc('🔄 Nowy świat wygenerowany!', 1400);
   });
 
-  wyciszBtn.addEventListener('click', function () {
-    wyciszone = !wyciszone;
-    wyciszBtn.textContent = wyciszone ? '🔇' : '🔊';
-  });
-
-  btnTestDzwieku.addEventListener('click', function () {
-    inicjujDzwiek();
-    var stan = audioCtx ? audioCtx.state : 'BRAK KONTEKSTU AUDIO';
-    pokazDziennikMc('🔔 Stan: ' + stan + (wyciszone ? ' | UWAGA: dźwięk WYCISZONY przyciskiem 🔇!' : ' | dźwięk włączony'), 3200);
-    zagrajTon(880, 0.3, 'sine');
-    setTimeout(function () { zagrajTon(1046, 0.3, 'sine'); }, 320);
-    setTimeout(function () { zagrajTon(1318, 0.35, 'sine'); }, 640);
-  });
-
   // ---------- PANELE: EKWIPUNEK / RECEPTURY / PIEC (przelacznik, jeden na raz) ----------
   function schowajWszystkiePanele() {
     ekwipunekEl.classList.remove('widoczny');
@@ -6356,8 +6233,13 @@ def pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, pytanie, tekst_tak=None, et
 def renderuj_dron(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_DRONA, height=520, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_DRONA, 520, key=f"kmp_{klucz}")
+        return True if wynik else None
 
+    # Fallback, gdyby plik components/gra_wynik/index.html jeszcze nie
+    # istniał w repozytorium - stary, sprawdzony recznyy przycisk.
+    components.html(SZABLON_DRONA, height=520, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dron"), etykieta_bledow=t("bledy_etykieta_dron"))
 
 
