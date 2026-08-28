@@ -490,7 +490,7 @@ TEKST = {
         "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
         "bledy_etykieta_piano": "Ile razy nie trafiłaś nuty?",
         "bledy_etykieta_bitwa": "Ile razy przegrałaś i zaczynałaś poziom od nowa?",
-        "bledy_etykieta_minecraft": "Ile razy zginęłaś?",
+        "napewno_dom_minecraft": "Na pewno kliknęłaś \"Zbuduj dom i sprawdź\" dwa razy?",
         "rozpiska_tytul": "📊 Ile było pomyłek po drodze",
         "tak_pokonalam": "Tak, pokonałam!",
         "jeszcze_nie": "Jeszcze nie",
@@ -543,7 +543,7 @@ TEKST = {
         "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
         "bledy_etykieta_piano": "How many notes did you miss?",
         "bledy_etykieta_bitwa": "How many times did you lose and restart a level?",
-        "bledy_etykieta_minecraft": "How many times did you die?",
+        "napewno_dom_minecraft": "Are you sure you clicked \"Build house and check\" twice?",
         "rozpiska_tytul": "📊 How many mistakes along the way",
         "tak_pokonalam": "Yes, I defeated it!",
         "jeszcze_nie": "Not yet",
@@ -598,8 +598,13 @@ SZABLON_GRY = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -981,8 +986,13 @@ SZABLON_DRONA = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -1382,8 +1392,13 @@ SZABLON_ZABY = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -2042,8 +2057,13 @@ SZABLON_MEMORY = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -2405,8 +2425,13 @@ SZABLON_SIMON = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -2666,8 +2691,13 @@ SZABLON_PIANO = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     overflow: hidden;
@@ -3029,8 +3059,13 @@ SZABLON_BITWA = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     color: #f5f5f0;
@@ -3971,8 +4006,13 @@ SZABLON_MINECRAFT = """
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
+  html {
+    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    height: 100%;
+  }
   body {
     margin: 0;
+    min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
     background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
     color: #f5f5f0;
@@ -5618,9 +5658,12 @@ SZABLON_MINECRAFT = """
       pokazDziennikMc('🏠 Hmm... to ma być dom? Postaraj się bardziej!', 2400);
       zagrajTon(220, 0.15, 'sawtooth');
     } else {
-      pokazDziennikMc('🏠 Piękny dom! Zaliczone! 🎉', 2400);
+      pokazDziennikMc('🏠 Piękny dom! Zjedź niżej i kliknij przycisk, żeby zaliczyć! 🎉', 2600);
       zagrajTon(660, 0.15, 'triangle');
       setTimeout(function () { zagrajTon(880, 0.2, 'triangle'); }, 150);
+      if (window.parent) {
+        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      }
     }
   });
 
@@ -6342,15 +6385,16 @@ def renderuj_bitwa(etap_dane):
 def renderuj_minecraft(etap_dane):
     klucz = etap_dane["klucz"]
 
-    components.html(SZABLON_MINECRAFT, height=764, scrolling=False)
+    if _KOMPONENT_WYNIKU is not None:
+        gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 764, key=f"kmp_{klucz}")
+        if gotowe_do_zaliczenia:
+            if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
+                return True
+        return None
 
-    liczba_smierci = st.number_input(
-        t("bledy_etykieta_minecraft"), min_value=0, max_value=999, value=0, step=1, key=f"bledy_input_{klucz}"
-    )
-    if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-        st.session_state.bledy_per_etap[klucz] = int(liczba_smierci)
-        return True
-    return None
+    # Fallback, gdyby most byl niedostepny - stary reczny przycisk.
+    components.html(SZABLON_MINECRAFT, height=764, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dom_minecraft"))
 
 
 @st.cache_data(ttl=300)  # 5 minut - dość świeżo, a nie odpytuje API bez przerwy
