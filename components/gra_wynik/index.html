@@ -26,7 +26,13 @@
 </style>
 </head>
 <body>
-  <iframe id="gra-wewnetrzna" scrolling="no"></iframe>
+  <!-- allow="autoplay" JEST KONIECZNE: przegladarki blokuja Web Audio w
+       zagniezdzonym iframie, dopoki strona nadrzedna jawnie nie przekaze
+       mu tego uprawnienia. Bez tego AudioContext zostaje "suspended" na
+       zawsze i gry sa calkowicie CICHE, mimo poprawnego kodu dzwieku. -->
+  <iframe id="gra-wewnetrzna" scrolling="no"
+          allow="autoplay *; fullscreen"
+          allowfullscreen></iframe>
 
 <script>
   // ----------------------------------------------------------------
