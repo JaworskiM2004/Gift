@@ -22,6 +22,7 @@ Zrób to RAZ, tuż przed przekazaniem prezentu, żeby wyczyścić swoje testy.
 
 import json
 import os
+import random
 import time
 from datetime import date
 
@@ -476,6 +477,7 @@ TEKST = {
         "rozwiazane_status": "✅ Rozwiązane",
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
         "menu_tytul": "Wybierz etap",
+        "zlap_zamek": "Złap kłódkę!",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
         "zobacz_kod": "Zobacz kod do sejfu 🔓",
         "reset_btn": "🔄 Resetuj wszystko",
@@ -529,6 +531,7 @@ TEKST = {
         "rozwiazane_status": "✅ Solved",
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
         "menu_tytul": "Choose a stage",
+        "zlap_zamek": "Catch the padlock!",
         "wszystko_rozwiazane": "🎉 You solved everything!",
         "zobacz_kod": "See the safe code 🔓",
         "reset_btn": "🔄 Reset everything",
@@ -1680,7 +1683,11 @@ SZABLON_ZABY = """
   }
 
   function zagrajDzwiek(typ) {
-    if (typ === 'skok') zagrajTon(450, 0.07, 'square');
+    if (typ === 'skok') {
+      // "kum-kum" - dwa krotkie, niskie, chropowate tony jak zabi rechot
+      zagrajTon(180, 0.08, 'sawtooth');
+      setTimeout(function () { zagrajTon(140, 0.09, 'sawtooth'); }, 70);
+    }
     else if (typ === 'punkt') zagrajTon(750, 0.1, 'sine');
     else if (typ === 'crash') zagrajTon(110, 0.35, 'sawtooth');
   }
@@ -2861,6 +2868,7 @@ SZABLON_PIANO = """
   };
   var piosenkaAktywna = 'kotek';
   var NUTY = PIOSENKI[piosenkaAktywna].nuty;
+  var piosenkiUkonczone = { kotek: false, janie: false };
 
   var LICZBA_PASOW = 4;
   var PREDKOSC_START = 420;
@@ -3006,12 +3014,24 @@ SZABLON_PIANO = """
 
     if (wygrana) {
       zagrajTon(1046.50, 0.5, 'triangle');
-      nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
-      nakladkaBtn.style.display = 'none';
-      btnZmienPiosenke.style.display = 'none';
-      if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+      piosenkiUkonczone[piosenkaAktywna] = true;
+      var obiePiosenkiZrobione = piosenkiUkonczone.kotek && piosenkiUkonczone.janie;
+      if (obiePiosenkiZrobione) {
+        nakladkaTytul.textContent = '🎉 Obie melodie ukończone!';
+        nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+        nakladkaBtn.style.display = 'none';
+        btnZmienPiosenke.style.display = 'none';
+        if (window.parent) {
+          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        }
+      } else {
+        var drugaPiosenka = piosenkaAktywna === 'kotek' ? 'janie' : 'kotek';
+        nakladkaTytul.textContent = '🎉 Udało się!';
+        nakladkaOpis.textContent = 'Teraz zagraj jeszcze "' + PIOSENKI[drugaPiosenka].nazwa + '", żeby zaliczyć cały etap.';
+        nakladkaBtn.textContent = '▶ ' + PIOSENKI[drugaPiosenka].nazwa;
+        nakladkaBtn.style.display = 'inline-block';
+        nakladkaBtn.onclick = function () { inicjujDzwiek(); wybierzPiosenke(drugaPiosenka); };
+        btnZmienPiosenke.style.display = 'none';
       }
     } else {
       zagrajTon(140, 0.35, 'sawtooth');
@@ -4029,7 +4049,7 @@ SZABLON_MINECRAFT = """
   #gra {
     position: relative;
     width: 100%;
-    height: 674px;
+    height: 726px;
     overflow: hidden;
     border-radius: 16px;
     border: 2px solid #d4af37;
@@ -4119,6 +4139,29 @@ SZABLON_MINECRAFT = """
     font-weight: 700; color: #fff; font-size: 15px;
   }
   #btnRespawn:active { transform: scale(0.96); }
+  #bannerKorona {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    background: rgba(24,12,34,0.90);
+    color: #ffd700;
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 16px rgba(255,215,0,0.7);
+    animation: koronaPojaw 0.5s ease;
+    pointer-events: none;
+  }
+  @keyframes koronaPojaw {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
   #hudNarzedzi {
     position: absolute;
     left: 6px;
@@ -4388,7 +4431,7 @@ SZABLON_MINECRAFT = """
       <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       <button id="btnNowySwiat" title="Nowy świat">🔄</button>
-      <canvas id="canvasSwiat" width="338" height="286"></canvas>
+      <canvas id="canvasSwiat" width="338" height="338"></canvas>
       <div id="hudNarzedzi">
         <div class="slot-hud" id="hudKilof"></div>
         <div class="slot-hud" id="hudMiecz"></div>
@@ -4498,24 +4541,25 @@ SZABLON_MINECRAFT = """
   }
 
   // ---------- SWIAT ----------
-  var SZEROKOSC_SWIATA = 90;
-  var WYSOKOSC_SWIATA = 34;
+  var SZEROKOSC_SWIATA = 140;
+  var WYSOKOSC_SWIATA = 46;
   var KOMORKA = 26;
   var WIDOCZNE_KOLUMNY = 13;
-  var WIDOCZNE_WIERSZE = 11;
+  var WIDOCZNE_WIERSZE = 13;
   var ZASIEG = 2;
 
   var KOLORY_BLOKOW = {
     trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
     drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
     zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
-    schodki: '#9c6a35', szyby: '#bfe6f0', piec: '#4a4a4a',
+    szyby: '#bfe6f0', piec: '#4a4a4a',
     rudaZelaza: '#b8927a', diament: '#7ee8e0', drewnoBrzozy: '#e8ddc8',
+    deski: '#b8894f', plytki: '#9c9ca8', drzwi: '#6b4423', lozko: '#c96f6f',
   };
   var NAZWY_BLOKOW = {
     trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
     liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto', piach: 'Piach',
-    schodki: 'Schodki', szyby: 'Szyby', piec: 'Piec',
+    szyby: 'Szyby', piec: 'Piec',
     patyk: 'Patyk', rudaZelaza: 'Ruda żelaza', zelazo: 'Żelazo',
     diament: 'Diament', pioro: 'Pióro', nici: 'Nici', strzala: 'Strzała',
     kilofDrewniany: 'Kilof drewniany', kilofKamienny: 'Kilof kamienny',
@@ -4524,11 +4568,13 @@ SZABLON_MINECRAFT = """
     mieczZelazny: 'Miecz żelazny', mieczDiamentowy: 'Miecz diamentowy',
     luk: 'Łuk', drewnoBrzozy: 'Drewno brzozy',
     zbrojaZelazna: 'Zbroja żelazna', zbrojaDiamentowa: 'Zbroja diamentowa',
+    deski: 'Deski', plytki: 'Płytki', drzwi: 'Drzwi', lozko: 'Łóżko',
+    welna: 'Wełna', korona: 'Korona',
   };
   // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
     'ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
-    'piach', 'schodki', 'szyby', 'piec',
+    'piach', 'deski', 'plytki', 'drzwi', 'lozko', 'szyby', 'piec',
   ];
 
   // ---------- IKONY (prawdziwa tekstura dla blokow, emoji dla reszty) ----------
@@ -4539,6 +4585,7 @@ SZABLON_MINECRAFT = """
     kilofDrewniany: '⛏️', kilofKamienny: '⛏️', kilofZelazny: '⛏️',
     mieczDrewniany: '🗡️', mieczKamienny: '🗡️', mieczZelazny: '⚔️', mieczDiamentowy: '⚔️',
     luk: '🏹', zbrojaZelazna: '🥋', zbrojaDiamentowa: '🦺',
+    welna: '🧶', korona: '👑',
   };
 
   function stworzIkonkeElementu(klucz, rozmiarPx) {
@@ -4601,10 +4648,14 @@ SZABLON_MINECRAFT = """
     { id: 'mieczDiamentowy', wyjscie: 'mieczDiamentowy', ileWyjscia: 1, skladniki: { patyk: 1, diament: 2 } },
     { id: 'luk', wyjscie: 'luk', ileWyjscia: 1, skladniki: { pioro: 1, nici: 1, patyk: 1 } },
     { id: 'strzala', wyjscie: 'strzala', ileWyjscia: 4, skladniki: { patyk: 1, kamien: 1 } },
-    { id: 'schodki', wyjscie: 'schodki', ileWyjscia: 4, skladniki: { drewno: 1 } },
     { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
     { id: 'zbrojaZelazna', wyjscie: 'zbrojaZelazna', ileWyjscia: 1, skladniki: { zelazo: 5 } },
     { id: 'zbrojaDiamentowa', wyjscie: 'zbrojaDiamentowa', ileWyjscia: 1, skladniki: { diament: 5 } },
+    { id: 'deski', wyjscie: 'deski', ileWyjscia: 4, skladniki: { drewno: 1 } },
+    { id: 'plytki', wyjscie: 'plytki', ileWyjscia: 4, skladniki: { kamien: 2 } },
+    { id: 'drzwi', wyjscie: 'drzwi', ileWyjscia: 1, skladniki: { deski: 2 } },
+    { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 } },
+    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zloto: 5 } },
   ];
 
   var world = [];
@@ -4661,17 +4712,20 @@ SZABLON_MINECRAFT = """
         else if (y === pow) blok = 'trawa';
         else if (y < pow + 4) blok = 'ziemia';
         else if (y < WYSOKOSC_SWIATA - 1) {
-          // im glebiej w kamieniu, tym cenniejsze (i rzadsze) rudy
+          // im glebiej w kamieniu, tym cenniejsze (i rzadsze) rudy.
+          // Przy WYSOKOSC_SWIATA=46 i powierzchni 7-13, kamien siega od
+          // glebokosci 0 az do ~28-34 przed podlozem - progi ponizej
+          // maja z tego solidny zapas miejsca (nie tylko ostatnie rzedy).
           var glebokosc = y - (pow + 4);
           var r = Math.random();
           if (r < 0.05) {
             blok = 'wegiel'; // wegiel wystepuje na kazdej glebokosci
-          } else if (glebokosc >= 5 && r < 0.07) {
+          } else if (glebokosc >= 4 && r < 0.075) {
             blok = 'rudaZelaza';
-          } else if (glebokosc >= 11 && r < 0.076) {
+          } else if (glebokosc >= 9 && r < 0.082) {
             blok = 'zloto';
-          } else if (glebokosc >= 16 && r < 0.0805) {
-            blok = 'diament'; // bardzo rzadki, tylko blisko dna
+          } else if (glebokosc >= 14 && r < 0.088) {
+            blok = 'diament'; // rzadki, ale realnie osiagalny przy kopaniu w glab
           } else {
             blok = 'kamien';
           }
@@ -4684,7 +4738,7 @@ SZABLON_MINECRAFT = """
 
     // piach - kilka losowych "plaz" (2-4 kolumny), zamiast trawy/wierzchniej
     // ziemi w tych miejscach
-    var liczbaPlaz = 2 + Math.floor(Math.random() * 2);
+    var liczbaPlaz = 4 + Math.floor(Math.random() * 3);
     for (var p = 0; p < liczbaPlaz; p++) {
       var srodekX = Math.floor(losowo(4, SZEROKOSC_SWIATA - 4));
       var szerokoscPlazy = 2 + Math.floor(Math.random() * 3);
@@ -4700,7 +4754,7 @@ SZABLON_MINECRAFT = """
     // drzewa - dab (drewno) lub brzoza (drewnoBrzozy, wizualna odmiana -
     // po wykopaniu i tak trafia do tego samego zasobu "drewno")
     for (var x = 2; x < SZEROKOSC_SWIATA - 2; x++) {
-      if (world[x][wysokoscPow[x]] === 'trawa' && Math.random() < 0.14) {
+      if (world[x][wysokoscPow[x]] === 'trawa' && Math.random() < 0.16) {
         var podstawa = wysokoscPow[x];
         var wysDrzewa = 3;
         var typPnia = Math.random() < 0.35 ? 'drewnoBrzozy' : 'drewno';
@@ -4729,9 +4783,9 @@ SZABLON_MINECRAFT = """
 
   function zespawnujZwierzeta(wysokoscPow) {
     zwierzeta = [];
-    var typy = ['krowa', 'swinka', 'kurczak'];
+    var typy = ['krowa', 'swinka', 'kurczak', 'owca'];
     var probyLosowania = 0;
-    while (zwierzeta.length < 4 && probyLosowania < 40) {
+    while (zwierzeta.length < 9 && probyLosowania < 80) {
       probyLosowania++;
       var x = Math.floor(losowo(3, SZEROKOSC_SWIATA - 3));
       var y = wysokoscPow[x] - 1;
@@ -4874,6 +4928,20 @@ SZABLON_MINECRAFT = """
     pokazDziennikMc('🔨 Wytworzono: ' + przepis.ileWyjscia + '× ' + NAZWY_BLOKOW[przepis.wyjscie], 1600);
     zagrajTon(420, 0.08, 'square');
     setTimeout(function () { zagrajTon(560, 0.1, 'square'); }, 90);
+    if (przepis.id === 'korona') {
+      pokazPassengerPrincess();
+    }
+  }
+
+  function pokazPassengerPrincess() {
+    var banner = document.createElement('div');
+    banner.id = 'bannerKorona';
+    banner.textContent = '👑 PASSENGER PRINCESS 👑';
+    gra.appendChild(banner);
+    zagrajTon(659.25, 0.15, 'triangle');
+    setTimeout(function () { zagrajTon(880.00, 0.15, 'triangle'); }, 150);
+    setTimeout(function () { zagrajTon(1046.50, 0.25, 'triangle'); }, 300);
+    setTimeout(function () { banner.remove(); }, 3500);
   }
 
   // ---------- HUD NARZEDZI (lewy dolny rog - aktualnie najlepszy kilof/miecz) ----------
@@ -5062,11 +5130,24 @@ SZABLON_MINECRAFT = """
         ctxDocelowy.fillRect(x + 10, y + 5, 6, 2);
         ctxDocelowy.fillRect(x + 10, y + 15, 6, 2);
       }
-    } else if (blok === 'schodki') {
-      ctxDocelowy.fillStyle = 'rgba(0,0,0,0.28)';
-      ctxDocelowy.fillRect(x + KOMORKA / 2, y, KOMORKA / 2, KOMORKA / 2);
+    } else if (blok === 'deski') {
+      ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.22)';
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + 9); ctxDocelowy.lineTo(x + KOMORKA, y + 9); ctxDocelowy.stroke();
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + 18); ctxDocelowy.lineTo(x + KOMORKA, y + 18); ctxDocelowy.stroke();
+    } else if (blok === 'plytki') {
       ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.3)';
-      ctxDocelowy.strokeRect(x + KOMORKA / 2 + 0.5, y + 0.5, KOMORKA / 2 - 1, KOMORKA / 2 - 1);
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + KOMORKA / 2, y); ctxDocelowy.lineTo(x + KOMORKA / 2, y + KOMORKA); ctxDocelowy.stroke();
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + KOMORKA / 2); ctxDocelowy.lineTo(x + KOMORKA, y + KOMORKA / 2); ctxDocelowy.stroke();
+    } else if (blok === 'drzwi') {
+      ctxDocelowy.fillStyle = 'rgba(0,0,0,0.22)';
+      ctxDocelowy.fillRect(x + 4, y + 3, KOMORKA - 8, KOMORKA - 6);
+      ctxDocelowy.fillStyle = '#e6c15c';
+      ctxDocelowy.beginPath(); ctxDocelowy.arc(x + KOMORKA - 8, y + KOMORKA / 2, 1.8, 0, Math.PI * 2); ctxDocelowy.fill();
+    } else if (blok === 'lozko') {
+      ctxDocelowy.fillStyle = '#f5f0e0';
+      ctxDocelowy.fillRect(x + 2, y + 4, 8, KOMORKA - 8);
+      ctxDocelowy.fillStyle = 'rgba(0,0,0,0.15)';
+      ctxDocelowy.fillRect(x + 12, y + 4, KOMORKA - 14, KOMORKA - 8);
     } else if (blok === 'szyby') {
       ctxDocelowy.strokeStyle = 'rgba(255,255,255,0.5)';
       ctxDocelowy.lineWidth = 1;
@@ -5139,6 +5220,17 @@ SZABLON_MINECRAFT = """
       ctx.fillRect(x + 5, y + 6, 3, 3);
       ctx.fillStyle = '#2b2b2b';
       ctx.fillRect(x + 4, y + 10, 2, 2);
+    } else if (typ === 'owca') {
+      ctx.fillStyle = '#e8e4dc';
+      ctx.fillRect(x + 2, y + 8, KOMORKA - 6, 12);
+      ctx.fillRect(x + 4, y + 5, KOMORKA - 10, 6);
+      ctx.fillStyle = '#3a2c1e';
+      ctx.fillRect(x + 1, y + 10, 7, 7);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(x + 2, y + 12, 2, 2);
+      ctx.fillStyle = '#5a5048';
+      ctx.fillRect(x + 3, y + 20, 3, 3);
+      ctx.fillRect(x + 15, y + 20, 3, 3);
     }
     ctx.restore();
   }
@@ -5312,9 +5404,12 @@ SZABLON_MINECRAFT = """
         teksty = ['🐄 Krowa: "Muuu... i po krowie." Stek zdobyty!', '🥩 Krowa dała stek. Przepraszam, krowo.'];
       } else if (zw.typ === 'swinka') {
         teksty = ['🐷 Świnka kwiknęła po raz ostatni. Szynka zdobyta!', '🍖 Świnka zamieniła się w szynkę.'];
-      } else {
+      } else if (zw.typ === 'kurczak') {
         teksty = ['🐔 Kurczak zdobyty! Pióro trafia do ekwipunku.', '🪶 Kurczak dał pióro (i trochę mięsa).'];
         dodajDoEkwipunku('pioro', 1);
+      } else {
+        teksty = ['🐑 Owca ostrzyżona (i trochę więcej). Wełna zdobyta!', '🧶 Owca dała wełnę na dobry sen.'];
+        dodajDoEkwipunku('welna', 2);
       }
       pokazDziennikMc(teksty[Math.floor(Math.random() * teksty.length)], 1900);
       dzwiekJedzenia();
@@ -5759,24 +5854,6 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     color: #e6c15c;
 }
 
-/* Separator pod tytulem: linia - serduszko - linia, jak pod "KARNET" */
-.separator-serce {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.7rem;
-    color: #d4af37;
-    font-size: 0.85rem;
-    margin: -0.5rem 0 1rem;
-}
-.separator-serce::before, .separator-serce::after {
-    content: '';
-    flex: 1;
-    max-width: 70px;
-    height: 1px;
-    background: rgba(212,175,55,0.4);
-}
-
 .tytul {
     font-family: 'Cinzel', serif;
     text-align: center;
@@ -5786,7 +5863,7 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     -webkit-text-fill-color: transparent;
     animation: pojaw 0.9s ease;
     padding-bottom: 0.7rem;
-    margin-bottom: 0;
+    margin-bottom: 1.1rem;
     border-bottom: 1px solid rgba(212,175,55,0.28);
 }
 
@@ -6049,11 +6126,6 @@ div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
 """, unsafe_allow_html=True)
 
 
-def separator_serce():
-    """Separator linia-serduszko-linia, jak pod 'KARNET' na fizycznych karnetach."""
-    return "<div class='separator-serce'>♡</div>"
-
-
 # ======================================================================
 # TRWAŁY STAN — przetrwa zamknięcie telefonu i wznowienie po jakimś czasie.
 # Zapisywany w DWÓCH miejscach naraz (link + plik na serwerze).
@@ -6278,7 +6350,7 @@ def renderuj_gra(etap_dane):
     html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(html, 520, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(html, 466, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(html, height=520, scrolling=False)
@@ -6314,7 +6386,7 @@ def renderuj_dron(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_DRONA, 520, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_DRONA, 466, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby plik components/gra_wynik/index.html jeszcze nie
@@ -6327,7 +6399,7 @@ def renderuj_zaba(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_ZABY, 520, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_ZABY, 466, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_ZABY, height=520, scrolling=False)
@@ -6338,7 +6410,7 @@ def renderuj_memory(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_MEMORY, 560, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_MEMORY, 506, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_MEMORY, height=560, scrolling=False)
@@ -6349,7 +6421,7 @@ def renderuj_simon(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_SIMON, 480, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_SIMON, 426, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_SIMON, height=480, scrolling=False)
@@ -6360,7 +6432,7 @@ def renderuj_piano(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_PIANO, 520, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_PIANO, 466, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_PIANO, height=520, scrolling=False)
@@ -6371,7 +6443,7 @@ def renderuj_bitwa(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_BITWA, 640, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_BITWA, 606, key=f"kmp_{klucz}")
         if wynik:
             if isinstance(wynik, dict) and "porazki" in wynik:
                 st.session_state.bledy_per_etap[klucz] = int(wynik["porazki"])
@@ -6386,14 +6458,14 @@ def renderuj_minecraft(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 764, key=f"kmp_{klucz}")
+        gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 770, key=f"kmp_{klucz}")
         if gotowe_do_zaliczenia:
             if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
                 return True
         return None
 
     # Fallback, gdyby most byl niedostepny - stary reczny przycisk.
-    components.html(SZABLON_MINECRAFT, height=764, scrolling=False)
+    components.html(SZABLON_MINECRAFT, height=770, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dom_minecraft"))
 
 
@@ -6562,27 +6634,42 @@ def pokaz_przycisk_resetu():
 
 
 def pokaz_powitanie():
-    st.markdown("<div style='height:44vh;'></div>", unsafe_allow_html=True)
+    if "zamek_proby" not in st.session_state:
+        st.session_state.zamek_proby = 0
 
-    kolumny = st.columns([1, 1, 1])
+    losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
+    lewa = random.randint(1, 6)
+    prawa = random.randint(1, 6)
+
+    st.markdown(f"<div style='height:{losowa_wysokosc}vh;'></div>", unsafe_allow_html=True)
+
+    if st.session_state.zamek_proby > 0:
+        st.markdown(
+            f"<p style='text-align:center; color:#e6c15c; font-size:0.95rem; "
+            f"margin-bottom:0.6rem;'>{t('zlap_zamek')} ({st.session_state.zamek_proby}/5)</p>",
+            unsafe_allow_html=True,
+        )
+
+    kolumny = st.columns([lewa, 2, prawa])
     with kolumny[1]:
         kliknieto = st.button("🔒", key="zamek_btn")
 
     if kliknieto:
-        st.markdown(
-            "<div class='zamek-otwarty' style='font-size:4rem; margin-top:1rem;'>🔓</div>",
-            unsafe_allow_html=True,
-        )
-        time.sleep(0.7)
-        st.session_state.ekran = "menu"
-        st.session_state.czas_startu = time.time()
-        zapisz_postep()
+        st.session_state.zamek_proby += 1
+        if st.session_state.zamek_proby >= 5:
+            st.markdown(
+                "<div class='zamek-otwarty' style='font-size:4rem; margin-top:1rem;'>🔓</div>",
+                unsafe_allow_html=True,
+            )
+            time.sleep(0.7)
+            st.session_state.ekran = "menu"
+            st.session_state.czas_startu = time.time()
+            zapisz_postep()
         st.rerun()
 
 
 def pokaz_menu():
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
-    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     kolumny = st.columns(5)
     for i, etap_dane in enumerate(ETAPY):
@@ -6624,7 +6711,6 @@ def pokaz_ekran_etapu(etap_dane):
         st.rerun()
 
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
-    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     if klucz in st.session_state.rozwiazane:
         st.success(t("rozwiazane_status"))
@@ -6705,7 +6791,6 @@ def pokaz_final():
     st.balloons()
     st.markdown("<div class='zamek-otwarty'>🔓</div>", unsafe_allow_html=True)
     st.markdown(tt(WIADOMOSC_KONCOWA), unsafe_allow_html=True)
-    st.markdown(separator_serce(), unsafe_allow_html=True)
 
     kod_koncowy = KOD_SEJFU
     tarcze = "".join(f"<div class='cyfra-tarcza'>{c}</div>" for c in kod_koncowy)
