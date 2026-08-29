@@ -4094,6 +4094,10 @@ SZABLON_MINECRAFT = """
     padding: 4px 0 2px;
   }
   #canvasSwiat {
+    width: 344px;
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
     border-radius: 10px;
     border: 2px solid #6b5530;
     image-rendering: pixelated;
@@ -4429,7 +4433,7 @@ SZABLON_MINECRAFT = """
       <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       <button id="btnNowySwiat" title="Nowy świat">🔄</button>
-      <canvas id="canvasSwiat" width="338" height="338"></canvas>
+      <canvas id="canvasSwiat" width="260" height="260"></canvas>
       <div id="hudNarzedzi">
         <div class="slot-hud" id="hudKilof"></div>
         <div class="slot-hud" id="hudMiecz"></div>
@@ -4541,8 +4545,8 @@ SZABLON_MINECRAFT = """
   var SZEROKOSC_SWIATA = 140;
   var WYSOKOSC_SWIATA = 46;
   var KOMORKA = 26;
-  var WIDOCZNE_KOLUMNY = 13;
-  var WIDOCZNE_WIERSZE = 13;
+  var WIDOCZNE_KOLUMNY = 10;
+  var WIDOCZNE_WIERSZE = 10;
   var ZASIEG = 2;
 
   var KOLORY_BLOKOW = {
@@ -5373,8 +5377,14 @@ SZABLON_MINECRAFT = """
   function obslugaDotkniecia(clientX, clientY) {
     if (!trwa) return;
     var rect = canvas.getBoundingClientRect();
-    var px = clientX - rect.left;
-    var py = clientY - rect.top;
+    // Canvas jest RYSOWANY w rozdzielczosci wewnetrznej (KOMORKA px na
+    // klocek), ale WYSWIETLANY wiekszy (CSS), zeby latwiej bylo trafic
+    // palcem. Dlatego pozycje dotkniecia trzeba przeliczyc z rozmiaru
+    // wyswietlanego na wewnetrzny - inaczej trafiiibysmy w zly klocek.
+    var skalaX = rect.width / canvas.width;
+    var skalaY = rect.height / canvas.height;
+    var px = (clientX - rect.left) / (skalaX || 1);
+    var py = (clientY - rect.top) / (skalaY || 1);
     var vx = Math.floor(px / KOMORKA);
     var vy = Math.floor(py / KOMORKA);
     var wx = kameraX + vx, wy = kameraY + vy;
