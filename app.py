@@ -690,6 +690,12 @@ SZABLON_GRY = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="panel"><span id="poziomEtykieta">Poziom 1</span></div>
     <div id="nakladka">
@@ -726,11 +732,23 @@ SZABLON_GRY = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -1111,6 +1129,12 @@ SZABLON_DRONA = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="wynikNaEkranie">0</div>
     <svg id="dron" viewBox="0 0 34 34">
@@ -1165,11 +1189,23 @@ SZABLON_DRONA = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -1618,6 +1654,12 @@ SZABLON_ZABY = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="siatkaTla"></div>
     <div id="podloze"></div>
@@ -1678,11 +1720,23 @@ SZABLON_ZABY = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -2221,6 +2275,12 @@ SZABLON_MEMORY = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="panel"><span id="parNaEkranie">0 / 8</span><span id="czasNaEkranie"></span></div>
     <div id="siatka"></div>
@@ -2257,11 +2317,23 @@ SZABLON_MEMORY = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -2578,6 +2650,12 @@ SZABLON_SIMON = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="panel"><span id="dlugoscNaEkranie">0 / 8</span></div>
     <div id="siatkaKolorow">
@@ -2613,11 +2691,23 @@ SZABLON_SIMON = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -2889,6 +2979,12 @@ SZABLON_PIANO = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="panel"><span id="postepNaEkranie">🎹</span></div>
     <div id="pasy">
@@ -2964,11 +3060,23 @@ SZABLON_PIANO = """
 
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
       if (audioCtx.state === 'suspended') {
         audioCtx.resume();
+      }
+      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
+      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
       }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym gescie dotyku
@@ -3385,6 +3493,12 @@ SZABLON_BITWA = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="poziomEtykieta">POZIOM 1 / 3</div>
     <div id="wrogowie"></div>
@@ -3429,8 +3543,20 @@ SZABLON_BITWA = """
   var audioCtx = null;
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
       if (audioCtx.state === 'suspended') audioCtx.resume();
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
+      }
       var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
       var cicheZrodlo = audioCtx.createBufferSource();
       cicheZrodlo.buffer = cichyBufor;
@@ -4581,6 +4707,12 @@ SZABLON_MINECRAFT = """
 </style>
 </head>
 <body>
+  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
+       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
+       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
+       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
+       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
+  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="obszarSwiata">
       <div id="pasekGloduOtoczka">
@@ -4655,8 +4787,20 @@ SZABLON_MINECRAFT = """
   var audioCtx = null;
   function inicjujDzwiek() {
     try {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
       if (audioCtx.state === 'suspended') audioCtx.resume();
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
+        elOdmutowania.play().catch(function () {});
+      }
       // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
       // (nawet cisza) w tym samym, synchronicznym geście dotyku
       var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
