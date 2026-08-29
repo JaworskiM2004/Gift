@@ -610,14 +610,23 @@ SZABLON_GRY = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -683,10 +692,8 @@ SZABLON_GRY = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span id="poziomEtykieta">Poziom 1</span>
-  </div>
   <div id="gra">
+    <div id="panel"><span id="poziomEtykieta">Poziom 1</span></div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Poziom 1</h2>
       <p id="nakladkaOpis"></p>
@@ -998,14 +1005,23 @@ SZABLON_DRONA = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -1088,9 +1104,6 @@ SZABLON_DRONA = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span>🛸 Dron</span>
-  </div>
   <div id="gra">
     <div id="wynikNaEkranie">0</div>
     <svg id="dron" viewBox="0 0 34 34">
@@ -1404,14 +1417,23 @@ SZABLON_ZABY = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -1580,9 +1602,6 @@ SZABLON_ZABY = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span>🐸 Żaba</span>
-  </div>
   <div id="gra">
     <div id="siatkaTla"></div>
     <div id="podloze"></div>
@@ -2073,14 +2092,23 @@ SZABLON_MEMORY = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -2095,7 +2123,7 @@ SZABLON_MEMORY = """
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(4, 1fr);
     gap: 8px;
-    padding: 14px;
+    padding: 34px 14px 14px;
     width: 100%;
     height: 100%;
   }
@@ -2168,11 +2196,8 @@ SZABLON_MEMORY = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span id="parNaEkranie">0 / 8</span>
-    <span id="czasNaEkranie"></span>
-  </div>
   <div id="gra">
+    <div id="panel"><span id="parNaEkranie">0 / 8</span><span id="czasNaEkranie"></span></div>
     <div id="siatka"></div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Memory</h2>
@@ -2441,14 +2466,23 @@ SZABLON_SIMON = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -2465,7 +2499,7 @@ SZABLON_SIMON = """
     gap: 10px;
     width: 100%;
     height: 100%;
-    padding: 16px;
+    padding: 36px 16px 16px;
   }
   .przycisk-koloru {
     border-radius: 16px;
@@ -2510,10 +2544,8 @@ SZABLON_SIMON = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span id="dlugoscNaEkranie">0 / 8</span>
-  </div>
   <div id="gra">
+    <div id="panel"><span id="dlugoscNaEkranie">0 / 8</span></div>
     <div id="siatkaKolorow">
       <div class="przycisk-koloru pk-0"></div>
       <div class="przycisk-koloru pk-1"></div>
@@ -2707,14 +2739,23 @@ SZABLON_PIANO = """
     background: #0d0d0d;
     overflow: hidden;
   }
+  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
+     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
   #panel {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 6;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 10px 16px;
+    padding: 7px 14px;
     color: #f5f5f0;
     font-size: 15px;
     font-weight: 600;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+    pointer-events: none;
   }
   #gra {
     position: relative;
@@ -2805,10 +2846,8 @@ SZABLON_PIANO = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span id="postepNaEkranie">🎹</span>
-  </div>
   <div id="gra">
+    <div id="panel"><span id="postepNaEkranie">🎹</span></div>
     <div id="pasy">
       <div class="pas" data-idx="0"></div>
       <div class="pas" data-idx="1"></div>
@@ -3294,9 +3333,6 @@ SZABLON_BITWA = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span>⚔️ Bitwa</span>
-  </div>
   <div id="gra">
     <div id="poziomEtykieta">POZIOM 1 / 3</div>
     <div id="wrogowie"></div>
@@ -4055,13 +4091,18 @@ SZABLON_MINECRAFT = """
     flex-direction: column;
   }
   #pasekGloduOtoczka {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 14px;
-    padding: 2px 0 0;
+    gap: 12px;
     font-size: 11px;
-    flex-wrap: wrap;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.9);
   }
   .mini-pasek-otoczka {
     display: flex;
@@ -4069,7 +4110,7 @@ SZABLON_MINECRAFT = """
     gap: 6px;
   }
   #pasekGloduTlo, #pasekHpTlo {
-    width: 110px;
+    width: 76px;
     height: 9px;
     background: #2a1c10;
     border: 1px solid rgba(0,0,0,0.4);
@@ -4094,8 +4135,8 @@ SZABLON_MINECRAFT = """
     padding: 4px 0 2px;
   }
   #canvasSwiat {
-    width: 344px;
-    max-width: 100%;
+    width: 100%;
+    max-width: 372px;
     height: auto;
     aspect-ratio: 1 / 1;
     border-radius: 10px;
@@ -4204,12 +4245,18 @@ SZABLON_MINECRAFT = """
   }
   #btnDom:active { transform: scale(0.97); }
   #celZadania {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 6;
+    pointer-events: none;
+    white-space: nowrap;
     text-align: center;
     font-size: 12px;
     font-weight: 700;
     color: #e6c15c;
-    padding: 3px 8px 0;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+    text-shadow: 0 1px 4px rgba(0,0,0,0.95);
   }
   .btn-narzedzie {
     position: absolute;
@@ -4413,22 +4460,19 @@ SZABLON_MINECRAFT = """
 </style>
 </head>
 <body>
-  <div id="panel">
-    <span>⛏️ Prosty Minecraft</span>
-  </div>
   <div id="gra">
-    <div id="pasekGloduOtoczka">
-      <div class="mini-pasek-otoczka">
-        <span>❤️</span>
-        <div id="pasekHpTlo"><div id="pasekHpWypelnienie" style="width:100%;"></div></div>
-      </div>
-      <div class="mini-pasek-otoczka">
-        <span>🍗</span>
-        <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
-      </div>
-    </div>
-    <div id="celZadania">🎯 Cel: zbuduj dom</div>
     <div id="obszarSwiata">
+      <div id="pasekGloduOtoczka">
+        <div class="mini-pasek-otoczka">
+          <span>❤️</span>
+          <div id="pasekHpTlo"><div id="pasekHpWypelnienie" style="width:100%;"></div></div>
+        </div>
+        <div class="mini-pasek-otoczka">
+          <span>🍗</span>
+          <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
+        </div>
+      </div>
+      <div id="celZadania">🎯 Cel: zbuduj dom</div>
       <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
       <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
@@ -6361,7 +6405,7 @@ def renderuj_gra(etap_dane):
     html = SZABLON_GRY.replace("__POZIOMY_JSON__", json.dumps(POZIOMY_GRY))
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(html, 466, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(html, 428, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(html, height=520, scrolling=False)
@@ -6397,7 +6441,7 @@ def renderuj_dron(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_DRONA, 466, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_DRONA, 428, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby plik components/gra_wynik/index.html jeszcze nie
@@ -6410,7 +6454,7 @@ def renderuj_zaba(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_ZABY, 466, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_ZABY, 428, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_ZABY, height=520, scrolling=False)
@@ -6421,7 +6465,7 @@ def renderuj_memory(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_MEMORY, 506, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_MEMORY, 468, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_MEMORY, height=560, scrolling=False)
@@ -6432,7 +6476,7 @@ def renderuj_simon(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_SIMON, 426, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_SIMON, 388, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_SIMON, height=480, scrolling=False)
@@ -6443,7 +6487,7 @@ def renderuj_piano(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_PIANO, 466, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_PIANO, 428, key=f"kmp_{klucz}")
         return True if wynik else None
 
     components.html(SZABLON_PIANO, height=520, scrolling=False)
@@ -6454,7 +6498,7 @@ def renderuj_bitwa(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_BITWA, 606, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_BITWA, 568, key=f"kmp_{klucz}")
         if wynik:
             if isinstance(wynik, dict) and "porazki" in wynik:
                 st.session_state.bledy_per_etap[klucz] = int(wynik["porazki"])
@@ -6469,14 +6513,14 @@ def renderuj_minecraft(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 770, key=f"kmp_{klucz}")
+        gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 732, key=f"kmp_{klucz}")
         if gotowe_do_zaliczenia:
             if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
                 return True
         return None
 
     # Fallback, gdyby most byl niedostepny - stary reczny przycisk.
-    components.html(SZABLON_MINECRAFT, height=770, scrolling=False)
+    components.html(SZABLON_MINECRAFT, height=732, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dom_minecraft"))
 
 
