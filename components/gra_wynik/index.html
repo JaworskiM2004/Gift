@@ -15,36 +15,23 @@
     overflow: hidden;
     background: #0d0d0d;
   }
-  #gra-wewnetrzna {
-    width: 100%;
-    border: none;
-    outline: none;
-    display: block;
-    background: #0d0d0d;
-    -webkit-tap-highlight-color: transparent;
-  }
 </style>
 </head>
 <body>
-  <!-- allow="autoplay" JEST KONIECZNE: przegladarki blokuja Web Audio w
-       zagniezdzonym iframie, dopoki strona nadrzedna jawnie nie przekaze
-       mu tego uprawnienia. Bez tego AudioContext zostaje "suspended" na
-       zawsze i gry sa calkowicie CICHE, mimo poprawnego kodu dzwieku. -->
-  <iframe id="gra-wewnetrzna" scrolling="no"
-          allow="autoplay *; fullscreen"
-          allowfullscreen></iframe>
 
 <script>
   // ----------------------------------------------------------------
   // MOST: implementacja protokolu "Streamlit Components v1" w czystym
-  // JS (bez React/npm) - pozwala PRAWDZIWEJ grze (osadzonej ponizej,
-  // we WEWNETRZNYM iframe) zglosic wynik z powrotem do Pythona.
+  // JS (bez React/npm) - pozwala grze zglosic wynik z powrotem do
+  // Pythona, dzieki czemu etap zalicza sie sam.
   //
-  // Dwa kanaly wiadomosci na tej samej stronie:
-  //  1) OD Streamlit (nadrzedny kontekst strony) - typy "streamlit:*"
-  //  2) OD gry-dziecka (wewnetrzny iframe ponizej) - wlasny typ
-  //     "streamlit-child:zaliczono", ktory KAZDA gra wysyla raz,
-  //     kiedy wykryje wygrana.
+  // WAZNE (dzwiek): gra jest wstrzykiwana BEZPOSREDNIO do TEGO
+  // dokumentu, a NIE do zagniezdzonego <iframe>. Przegladarki blokuja
+  // Web Audio w zagniezdzonej ramce, dopoki strona nadrzedna nie
+  // przekaze jej uprawnienia - a nadrzedna ramka nalezy do Streamlita
+  // i nie mamy nad nia kontroli. Renderujac gre tutaj, jestesmy na
+  // dokladnie tym samym poziomie zagniezdzenia co dawniej, kiedy
+  // dzwiek dzialal.
   // ----------------------------------------------------------------
 
   var SET_COMPONENT_VALUE = "streamlit:setComponentValue";
@@ -52,7 +39,6 @@
   var COMPONENT_READY = "streamlit:componentReady";
   var SET_FRAME_HEIGHT = "streamlit:setFrameHeight";
 
-  var ramkaGry = document.getElementById('gra-wewnetrzna');
   var wysokoscRamki = 560;
   var jujWypelniona = false;
   var jujZaliczono = false;
@@ -73,29 +59,65 @@
     _wyslijDoStreamlit(SET_COMPONENT_VALUE, { value: wartosc, dataType: "json" });
   }
 
+  // Wstrzykuje pelny dokument gry (HTML+CSS+JS) do biezacej strony.
+  // innerHTML NIE uruchamia <script>, wiec skrypty trzeba odtworzyc
+  // recznie jako nowe elementy - inaczej gra w ogole by nie ruszyla.
+  function wstawGre(htmlGry) {
+    var parser = new DOMParser();
+    var dokumentGry = parser.parseFromString(htmlGry, "text/html");
+
+    Array.prototype.forEach.call(dokumentGry.querySelectorAll("style"), function (styl) {
+      var nowyStyl = document.createElement("style");
+      nowyStyl.textContent = styl.textContent;
+      document.head.appendChild(nowyStyl);
+    });
+
+    var skrypty = Array.prototype.slice.call(dokumentGry.querySelectorAll("script"));
+    skrypty.forEach(function (s) { s.parentNode.removeChild(s); });
+
+    var pojemnik = document.createElement("div");
+    pojemnik.id = "pojemnik-gry";
+    pojemnik.innerHTML = dokumentGry.body.innerHTML;
+    document.body.appendChild(pojemnik);
+
+    if (dokumentGry.body.className) {
+      document.body.className = dokumentGry.body.className;
+    }
+
+    // Skrypty dopiero PO wstawieniu HTML - kod gry szuka elementow
+    // przez getElementById juz przy starcie.
+    skrypty.forEach(function (staryS) {
+      var nowyS = document.createElement("script");
+      if (staryS.src) {
+        nowyS.src = staryS.src;
+      } else {
+        nowyS.textContent = staryS.textContent;
+      }
+      document.body.appendChild(nowyS);
+    });
+  }
+
   window.addEventListener("message", function (event) {
     var dane = event.data;
     if (!dane || typeof dane !== "object") return;
 
-    // Kanal 1: wiadomosc OD Streamlit (przekazuje argumenty z Pythona)
+    // Kanal 1: wiadomosc OD Streamlit (argumenty z Pythona)
     if (dane.type === RENDER) {
       var argumenty = dane.args || {};
       if (argumenty.wysokosc) {
         wysokoscRamki = argumenty.wysokosc;
       }
       if (!jujWypelniona && typeof argumenty.html_gry === "string") {
-        ramkaGry.setAttribute("srcdoc", argumenty.html_gry);
-        ramkaGry.style.height = wysokoscRamki + "px";
         jujWypelniona = true;
+        wstawGre(argumenty.html_gry);
       }
       ustawWysokoscRamki(wysokoscRamki);
       return;
     }
 
-    // Kanal 2: wiadomosc OD GRY (wewnetrzny iframe) - zaliczenie etapu.
-    // Sprawdzamy zrodlo (musi pochodzic z naszego wlasnego <iframe>),
-    // zeby przypadkiem nie zareagowac na cudza wiadomosc.
-    if (dane.type === "streamlit-child:zaliczono" && event.source === ramkaGry.contentWindow) {
+    // Kanal 2: wiadomosc OD GRY - zaliczenie etapu. Gra siedzi teraz w
+    // tym samym dokumencie, wiec wiadomosc przychodzi z tego samego okna.
+    if (dane.type === "streamlit-child:zaliczono") {
       if (!jujZaliczono) {
         jujZaliczono = true;
         zglosWynikDoPythona(dane.wartosc === undefined ? true : dane.wartosc);
