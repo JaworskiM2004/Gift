@@ -457,7 +457,7 @@ TEKST = {
         "rozpocznij": "Rozpocznij 🔓",
         "wroc_do_menu": "⬅ Powrót do menu",
         "sprawdz": "Sprawdź",
-        "zatwierdz": "Zatwierdź (jedna próba!)",
+        "zatwierdz": "Sprawdź",
         "twoja_odpowiedz": "Twoja odpowiedź:",
         "wybierz": "— wybierz —",
         "slowo": "Słowo",
@@ -476,7 +476,6 @@ TEKST = {
         "rozwiazane_status": "✅ Rozwiązane",
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
         "menu_tytul": "Wybierz etap",
-        "zlap_zamek": "Złap kłódkę!",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
         "zobacz_kod": "Zobacz kod do sejfu 🔓",
         "reset_btn": "🔄 Resetuj wszystko",
@@ -510,7 +509,7 @@ TEKST = {
         "rozpocznij": "Start 🔓",
         "wroc_do_menu": "⬅ Back to menu",
         "sprawdz": "Check",
-        "zatwierdz": "Confirm (one attempt!)",
+        "zatwierdz": "Check",
         "twoja_odpowiedz": "Your answer:",
         "wybierz": "— choose —",
         "slowo": "Word",
@@ -529,7 +528,6 @@ TEKST = {
         "rozwiazane_status": "✅ Solved",
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
         "menu_tytul": "Choose a stage",
-        "zlap_zamek": "Catch the padlock!",
         "wszystko_rozwiazane": "🎉 You solved everything!",
         "zobacz_kod": "See the safe code 🔓",
         "reset_btn": "🔄 Reset everything",
@@ -746,8 +744,15 @@ SZABLON_GRY = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajBip(czestotliwosc) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -1176,8 +1181,15 @@ SZABLON_DRONA = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -1680,8 +1692,15 @@ SZABLON_ZABY = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2250,8 +2269,15 @@ SZABLON_MEMORY = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2597,8 +2623,15 @@ SZABLON_SIMON = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(czestotliwosc, czasTrwania) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -2939,8 +2972,15 @@ SZABLON_PIANO = """
     }
   }
 
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(czestotliwosc, czasTrwania, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -3386,8 +3426,15 @@ SZABLON_BITWA = """
       cicheZrodlo.start(0);
     } catch (e) { audioCtx = null; }
   }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(f, czas, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -4205,6 +4252,43 @@ SZABLON_MINECRAFT = """
     from { opacity: 0; transform: scale(0.8); }
     to { opacity: 1; transform: scale(1); }
   }
+  .naglowek-panelu {
+    position: sticky;
+    top: -10px;
+    z-index: 2;
+    margin: -10px -12px 10px;
+    padding: 10px 12px;
+    background: rgba(10,10,14,0.98);
+    border-bottom: 1px solid rgba(212,175,55,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 14px;
+    font-weight: 700;
+    color: #e6c15c;
+  }
+  .btn-zamknij-panel {
+    background: rgba(212,175,55,0.18);
+    border: 1px solid rgba(212,175,55,0.5);
+    color: #f0dfa8;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    padding: 0;
+  }
+  /* Nazwa aktualnie wybranego bloku - nad przyciskami ruchu */
+  #wybranyBlokEtykieta {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #f0dfa8;
+    padding: 2px 8px 0;
+    min-height: 15px;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  }
   #hudNarzedzi {
     position: absolute;
     left: 6px;
@@ -4311,9 +4395,17 @@ SZABLON_MINECRAFT = """
   .btn-ruch:active { transform: scale(0.94); }
   #ekwipunek {
     display: none;
-    padding: 6px 8px 10px;
-    border-top: 1px solid rgba(212,175,55,0.2);
-    max-height: 260px;
+    padding: 10px 12px 14px;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    bottom: 10px;
+    z-index: 14;
+    background: rgba(10,10,14,0.97);
+    border: 2px solid rgba(212,175,55,0.5);
+    border-radius: 12px;
+    max-height: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -4336,9 +4428,17 @@ SZABLON_MINECRAFT = """
   .slot-narzedzie { cursor: default; }
   #panelReceptur {
     display: none;
-    padding: 8px 10px 12px;
-    border-top: 1px solid rgba(212,175,55,0.2);
-    max-height: 260px;
+    padding: 10px 12px 14px;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    bottom: 10px;
+    z-index: 14;
+    background: rgba(10,10,14,0.97);
+    border: 2px solid rgba(212,175,55,0.5);
+    border-radius: 12px;
+    max-height: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -4389,10 +4489,17 @@ SZABLON_MINECRAFT = """
   .btn-wytworz:disabled { opacity: 0.35; }
   #panelPieca {
     display: none;
-    padding: 10px 12px 12px;
-    border-top: 1px solid rgba(212,175,55,0.2);
-    text-align: center;
-    max-height: 260px;
+    padding: 12px 14px 14px;
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    bottom: 10px;
+    z-index: 14;
+    background: rgba(10,10,14,0.97);
+    border: 2px solid rgba(212,175,55,0.5);
+    border-radius: 12px;
+    max-height: none;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
   }
@@ -4484,6 +4591,7 @@ SZABLON_MINECRAFT = """
       </div>
     </div>
     <div id="dziennikMc"></div>
+    <div id="wybranyBlokEtykieta"></div>
     <div id="sterowanie">
       <button class="btn-ruch" id="btnLewo">⬅️</button>
       <button class="btn-ruch" id="btnPrawo">➡️</button>
@@ -4544,8 +4652,15 @@ SZABLON_MINECRAFT = """
       cicheZrodlo.start(0);
     } catch (e) { audioCtx = null; }
   }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
+    document.addEventListener(nazwaZdarzenia, function () {
+      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
+    }, { passive: true });
+  });
+
   function zagrajTon(f, czas, typ) {
     if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
     try {
       var osc = audioCtx.createOscillator();
       var gain = audioCtx.createGain();
@@ -4600,6 +4715,7 @@ SZABLON_MINECRAFT = """
     szyby: '#bfe6f0', piec: '#4a4a4a',
     rudaZelaza: '#b8927a', diament: '#7ee8e0', drewnoBrzozy: '#e8ddc8',
     deski: '#b8894f', plytki: '#9c9ca8', drzwi: '#6b4423', lozko: '#c96f6f',
+    deskiBrzozowe: '#e8d9b8', drzwiBrzozowe: '#c9b48a',
   };
   var NAZWY_BLOKOW = {
     trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
@@ -4613,13 +4729,15 @@ SZABLON_MINECRAFT = """
     mieczZelazny: 'Miecz żelazny', mieczDiamentowy: 'Miecz diamentowy',
     luk: 'Łuk', drewnoBrzozy: 'Drewno brzozy',
     zbrojaZelazna: 'Zbroja żelazna', zbrojaDiamentowa: 'Zbroja diamentowa',
-    deski: 'Deski', plytki: 'Płytki', drzwi: 'Drzwi', lozko: 'Łóżko',
+    deski: 'Deski dębowe', plytki: 'Płytki', drzwi: 'Drzwi dębowe', lozko: 'Łóżko',
+    deskiBrzozowe: 'Deski brzozowe', drzwiBrzozowe: 'Drzwi brzozowe',
     welna: 'Wełna', korona: 'Korona',
   };
   // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
     'ziemia', 'kamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
-    'piach', 'deski', 'plytki', 'drzwi', 'lozko', 'szyby', 'piec',
+    'piach', 'drewnoBrzozy', 'deski', 'deskiBrzozowe', 'plytki', 'drzwi',
+    'drzwiBrzozowe', 'lozko', 'szyby', 'piec',
   ];
 
   // ---------- IKONY (prawdziwa tekstura dla blokow, emoji dla reszty) ----------
@@ -4683,11 +4801,14 @@ SZABLON_MINECRAFT = """
   }
 
   var RECEPTURY = [
-    { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 } },
-    { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 } },
+    { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 }, etykieta: 'Patyk (z dębu)' },
+    { id: 'patykBrzoza', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewnoBrzozy: 1 }, etykieta: 'Patyk (z brzozy)' },
+    { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Kilof drewniany (z dębu)' },
+    { id: 'kilofDrewnianyBrzoza', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Kilof drewniany (z brzozy)' },
     { id: 'kilofKamienny', wyjscie: 'kilofKamienny', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 } },
     { id: 'kilofZelazny', wyjscie: 'kilofZelazny', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 } },
-    { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 } },
+    { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 }, etykieta: 'Miecz drewniany (z dębu)' },
+    { id: 'mieczDrewnianyBrzoza', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewnoBrzozy: 2 }, etykieta: 'Miecz drewniany (z brzozy)' },
     { id: 'mieczKamienny', wyjscie: 'mieczKamienny', ileWyjscia: 1, skladniki: { patyk: 1, kamien: 2 } },
     { id: 'mieczZelazny', wyjscie: 'mieczZelazny', ileWyjscia: 1, skladniki: { patyk: 1, zelazo: 2 } },
     { id: 'mieczDiamentowy', wyjscie: 'mieczDiamentowy', ileWyjscia: 1, skladniki: { patyk: 1, diament: 2 } },
@@ -4697,15 +4818,19 @@ SZABLON_MINECRAFT = """
     { id: 'zbrojaZelazna', wyjscie: 'zbrojaZelazna', ileWyjscia: 1, skladniki: { zelazo: 5 } },
     { id: 'zbrojaDiamentowa', wyjscie: 'zbrojaDiamentowa', ileWyjscia: 1, skladniki: { diament: 5 } },
     { id: 'deski', wyjscie: 'deski', ileWyjscia: 4, skladniki: { drewno: 1 } },
+    { id: 'deskiBrzozowe', wyjscie: 'deskiBrzozowe', ileWyjscia: 4, skladniki: { drewnoBrzozy: 1 } },
     { id: 'plytki', wyjscie: 'plytki', ileWyjscia: 4, skladniki: { kamien: 2 } },
     { id: 'drzwi', wyjscie: 'drzwi', ileWyjscia: 1, skladniki: { deski: 2 } },
-    { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 } },
+    { id: 'drzwiBrzozowe', wyjscie: 'drzwiBrzozowe', ileWyjscia: 1, skladniki: { deskiBrzozowe: 2 } },
+    { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 }, etykieta: 'Łóżko (deski dębowe)' },
+    { id: 'lozkoBrzoza', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deskiBrzozowe: 3 }, etykieta: 'Łóżko (deski brzozowe)' },
     { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zloto: 5 } },
   ];
 
   var world = [];
   var ekwipunek = {};
   var wybranyBlok = 'ziemia';
+  var wybranyBlokEtykietaEl = document.getElementById('wybranyBlokEtykieta');
   var graczX = 0, graczY = 0;
   var kameraX = 0, kameraY = 0;
   var trwa = false;
@@ -4884,7 +5009,9 @@ SZABLON_MINECRAFT = """
   }
 
   function odswiezEkwipunek() {
+    aktualizujEtykieteWybranego();
     ekwipunekEl.innerHTML = '';
+    dodajNaglowekPanelu(ekwipunekEl, '🎒 Ekwipunek');
 
     var naglowekBlokow = document.createElement('div');
     naglowekBlokow.className = 'naglowek-ekwipunku';
@@ -4904,6 +5031,7 @@ SZABLON_MINECRAFT = """
       slot.appendChild(licznik);
       slot.addEventListener('click', function () {
         wybranyBlok = klucz;
+        aktualizujEtykieteWybranego();
         odswiezEkwipunek();
       });
       wierszBlokow.appendChild(slot);
@@ -5052,13 +5180,14 @@ SZABLON_MINECRAFT = """
 
   function odswiezPanelReceptur() {
     panelReceptur.innerHTML = '';
+    dodajNaglowekPanelu(panelReceptur, '📖 Receptury');
     RECEPTURY.forEach(function (przepis) {
       var karta = document.createElement('div');
       karta.className = 'karta-receptury';
       karta.appendChild(stworzWierszReceptury(przepis.skladniki, przepis.wyjscie, przepis.ileWyjscia));
       var btn = document.createElement('button');
       btn.className = 'btn-wytworz';
-      btn.textContent = '🔨 Wytwórz ' + NAZWY_BLOKOW[przepis.wyjscie];
+      btn.textContent = '🔨 Wytwórz ' + (przepis.etykieta || NAZWY_BLOKOW[przepis.wyjscie]);
       btn.disabled = !maSkladniki(przepis.skladniki);
       btn.addEventListener('click', function () { wytworz(przepis); });
       karta.appendChild(btn);
@@ -5108,6 +5237,7 @@ SZABLON_MINECRAFT = """
 
   function odswiezPanelPieca() {
     panelPieca.innerHTML = '';
+    dodajNaglowekPanelu(panelPieca, '🔥 Piec');
     var wegiel = ekwipunek.wegiel || 0;
     var drewno = ekwipunek.drewno || 0;
 
@@ -5175,7 +5305,7 @@ SZABLON_MINECRAFT = """
         ctxDocelowy.fillRect(x + 10, y + 5, 6, 2);
         ctxDocelowy.fillRect(x + 10, y + 15, 6, 2);
       }
-    } else if (blok === 'deski') {
+    } else if (blok === 'deski' || blok === 'deskiBrzozowe') {
       ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.22)';
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + 9); ctxDocelowy.lineTo(x + KOMORKA, y + 9); ctxDocelowy.stroke();
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + 18); ctxDocelowy.lineTo(x + KOMORKA, y + 18); ctxDocelowy.stroke();
@@ -5183,7 +5313,7 @@ SZABLON_MINECRAFT = """
       ctxDocelowy.strokeStyle = 'rgba(0,0,0,0.3)';
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + KOMORKA / 2, y); ctxDocelowy.lineTo(x + KOMORKA / 2, y + KOMORKA); ctxDocelowy.stroke();
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x, y + KOMORKA / 2); ctxDocelowy.lineTo(x + KOMORKA, y + KOMORKA / 2); ctxDocelowy.stroke();
-    } else if (blok === 'drzwi') {
+    } else if (blok === 'drzwi' || blok === 'drzwiBrzozowe') {
       ctxDocelowy.fillStyle = 'rgba(0,0,0,0.22)';
       ctxDocelowy.fillRect(x + 4, y + 3, KOMORKA - 8, KOMORKA - 6);
       ctxDocelowy.fillStyle = '#e6c15c';
@@ -5510,8 +5640,7 @@ SZABLON_MINECRAFT = """
         return;
       }
       world[wx][wy] = 'powietrze';
-      var surowiecDoEkwipunku = (blok === 'drewnoBrzozy') ? 'drewno' : blok;
-      dodajDoEkwipunku(surowiecDoEkwipunku, 1);
+      dodajDoEkwipunku(blok, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania();
       zastosujGrawitacje();
@@ -5616,6 +5745,27 @@ SZABLON_MINECRAFT = """
   });
 
   // ---------- PANELE: EKWIPUNEK / RECEPTURY / PIEC (przelacznik, jeden na raz) ----------
+  function aktualizujEtykieteWybranego() {
+    if (!wybranyBlokEtykietaEl) return;
+    var nazwa = NAZWY_BLOKOW[wybranyBlok] || wybranyBlok;
+    var ile = ekwipunek[wybranyBlok] || 0;
+    wybranyBlokEtykietaEl.textContent = '✋ W ręce: ' + nazwa + ' (' + ile + ')';
+  }
+
+  function dodajNaglowekPanelu(panelEl, tytul) {
+    var naglowek = document.createElement('div');
+    naglowek.className = 'naglowek-panelu';
+    var etykieta = document.createElement('span');
+    etykieta.textContent = tytul;
+    var btnZamknij = document.createElement('button');
+    btnZamknij.className = 'btn-zamknij-panel';
+    btnZamknij.textContent = '✕';
+    btnZamknij.addEventListener('click', function () { schowajWszystkiePanele(); });
+    naglowek.appendChild(etykieta);
+    naglowek.appendChild(btnZamknij);
+    panelEl.appendChild(naglowek);
+  }
+
   function schowajWszystkiePanele() {
     ekwipunekEl.classList.remove('widoczny');
     panelReceptur.classList.remove('widoczny');
@@ -5816,6 +5966,7 @@ SZABLON_MINECRAFT = """
   function rozpocznijSwiat() {
     ekwipunek = {};
     wybranyBlok = 'ziemia';
+    aktualizujEtykieteWybranego();
     graczGlod = GLOD_MAX;
     probyDomu = 0;
     graczHp = GRACZ_HP_MAX;
@@ -6701,13 +6852,6 @@ def pokaz_powitanie():
     prawa = random.randint(1, 6)
 
     st.markdown(f"<div style='height:{losowa_wysokosc}vh;'></div>", unsafe_allow_html=True)
-
-    if st.session_state.zamek_proby > 0:
-        st.markdown(
-            f"<p style='text-align:center; color:#e6c15c; font-size:0.95rem; "
-            f"margin-bottom:0.6rem;'>{t('zlap_zamek')} ({st.session_state.zamek_proby}/5)</p>",
-            unsafe_allow_html=True,
-        )
 
     kolumny = st.columns([lewa, 2, prawa])
     with kolumny[1]:
