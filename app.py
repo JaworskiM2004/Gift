@@ -464,7 +464,6 @@ TEKST = {
         "zle_sprobuj": "To nie to. Spróbuj jeszcze raz.",
         "zle_jedna_proba": "To nie ta data. Ta zagadka jest już zamknięta — była tylko jedna próba.",
         "wybierz_date": "Wybierz datę:",
-        "jedna_proba_info": "⚠️ Masz tylko JEDNĄ próbę — wybierz uważnie.",
         "wybierz_najpierw": "Najpierw wybierz pełną datę.",
         "dzien": "Dzień",
         "miesiac": "Miesiąc",
@@ -518,7 +517,6 @@ TEKST = {
         "zle_sprobuj": "Not quite. Try again.",
         "zle_jedna_proba": "Wrong date. This puzzle is now locked — you only got one attempt.",
         "wybierz_date": "Pick a date:",
-        "jedna_proba_info": "⚠️ You only get ONE attempt — choose carefully.",
         "wybierz_najpierw": "Pick the full date first.",
         "dzien": "Day",
         "miesiac": "Month",
@@ -602,14 +600,14 @@ SZABLON_GRY = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -990,14 +988,14 @@ SZABLON_DRONA = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -1396,14 +1394,14 @@ SZABLON_ZABY = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -1423,7 +1421,7 @@ SZABLON_ZABY = """
     border-radius: 16px;
     border: 2px solid #d4af37;
     cursor: pointer;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
   }
   #siatkaTla {
     position: absolute;
@@ -2065,14 +2063,14 @@ SZABLON_MEMORY = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -2433,14 +2431,14 @@ SZABLON_SIMON = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -2699,14 +2697,14 @@ SZABLON_PIANO = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     overflow: hidden;
   }
   #panel {
@@ -3080,14 +3078,14 @@ SZABLON_BITWA = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     color: #f5f5f0;
     overflow: hidden;
   }
@@ -3318,7 +3316,7 @@ SZABLON_BITWA = """
     </div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Bitwa</h2>
-      <p id="nakladkaOpis">Ogień pokonuje się lodem, lód ogniem. Tarcze blokują strzały — użyj miecza. Włócznicy kontratakują miecz — użyj łuku. Fiolka leczenia działa raz na całą rozgrywkę — użyj jej mądrze.</p>
+      <p id="nakladkaOpis"></p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
   </div>
@@ -4027,14 +4025,14 @@ SZABLON_MINECRAFT = """
 <style>
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     height: 100%;
   }
   body {
     margin: 0;
     min-height: 100%;
     font-family: -apple-system, 'Poppins', sans-serif;
-    background: radial-gradient(circle at 50% 0%, #241b3a 0%, #0d0d0d 70%);
+    background: #0d0d0d;
     color: #f5f5f0;
     overflow: hidden;
   }
@@ -4450,7 +4448,6 @@ SZABLON_MINECRAFT = """
     </div>
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
-      <p>Dotknij bloku obok siebie, żeby go wykopać. Dotknij pustego miejsca, żeby postawić wybrany blok. Dotknij zwierzaka, żeby zdobyć jedzenie. Kamień i węgiel wymagają kilofa, złoto kilofa żelaznego (im lepszy kilof, tym głębsze surowce). Piach da się przetopić na szyby w piecu (🔥). W nocy pojawiają się potwory — dotknij ich, żeby zaatakować mieczem (z bliska) albo łukiem (z daleka). Buduj, kop, walcz, baw się — bez presji, żadnego "wygrania".</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
     <div id="nakladkaSmierc">
@@ -5863,7 +5860,7 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     -webkit-text-fill-color: transparent;
     animation: pojaw 0.9s ease;
     padding-bottom: 0.7rem;
-    margin-bottom: 1.1rem;
+    margin-bottom: 2.4rem;
     border-bottom: 1px solid rgba(212,175,55,0.28);
 }
 
@@ -6117,6 +6114,13 @@ div[data-testid="stHorizontalBlock"] {
     justify-content: center !important;
     gap: 0.4rem !important;
 }
+/* Siatka kafelkow w MENU (5 kolumn) - dodatkowy odstep od zlotej linii
+   pod tytulem, zeby kafelki jej nie dotykaly. Osobno od marginesu
+   .tytul, bo sasiadujace marginesy potrafia sie "zlewac" (margin
+   collapse) i sam margines pod tytulem bywa pochlaniany. */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) {
+    margin-top: 1.4rem !important;
+}
 div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
     flex: 1 1 18% !important;
     width: auto !important;
@@ -6229,7 +6233,6 @@ def zainicjuj_stan():
 
 def renderuj_haslo(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane["tresc"]))
     wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
         if znormalizuj(wpisane) == znormalizuj(etap_dane["odpowiedz"]):
@@ -6241,7 +6244,6 @@ def renderuj_haslo(etap_dane):
 
 def renderuj_krzyzowka(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane.get("info", "")))
 
     placeholder = t("wybierz")
     pula_wspolna = etap_dane.get("slowa_pula", [])
@@ -6293,7 +6295,6 @@ def renderuj_krzyzowka(etap_dane):
 
 def renderuj_rebus(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane.get("info", "")))
 
     czesci_html = []
     for e in etap_dane["elementy"]:
@@ -6507,7 +6508,15 @@ def pobierz_dzisiejszy_wordle():
 
 def renderuj_wordle(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane["tresc"]))
+    st.markdown(
+        "<a href='https://www.nytimes.com/games/wordle/index.html' target='_blank' "
+        "style='display:block; text-align:center; text-decoration:none; "
+        "background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; "
+        "padding:0.6rem 1.4rem; border-radius:30px; font-weight:700; "
+        "letter-spacing:0.01em; box-shadow:0 3px 10px rgba(0,0,0,0.35); "
+        "margin-bottom:1rem;'>🆆 Otwórz dzisiejsze Wordle</a>",
+        unsafe_allow_html=True,
+    )
 
     dzisiejsze_slowo = pobierz_dzisiejszy_wordle()
     if dzisiejsze_slowo is None:
@@ -6534,8 +6543,6 @@ def renderuj_wordle(etap_dane):
 
 def renderuj_data(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane["tresc"]))
-    st.caption(t("jedna_proba_info"))
 
     placeholder = t("wybierz")
     kol1, kol2, kol3 = st.columns(3)
@@ -6594,10 +6601,8 @@ def narysuj_szachownice(figury):
 
 def renderuj_szachy(etap_dane):
     klucz = etap_dane["klucz"]
-    st.markdown(tt(etap_dane["tresc"]))
     narysuj_szachownice(etap_dane["figury"])
-    st.caption(tt(etap_dane["format_info"]))
-    wpisane = st.text_input(t("twoj_ruch"), key=f"pole_{klucz}")
+    wpisane = st.text_input(t("twoj_ruch"), key=f"pole_{klucz}", label_visibility="collapsed")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
         oczyszczony = wpisane.replace(",", " ").replace("+", "").replace("#", "")
         ruchy = [znormalizuj(tok) for tok in oczyszczony.split()]
