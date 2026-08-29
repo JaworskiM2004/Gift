@@ -959,7 +959,9 @@ SZABLON_GRY = """
         nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
         nakladkaBtn.style.display = 'none';
         if (window.parent) {
-          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+          var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
         var nastepny = aktualnyPoziom + 1;
@@ -1369,7 +1371,9 @@ SZABLON_DRONA = """
       nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
       if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
       }
     } else {
       zagrajDzwiek('crash');
@@ -2053,7 +2057,9 @@ SZABLON_ZABY = """
       nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
       if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
       }
     } else {
       var szer = gra.clientWidth;
@@ -2456,7 +2462,9 @@ SZABLON_MEMORY = """
       nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
       if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
       }
     } else {
       zagrajDzwiek('zle');
@@ -2737,7 +2745,9 @@ SZABLON_SIMON = """
       nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
       nakladkaBtn.style.display = 'none';
       if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
       }
     } else {
       nakladkaTytul.textContent = '❌ Zła kolejność...';
@@ -3099,7 +3109,9 @@ SZABLON_PIANO = """
         nakladkaBtn.style.display = 'none';
         btnZmienPiosenke.style.display = 'none';
         if (window.parent) {
-          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+          var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
         var drugaPiosenka = piosenkaAktywna === 'kotek' ? 'janie' : 'kotek';
@@ -4041,7 +4053,9 @@ SZABLON_BITWA = """
         nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
         nakladkaBtn.style.display = 'none';
         if (window.parent) {
-          window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: { zaliczono: true, porazki: liczbaPorazek } }, '*');
+          var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: { zaliczono: true, porazki: liczbaPorazek } };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
         var terazKonczySieDrugiPoziom = (poziomIndeks === 1);
@@ -5958,7 +5972,9 @@ SZABLON_MINECRAFT = """
       zagrajTon(660, 0.15, 'triangle');
       setTimeout(function () { zagrajTon(880, 0.2, 'triangle'); }, 150);
       if (window.parent) {
-        window.parent.postMessage({ type: 'streamlit-child:zaliczono', wartosc: true }, '*');
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
       }
     }
   });
