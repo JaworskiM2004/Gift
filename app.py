@@ -6915,61 +6915,52 @@ div.stButton > button:disabled {
     box-shadow: none;
 }
 
-/* Kafelki nawigacji w siatce (menu etapów + kłódka na powitaniu) -
-   te same przyciski co wyzej, ale w kolumnach dostaja jezyk "medalionu
-   sejfowego", spojny z tarczami kodu na ekranie koncowym. */
+/* Kafelki nawigacji w siatce (menu etapow + klodka na powitaniu) - samo
+   emoji, bez tla/ramki/cienia - czysciej i bardziej minimalistycznie.
+   Stan (rozwiazany/zablokowany) i tak pokazuje juz sama etykieta (✅/🔒). */
 div[data-testid="stColumn"] div.stButton > button {
     aspect-ratio: 1 / 1;
     height: auto;
     min-height: 3.2rem;
-    border-radius: 22%;
-    font-size: clamp(2.2rem, 15vw, 4.8rem);
+    border-radius: 0;
+    font-size: clamp(2.8rem, 18vw, 5.5rem);
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(160deg, #f0dfa8, #d4af37 55%, #b8892a);
-    box-shadow:
-        inset 0 2px 3px rgba(255,255,255,0.4),
-        inset 0 -4px 7px rgba(0,0,0,0.3),
-        0 3px 10px rgba(0,0,0,0.4);
-    border: 1px solid rgba(255,255,255,0.18);
+    background: transparent;
+    box-shadow: none;
+    border: none;
 }
 /* Klodka na powitaniu - jedyne miejsce w calej aplikacji z 3 rownymi
-   kolumnami i przyciskiem posrodku - delikatna pulsujaca poswiata,
-   wyrozniajaca ja jako glowny przycisk startowy. Selektor celowo
-   wyklucza uklady z 4+ kolumnami (siatka menu), zeby jej nie tknac. */
+   kolumnami i przyciskiem posrodku - delikatna pulsujaca poswiata WOKOL
+   SAMEGO EMOJI (filter:drop-shadow, nie box-shadow - dziala na
+   przezroczystym tle). Selektor celowo wyklucza uklady z 4+ kolumnami
+   (siatka menu), zeby jej nie tknac. */
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(3)):not(:has(> div[data-testid="stColumn"]:nth-child(4))) div.stButton > button {
     animation: pulsujZamek 2.4s ease-in-out infinite;
 }
 @keyframes pulsujZamek {
     0%, 100% {
-        box-shadow:
-            inset 0 2px 3px rgba(255,255,255,0.4),
-            inset 0 -4px 7px rgba(0,0,0,0.3),
-            0 3px 10px rgba(0,0,0,0.4),
-            0 0 0px rgba(230,193,92,0);
+        filter: drop-shadow(0 0 0px rgba(230,193,92,0));
     }
     50% {
-        box-shadow:
-            inset 0 2px 3px rgba(255,255,255,0.4),
-            inset 0 -4px 7px rgba(0,0,0,0.3),
-            0 3px 10px rgba(0,0,0,0.4),
-            0 0 28px rgba(230,193,92,0.75);
+        filter: drop-shadow(0 0 20px rgba(230,193,92,0.85));
     }
 }
 /* W siatce MENU (4+ kolumn w rzedzie) kafelki maja byc mniejsze i gesciej
    upakowane - poza siatka menu (np. klodka powitalna w 3 kolumnach)
    zostaje wieksza, bardziej "hero" wersja zdefiniowana wyzej. */
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) div.stButton > button {
-    font-size: clamp(1.4rem, 7vw, 2.6rem) !important;
+    font-size: clamp(2.2rem, 12vw, 3.8rem) !important;
 }
 div[data-testid="stColumn"] div.stButton > button[kind="primary"] {
-    background: linear-gradient(160deg, #a9f0b8, #22c55e 55%, #158a3d) !important;
+    background: transparent !important;
 }
 div[data-testid="stColumn"] div.stButton > button:disabled {
-    background: linear-gradient(160deg, #3a3a42, #26262c) !important;
-    box-shadow: inset 0 2px 3px rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.3);
+    background: transparent !important;
+    opacity: 0.4;
+    box-shadow: none;
 }
 
 .stTextInput input {
@@ -7571,18 +7562,21 @@ def pokaz_powitanie():
               wrapper.style.marginLeft = '{losowy_offset}%';
               var btn = wrapper.querySelector('button');
               if (!btn) return;
-              btn.style.width = '150px';
-              btn.style.height = '150px';
-              btn.style.minHeight = '150px';
-              btn.style.borderRadius = '30%';
-              btn.style.fontSize = '5rem';
+              // Samo emoji - bez tla/ramki/cienia, tylko wieksze i z
+              // delikatna, pulsujaca poswiata WOKOL SAMEGO ZNAKU
+              // (filter:drop-shadow dziala na przezroczystym tle).
+              btn.style.width = '160px';
+              btn.style.height = '160px';
+              btn.style.minHeight = '160px';
+              btn.style.borderRadius = '0';
+              btn.style.fontSize = '6rem';
               btn.style.padding = '0';
               btn.style.display = 'flex';
               btn.style.alignItems = 'center';
               btn.style.justifyContent = 'center';
-              btn.style.background = 'linear-gradient(160deg, #f5e6b8, #e6c15c 40%, #d4af37 70%, #a9781f)';
-              btn.style.boxShadow = 'inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5)';
-              btn.style.border = '2px solid rgba(255,255,255,0.3)';
+              btn.style.background = 'transparent';
+              btn.style.boxShadow = 'none';
+              btn.style.border = 'none';
 
               var styl = doc.getElementById('styl-pulsowania-zamka');
               if (!styl) {{
@@ -7590,8 +7584,8 @@ def pokaz_powitanie():
                 styl.id = 'styl-pulsowania-zamka';
                 styl.textContent =
                   '@keyframes pulsujZamekPowitanie {{' +
-                  '0%,100% {{ box-shadow: inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5), 0 0 0px rgba(230,193,92,0); }}' +
-                  '50% {{ box-shadow: inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5), 0 0 36px rgba(230,193,92,0.85); }}' +
+                  '0%,100% {{ filter: drop-shadow(0 0 0px rgba(230,193,92,0)); }}' +
+                  '50% {{ filter: drop-shadow(0 0 22px rgba(230,193,92,0.9)); }}' +
                   '}}';
                 doc.head.appendChild(styl);
               }}
