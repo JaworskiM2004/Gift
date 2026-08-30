@@ -105,6 +105,8 @@ POZIOMY_GRY = [
     {"serca": 7, "czarne": 3, "kierunek": "dol", "predkosc": 130, "tempo": 650},
     {"serca": 10, "czarne": 5, "kierunek": "skos", "predkosc": 190, "tempo": 480},
     {"serca": 13, "czarne": 8, "kierunek": "gora", "predkosc": 230, "tempo": 340},
+    {"serca": 15, "czarne": 10, "kierunek": "mieszany", "predkosc": 260, "tempo": 280},
+    {"serca": 18, "czarne": 13, "kierunek": "mieszany", "predkosc": 300, "tempo": 220},
 ]
 
 # Zagadka szachowa: białe mają wymusić mata w 3 posunięciach (każdy ruch
@@ -768,6 +770,24 @@ SZABLON_GRY = """
     }, { passive: true });
   });
 
+  // Krotki, ostry "puk" - jak pekajacy balon, przy kazdym zlapanym serduszku
+  function zagrajPekanieBalonu() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(120, audioCtx.currentTime + 0.09);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.28, audioCtx.currentTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.11);
+    } catch (e) {}
+  }
+
   function zagrajBip(czestotliwosc) {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -834,6 +854,26 @@ SZABLON_GRY = """
       y = -40;
       vx = losowo(-90, 90);
       vy = predkosc;
+    } else if (poziom.kierunek === 'mieszany') {
+      // Kazdy element losuje NIEZALEZNIE jeden z trzech wzorcow ruchu -
+      // nieprzewidywalnosc jako dodatkowe utrudnienie, nie tylko szybkosc.
+      var losowyWzorzec = Math.floor(Math.random() * 3);
+      if (losowyWzorzec === 0) {
+        var zPrawej2 = Math.random() < 0.5;
+        if (zPrawej2) {
+          x = szer + 30; y = losowo(10, wys - 40);
+          vx = -predkosc; vy = losowo(-60, 60);
+        } else {
+          x = losowo(10, szer - 40); y = wys + 30;
+          vx = losowo(-70, 70); vy = -predkosc;
+        }
+      } else if (losowyWzorzec === 1) {
+        x = losowo(10, szer - 40); y = -40;
+        vx = losowo(-90, 90); vy = predkosc;
+      } else {
+        x = losowo(10, szer - 40); y = -40;
+        vx = losowo(-25, 25); vy = predkosc;
+      }
     } else {
       x = losowo(10, szer - 40);
       y = -40;
@@ -875,6 +915,7 @@ SZABLON_GRY = """
       setTimeout(function () { zakonczPoziom(false, 'czarne'); }, 220);
     } else {
       el.classList.add('zlapane');
+      zagrajPekanieBalonu();
       setTimeout(function () { usunElement(el); }, 150);
       doZlapania -= 1;
       if (doZlapania <= 0) {
@@ -961,7 +1002,9 @@ SZABLON_GRY = """
 
   function opisPoziomu(indeks) {
     if (indeks === 1) return 'Poziom 2 — szybciej i na ukos.';
-    if (indeks === 2) return 'Poziom 3 — najszybciej, pod górę, od prawej do lewej.';
+    if (indeks === 2) return 'Poziom 3 — pod górę, od prawej do lewej.';
+    if (indeks === 3) return 'Poziom 4 — nieprzewidywalny kierunek na każdym elemencie!';
+    if (indeks === 4) return 'Poziom 5 — najszybciej i najgęściej ze wszystkich.';
     return '';
   }
 
@@ -1063,6 +1106,10 @@ SZABLON_DRONA = """
     height: 34px;
     z-index: 5;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    /* left/top (pozycja) sa OSOBNE od transform (tylko obrot + stale
+       centrowanie) - to przejscie wyglodzi WYLACZNIE zmiane kata przy
+       podskoku, bez najmniejszego opoznienia w ruchu/kolizjach. */
+    transition: transform 0.15s ease-out;
   }
   #wynikNaEkranie {
     position: absolute;
@@ -1172,7 +1219,8 @@ SZABLON_DRONA = """
   var SZEROKOSC_PRZESZKODY = 50;
   var LUKA_START = 145;
   var LUKA_MIN = 105;
-  var CEL_WYNIK = 15;
+  var CEL_WYNIK = 20;
+  var celOsiagniety = false; // sygnal zaliczenia wysylamy TYLKO RAZ, gra leci dalej
   var MARGINES = 60;
 
   var dronY = 0;
@@ -1246,9 +1294,28 @@ SZABLON_DRONA = """
   }
 
   function zagrajDzwiek(typ) {
-    if (typ === 'skok') zagrajTon(500, 0.08, 'square');
+    if (typ === 'skok') zagrajSmiglo();
     else if (typ === 'punkt') zagrajTon(800, 0.12, 'sine');
     else if (typ === 'crash') zagrajTon(120, 0.35, 'sawtooth');
+  }
+
+  // Krotkie "vrrm" - buczenie obracajacego sie smigla przy kazdym unosieniu
+  function zagrajSmiglo() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(90, audioCtx.currentTime);
+      osc.frequency.linearRampToValueAtTime(260, audioCtx.currentTime + 0.06);
+      osc.frequency.linearRampToValueAtTime(140, audioCtx.currentTime + 0.14);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.16);
+    } catch (e) {}
   }
 
   var interwalMuzyki = null;
@@ -1323,7 +1390,7 @@ SZABLON_DRONA = """
     dronVY += GRAWITACJA * dt;
     dronY += dronVY * dt;
 
-    var mnoznik = 1 + Math.min(wynik, 20) * 0.03;
+    var mnoznik = 1 + Math.min(wynik, 100) * 0.03; // rosnie dalej w nieskonczonym trybie
     var predkoscAktualna = PREDKOSC_START * mnoznik;
     var lukaAktualna = Math.max(LUKA_MIN, LUKA_START - wynik * 2);
 
@@ -1347,7 +1414,7 @@ SZABLON_DRONA = """
         var krawedzGornej = p.gapY - p.gapH / 2;
         var krawedzDolnej = p.gapY + p.gapH / 2;
         if (dronY - DRON_R < krawedzGornej || dronY + DRON_R > krawedzDolnej) {
-          zakonczGre(false);
+          zakonczGre();
           return;
         }
       }
@@ -1357,9 +1424,11 @@ SZABLON_DRONA = """
         wynik += 1;
         zagrajDzwiek('punkt');
         aktualizujWynik();
-        if (wynik >= CEL_WYNIK) {
-          zakonczGre(true);
-          return;
+        // Gra jest NIESKONCZONA - po osiagnieciu celu wysylamy zaliczenie
+        // TYLKO RAZ, ale lot trwa dalej (bez zatrzymywania).
+        if (wynik >= CEL_WYNIK && !celOsiagniety) {
+          celOsiagniety = true;
+          zglosZaliczenieWLocie();
         }
       }
 
@@ -1370,7 +1439,7 @@ SZABLON_DRONA = """
     }
 
     if (dronY - DRON_R < 0 || dronY + DRON_R > wys) {
-      zakonczGre(false);
+      zakonczGre();
       return;
     }
 
@@ -1382,6 +1451,7 @@ SZABLON_DRONA = """
     przeszkody.forEach(function (p) { usunPrzeszkode(p); });
     przeszkody = [];
     wynik = 0;
+    celOsiagniety = false;
     aktualizujWynik();
     dronY = gra.clientHeight / 2;
     dronVY = 0;
@@ -1394,31 +1464,39 @@ SZABLON_DRONA = """
     startMuzyke();
   }
 
-  function zakonczGre(wygrana) {
+  // Wysyla sygnal zaliczenia BEZ zatrzymywania lotu - gra jest
+  // nieskonczona, wiec po osiagnieciu celu leci sie dalej. Krotki
+  // dzwiekowy i wizualny akcent daje znac, ze cel zostal osiagniety.
+  function zglosZaliczenieWLocie() {
+    if (window.parent) {
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+    }
+    zagrajTon(1046.50, 0.15, 'triangle');
+    setTimeout(function () { zagrajTon(1318.51, 0.2, 'triangle'); }, 130);
+    wynikNaEkranie.style.color = '#ffd700';
+    wynikNaEkranie.style.textShadow = '0 0 10px rgba(255,215,0,0.9), 0 2px 6px rgba(0,0,0,0.6)';
+    setTimeout(function () {
+      wynikNaEkranie.style.color = '#fff';
+      wynikNaEkranie.style.textShadow = '0 2px 6px rgba(0,0,0,0.6)';
+    }, 1600);
+  }
+
+  // Gra konczy sie TERAZ tylko przez rozbicie - nie ma juz oddzielnego
+  // "zwyciestwa" ktore zatrzymywalo lot (patrz zglosZaliczenieWLocie).
+  function zakonczGre() {
     trwa = false;
     przeszkody.forEach(function (p) { usunPrzeszkode(p); });
     przeszkody = [];
     nakladka.style.display = 'flex';
     zatrzymajMuzyke();
-
-    if (wygrana) {
-      zagrajDzwiek('punkt');
-      nakladkaTytul.textContent = '🎉 Udało się!';
-      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
-      nakladkaBtn.style.display = 'none';
-      if (window.parent) {
-        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
-        window.postMessage(wiadomoscZaliczenia, '*');
-        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
-      }
-    } else {
-      zagrajDzwiek('crash');
-      nakladkaTytul.textContent = '💥 Rozbity dron...';
-      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-      nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = 'Jeszcze raz';
-      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
-    }
+    zagrajDzwiek('crash');
+    nakladkaTytul.textContent = '💥 Rozbity dron...';
+    nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+    nakladkaBtn.style.display = 'inline-block';
+    nakladkaBtn.textContent = 'Jeszcze raz';
+    nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
   }
 
   var pominDrugiSkok = false;
@@ -3000,6 +3078,9 @@ SZABLON_PIANO = """
       <div id="wyborPiosenki">
         <button class="gra-btn" id="btnPiosenkaKotek">🐱 Wlazł kotek</button>
         <button class="gra-btn" id="btnPiosenkaJanie">🎼 Panie Janie</button>
+        <button class="gra-btn" id="btnPiosenkaStoLat">🎂 Sto lat</button>
+        <button class="gra-btn" id="btnPiosenkaOda">🎻 Oda do radości</button>
+        <button class="gra-btn" id="btnPiosenkaHappyBirthday">🎁 Happy Birthday</button>
       </div>
       <button class="gra-btn" id="nakladkaBtn" style="display:none;">Jeszcze raz</button>
       <button id="btnZmienPiosenke">🔄 Zmień melodię</button>
@@ -3018,6 +3099,9 @@ SZABLON_PIANO = """
   var wyborPiosenki = document.getElementById('wyborPiosenki');
   var btnPiosenkaKotek = document.getElementById('btnPiosenkaKotek');
   var btnPiosenkaJanie = document.getElementById('btnPiosenkaJanie');
+  var btnPiosenkaStoLat = document.getElementById('btnPiosenkaStoLat');
+  var btnPiosenkaOda = document.getElementById('btnPiosenkaOda');
+  var btnPiosenkaHappyBirthday = document.getElementById('btnPiosenkaHappyBirthday');
   var btnZmienPiosenke = document.getElementById('btnZmienPiosenke');
 
   // Dwie melodie do wyboru - ta sama mechanika gry, inne nuty.
@@ -3040,11 +3124,45 @@ SZABLON_PIANO = """
         784.00, 880.00, 784.00, 698.46, 659.25, 523.25, 784.00, 880.00, 784.00, 698.46, 659.25, 523.25,
         523.25, 392.00, 261.63, 523.25, 392.00, 261.63
       ]
+    },
+    stoLat: {
+      // "Sto lat" - solmizacja (potwierdzona w dwoch niezaleznych zrodlach):
+      // sol mi sol mi sol la sol fa mi fa fa re fa re fa sol fa mi re mi
+      // sol sol mi sol sol mi sol do2 si la sol la si si si do2
+      nazwa: 'Sto lat',
+      nuty: [
+        784.00, 659.25, 784.00, 659.25, 784.00, 880.00, 784.00, 698.46, 659.25,
+        698.46, 698.46, 587.33, 698.46, 587.33, 698.46, 784.00, 698.46, 659.25,
+        587.33, 659.25, 784.00, 784.00, 659.25, 784.00, 784.00, 659.25, 784.00,
+        1046.50, 987.77, 880.00, 784.00, 880.00, 987.77, 987.77, 987.77, 1046.50
+      ]
+    },
+    oda: {
+      // "Oda do radosci" (Beethoven, IX Symfonia) - solmizacja (wersja dla
+      // poczatkujacych, powszechnie znana): mi mi fa sol sol fa mi re do do
+      // re mi mi re re (x2, druga fraza konczy sie na do zamiast re)
+      nazwa: 'Oda do radości',
+      nuty: [
+        659.25, 659.25, 698.46, 784.00, 784.00, 698.46, 659.25, 587.33,
+        523.25, 523.25, 587.33, 659.25, 659.25, 587.33, 587.33,
+        659.25, 659.25, 698.46, 784.00, 784.00, 698.46, 659.25, 587.33,
+        523.25, 523.25, 587.33, 659.25, 587.33, 523.25, 523.25
+      ]
+    },
+    happyBirthday: {
+      // "Happy Birthday to You" - solmizacja: sol sol la sol do2 si (x melodia)
+      nazwa: 'Happy Birthday',
+      nuty: [
+        784.00, 784.00, 880.00, 784.00, 1046.50, 987.77,
+        784.00, 784.00, 880.00, 784.00, 1174.66, 1046.50,
+        784.00, 784.00, 1567.98, 1318.51, 1046.50, 987.77, 880.00,
+        1396.91, 1396.91, 1318.51, 1046.50, 1174.66, 1046.50
+      ]
     }
   };
   var piosenkaAktywna = 'kotek';
   var NUTY = PIOSENKI[piosenkaAktywna].nuty;
-  var piosenkiUkonczone = { kotek: false, janie: false };
+  var piosenkiUkonczone = { kotek: false, janie: false, stoLat: false, oda: false, happyBirthday: false };
 
   var LICZBA_PASOW = 4;
   var PREDKOSC_START = 420;
@@ -3210,9 +3328,10 @@ SZABLON_PIANO = """
     if (wygrana) {
       zagrajTon(1046.50, 0.5, 'triangle');
       piosenkiUkonczone[piosenkaAktywna] = true;
-      var obiePiosenkiZrobione = piosenkiUkonczone.kotek && piosenkiUkonczone.janie;
-      if (obiePiosenkiZrobione) {
-        nakladkaTytul.textContent = '🎉 Obie melodie ukończone!';
+      var kluczePiosenek = Object.keys(piosenkiUkonczone);
+      var wszystkiePiosenkiZrobione = kluczePiosenek.every(function (k) { return piosenkiUkonczone[k]; });
+      if (wszystkiePiosenkiZrobione) {
+        nakladkaTytul.textContent = '🎉 Wszystkie melodie ukończone!';
         nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
         nakladkaBtn.style.display = 'none';
         btnZmienPiosenke.style.display = 'none';
@@ -3222,12 +3341,13 @@ SZABLON_PIANO = """
         if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
-        var drugaPiosenka = piosenkaAktywna === 'kotek' ? 'janie' : 'kotek';
+        var nastepnaPiosenka = kluczePiosenek.filter(function (k) { return !piosenkiUkonczone[k]; })[0];
+        var ileZrobionych = kluczePiosenek.filter(function (k) { return piosenkiUkonczone[k]; }).length;
         nakladkaTytul.textContent = '🎉 Udało się!';
-        nakladkaOpis.textContent = 'Teraz zagraj jeszcze "' + PIOSENKI[drugaPiosenka].nazwa + '", żeby zaliczyć cały etap.';
-        nakladkaBtn.textContent = '▶ ' + PIOSENKI[drugaPiosenka].nazwa;
+        nakladkaOpis.textContent = 'Zagraj jeszcze "' + PIOSENKI[nastepnaPiosenka].nazwa + '" (' + ileZrobionych + ' / ' + kluczePiosenek.length + ' zrobione), żeby zaliczyć cały etap.';
+        nakladkaBtn.textContent = '▶ ' + PIOSENKI[nastepnaPiosenka].nazwa;
         nakladkaBtn.style.display = 'inline-block';
-        nakladkaBtn.onclick = function () { inicjujDzwiek(); wybierzPiosenke(drugaPiosenka); };
+        nakladkaBtn.onclick = function () { inicjujDzwiek(); wybierzPiosenke(nastepnaPiosenka); };
         btnZmienPiosenke.style.display = 'none';
       }
     } else {
@@ -3253,6 +3373,9 @@ SZABLON_PIANO = """
 
   btnPiosenkaKotek.addEventListener('click', function () { wybierzPiosenke('kotek'); });
   btnPiosenkaJanie.addEventListener('click', function () { wybierzPiosenke('janie'); });
+  btnPiosenkaStoLat.addEventListener('click', function () { wybierzPiosenke('stoLat'); });
+  btnPiosenkaOda.addEventListener('click', function () { wybierzPiosenke('oda'); });
+  btnPiosenkaHappyBirthday.addEventListener('click', function () { wybierzPiosenke('happyBirthday'); });
 
   btnZmienPiosenke.addEventListener('click', function () {
     trwa = false;
@@ -3500,7 +3623,7 @@ SZABLON_BITWA = """
        zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
   <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
-    <div id="poziomEtykieta">POZIOM 1 / 3</div>
+    <div id="poziomEtykieta">POZIOM 1 / 5</div>
     <div id="wrogowie"></div>
     <div id="srodekAreny">
       <div id="dziennik"></div>
@@ -3585,10 +3708,43 @@ SZABLON_BITWA = """
       osc.start(); osc.stop(audioCtx.currentTime + czas);
     } catch (e) {}
   }
-  function dzwiekTrafienia() { zagrajTon(180, 0.12, 'sawtooth'); }
+  // Mocniejsze, bardziej "bitewne" uderzenie - ostry atak i szybki spadek
+  // tonu (cios), zamiast plaskiego, stalego dzwieku.
+  function dzwiekTrafienia() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(320, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, audioCtx.currentTime + 0.006);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.13);
+    } catch (e) {}
+  }
   function dzwiekNieskuteczne() { zagrajTon(300, 0.08, 'square'); setTimeout(function(){zagrajTon(220,0.08,'square');}, 90); }
-  function dzwiekBlok() { zagrajTon(140, 0.15, 'triangle'); }
+  function dzwiekBlok() {
+    // Metaliczny "brzdek" tarczy - jasny wysoki ton + niski dudniacy spod spodu
+    zagrajTon(880, 0.05, 'square');
+    setTimeout(function () { zagrajTon(140, 0.15, 'triangle'); }, 40);
+  }
   function dzwiekZgon() { zagrajTon(110, 0.3, 'sawtooth'); }
+
+  // Magiczny, iskrzacy dzwiek ataku czarodzieja - trzy szybko rosnace tony
+  function zagrajCzarMagii() {
+    zagrajTon(587.33, 0.08, 'sine');
+    setTimeout(function () { zagrajTon(880.00, 0.08, 'sine'); }, 60);
+    setTimeout(function () { zagrajTon(1174.66, 0.13, 'sine'); }, 120);
+  }
+  // Delikatny, cieply dzwiek leczenia sojusznika - inny niz wlasna fiolka
+  function zagrajLeczenieSojusznika() {
+    zagrajTon(659.25, 0.1, 'sine');
+    setTimeout(function () { zagrajTon(880.00, 0.15, 'sine'); }, 90);
+  }
   function dzwiekZwyciestwo() {
     [523, 659, 784, 1046].forEach(function(f, i) {
       setTimeout(function () { zagrajTon(f, 0.2, 'triangle'); }, i * 130);
@@ -3737,6 +3893,26 @@ SZABLON_BITWA = """
       ctx.fillStyle = '#d8d8e0';
       ctx.fill();
       ctx.restore();
+    } else if (wrog.typ === 'czarodziej') {
+      // laska z jarzaca sie kula na szczycie
+      ctx.save();
+      ctx.translate(cx + 16, h - 30);
+      ctx.rotate(-0.15);
+      prostokat(ctx, -2, -50, 4, 50, '#6b4a2a');
+      ctx.shadowColor = pal.jasny;
+      ctx.shadowBlur = 9;
+      ctx.beginPath();
+      ctx.arc(0, -54, 6, 0, Math.PI * 2);
+      ctx.fillStyle = pal.jasny;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    } else if (wrog.typ === 'tank') {
+      // masywna plyta pancerza na torsie
+      prostokatGradient(ctx, cx - 15, h - 50, 30, 24, pal.ciemny, '#3a3a42');
+      ctx.strokeStyle = pal.jasny;
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(cx - 15, h - 50, 30, 24);
     } else if (wrog.typ === 'boss') {
       // korona z kolcow
       for (var i = -1; i <= 1; i++) {
@@ -3777,19 +3953,65 @@ SZABLON_BITWA = """
     };
   }
 
+  // Losuje N zywiolow (ogien/lod), gwarantujac przynajmniej jeden kazdego
+  // rodzaju gdy N >= 2 - uzywane tam, gdzie przeciwnicy maja byc "losowo
+  // ogniści albo lodowi, byle był przynajmniej jeden taki i jeden taki".
+  function losowyZestawZywiolow(n) {
+    var wynik = [];
+    for (var i = 0; i < n; i++) {
+      wynik.push(Math.random() < 0.5 ? 'ogien' : 'lod');
+    }
+    if (n >= 2 && wynik.every(function (z) { return z === wynik[0]; })) {
+      wynik[wynik.length - 1] = wynik[0] === 'ogien' ? 'lod' : 'ogien';
+    }
+    for (var i = wynik.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = wynik[i]; wynik[i] = wynik[j]; wynik[j] = tmp;
+    }
+    return wynik;
+  }
+
   var DEFINICJE_POZIOMOW = [
     function () {
+      // Poziom 1: tarczownik i lucznik, OBAJ lodowi. Gracz ma w tym
+      // poziomie do wyboru tylko ognisty miecz i ognisty luk (patrz
+      // AKCJE_PER_POZIOM) - zaden wybor zywiolu, tylko nauka mechaniki.
       return [
-        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
         nowyWrog('Tarczownik\\nLodowy', 'tarcza', 'lod', 14),
+        nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 12),
       ];
     },
     function () {
+      // Poziom 2: wlocznik + 2 innych, zywioly losowe (co najmniej
+      // jeden ognisty i jeden lodowy w calej trojce).
+      var z = losowyZestawZywiolow(3);
       return [
-        nowyWrog('Łucznik\\nOgnisty', 'dystans', 'ogien', 12),
-        nowyWrog('Włócznik\\nLodowy', 'dzida', 'lod', 14),
-        nowyWrog('Tarczownik\\nOgnisty', 'tarcza', 'ogien', 15),
-        nowyWrog('Łucznik\\nLodowy', 'dystans', 'lod', 12),
+        nowyWrog('Włócznik', 'dzida', z[0], 14),
+        nowyWrog('Wojownik', 'wojownik', z[1], 11),
+        nowyWrog('Łucznik', 'dystans', z[2], 11),
+      ];
+    },
+    function () {
+      // Poziom 3: 4 wrogow, po jednym z kazdego dotychczas poznanego typu -
+      // "egzamin" ze wszystkiego. Tu tez odblokowuja sie fiolka i blok
+      // (patrz AKCJE_PER_POZIOM), w konkretnym ukladzie przyciskow.
+      var z = losowyZestawZywiolow(4);
+      return [
+        nowyWrog('Tarczownik', 'tarcza', z[0], 15),
+        nowyWrog('Łucznik', 'dystans', z[1], 12),
+        nowyWrog('Włócznik', 'dzida', z[2], 15),
+        nowyWrog('Wojownik', 'wojownik', z[3], 13),
+      ];
+    },
+    function () {
+      // Poziom 4: czarodziej (przebija blok, sporo bije, mало HP, leczy
+      // sojusznikow) + czolg (duzo HP, malo bije) + 2 dodatkowych.
+      var z = losowyZestawZywiolow(4);
+      return [
+        nowyWrog('Czarodziej', 'czarodziej', z[0], 9),
+        nowyWrog('Czołg', 'tank', z[1], 26),
+        nowyWrog('Wojownik', 'wojownik', z[2], 13),
+        nowyWrog('Łucznik', 'dystans', z[3], 12),
       ];
     },
     function () {
@@ -3815,7 +4037,7 @@ SZABLON_BITWA = """
   var akcjaWTurze = 0; // 0 = wybor 1. akcji, 1 = wybor 2. akcji, 2 = tura wroga
   var akcjaOczekujacaTyp = null; // gdy wybrano akcje wymagajaca celu, czekamy na klikniecie wroga
   var blokAktywny = false;
-  var fiolkaUzyta = false; // jednorazowa na CALY przebieg (3 poziomy), NIE resetuje sie miedzy poziomami
+  var fiolkaUzyta = false; // jednorazowa na CALY przebieg (wszystkie poziomy), NIE resetuje sie miedzy poziomami
   var mnoznikObrazen = 1; // "level up" po 2. poziomie -> 1.25
   var REGEN_NA_TURE = 2; // pasywne odnowienie HP na poczatku kazdej tury gracza
   var liczbaPorazek = 0; // ile razy zginela (na caly przebieg), zglaszane automatycznie przy wygranej
@@ -3900,6 +4122,9 @@ SZABLON_BITWA = """
     if (t === 'tarcza') return '🛡️';
     if (t === 'dzida') return '🔱';
     if (t === 'boss') return '👑';
+    if (t === 'czarodziej') return '🪄';
+    if (t === 'tank') return '🧱';
+    if (t === 'wojownik') return '⚔️';
     return '';
   }
 
@@ -3961,9 +4186,23 @@ SZABLON_BITWA = """
   function zyjacyWrogowie() { return wrogowie.filter(function (w) { return w.zyje; }); }
 
   // ---------- BUDOWA PRZYCISKOW AKCJI ----------
-  function zbudujPrzyciskiAkcji() {
+  // Ktore akcje sa dostepne na kazdym poziomie i w jakiej kolejnosci
+  // (kolejnosc ma znaczenie - przy 6 akcjach w siatce 3 kolumny daje to
+  // dokladnie: lewa-gora=ognisty miecz, srodek-gora=blok, prawa-gora=lodowy
+  // miecz / lewa-dol=ognisty luk, srodek-dol=fiolka, prawa-dol=lodowy luk).
+  var AKCJE_PER_POZIOM = [
+    ['miecz_ogien', 'luk_ogien'],
+    ['miecz_ogien', 'miecz_lod', 'luk_ogien', 'luk_lod'],
+    ['miecz_ogien', 'blok', 'miecz_lod', 'luk_ogien', 'fiolka', 'luk_lod'],
+    ['miecz_ogien', 'blok', 'miecz_lod', 'luk_ogien', 'fiolka', 'luk_lod'],
+    ['miecz_ogien', 'blok', 'miecz_lod', 'luk_ogien', 'fiolka', 'luk_lod'],
+  ];
+
+  function zbudujPrzyciskiAkcji(listaAkcji) {
     siatkaAkcji.innerHTML = '';
-    Object.keys(NAZWY_AKCJI).forEach(function (klucz) {
+    var kolumny = listaAkcji.length >= 6 ? 3 : 2;
+    siatkaAkcji.style.gridTemplateColumns = 'repeat(' + kolumny + ', 1fr)';
+    listaAkcji.forEach(function (klucz) {
       var info = NAZWY_AKCJI[klucz];
       var btn = document.createElement('button');
       btn.className = 'btn-akcji';
@@ -4044,6 +4283,8 @@ SZABLON_BITWA = """
       obrazenia = 1;
     } else if (bron === 'luk' && wrog.typ === 'boss') {
       obrazenia = 4; // boss blokuje CZESC obrazen od luku
+    } else if (bron === 'miecz' && wrog.typ === 'dystans') {
+      obrazenia = 4; // lucznicy sa zwinni - miecz zadaje im mniej obrazen
     } else {
       obrazenia = 8;
     }
@@ -4061,7 +4302,12 @@ SZABLON_BITWA = """
       pokazDziennik('🛡️ Tarcza blokuje strzałę! Tylko ' + obrazenia + ' obr.', 1500);
       pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia + ' 🛡️', '#c9c9d4');
       rozbryzgCzastek(wrog._karta, 'nieskuteczne', 6);
-      dzwiekNieskuteczne();
+      dzwiekBlok();
+    } else if (bron === 'miecz' && wrog.typ === 'dystans') {
+      pokazDziennik('🏹💨 Zwinny łucznik unika części ciosu! Tylko ' + obrazenia + ' obr.', 1500);
+      pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia + ' 💨', '#c9c9d4');
+      rozbryzgCzastek(wrog._karta, 'nieskuteczne', 6);
+      dzwiekBlok();
     } else {
       pokazDziennik('💥 Trafienie! ' + obrazenia + ' obrażeń.', 1300);
       pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia, '#fbbf24');
@@ -4117,18 +4363,45 @@ SZABLON_BITWA = """
             var dmg = wrog.typ === 'dystans' ? losowaLiczba(4, 6) :
                       wrog.typ === 'tarcza' ? losowaLiczba(5, 7) :
                       wrog.typ === 'dzida' ? losowaLiczba(6, 8) :
+                      wrog.typ === 'czarodziej' ? losowaLiczba(7, 10) :
+                      wrog.typ === 'tank' ? losowaLiczba(2, 4) :
                       losowaLiczba(5, 8);
-            if (blokAktywny) {
+            // Czarodziej przebija blok - magia ignoruje tarcze fizyczna
+            var blokDzialaTutaj = blokAktywny && wrog.typ !== 'czarodziej';
+            if (blokDzialaTutaj) {
               dmg = Math.ceil(dmg / 2);
             }
             graczHp -= dmg;
             if (graczHp < 0) graczHp = 0;
             aktualizujPaskiGracza();
             zamigajISzarpnij(graczOtoczenie);
-            pokazLatajaceObrazenia(graczOtoczenie, '-' + dmg, blokAktywny ? '#c9c9d4' : '#f87171');
-            rozbryzgCzastek(graczOtoczenie, blokAktywny ? 'nieskuteczne' : 'trafienie', blokAktywny ? 4 : 7);
-            pokazDziennik((wrog.nazwa.replace('\\n', ' ')) + ' atakuje! -' + dmg + ' HP' + (blokAktywny ? ' (zablokowane)' : ''), 1300);
-            zagrajTon(150, 0.12, 'sawtooth');
+            pokazLatajaceObrazenia(graczOtoczenie, '-' + dmg, blokDzialaTutaj ? '#c9c9d4' : '#f87171');
+            rozbryzgCzastek(graczOtoczenie, blokDzialaTutaj ? 'nieskuteczne' : 'trafienie', blokDzialaTutaj ? 4 : 7);
+            var opisBloku = blokAktywny && wrog.typ === 'czarodziej' ? ' (magia przebija blok!)' :
+                             blokDzialaTutaj ? ' (zablokowane)' : '';
+            pokazDziennik((wrog.nazwa.replace('\\n', ' ')) + ' atakuje! -' + dmg + ' HP' + opisBloku, 1300);
+            if (wrog.typ === 'czarodziej') {
+              zagrajCzarMagii();
+            } else {
+              zagrajTon(150, 0.12, 'sawtooth');
+            }
+
+            // Czarodziej leczy sojusznika przy okazji ataku
+            if (wrog.typ === 'czarodziej') {
+              var sojusznicy = zyjacyWrogowie().filter(function (w) { return w !== wrog && w.hp < w.hpMax; });
+              if (sojusznicy.length > 0) {
+                var uzdrowiony = sojusznicy[Math.floor(Math.random() * sojusznicy.length)];
+                var ileHp = losowaLiczba(3, 5);
+                uzdrowiony.hp = Math.min(uzdrowiony.hpMax, uzdrowiony.hp + ileHp);
+                setTimeout(function () {
+                  pokazLatajaceObrazenia(uzdrowiony._karta, '+' + ileHp, '#8fe6a0');
+                  rozbryzgCzastek(uzdrowiony._karta, 'lod', 6);
+                  pokazDziennik('✨ ' + (wrog.nazwa.replace('\\n', ' ')) + ' leczy sojusznika (+' + ileHp + ' HP)!', 1400);
+                  zagrajLeczenieSojusznika();
+                  odswiezKartyWrogow();
+                }, 350);
+              }
+            }
           }, opoznienie);
         })(wrog);
         opoznienie += 750;
@@ -4184,20 +4457,29 @@ SZABLON_BITWA = """
         if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
+        // Dwa etapy wzmocnienia zamiast jednego - dopasowane do 5 poziomow:
+        // mniejszy boost w polowie (po poziomie 2), wiekszy tuz przed bossem
+        // (po poziomie 4).
         var terazKonczySieDrugiPoziom = (poziomIndeks === 1);
+        var terazKonczySieCzwartyPoziom = (poziomIndeks === 3);
         dzwiekZwyciestwo();
         nakladka.style.display = 'flex';
         nakladkaTytul.textContent = '✅ Poziom pokonany!';
         nakladkaOpis.textContent = terazKonczySieDrugiPoziom
-          ? 'Czujesz się silniejsza! +25% do maks. HP i +25% do obrażeń przed starciem z bossem.'
+          ? 'Czujesz się silniejsza! +15% do maks. HP i +15% do obrażeń.'
+          : terazKonczySieCzwartyPoziom
+          ? 'Czujesz się dużo silniejsza! Kolejne +20% do maks. HP i obrażeń przed starciem z bossem.'
           : 'Odrobina wytchnienia przed kolejnym poziomem.';
         nakladkaBtn.textContent = 'Następny poziom ▶';
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.onclick = function () {
           inicjujDzwiek();
           if (terazKonczySieDrugiPoziom) {
-            graczHpMax = Math.round(graczHpMax * 1.25);
-            mnoznikObrazen = 1.25;
+            graczHpMax = Math.round(graczHpMax * 1.15);
+            mnoznikObrazen = 1.15;
+          } else if (terazKonczySieCzwartyPoziom) {
+            graczHpMax = Math.round(graczHpMax * 1.20);
+            mnoznikObrazen = 1.4;
           }
           graczHp = Math.min(graczHpMax, graczHp + 10);
           rozpocznijPoziom(poziomIndeks + 1);
@@ -4218,6 +4500,7 @@ SZABLON_BITWA = """
       (wrogowie.length === 1 && wrogowie[0].typ === 'boss' ? '  —  BOSS' : '');
     nakladka.style.display = 'none';
     trwa = true;
+    zbudujPrzyciskiAkcji(AKCJE_PER_POZIOM[idx] || AKCJE_PER_POZIOM[AKCJE_PER_POZIOM.length - 1]);
     aktualizujPaskiGracza();
     zbudujWrogow();
     podpowiedzTury.textContent = 'Wybierz pierwszą akcję';
@@ -4225,7 +4508,6 @@ SZABLON_BITWA = """
     rysujGracza(ctxGracza, 72, 88);
   }
 
-  zbudujPrzyciskiAkcji();
   rysujGracza(ctxGracza, 72, 88);
   graczHp = graczHpMax;
   aktualizujPaskiGracza();
@@ -4831,9 +5113,60 @@ SZABLON_MINECRAFT = """
       osc.start(); osc.stop(audioCtx.currentTime + czas);
     } catch (e) {}
   }
-  function dzwiekKopania() { zagrajTon(140, 0.09, 'square'); }
+  function dzwiekKopania(blok) {
+    // Rozny odglos w zaleznosci od materialu - drewno/kamien/miekkie
+    if (blok === 'drewno' || blok === 'drewnoBrzozy' || blok === 'liscie' ||
+        blok === 'deski' || blok === 'deskiBrzozowe' || blok === 'drzwi' || blok === 'drzwiBrzozowe') {
+      zagrajTon(190, 0.09, 'triangle');
+    } else if (blok === 'ziemia' || blok === 'piach' || blok === 'trawa' ||
+               blok === 'welna' || blok === 'lozko') {
+      zagrajTon(110, 0.08, 'sine');
+    } else {
+      zagrajTon(250, 0.07, 'square');
+    }
+  }
   function dzwiekStawiania() { zagrajTon(320, 0.08, 'triangle'); }
   function dzwiekBlokada() { zagrajTon(200, 0.06, 'sawtooth'); }
+
+  function zagrajSwistMiecza() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(950, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(170, audioCtx.currentTime + 0.13);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.008);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.14);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+    } catch (e) {}
+  }
+
+  function zagrajStrzalLuku() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(210, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(780, audioCtx.currentTime + 0.05);
+      osc.frequency.exponentialRampToValueAtTime(360, audioCtx.currentTime + 0.11);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.13);
+    } catch (e) {}
+  }
+
+  function zagrajAla() {
+    zagrajTon(520, 0.08, 'square');
+    setTimeout(function () { zagrajTon(330, 0.11, 'square'); }, 70);
+  }
   function dzwiekJedzenia() {
     zagrajTon(500, 0.06, 'square');
     setTimeout(function () { zagrajTon(650, 0.08, 'square'); }, 90);
@@ -5800,7 +6133,7 @@ SZABLON_MINECRAFT = """
       world[wx][wy] = 'powietrze';
       dodajDoEkwipunku(blok, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
-      dzwiekKopania();
+      dzwiekKopania(blok);
       zastosujGrawitacje();
       odswiezPiecWZasiegu();
       rysuj();
@@ -5826,7 +6159,7 @@ SZABLON_MINECRAFT = """
     var p = potwory[idx];
     p.hp -= obrazenia;
     pokazLatajaceObrazeniaSwiat(p.x, p.y, '-' + obrazenia, '#fbbf24');
-    dzwiekAtaku();
+    if (opisNarzedzia === 'łukiem') { zagrajStrzalLuku(); } else { zagrajSwistMiecza(); }
     if (p.hp <= 0) {
       var nazwaTyp = { zombie: 'Zombie', szkielet: 'Szkielet', pajak: 'Pająk' }[p.typ];
       var dropInfo = '';
@@ -6047,7 +6380,7 @@ SZABLON_MINECRAFT = """
     aktualizujPasekHp();
     pokazDziennikMc('💢 ' + opis + ' -' + dmg + ' HP' + (redukcja > 0 ? ' (zbroja pochłonęła część!)' : ''), 1400);
     pokazLatajaceObrazeniaSwiat(graczX, graczY, '-' + dmg, '#f87171');
-    zagrajTon(150, 0.12, 'sawtooth');
+    zagrajAla();
     if (graczHp <= 0) {
       wywolajSmierc();
     }
@@ -6486,7 +6819,10 @@ div[data-testid="stHorizontalBlock"] {
 div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) {
     margin-top: 1.4rem !important;
 }
-div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {
+/* Rownanie szerokosci kolumn TYLKO w siatce menu (4+ kolumn) - NIE moze
+   dzialac globalnie, bo wtedy niszczy proporcjonalne wagi kolumn uzywane
+   np. na ekranie powitalnym do losowego przesuwania klodki w poziomie. */
+div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child(4)) > div[data-testid="stColumn"] {
     flex: 1 1 18% !important;
     width: auto !important;
     min-width: 56px !important;
@@ -7018,6 +7354,46 @@ def pokaz_powitanie():
         kliknieto = st.button("🔒", key="zamek_btn")
 
     if kliknieto:
+        # Maly, niewidoczny "komponent" TYLKO po to, zeby faktycznie
+        # wykonac JS (st.markdown z <script> go nie uruchamia - to
+        # ograniczenie przegladarki przy wstawianiu przez innerHTML,
+        # nie samego Streamlita). Ten sam sprawdzony wzorzec co w grach:
+        # wspolny, wielokrotnie uzywany kontekst audio + cichy <audio>
+        # do "odmutowania" na iOS mimo przelacznika ciszy.
+        components.html(
+            """
+            <audio id="odmutIOS" loop playsinline style="display:none;"></audio>
+            <script>
+              (function () {
+                try {
+                  var top_ = window.top || window;
+                  var ctx = top_.__wspolnyKontekstAudio;
+                  if (!ctx || ctx.state === 'closed') {
+                    ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    top_.__wspolnyKontekstAudio = ctx;
+                  }
+                  if (ctx.state === 'suspended') { ctx.resume(); }
+                  var audioEl = document.getElementById('odmutIOS');
+                  if (audioEl && !audioEl.src) {
+                    audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+                    audioEl.play().catch(function () {});
+                  }
+                  var osc = ctx.createOscillator();
+                  var gain = ctx.createGain();
+                  osc.type = 'square';
+                  osc.frequency.setValueAtTime(320, ctx.currentTime);
+                  osc.frequency.exponentialRampToValueAtTime(560, ctx.currentTime + 0.09);
+                  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                  gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
+                  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.11);
+                  osc.connect(gain); gain.connect(ctx.destination);
+                  osc.start(); osc.stop(ctx.currentTime + 0.12);
+                } catch (e) {}
+              })();
+            </script>
+            """,
+            height=1,
+        )
         st.session_state.zamek_proby += 1
         if st.session_state.zamek_proby >= 5:
             st.markdown(
