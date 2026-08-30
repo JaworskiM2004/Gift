@@ -4734,6 +4734,8 @@ SZABLON_MINECRAFT = """
   #zadanieDomu {
     display: flex;
     justify-content: center;
+    align-items: stretch;
+    gap: 8px;
     padding: 38px 8px 10px;
     margin-top: 20px;
     border-top: 1px solid rgba(212,175,55,0.2);
@@ -4746,10 +4748,22 @@ SZABLON_MINECRAFT = """
     font-size: 12px;
     font-weight: 700;
     padding: 9px 16px;
-    width: 100%;
-    max-width: 300px;
+    flex: 1 1 auto;
+    max-width: 240px;
   }
   #btnDom:active { transform: scale(0.97); }
+  #btnNowySwiat {
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 1px solid #5a4a2e;
+    border-radius: 10px;
+    color: #d8cdb0;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 9px 10px;
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+  #btnNowySwiat:active { transform: scale(0.93); }
   #celZadania {
     position: absolute;
     bottom: 10px;
@@ -4781,22 +4795,6 @@ SZABLON_MINECRAFT = """
   #btnRecepturyToggle { top: 44px; }
   #btnPiecToggle { top: 82px; display: none; }
   #btnPiecToggle.widoczny { display: block; }
-  #btnNowySwiat {
-    position: absolute;
-    right: 6px;
-    top: 6px;
-    left: auto;
-    width: 34px; height: 34px;
-    border-radius: 8px;
-    background: linear-gradient(135deg, #3a3550, #262038);
-    border: 2px solid #5a4a2e;
-    color: #f5f5f0;
-    font-size: 16px;
-    z-index: 5;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.45);
-    padding: 0;
-  }
-  #btnNowySwiat:active { transform: scale(0.93); }
   #sterowanie {
     display: flex;
     justify-content: center;
@@ -4839,6 +4837,20 @@ SZABLON_MINECRAFT = """
     opacity: 0.65;
     text-align: center;
     margin: 6px 0 4px;
+  }
+  .wybrane-w-ekwipunku {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #f0dfa8;
+    margin-bottom: 4px;
   }
   .wiersz-ekwipunku {
     display: flex;
@@ -5011,7 +5023,6 @@ SZABLON_MINECRAFT = """
       <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
       <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
       <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
-      <button id="btnNowySwiat" title="Nowy świat">🔄</button>
       <canvas id="canvasSwiat" width="260" height="260"></canvas>
       <div id="hudNarzedzi">
         <div class="slot-hud" id="hudKilof"></div>
@@ -5029,6 +5040,7 @@ SZABLON_MINECRAFT = """
     <div id="panelPieca"></div>
     <div id="zadanieDomu">
       <button id="btnDom">🏠 Zbuduj dom i sprawdź</button>
+      <button id="btnNowySwiat">🔄 Reset</button>
     </div>
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
@@ -5222,7 +5234,8 @@ SZABLON_MINECRAFT = """
     zbrojaZelazna: 'Zbroja żelazna', zbrojaDiamentowa: 'Zbroja diamentowa',
     deski: 'Deski dębowe', plytki: 'Płytki', drzwi: 'Drzwi dębowe', lozko: 'Łóżko',
     deskiBrzozowe: 'Deski brzozowe', drzwiBrzozowe: 'Drzwi brzozowe',
-    welna: 'Wełna', korona: 'Korona',
+    welna: 'Wełna', korona: 'Korona', zlotoStopione: 'Przepalone złoto',
+    stek: 'Stek', szynka: 'Szynka', mieso_kurczaka: 'Mięso z kurczaka', baranina: 'Baranina',
   };
   // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
@@ -5236,11 +5249,69 @@ SZABLON_MINECRAFT = """
   Object.keys(KOLORY_BLOKOW).forEach(function (k) { BLOKI_Z_TEKSTURA[k] = true; });
   var IKONY_PRZEDMIOTOW = {
     patyk: '🪵', pioro: '🪶', nici: '🧵', zelazo: '🔩', strzala: '➶',
-    kilofDrewniany: '⛏️', kilofKamienny: '⛏️', kilofZelazny: '⛏️',
-    mieczDrewniany: '🗡️', mieczKamienny: '🗡️', mieczZelazny: '⚔️', mieczDiamentowy: '⚔️',
     luk: '🏹', zbrojaZelazna: '🥋', zbrojaDiamentowa: '🦺',
-    welna: '🧶', korona: '👑',
+    welna: '🧶', korona: '👑', zlotoStopione: '🟨',
+    stek: '🥩', szynka: '🍖', mieso_kurczaka: '🍗', baranina: '🍖',
   };
+
+  // Poziomy narzedzi maja WLASNY kolor (jak w prawdziwym Minecrafcie) -
+  // rysowane jako proste ksztalty na canvasie, nie jednakowe emoji.
+  var NARZEDZIE_INFO = {
+    kilofDrewniany: { typ: 'kilof', poziom: 1 },
+    kilofKamienny: { typ: 'kilof', poziom: 2 },
+    kilofZelazny: { typ: 'kilof', poziom: 3 },
+    mieczDrewniany: { typ: 'miecz', poziom: 1 },
+    mieczKamienny: { typ: 'miecz', poziom: 2 },
+    mieczZelazny: { typ: 'miecz', poziom: 3 },
+    mieczDiamentowy: { typ: 'miecz', poziom: 4 },
+  };
+  var KOLOR_POZIOMU_NARZEDZIA = {
+    1: '#b8894f', // drewniany
+    2: '#a8a8b2', // kamienny
+    3: '#eef0f5', // zelazny
+    4: '#7ee8e0', // diamentowy (tylko miecz)
+  };
+
+  function rysujIkoneNarzedzia(ctx, w, h, typNarzedzia, poziom) {
+    ctx.clearRect(0, 0, w, h);
+    var kolor = KOLOR_POZIOMU_NARZEDZIA[poziom] || '#9a9a9a';
+    var cx = w / 2, cy = h / 2;
+    if (typNarzedzia === 'kilof') {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.55);
+      ctx.fillStyle = '#6b4a2a';
+      ctx.fillRect(-1.5, -2, 3, h * 0.5);
+      ctx.fillStyle = kolor;
+      ctx.beginPath();
+      ctx.moveTo(-w * 0.3, -h * 0.36);
+      ctx.lineTo(w * 0.3, -h * 0.36);
+      ctx.lineTo(0, -h * 0.14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    } else {
+      ctx.fillStyle = kolor;
+      ctx.beginPath();
+      ctx.moveTo(cx - 3, cy + h * 0.28);
+      ctx.lineTo(cx + 3, cy + h * 0.28);
+      ctx.lineTo(cx + 3, cy - h * 0.18);
+      ctx.lineTo(cx, cy - h * 0.4);
+      ctx.lineTo(cx - 3, cy - h * 0.18);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#d4af37';
+      ctx.fillRect(cx - 8, cy + h * 0.24, 16, 4);
+      ctx.fillStyle = '#6b4a2a';
+      ctx.fillRect(cx - 2.5, cy + h * 0.30, 5, h * 0.16);
+    }
+  }
 
   function stworzIkonkeElementu(klucz, rozmiarPx) {
     rozmiarPx = rozmiarPx || 26;
@@ -5254,6 +5325,16 @@ SZABLON_MINECRAFT = """
       miniCanvas.style.imageRendering = 'pixelated';
       rysujTeksture(miniCanvas.getContext('2d'), 0, 0, klucz);
       return miniCanvas;
+    }
+    if (NARZEDZIE_INFO[klucz]) {
+      var narzCanvas = document.createElement('canvas');
+      narzCanvas.width = 32;
+      narzCanvas.height = 32;
+      narzCanvas.style.width = rozmiarPx + 'px';
+      narzCanvas.style.height = rozmiarPx + 'px';
+      var info = NARZEDZIE_INFO[klucz];
+      rysujIkoneNarzedzia(narzCanvas.getContext('2d'), 32, 32, info.typ, info.poziom);
+      return narzCanvas;
     }
     var span = document.createElement('span');
     span.textContent = IKONY_PRZEDMIOTOW[klucz] || '❔';
@@ -5315,7 +5396,7 @@ SZABLON_MINECRAFT = """
     { id: 'drzwiBrzozowe', wyjscie: 'drzwiBrzozowe', ileWyjscia: 1, skladniki: { deskiBrzozowe: 2 } },
     { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 }, etykieta: 'Łóżko (deski dębowe)' },
     { id: 'lozkoBrzoza', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deskiBrzozowe: 3 }, etykieta: 'Łóżko (deski brzozowe)' },
-    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zloto: 5 } },
+    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zlotoStopione: 5 } },
   ];
 
   var world = [];
@@ -5328,6 +5409,8 @@ SZABLON_MINECRAFT = """
 
   var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka'/'kurczak', kierunek: 1/-1}
   var GLOD_MAX = 10;
+  var LISTA_JEDZENIA = ['stek', 'szynka', 'mieso_kurczaka', 'baranina'];
+  var WARTOSC_GLODOWA_JEDZENIA = { stek: 5, szynka: 5, mieso_kurczaka: 3, baranina: 4 };
   var graczGlod = GLOD_MAX;
   var probyDomu = 0;
 
@@ -5504,6 +5587,39 @@ SZABLON_MINECRAFT = """
     ekwipunekEl.innerHTML = '';
     dodajNaglowekPanelu(ekwipunekEl, '🎒 Ekwipunek');
 
+    var wybraneInfo = document.createElement('div');
+    wybraneInfo.className = 'wybrane-w-ekwipunku';
+    var ikonkaWybranego = stworzIkonkeElementu(wybranyBlok, 22);
+    wybraneInfo.appendChild(ikonkaWybranego);
+    var tekstWybranego = document.createElement('span');
+    tekstWybranego.textContent = 'W ręce: ' + (NAZWY_BLOKOW[wybranyBlok] || wybranyBlok) + ' (' + (ekwipunek[wybranyBlok] || 0) + ')';
+    wybraneInfo.appendChild(tekstWybranego);
+    ekwipunekEl.appendChild(wybraneInfo);
+
+    var jedzenieDostepne = LISTA_JEDZENIA.filter(function (k) { return (ekwipunek[k] || 0) > 0; });
+    if (jedzenieDostepne.length > 0) {
+      var naglowekJedzenia = document.createElement('div');
+      naglowekJedzenia.className = 'naglowek-ekwipunku';
+      naglowekJedzenia.textContent = '🍗 Jedzenie — dotknij, żeby zjeść';
+      ekwipunekEl.appendChild(naglowekJedzenia);
+
+      var wierszJedzenia = document.createElement('div');
+      wierszJedzenia.className = 'wiersz-ekwipunku';
+      jedzenieDostepne.forEach(function (klucz) {
+        var slot = document.createElement('div');
+        slot.className = 'slot-bloku';
+        slot.title = NAZWY_BLOKOW[klucz] + ' (+' + (WARTOSC_GLODOWA_JEDZENIA[klucz] || 3) + ' głodu)';
+        slot.appendChild(stworzIkonkeElementu(klucz, 28));
+        var licznik = document.createElement('div');
+        licznik.className = 'licznik-bloku';
+        licznik.textContent = ekwipunek[klucz] || 0;
+        slot.appendChild(licznik);
+        slot.addEventListener('click', function () { zjedzJedzenie(klucz); });
+        wierszJedzenia.appendChild(slot);
+      });
+      ekwipunekEl.appendChild(wierszJedzenia);
+    }
+
     var naglowekBlokow = document.createElement('div');
     naglowekBlokow.className = 'naglowek-ekwipunku';
     naglowekBlokow.textContent = '🧱 Bloki do stawiania — dotknij, żeby wybrać';
@@ -5530,7 +5646,7 @@ SZABLON_MINECRAFT = """
     ekwipunekEl.appendChild(wierszBlokow);
 
     var narzedziaSurowce = Object.keys(NAZWY_BLOKOW).filter(function (k) {
-      return !BLOKI_Z_TEKSTURA[k] && (ekwipunek[k] || 0) > 0;
+      return !BLOKI_Z_TEKSTURA[k] && LISTA_JEDZENIA.indexOf(k) === -1 && (ekwipunek[k] || 0) > 0;
     });
     if (narzedziaSurowce.length > 0) {
       var naglowekNarz = document.createElement('div');
@@ -5558,6 +5674,22 @@ SZABLON_MINECRAFT = """
   function dodajDoEkwipunku(blok, ile) {
     ekwipunek[blok] = (ekwipunek[blok] || 0) + ile;
     odswiezEkwipunek();
+  }
+
+  function zjedzJedzenie(klucz) {
+    if ((ekwipunek[klucz] || 0) <= 0) return;
+    if (graczGlod >= GLOD_MAX) {
+      pokazDziennikMc('😊 Nie jesteś głodna!', 1200);
+      return;
+    }
+    ekwipunek[klucz]--;
+    var przywrocone = WARTOSC_GLODOWA_JEDZENIA[klucz] || 3;
+    graczGlod = Math.min(GLOD_MAX, graczGlod + przywrocone);
+    aktualizujPasekGlodu();
+    odswiezEkwipunek();
+    pokazDziennikMc('😋 Zjedzono: ' + NAZWY_BLOKOW[klucz] + '! +' + przywrocone + ' głodu.', 1400);
+    zagrajTon(500, 0.08, 'square');
+    setTimeout(function () { zagrajTon(650, 0.1, 'square'); }, 90);
   }
 
   function aktualizujPasekGlodu() {
@@ -5707,6 +5839,7 @@ SZABLON_MINECRAFT = """
   var PRZEPISY_PIECA = [
     { id: 'szyby', surowiec: 'piach', ikonaSurowca: '🏖️', wyjscie: 'szyby' },
     { id: 'zelazo', surowiec: 'rudaZelaza', ikonaSurowca: '🪨', wyjscie: 'zelazo' },
+    { id: 'zlotoStopione', surowiec: 'zloto', ikonaSurowca: '💛', wyjscie: 'zlotoStopione' },
   ];
 
   function przetop(przepis) {
@@ -6069,19 +6202,21 @@ SZABLON_MINECRAFT = """
     if (idxZw !== -1) {
       var zw = zwierzeta[idxZw];
       zwierzeta.splice(idxZw, 1);
-      graczGlod = Math.min(GLOD_MAX, graczGlod + 4);
-      aktualizujPasekGlodu();
       var teksty;
       if (zw.typ === 'krowa') {
-        teksty = ['🐄 Krowa: "Muuu... i po krowie." Stek zdobyty!', '🥩 Krowa dała stek. Przepraszam, krowo.'];
+        teksty = ['🐄 Krowa: "Muuu... i po krowie." Stek trafia do ekwipunku!', '🥩 Krowa dała steka. Przepraszam, krowo.'];
+        dodajDoEkwipunku('stek', 1);
       } else if (zw.typ === 'swinka') {
-        teksty = ['🐷 Świnka kwiknęła po raz ostatni. Szynka zdobyta!', '🍖 Świnka zamieniła się w szynkę.'];
+        teksty = ['🐷 Świnka kwiknęła po raz ostatni. Szynka trafia do ekwipunku!', '🍖 Świnka zamieniła się w szynkę.'];
+        dodajDoEkwipunku('szynka', 1);
       } else if (zw.typ === 'kurczak') {
-        teksty = ['🐔 Kurczak zdobyty! Pióro trafia do ekwipunku.', '🪶 Kurczak dał pióro (i trochę mięsa).'];
+        teksty = ['🐔 Kurczak zdobyty! Pióro i mięso trafiają do ekwipunku.', '🪶 Kurczak dał pióro (i trochę mięsa).'];
         dodajDoEkwipunku('pioro', 1);
+        dodajDoEkwipunku('mieso_kurczaka', 1);
       } else {
-        teksty = ['🐑 Owca ostrzyżona (i trochę więcej). Wełna zdobyta!', '🧶 Owca dała wełnę na dobry sen.'];
+        teksty = ['🐑 Owca ostrzyżona (i trochę więcej). Wełna i baranina trafiają do ekwipunku!', '🧶 Owca dała wełnę na dobry sen.'];
         dodajDoEkwipunku('welna', 2);
+        dodajDoEkwipunku('baranina', 1);
       }
       pokazDziennikMc(teksty[Math.floor(Math.random() * teksty.length)], 1900);
       dzwiekJedzenia();
@@ -6293,7 +6428,7 @@ SZABLON_MINECRAFT = """
     }
   });
 
-  // ---------- GŁÓD (czysto smakowy - bez kary, tylko zabawne komunikaty) ----------
+  // ---------- GŁÓD - bez kary do zera, ALE przy zerze powoli traci HP ----------
   setInterval(function () {
     if (!trwa) return;
     graczGlod = Math.max(0, graczGlod - 1);
@@ -6301,6 +6436,16 @@ SZABLON_MINECRAFT = """
     if (graczGlod === 3) pokazDziennikMc('😋 Robi się głodno... może czas na stek?', 1800);
     if (graczGlod === 0) pokazDziennikMc('🤤 W brzuchu strasznie burczy! Znajdź jakieś zwierzę.', 2000);
   }, 25000);
+
+  // Powolne, niewielkie obrazenia z glodu - TYLKO gdy pasek jest calkowicie
+  // pusty, i rzadziej niz sam spadek glodu, zeby to bylo dokuczliwe, ale
+  // nie brutalne.
+  setInterval(function () {
+    if (!trwa) return;
+    if (graczGlod <= 0 && graczHp > 0) {
+      zadajObrazeniaGraczowi(1, 'Głód');
+    }
+  }, 14000);
 
   // ---------- WEDROWANIE ZWIERZAT ----------
   setInterval(function () {
@@ -6324,6 +6469,32 @@ SZABLON_MINECRAFT = """
     });
     if (cokolwiekZmienione) rysuj();
   }, 1800);
+
+  // ---------- OKRESOWE ODNAWIANIE ZWIERZAT (nie tylko przy starcie swiata) ----------
+  var LIMIT_ZWIERZAT_NA_MAPIE = 18;
+  var TYPY_ZWIERZAT = ['krowa', 'swinka', 'kurczak', 'owca'];
+
+  function sprobujZespawnowacJednoZwierze() {
+    if (zwierzeta.length >= LIMIT_ZWIERZAT_NA_MAPIE) return;
+    for (var proba = 0; proba < 12; proba++) {
+      var x = Math.floor(losowo(3, SZEROKOSC_SWIATA - 3));
+      var y = znajdzPowierzchnieKolumny(x) - 1;
+      if (world[x] && world[x][y] === 'powietrze' && Math.abs(x - graczX) > 3) {
+        zwierzeta.push({
+          x: x, y: y,
+          typ: TYPY_ZWIERZAT[Math.floor(Math.random() * TYPY_ZWIERZAT.length)],
+          kierunek: Math.random() < 0.5 ? -1 : 1,
+        });
+        rysuj();
+        return;
+      }
+    }
+  }
+
+  setInterval(function () {
+    if (!trwa) return;
+    sprobujZespawnowacJednoZwierze();
+  }, 20000);
 
   // ---------- DZIEN / NOC + SPAWN POTWOROW ----------
   function znajdzPowierzchnieKolumny(x) {
@@ -7344,56 +7515,22 @@ def pokaz_powitanie():
         st.session_state.zamek_proby = 0
 
     losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
-    lewa = random.randint(1, 6)
-    prawa = random.randint(1, 6)
+    losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
 
     st.markdown(f"<div style='height:{losowa_wysokosc}vh;'></div>", unsafe_allow_html=True)
-
-    kolumny = st.columns([lewa, 2, prawa])
-    with kolumny[1]:
-        kliknieto = st.button("🔒", key="zamek_btn")
+    # Bezposredni margines na samym przycisku - BEZ kolumn Streamlita.
+    # Proporcje kolumn okazaly sie zbyt watle w tej appce (inne reguly CSS
+    # w calej stronie potrafily je nadpisywac), wiec to duzo prostszy i
+    # bardziej niezawodny sposob na losowa pozycje w poziomie.
+    st.markdown(
+        f"<style>div[data-testid='stButton'] {{ "
+        f"width: fit-content; margin-left: {losowy_offset}%; "
+        f"}}</style>",
+        unsafe_allow_html=True,
+    )
+    kliknieto = st.button("🔒", key="zamek_btn")
 
     if kliknieto:
-        # Maly, niewidoczny "komponent" TYLKO po to, zeby faktycznie
-        # wykonac JS (st.markdown z <script> go nie uruchamia - to
-        # ograniczenie przegladarki przy wstawianiu przez innerHTML,
-        # nie samego Streamlita). Ten sam sprawdzony wzorzec co w grach:
-        # wspolny, wielokrotnie uzywany kontekst audio + cichy <audio>
-        # do "odmutowania" na iOS mimo przelacznika ciszy.
-        components.html(
-            """
-            <audio id="odmutIOS" loop playsinline style="display:none;"></audio>
-            <script>
-              (function () {
-                try {
-                  var top_ = window.top || window;
-                  var ctx = top_.__wspolnyKontekstAudio;
-                  if (!ctx || ctx.state === 'closed') {
-                    ctx = new (window.AudioContext || window.webkitAudioContext)();
-                    top_.__wspolnyKontekstAudio = ctx;
-                  }
-                  if (ctx.state === 'suspended') { ctx.resume(); }
-                  var audioEl = document.getElementById('odmutIOS');
-                  if (audioEl && !audioEl.src) {
-                    audioEl.src = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-                    audioEl.play().catch(function () {});
-                  }
-                  var osc = ctx.createOscillator();
-                  var gain = ctx.createGain();
-                  osc.type = 'square';
-                  osc.frequency.setValueAtTime(320, ctx.currentTime);
-                  osc.frequency.exponentialRampToValueAtTime(560, ctx.currentTime + 0.09);
-                  gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-                  gain.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.01);
-                  gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.11);
-                  osc.connect(gain); gain.connect(ctx.destination);
-                  osc.start(); osc.stop(ctx.currentTime + 0.12);
-                } catch (e) {}
-              })();
-            </script>
-            """,
-            height=1,
-        )
         st.session_state.zamek_proby += 1
         if st.session_state.zamek_proby >= 5:
             st.markdown(
