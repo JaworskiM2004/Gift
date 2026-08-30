@@ -3170,7 +3170,11 @@ SZABLON_PIANO = """
   var WYSOKOSC_KAFELKA = 70;
 
   var indeksNuty = 0;
-  var aktywnyKafelek = null;
+  var indeksDoSpawnu = 0;
+  var kafelki = [];
+  var czasOdOstatniegoSpawnu = 0;
+  var ODSTEP_KAFELKOW_PIKSELE = WYSOKOSC_KAFELKA * 2.4;
+  var STREFA_TRAFIEN_PROC = 0.55; // od tej wysokosci w dol liczy sie jako "mozna trafic"
   var trwa = false;
   var czasOstatni = null;
 
@@ -3238,14 +3242,7 @@ SZABLON_PIANO = """
     postepNaEkranie.textContent = indeksNuty + ' / ' + NUTY.length;
   }
 
-  function usunAktywnyKafelek() {
-    if (aktywnyKafelek && aktywnyKafelek.el.parentNode) {
-      aktywnyKafelek.el.remove();
-    }
-    aktywnyKafelek = null;
-  }
-
-  function stworzKafelek() {
+  function stworzKafelek(nrWSekwencji) {
     var pas = Math.floor(Math.random() * LICZBA_PASOW);
     var szerPasa = gra.clientWidth / LICZBA_PASOW;
     var el = document.createElement('div');
@@ -3254,7 +3251,18 @@ SZABLON_PIANO = """
     el.style.left = (pas * szerPasa + 4) + 'px';
     el.style.top = (-WYSOKOSC_KAFELKA - 10) + 'px';
     gra.appendChild(el);
-    aktywnyKafelek = { pas: pas, y: -WYSOKOSC_KAFELKA - 10, el: el };
+    kafelki.push({ pas: pas, y: -WYSOKOSC_KAFELKA - 10, el: el, nrWSekwencji: nrWSekwencji });
+  }
+
+  function usunKafelekZTablicy(kafelekObj) {
+    var idx = kafelki.indexOf(kafelekObj);
+    if (idx !== -1) kafelki.splice(idx, 1);
+    if (kafelekObj.el && kafelekObj.el.parentNode) kafelekObj.el.remove();
+  }
+
+  function usunWszystkieKafelki() {
+    kafelki.forEach(function (k) { if (k.el && k.el.parentNode) k.el.remove(); });
+    kafelki = [];
   }
 
   function petla(czas) {
@@ -3266,12 +3274,27 @@ SZABLON_PIANO = """
     var wys = gra.clientHeight;
     var predkosc = PREDKOSC_START + indeksNuty * PREDKOSC_PRZYROST;
 
-    if (aktywnyKafelek) {
-      aktywnyKafelek.y += predkosc * dt;
-      aktywnyKafelek.el.style.top = aktywnyKafelek.y + 'px';
-      if (aktywnyKafelek.y > wys) {
-        zakonczGre(false, 'ucieklo');
-        return;
+    // Kolejne kafelki pojawiaja sie w STALYM ODSTEPIE (w pikselach, wiec
+    // wizualny odstep zostaje taki sam nawet gdy predkosc rosnie) -
+    // niezaleznie od tego, czy poprzedni zostal juz trafiony.
+    czasOdOstatniegoSpawnu += dt;
+    var progCzasowy = ODSTEP_KAFELKOW_PIKSELE / predkosc;
+    if (czasOdOstatniegoSpawnu >= progCzasowy && indeksDoSpawnu < NUTY.length) {
+      czasOdOstatniegoSpawnu = 0;
+      stworzKafelek(indeksDoSpawnu);
+      indeksDoSpawnu++;
+    }
+
+    for (var i = kafelki.length - 1; i >= 0; i--) {
+      var k = kafelki[i];
+      k.y += predkosc * dt;
+      k.el.style.top = k.y + 'px';
+      if (k.y > wys) {
+        if (k.nrWSekwencji === indeksNuty) {
+          zakonczGre(false, 'ucieklo');
+          return;
+        }
+        usunKafelekZTablicy(k);
       }
     }
 
@@ -3280,18 +3303,25 @@ SZABLON_PIANO = """
 
   function kliknietoPas(pas) {
     if (!trwa) return;
-    if (aktywnyKafelek && aktywnyKafelek.pas === pas) {
-      zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
-      usunAktywnyKafelek();
-      indeksNuty++;
-      aktualizujPostep();
-      if (indeksNuty >= NUTY.length) {
-        zakonczGre(true);
-      } else {
-        stworzKafelek();
-      }
-    } else {
+    var celKafelek = null;
+    for (var i = 0; i < kafelki.length; i++) {
+      if (kafelki[i].nrWSekwencji === indeksNuty) { celKafelek = kafelki[i]; break; }
+    }
+    if (!celKafelek) return; // jeszcze nic nie spadlo - ignorujemy dotkniecie
+    if (celKafelek.pas !== pas) {
       zakonczGre(false, 'zly-pas');
+      return;
+    }
+    var wys = gra.clientHeight;
+    if (celKafelek.y < wys * STREFA_TRAFIEN_PROC) {
+      return; // wlasciwy pas, ale za wczesnie - ignorujemy bez kary
+    }
+    zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
+    usunKafelekZTablicy(celKafelek);
+    indeksNuty++;
+    aktualizujPostep();
+    if (indeksNuty >= NUTY.length) {
+      zakonczGre(true);
     }
   }
 
@@ -3310,18 +3340,19 @@ SZABLON_PIANO = """
 
   function rozpocznijGre() {
     indeksNuty = 0;
+    indeksDoSpawnu = 0;
+    czasOdOstatniegoSpawnu = 999; // duza wartosc - pierwszy kafelek spada NATYCHMIAST, bez czekania
     aktualizujPostep();
-    usunAktywnyKafelek();
+    usunWszystkieKafelki();
     czasOstatni = null;
     nakladka.style.display = 'none';
     trwa = true;
-    stworzKafelek();
     requestAnimationFrame(petla);
   }
 
   function zakonczGre(wygrana, powod) {
     trwa = false;
-    usunAktywnyKafelek();
+    usunWszystkieKafelki();
     nakladka.style.display = 'flex';
     wyborPiosenki.style.display = 'none';
 
@@ -7518,17 +7549,59 @@ def pokaz_powitanie():
     losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
 
     st.markdown(f"<div style='height:{losowa_wysokosc}vh;'></div>", unsafe_allow_html=True)
-    # Bezposredni margines na samym przycisku - BEZ kolumn Streamlita.
-    # Proporcje kolumn okazaly sie zbyt watle w tej appce (inne reguly CSS
-    # w calej stronie potrafily je nadpisywac), wiec to duzo prostszy i
-    # bardziej niezawodny sposob na losowa pozycje w poziomie.
-    st.markdown(
-        f"<style>div[data-testid='stButton'] {{ "
-        f"width: fit-content; margin-left: {losowy_offset}%; "
-        f"}}</style>",
-        unsafe_allow_html=True,
-    )
     kliknieto = st.button("🔒", key="zamek_btn")
+
+    # WAZNE: st.markdown/st.html z <style> okazal sie zawodny przy KOLEJNYCH
+    # przebiegach skryptu - to udokumentowany problem samego Streamlita
+    # (CSS ladowany jest do strony, ale przegladarka nie stosuje go ponownie
+    # po zmianie, mimo ze recznie wklejony ten sam kod dziala). Dlatego
+    # zamiast liczyc na arkusz stylow, ustawiamy wyglad i pozycje
+    # BEZPOSREDNIO przez JS (element.style.wlasciwosc = wartosc) z wnetrza
+    # malego komponentu - components.html tworzy swieza ramke za kazdym
+    # razem, wiec nie ma tu czego "nie odswiezyc".
+    components.html(
+        f"""
+        <script>
+          (function () {{
+            try {{
+              var doc = window.parent.document;
+              var wrapper = doc.querySelector('.st-key-zamek_btn');
+              if (!wrapper) return;
+              wrapper.style.width = 'fit-content';
+              wrapper.style.marginLeft = '{losowy_offset}%';
+              var btn = wrapper.querySelector('button');
+              if (!btn) return;
+              btn.style.width = '150px';
+              btn.style.height = '150px';
+              btn.style.minHeight = '150px';
+              btn.style.borderRadius = '30%';
+              btn.style.fontSize = '5rem';
+              btn.style.padding = '0';
+              btn.style.display = 'flex';
+              btn.style.alignItems = 'center';
+              btn.style.justifyContent = 'center';
+              btn.style.background = 'linear-gradient(160deg, #f5e6b8, #e6c15c 40%, #d4af37 70%, #a9781f)';
+              btn.style.boxShadow = 'inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5)';
+              btn.style.border = '2px solid rgba(255,255,255,0.3)';
+
+              var styl = doc.getElementById('styl-pulsowania-zamka');
+              if (!styl) {{
+                styl = doc.createElement('style');
+                styl.id = 'styl-pulsowania-zamka';
+                styl.textContent =
+                  '@keyframes pulsujZamekPowitanie {{' +
+                  '0%,100% {{ box-shadow: inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5), 0 0 0px rgba(230,193,92,0); }}' +
+                  '50% {{ box-shadow: inset 0 3px 5px rgba(255,255,255,0.55), inset 0 -6px 10px rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.5), 0 0 36px rgba(230,193,92,0.85); }}' +
+                  '}}';
+                doc.head.appendChild(styl);
+              }}
+              btn.style.animation = 'pulsujZamekPowitanie 2.4s ease-in-out infinite';
+            }} catch (e) {{}}
+          }})();
+        </script>
+        """,
+        height=1,
+    )
 
     if kliknieto:
         st.session_state.zamek_proby += 1
