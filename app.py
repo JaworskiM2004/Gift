@@ -105,8 +105,8 @@ POZIOMY_GRY = [
     {"serca": 7, "czarne": 3, "kierunek": "dol", "predkosc": 130, "tempo": 650},
     {"serca": 10, "czarne": 5, "kierunek": "skos", "predkosc": 190, "tempo": 480},
     {"serca": 13, "czarne": 8, "kierunek": "gora", "predkosc": 230, "tempo": 340},
-    {"serca": 15, "czarne": 10, "kierunek": "mieszany", "predkosc": 260, "tempo": 280},
-    {"serca": 18, "czarne": 13, "kierunek": "mieszany", "predkosc": 300, "tempo": 220},
+    {"serca": 15, "czarne": 10, "kierunek": "ukos", "predkosc": 260, "tempo": 280},
+    {"serca": 18, "czarne": 13, "kierunek": "wszystkie-strony", "predkosc": 300, "tempo": 220},
 ]
 
 # Zagadka szachowa: białe mają wymusić mata w 3 posunięciach (każdy ruch
@@ -180,8 +180,8 @@ ETAPY = [
     },
     {
         "klucz": "rebus",
-        "emoji": "🆁",
-        "tytul": {"pl": "🆁 Rebus", "en": "🆁 Rebus"},
+        "emoji": "🧩",
+        "tytul": {"pl": "🧩 Rebus", "en": "🧩 Rebus"},
         "typ": "rebus",
         "info": {
             "pl": "Każdy obrazek to jedno słowo — po brzmieniu, nie po znaczeniu. Złóż je w całe hasło.",
@@ -196,8 +196,8 @@ ETAPY = [
     },
     {
         "klucz": "wordle",
-        "emoji": "🆆",
-        "tytul": {"pl": "🆆 Wordle dnia", "en": "🆆 Today's Wordle"},
+        "emoji": "📝",
+        "tytul": {"pl": "📝 Wordle dnia", "en": "📝 Today's Wordle"},
         "typ": "wordle",
         # Aplikacja SAMA pobiera dzisiejsze słowo z (angielskiego) NYT Wordle —
         # nie musisz nic wpisywać. Nie znalazłem podobnie niezawodnego,
@@ -446,6 +446,42 @@ ETAPY = [
         "tytul": {"pl": "⛏️ Prosty Minecraft", "en": "⛏️ Simple Minecraft"},
         "typ": "minecraft",
     },
+    {
+        "klucz": "snake",
+        "emoji": "🐍",
+        "tytul": {"pl": "🐍 Wąż na skos", "en": "🐍 Diagonal Snake"},
+        "typ": "snake",
+    },
+    {
+        "klucz": "blackjack",
+        "emoji": "🎴",
+        "tytul": {"pl": "🎴 Blackjack", "en": "🎴 Blackjack"},
+        "typ": "blackjack",
+    },
+    {
+        "klucz": "samolot",
+        "emoji": "✈️",
+        "tytul": {"pl": "✈️ Samolot z papieru", "en": "✈️ Paper Airplane"},
+        "typ": "samolot",
+    },
+    {
+        "klucz": "odyseusz",
+        "emoji": "🏹",
+        "tytul": {"pl": "🏹 Odyseusz", "en": "🏹 Odysseus"},
+        "typ": "odyseusz",
+    },
+    {
+        "klucz": "parkour",
+        "emoji": "🧗",
+        "tytul": {"pl": "🧗 Parkour Odyseusza", "en": "🧗 Odysseus's Climb"},
+        "typ": "parkour",
+    },
+    {
+        "klucz": "labirynt",
+        "emoji": "⚔️",
+        "tytul": {"pl": "⚔️ Labirynt Cieni", "en": "⚔️ Labyrinth of Shadows"},
+        "typ": "labirynt",
+    },
 ]
 
 PLIK_STANU = "stan_gry.json"
@@ -487,6 +523,12 @@ TEKST = {
         "napewno_bitwa": "Na pewno pokonałaś bossa? Jeśli nie, wróć do gry.",
         "bledy_etykieta_gra": "Ile razy złapałaś czarną kulkę albo upuściłaś serduszko?",
         "bledy_etykieta_dron": "Ile razy się rozbiłaś?",
+        "bledy_etykieta_snake": "Ile razy wąż się zaplątał?",
+        "bledy_etykieta_blackjack": "Ile rozdań przegrałaś z krupierem?",
+        "bledy_etykieta_samolot": "Ile razy samolot rozbił się w locie?",
+        "bledy_etykieta_odyseusz": "Ile koni przegapiłaś?",
+        "bledy_etykieta_parkour": "Ile razy spadłaś do punktu kontrolnego?",
+        "bledy_etykieta_labirynt": "Ile razy poległaś w labiryncie?",
         "bledy_etykieta_zaba": "Ile razy żabka wpadła na przeszkodę?",
         "bledy_etykieta_memory": "Ile było pomyłek przy dopasowywaniu par?",
         "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
@@ -498,6 +540,12 @@ TEKST = {
         "jeszcze_nie": "Jeszcze nie",
         "tak_ukonczylam": "Tak, ukończyłam!",
         "napewno_dron": "Na pewno ukończyłaś cały lot bez rozbicia?",
+        "napewno_snake": "Na pewno wąż zjadł wszystkie 20 paczek chipsów?",
+        "napewno_blackjack": "Na pewno pokonałaś krupiera 3 razy?",
+        "napewno_samolot": "Na pewno samolot przeleciał przez wszystkie 12 prześwitów?",
+        "napewno_odyseusz": "Na pewno trafiłaś wszystkie 15 koni?",
+        "napewno_parkour": "Na pewno dotarłaś na szczyt wieży?",
+        "napewno_labirynt": "Na pewno pokonałaś Władcę Labiryntu?",
         "napewno_zaba": "Na pewno żabka doskoczyła do końca?",
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
         "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
@@ -539,6 +587,12 @@ TEKST = {
         "napewno_bitwa": "Are you sure you defeated the boss? If not, go back to the game.",
         "bledy_etykieta_gra": "How many times did you catch a black ball or drop a heart?",
         "bledy_etykieta_dron": "How many times did you crash?",
+        "bledy_etykieta_snake": "How many times did the snake tangle itself up?",
+        "bledy_etykieta_blackjack": "How many hands did you lose to the dealer?",
+        "bledy_etykieta_samolot": "How many times did the plane crash mid-flight?",
+        "bledy_etykieta_odyseusz": "How many horses did you miss?",
+        "bledy_etykieta_parkour": "How many times did you fall back to the checkpoint?",
+        "bledy_etykieta_labirynt": "How many times did you die in the labyrinth?",
         "bledy_etykieta_zaba": "How many times did the frog hit an obstacle?",
         "bledy_etykieta_memory": "How many mismatched pairs did you have?",
         "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
@@ -550,6 +604,12 @@ TEKST = {
         "jeszcze_nie": "Not yet",
         "tak_ukonczylam": "Yes, I completed it!",
         "napewno_dron": "Are you sure you finished the whole flight without crashing?",
+        "napewno_snake": "Are you sure the snake ate all 20 bags of chips?",
+        "napewno_blackjack": "Are you sure you beat the dealer 3 times?",
+        "napewno_samolot": "Are you sure the plane flew through all 12 gaps?",
+        "napewno_odyseusz": "Are you sure you hit all 15 horses?",
+        "napewno_parkour": "Are you sure you reached the top of the tower?",
+        "napewno_labirynt": "Are you sure you defeated the Lord of the Labyrinth?",
         "napewno_zaba": "Are you sure the frog made it all the way?",
         "napewno_memory": "Are you sure you matched all pairs in time?",
         "napewno_simon": "Are you sure you repeated the whole sequence?",
@@ -854,25 +914,38 @@ SZABLON_GRY = """
       y = -40;
       vx = losowo(-90, 90);
       vy = predkosc;
-    } else if (poziom.kierunek === 'mieszany') {
-      // Kazdy element losuje NIEZALEZNIE jeden z trzech wzorcow ruchu -
-      // nieprzewidywalnosc jako dodatkowe utrudnienie, nie tylko szybkosc.
-      var losowyWzorzec = Math.floor(Math.random() * 3);
-      if (losowyWzorzec === 0) {
-        var zPrawej2 = Math.random() < 0.5;
-        if (zPrawej2) {
-          x = szer + 30; y = losowo(10, wys - 40);
-          vx = -predkosc; vy = losowo(-60, 60);
-        } else {
-          x = losowo(10, szer - 40); y = wys + 30;
-          vx = losowo(-70, 70); vy = -predkosc;
-        }
-      } else if (losowyWzorzec === 1) {
-        x = losowo(10, szer - 40); y = -40;
-        vx = losowo(-90, 90); vy = predkosc;
+    } else if (poziom.kierunek === 'ukos') {
+      // Wyraznie po przekatnej - startuje z LEWEJ lub PRAWEJ krawedzi
+      // (nie z gory jak 'skos'), lecac ukosem w dol na druga strone.
+      var zLewejUkos = Math.random() < 0.5;
+      var predkoscPoziomaUkos = predkosc * losowo(0.75, 1.05);
+      var predkoscPionowaUkos = predkosc * losowo(0.55, 0.85);
+      if (zLewejUkos) {
+        x = -40;
+        vx = predkoscPoziomaUkos;
       } else {
+        x = szer + 40;
+        vx = -predkoscPoziomaUkos;
+      }
+      y = losowo(10, wys * 0.5);
+      vy = predkoscPionowaUkos;
+    } else if (poziom.kierunek === 'wszystkie-strony') {
+      // Doslownie ze wszystkich czterech stron - gora, dol, lewo, prawo -
+      // kazdy element losuje niezaleznie, wiec naraz na ekranie moga byc
+      // serca lecace w kompletnie roznych kierunkach.
+      var strona = Math.floor(Math.random() * 4);
+      if (strona === 0) {
         x = losowo(10, szer - 40); y = -40;
-        vx = losowo(-25, 25); vy = predkosc;
+        vx = losowo(-45, 45); vy = predkosc;
+      } else if (strona === 1) {
+        x = losowo(10, szer - 40); y = wys + 40;
+        vx = losowo(-45, 45); vy = -predkosc;
+      } else if (strona === 2) {
+        x = -40; y = losowo(10, wys - 40);
+        vx = predkosc; vy = losowo(-45, 45);
+      } else {
+        x = szer + 40; y = losowo(10, wys - 40);
+        vx = -predkosc; vy = losowo(-45, 45);
       }
     } else {
       x = losowo(10, szer - 40);
@@ -1003,8 +1076,8 @@ SZABLON_GRY = """
   function opisPoziomu(indeks) {
     if (indeks === 1) return 'Poziom 2 — szybciej i na ukos.';
     if (indeks === 2) return 'Poziom 3 — pod górę, od prawej do lewej.';
-    if (indeks === 3) return 'Poziom 4 — nieprzewidywalny kierunek na każdym elemencie!';
-    if (indeks === 4) return 'Poziom 5 — najszybciej i najgęściej ze wszystkich.';
+    if (indeks === 3) return 'Poziom 4 — serca lecą po przekątnej, z boków ekranu.';
+    if (indeks === 4) return 'Poziom 5 — ze wszystkich stron: góra, dół, lewo i prawo!';
     return '';
   }
 
@@ -1670,6 +1743,17 @@ SZABLON_ZABY = """
     clip-path: polygon(50% 100%, 100% 0%, 0% 0%);
     filter: drop-shadow(0 0 7px rgba(230,193,92,0.65));
   }
+  /* Fioletowy odcien = "uwaznaj, to specjalna przeszkoda" - szczelina
+     (trzeba przelecieć w okienku wysokosci) i ruchomy kolec sufitowy
+     (zmienia polozenie w czasie, trzeba go obserwowac na biezaco). */
+  .kolec-fiolet {
+    background: linear-gradient(155deg, #e8d4ff 0%, #a855f7 45%, #6b21a8 100%) !important;
+    filter: drop-shadow(0 0 8px rgba(168,85,247,0.7)) !important;
+  }
+  .kolec-sufit-fiolet {
+    background: linear-gradient(25deg, #e8d4ff 0%, #a855f7 45%, #6b21a8 100%) !important;
+    filter: drop-shadow(0 0 8px rgba(168,85,247,0.7)) !important;
+  }
   .platforma {
     position: absolute;
     height: 16px;
@@ -1779,6 +1863,16 @@ SZABLON_ZABY = """
   var PLATFORMA_SZEROKOSC = 110;
   var PODEST_KOLCE_NACHODZENIE = 25;
   var SUFIT_PRZERWA_OD_ZIEMI = 62;
+  // Szczelina: kolec z ziemi (zwykla wysokosc) + kolec z sufitu z DUZO
+  // wiekszym prześwitem niz zwykly 'sufit' - trzeba przelecieć w oknie
+  // wysokosci w trakcie skoku, nie tylko przeskoczyc albo nie skakac.
+  var SZCZELINA_PRZERWA_OD_ZIEMI = 100;
+  // Ruchomy kolec sufitowy: oscyluje sinusoidalnie miedzy nisko (podobnie
+  // do zwyklego 'sufit') a wysoko (prawie bezpiecznie) - trzeba patrzec
+  // na biezaco, nie da sie zapamietac jednej stalej wysokosci.
+  var SUFIT_RUCHOMY_BAZA = 62;
+  var SUFIT_RUCHOMY_AMPLITUDA = 24;
+  var SUFIT_RUCHOMY_PREDKOSC_FALI = 1.8;
 
   var zabaDol = 0;
   var zabaDolPoprzedni = 0;
@@ -1893,6 +1987,9 @@ SZABLON_ZABY = """
     if (p.typ === 'podest-kolce') {
       if (p.elPodest.parentNode) p.elPodest.remove();
       if (p.elKolec.parentNode) p.elKolec.remove();
+    } else if (p.typ === 'szczelina') {
+      if (p.elZiemia.parentNode) p.elZiemia.remove();
+      if (p.elSufit.parentNode) p.elSufit.remove();
     } else if (p.el && p.el.parentNode) {
       p.el.remove();
     }
@@ -1906,25 +2003,37 @@ SZABLON_ZABY = """
     return Math.random() < 0.45 ? 1 : (Math.random() < 0.75 ? 2 : 3);
   }
 
-  // Typ nastepnej przeszkody - na start same kolce, potem dochodza
-  // platformy, potem kombinacja podest+wysoki kolec (trzeba wskoczyc na
-  // podest, zeby miec dosc wysokosci na przeskoczenie), a najpozniej
-  // kolce sufitowe (czasem NIE wolno skakac, trzeba przebiec pod spodem).
+  // Typ nastepnej przeszkody - roznorodnosc dochodzi DUZO wczesniej niz
+  // kiedys, zeby akcja nie dzialа sie caly czas tylko na dolnej linii:
+  // sam poczatek to zwykle kolce (nauka podstawowego skoku), ale juz od
+  // wyniku 4 dochodzi platforma, od 7 sufit i szczelina (gora ekranu w
+  // gre wchodzi), od 10 podest-kolce, a od 13 najtrudniejszy - ruchomy
+  // sufit, ktory trzeba obserwowac na biezaco.
   function losujTypPrzeszkody() {
-    if (wynik < 6) return 'kolce';
+    if (wynik < 3) return 'kolce';
     var r = Math.random();
-    if (wynik < 10) {
-      return r < 0.7 ? 'kolce' : 'platforma';
+    if (wynik < 7) {
+      return r < 0.65 ? 'kolce' : 'platforma';
     }
-    if (wynik < 16) {
-      if (r < 0.5) return 'kolce';
-      if (r < 0.75) return 'platforma';
+    if (wynik < 10) {
+      if (r < 0.4) return 'kolce';
+      if (r < 0.6) return 'platforma';
+      if (r < 0.8) return 'sufit';
+      return 'szczelina';
+    }
+    if (wynik < 13) {
+      if (r < 0.3) return 'kolce';
+      if (r < 0.45) return 'platforma';
+      if (r < 0.6) return 'sufit';
+      if (r < 0.75) return 'szczelina';
       return 'podest-kolce';
     }
-    if (r < 0.4) return 'kolce';
-    if (r < 0.6) return 'platforma';
-    if (r < 0.8) return 'sufit';
-    return 'podest-kolce';
+    if (r < 0.2) return 'kolce';
+    if (r < 0.32) return 'platforma';
+    if (r < 0.48) return 'sufit';
+    if (r < 0.62) return 'szczelina';
+    if (r < 0.78) return 'podest-kolce';
+    return 'sufit-ruchomy';
   }
 
   function stworzPrzeszkode(szer, groundY) {
@@ -1980,6 +2089,58 @@ SZABLON_ZABY = """
       kontener.appendChild(kolec);
       gra.appendChild(kontener);
       return { typ: 'sufit', x: xStart, szerokosc: KOLEC_SZEROKOSC, dolnaKrawedzY: dolnaKrawedzY, minieta: false, el: kontener };
+    }
+
+    if (typ === 'szczelina') {
+      // Kolec z ziemi + kolec z sufitu NARAZ, z duzym prześwitem miedzy
+      // nimi - trzeba przelecieć w oknie wysokosci w trakcie skoku
+      // (ani za nisko, ani za wysoko), a nie tylko przeskoczyc/nie skakac.
+      var elZiemia = document.createElement('div');
+      elZiemia.className = 'przeszkoda-kontener';
+      elZiemia.style.width = KOLEC_SZEROKOSC + 'px';
+      elZiemia.style.left = xStart + 'px';
+      var kolecZiemia = document.createElement('div');
+      kolecZiemia.className = 'kolec kolec-fiolet';
+      elZiemia.appendChild(kolecZiemia);
+      gra.appendChild(elZiemia);
+
+      var kontenerSuf = document.createElement('div');
+      kontenerSuf.className = 'kontener-sufit';
+      kontenerSuf.style.width = KOLEC_SZEROKOSC + 'px';
+      kontenerSuf.style.left = xStart + 'px';
+      var dolnaKrawedzYSz = groundY - SZCZELINA_PRZERWA_OD_ZIEMI;
+      kontenerSuf.style.height = dolnaKrawedzYSz + 'px';
+      var kolecSuf = document.createElement('div');
+      kolecSuf.className = 'kolec-sufit kolec-sufit-fiolet';
+      kontenerSuf.appendChild(kolecSuf);
+      gra.appendChild(kontenerSuf);
+
+      return {
+        typ: 'szczelina', x: xStart, szerokosc: KOLEC_SZEROKOSC,
+        dolnaKrawedzY: dolnaKrawedzYSz, minieta: false,
+        elZiemia: elZiemia, elSufit: kontenerSuf
+      };
+    }
+
+    if (typ === 'sufit-ruchomy') {
+      // Kolec sufitowy, ktorego prześwit zmienia sie w czasie (fala
+      // sinusoidalna) - trzeba go obserwowac na biezaco, nie da sie po
+      // prostu zapamietac jednej stalej wysokosci jak przy statycznym.
+      var kontenerR = document.createElement('div');
+      kontenerR.className = 'kontener-sufit';
+      kontenerR.style.width = KOLEC_SZEROKOSC + 'px';
+      kontenerR.style.left = xStart + 'px';
+      var dolnaKrawedzYR = groundY - SUFIT_RUCHOMY_BAZA;
+      kontenerR.style.height = dolnaKrawedzYR + 'px';
+      var kolecR = document.createElement('div');
+      kolecR.className = 'kolec-sufit kolec-sufit-fiolet';
+      kontenerR.appendChild(kolecR);
+      gra.appendChild(kontenerR);
+      return {
+        typ: 'sufit-ruchomy', x: xStart, szerokosc: KOLEC_SZEROKOSC,
+        dolnaKrawedzY: dolnaKrawedzYR, minieta: false, el: kontenerR,
+        faza: Math.random() * Math.PI * 2, wiekSekundy: 0
+      };
     }
 
     var liczbaKolcow = losujLiczbeKolcow();
@@ -2117,6 +2278,33 @@ SZABLON_ZABY = """
         if (wZasiegKolca && zabaDol > groundY - KOLEC_WYSOKOSC_WYSOKI + TOLERANCJA_KOLIZJI) {
           zakonczGre(false);
           return;
+        }
+      } else if (p.typ === 'szczelina') {
+        p.elZiemia.style.left = p.x + 'px';
+        p.elSufit.style.left = p.x + 'px';
+        var wZasiegSz = zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc;
+        if (wZasiegSz) {
+          var zabaGoraSz = zabaDol - ZABA_WYSOKOSC;
+          var trafilZiemie = zabaDol > groundY - KOLEC_WYSOKOSC + TOLERANCJA_KOLIZJI;
+          var trafilSufit = zabaGoraSz < p.dolnaKrawedzY - TOLERANCJA_KOLIZJI;
+          if (trafilZiemie || trafilSufit) {
+            zakonczGre(false);
+            return;
+          }
+        }
+      } else if (p.typ === 'sufit-ruchomy') {
+        p.wiekSekundy += dt;
+        var offsetFali = Math.sin(p.wiekSekundy * SUFIT_RUCHOMY_PREDKOSC_FALI + p.faza) * SUFIT_RUCHOMY_AMPLITUDA;
+        p.dolnaKrawedzY = groundY - (SUFIT_RUCHOMY_BAZA + offsetFali);
+        p.el.style.height = p.dolnaKrawedzY + 'px';
+        p.el.style.left = p.x + 'px';
+        var wZasiegR = zabaPrawa > p.x && zabaLewa < p.x + p.szerokosc;
+        if (wZasiegR) {
+          var zabaGoraR = zabaDol - ZABA_WYSOKOSC;
+          if (zabaGoraR < p.dolnaKrawedzY - TOLERANCJA_KOLIZJI) {
+            zakonczGre(false);
+            return;
+          }
         }
       } else {
         p.el.style.left = p.x + 'px';
@@ -6707,6 +6895,3703 @@ SZABLON_MINECRAFT = """
 </html>
 """
 
+SZABLON_SNAKE = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; overflow: hidden; background: #0d0d0d; touch-action: manipulation; }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 620px;
+    background: #0d0d0d;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #panel {
+    position: relative;
+    width: 100%;
+    text-align: center;
+    padding: 8px 0 4px;
+    z-index: 3;
+  }
+  #wynikEtykieta {
+    color: #f5f5f0;
+    font-size: 15px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+  }
+  #plansza {
+    position: relative;
+    width: 336px;
+    height: 336px;
+    background: linear-gradient(160deg, #1a2e1a, #0f1f0f);
+    border: 2px solid #3a5a3a;
+    border-radius: 10px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5), inset 0 0 24px rgba(0,0,0,0.4);
+    margin-top: 4px;
+  }
+  .segment {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    background: linear-gradient(155deg, #8fe89a, #3fae55);
+    border: 1.5px solid rgba(255,255,255,0.25);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.35);
+    transition: left 0.16s linear, top 0.16s linear;
+  }
+  .segment-glowa {
+    background: linear-gradient(155deg, #a8f5b0, #4fc463);
+    z-index: 2;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.45), 0 0 8px rgba(143,232,154,0.5);
+  }
+  .oko {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #16130a;
+    border-radius: 50%;
+    top: 7px;
+  }
+  .oko-lewe { left: 6px; }
+  .oko-prawe { right: 6px; }
+  .chipsy {
+    position: absolute;
+    width: 24px;
+    height: 26px;
+    z-index: 1;
+    animation: pulsujChipsy 1.1s ease-in-out infinite;
+  }
+  @keyframes pulsujChipsy {
+    0%, 100% { transform: scale(1) rotate(-4deg); }
+    50% { transform: scale(1.12) rotate(4deg); }
+  }
+  .chipsy-body {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(155deg, #ffe066, #f5a623 55%, #d4820a);
+    border-radius: 4px 4px 8px 8px;
+    border: 1.5px solid #a9781f;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+  }
+  .chipsy-pasek {
+    position: absolute;
+    left: 2px; right: 2px; top: 38%;
+    height: 5px;
+    background: rgba(230,60,60,0.85);
+    border-radius: 2px;
+  }
+  .chipsy-zab {
+    position: absolute;
+    top: -3px; left: 0; right: 0;
+    height: 6px;
+    background: inherit;
+    clip-path: polygon(0% 100%, 10% 0%, 20% 100%, 30% 0%, 40% 100%, 50% 0%, 60% 100%, 70% 0%, 80% 100%, 90% 0%, 100% 100%);
+  }
+  #sterowanieDiag {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 8px;
+    width: 168px;
+    margin: 12px auto 0;
+  }
+  .btn-diag {
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 1px solid #5a4a2e;
+    border-radius: 12px;
+    color: #f5f5f0;
+    font-size: 26px;
+    padding: 14px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    transition: transform 0.1s ease;
+  }
+  .btn-diag:active { transform: scale(0.9); background: linear-gradient(135deg, #4a4560, #362848); }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #nakladkaTytul { color: #f5f5f0; font-size: 22px; font-weight: 700; margin-bottom: 10px; }
+  #nakladkaOpis { color: #d8cdb0; font-size: 14px; margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+  .gra-btn {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .gra-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <div id="panel"><span id="wynikEtykieta">0 / 20</span></div>
+  <div id="plansza"></div>
+  <div id="sterowanieDiag">
+    <button class="btn-diag" id="btnLG">↖</button>
+    <button class="btn-diag" id="btnPG">↗</button>
+    <button class="btn-diag" id="btnLD">↙</button>
+    <button class="btn-diag" id="btnPD">↘</button>
+  </div>
+  <div id="nakladka">
+    <div id="nakladkaTytul">🐍 Wąż na skos</div>
+    <div id="nakladkaOpis">Zbierz 20 paczek chipsów! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var plansza = document.getElementById('plansza');
+  var wynikEtykieta = document.getElementById('wynikEtykieta');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var btnLG = document.getElementById('btnLG');
+  var btnPG = document.getElementById('btnPG');
+  var btnLD = document.getElementById('btnLD');
+  var btnPD = document.getElementById('btnPD');
+
+  var KOMORKA = 28;
+  var SIATKA_N = 12; // 12x12 pol
+  var CEL_WYNIK = 20;
+  var TICK_START = 260;
+  var TICK_PRZYROST = 4; // ms szybciej za kazdy zjedzony chips
+  var TICK_MIN = 160;
+
+  // Cztery kierunki PO PRZEKATNEJ - gora/dol/lewo/prawo w klasycznym
+  // sensie NIE istnieja w tej grze.
+  var KIERUNEK_LG = { dx: -1, dy: -1 };
+  var KIERUNEK_PG = { dx: 1, dy: -1 };
+  var KIERUNEK_LD = { dx: -1, dy: 1 };
+  var KIERUNEK_PD = { dx: 1, dy: 1 };
+
+  var waz = [];
+  var kierunek = KIERUNEK_PD;
+  var nastepnyKierunek = KIERUNEK_PD;
+  var jedzenie = null;
+  var wynik = 0;
+  var trwa = false;
+  var czasOstatni = null;
+  var czasOdOstatniegoTicku = 0;
+  var elementyWeza = [];
+  var elJedzenia = null;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        elOdmutowania.play().catch(function () {});
+      }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+
+  function zagrajTon(f, czasTrwania, typ) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czasTrwania + 0.02);
+    } catch (e) {}
+  }
+
+  // Chrupiacy dzwiek jedzenia chipsow - kilka szybkich "trzaskow" szumu
+  // zamiast czystego tonu, zeby brzmialo jak chrupanie, nie piknieciem.
+  function zagrajChrupanie() {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      for (var i = 0; i < 4; i++) {
+        (function (i) {
+          setTimeout(function () {
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.type = 'square';
+            osc.frequency.value = 180 + Math.random() * 220;
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.05);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.06);
+          }, i * 45);
+        })(i);
+      }
+    } catch (e) {}
+  }
+  function zagrajKlikniecie() { zagrajTon(420, 0.04, 'square'); }
+  function zagrajZderzenie() {
+    zagrajTon(180, 0.15, 'sawtooth');
+    setTimeout(function () { zagrajTon(90, 0.25, 'sawtooth'); }, 130);
+  }
+  function zagrajZwyciestwo() {
+    [523, 659, 784, 1046].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.18, 'triangle'); }, i * 120);
+    });
+  }
+
+  function losowaKomorka() { return Math.floor(Math.random() * SIATKA_N); }
+
+  function ustawWezaNaStart() {
+    var sx = 5, sy = 5;
+    waz = [{ x: sx, y: sy }, { x: sx - 1, y: sy - 1 }, { x: sx - 2, y: sy - 2 }];
+    kierunek = KIERUNEK_PD;
+    nastepnyKierunek = KIERUNEK_PD;
+  }
+
+  // Jedzenie MUSI wypasc na pole tej samej parzystosci (x+y) co waz -
+  // ruch po przekatnej NIGDY nie zmienia parzystosci, wiec cokolwiek
+  // innego byloby na zawsze nieosiagalne.
+  function losujJedzenie() {
+    var parzystoscWeza = (waz[0].x + waz[0].y) % 2;
+    var probyMax = 200;
+    for (var i = 0; i < probyMax; i++) {
+      var x = losowaKomorka();
+      var y = losowaKomorka();
+      if (((x + y) % 2) !== parzystoscWeza) continue;
+      var koliduje = waz.some(function (s) { return s.x === x && s.y === y; });
+      if (!koliduje) return { x: x, y: y };
+    }
+    return null; // teoretycznie nieosiagalne przy 12x12 i max dlugosci ~23
+  }
+
+  function xPx(gx) { return gx * KOMORKA + 1; }
+  function yPx(gy) { return gy * KOMORKA + 1; }
+
+  function rysujPlansze() {
+    elementyWeza.forEach(function (el) { if (el.parentNode) el.remove(); });
+    elementyWeza = [];
+    waz.forEach(function (seg, i) {
+      var el = document.createElement('div');
+      el.className = 'segment' + (i === 0 ? ' segment-glowa' : '');
+      el.style.left = xPx(seg.x) + 'px';
+      el.style.top = yPx(seg.y) + 'px';
+      if (i === 0) {
+        var okoL = document.createElement('div');
+        okoL.className = 'oko oko-lewe';
+        var okoP = document.createElement('div');
+        okoP.className = 'oko oko-prawe';
+        el.appendChild(okoL);
+        el.appendChild(okoP);
+      }
+      plansza.appendChild(el);
+      elementyWeza.push(el);
+    });
+
+    if (elJedzenia && elJedzenia.parentNode) elJedzenia.remove();
+    if (jedzenie) {
+      elJedzenia = document.createElement('div');
+      elJedzenia.className = 'chipsy';
+      elJedzenia.style.left = xPx(jedzenie.x) + 'px';
+      elJedzenia.style.top = yPx(jedzenie.y) + 'px';
+      var body = document.createElement('div');
+      body.className = 'chipsy-body';
+      var zabek = document.createElement('div');
+      zabek.className = 'chipsy-zab';
+      var pasek = document.createElement('div');
+      pasek.className = 'chipsy-pasek';
+      body.appendChild(zabek);
+      body.appendChild(pasek);
+      elJedzenia.appendChild(body);
+      plansza.appendChild(elJedzenia);
+    }
+  }
+
+  function aktualizujWynik() {
+    wynikEtykieta.textContent = wynik + ' / ' + CEL_WYNIK;
+  }
+
+  function ustawKierunek(nowy) {
+    // Klasyczna zasada snake'a - nie mozna zawrocic o 180 stopni prosto
+    // we wlasna szyje.
+    if (nowy.dx === -kierunek.dx && nowy.dy === -kierunek.dy) return;
+    nastepnyKierunek = nowy;
+    zagrajKlikniecie();
+  }
+
+  btnLG.addEventListener('click', function () { inicjujDzwiek(); ustawKierunek(KIERUNEK_LG); });
+  btnPG.addEventListener('click', function () { inicjujDzwiek(); ustawKierunek(KIERUNEK_PG); });
+  btnLD.addEventListener('click', function () { inicjujDzwiek(); ustawKierunek(KIERUNEK_LD); });
+  btnPD.addEventListener('click', function () { inicjujDzwiek(); ustawKierunek(KIERUNEK_PD); });
+
+  function wykonajTick() {
+    kierunek = nastepnyKierunek;
+    var glowa = waz[0];
+    var nx = glowa.x + kierunek.dx;
+    var ny = glowa.y + kierunek.dy;
+
+    if (nx < 0 || nx >= SIATKA_N || ny < 0 || ny >= SIATKA_N) {
+      zakonczGre(false);
+      return;
+    }
+    var trafilSiebie = waz.some(function (s) { return s.x === nx && s.y === ny; });
+    if (trafilSiebie) {
+      zakonczGre(false);
+      return;
+    }
+
+    var nowaGlowa = { x: nx, y: ny };
+    waz.unshift(nowaGlowa);
+
+    var zjadl = jedzenie && jedzenie.x === nx && jedzenie.y === ny;
+    if (zjadl) {
+      wynik++;
+      aktualizujWynik();
+      zagrajChrupanie();
+      if (wynik >= CEL_WYNIK) {
+        rysujPlansze();
+        zakonczGre(true);
+        return;
+      }
+      jedzenie = losujJedzenie();
+    } else {
+      waz.pop();
+    }
+
+    rysujPlansze();
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = czas - czasOstatni;
+    czasOstatni = czas;
+
+    czasOdOstatniegoTicku += dt;
+    var progTicku = Math.max(TICK_MIN, TICK_START - wynik * TICK_PRZYROST);
+    if (czasOdOstatniegoTicku >= progTicku) {
+      czasOdOstatniegoTicku = 0;
+      wykonajTick();
+      if (!trwa) return;
+    }
+
+    requestAnimationFrame(petla);
+  }
+
+  function rozpocznijGre() {
+    ustawWezaNaStart();
+    wynik = 0;
+    aktualizujWynik();
+    jedzenie = losujJedzenie();
+    czasOstatni = null;
+    czasOdOstatniegoTicku = 0;
+    nakladka.style.display = 'none';
+    trwa = true;
+    rysujPlansze();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      zagrajZwyciestwo();
+      nakladkaTytul.textContent = '🎉 Pełna paczka!';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+      nakladkaBtn.style.display = 'none';
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+    } else {
+      zagrajZderzenie();
+      nakladkaTytul.textContent = '💥 Wąż się zaplątał...';
+      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_BLACKJACK = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; overflow: hidden; background: #0d0d0d; touch-action: manipulation; }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 600px;
+    background: radial-gradient(ellipse at 50% 0%, #142418, #0a120a 70%);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #panel { width: 100%; text-align: center; padding: 8px 0 2px; }
+  #wygraneEtykieta { color: #f5f5f0; font-size: 15px; font-weight: 700; text-shadow: 0 2px 5px rgba(0,0,0,0.6); }
+  #canvasCien {
+    margin-top: 2px;
+    animation: pulsujCien 2.6s ease-in-out infinite;
+  }
+  @keyframes pulsujCien {
+    0%, 100% { filter: drop-shadow(0 0 4px rgba(168,85,247,0.3)); }
+    50% { filter: drop-shadow(0 0 15px rgba(168,85,247,0.75)); }
+  }
+  .etykieta-strony {
+    color: #d8cdb0;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 2px 0 6px;
+  }
+  .etykieta-strony span { color: #e6c15c; }
+  .rzad-kart {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    min-height: 70px;
+    flex-wrap: wrap;
+    padding: 0 10px;
+  }
+  .karta {
+    width: 46px;
+    height: 66px;
+    background: #f5f0e0;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    line-height: 1.1;
+    border: 1px solid rgba(0,0,0,0.15);
+    animation: rozdajKarte 0.28s ease-out;
+  }
+  @keyframes rozdajKarte {
+    from { transform: translateY(-30px) scale(0.7); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
+  }
+  .karta-range { font-size: 15px; }
+  .karta-kolor { font-size: 20px; margin-top: 1px; }
+  .karta-tyl {
+    background: repeating-linear-gradient(135deg, #4a2f6b, #4a2f6b 5px, #3a2255 5px, #3a2255 10px);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  #komunikatRozdania {
+    min-height: 26px;
+    color: #f0dfa8;
+    font-size: 14px;
+    font-weight: 700;
+    text-align: center;
+    padding: 4px 10px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+  #akcjeGry {
+    display: flex;
+    gap: 10px;
+    margin-top: auto;
+    margin-bottom: 16px;
+  }
+  .btn-akcja-bj {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 11px 22px;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .btn-akcja-bj:active { transform: scale(0.95); }
+  .btn-akcja-bj:disabled { opacity: 0.35; }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #nakladkaTytul { color: #f5f5f0; font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+  #nakladkaOpis { color: #d8cdb0; font-size: 14px; margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+  .gra-btn {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .gra-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <div id="panel"><span id="wygraneEtykieta">Wygrane: 0 / 3</span></div>
+  <canvas id="canvasCien" width="140" height="150"></canvas>
+  <div class="etykieta-strony">Krupier <span id="sumaKrupiera"></span></div>
+  <div class="rzad-kart" id="kartyKrupiera"></div>
+  <div id="komunikatRozdania"></div>
+  <div class="rzad-kart" id="kartyGracza"></div>
+  <div class="etykieta-strony">Ty <span id="sumaGracza"></span></div>
+  <div id="akcjeGry">
+    <button class="btn-akcja-bj" id="btnDobierz">🃏 Dobierz</button>
+    <button class="btn-akcja-bj" id="btnPas">✋ Pas</button>
+  </div>
+  <div id="nakladka">
+    <div id="nakladkaTytul">🎴 Blackjack</div>
+    <div id="nakladkaOpis">Pokonaj tajemniczego krupiera 3 razy! Zbierz karty jak najbliżej 21, nie przebijając. Król/Dama/Walet = 10, As = 11 albo 1.</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var canvasCien = document.getElementById('canvasCien');
+  var wygraneEtykieta = document.getElementById('wygraneEtykieta');
+  var sumaKrupiera = document.getElementById('sumaKrupiera');
+  var sumaGracza = document.getElementById('sumaGracza');
+  var kartyKrupiera = document.getElementById('kartyKrupiera');
+  var kartyGracza = document.getElementById('kartyGracza');
+  var komunikatRozdania = document.getElementById('komunikatRozdania');
+  var btnDobierz = document.getElementById('btnDobierz');
+  var btnPas = document.getElementById('btnPas');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var CEL_WYGRANYCH = 3;
+  var KOLORY = ['♠', '♥', '♦', '♣'];
+  var RANGI = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+
+  var talia = [];
+  var rekaGracza = [];
+  var rekaKrupiera = [];
+  var krupierUkryty = true;
+  var wygraneGracza = 0;
+  var trwa = false;
+  var trwaRozdanie = false;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        elOdmutowania.play().catch(function () {});
+      }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+
+  function zagrajTon(f, czasTrwania, typ) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czasTrwania + 0.02);
+    } catch (e) {}
+  }
+  function zagrajRozdanie() { zagrajTon(300, 0.05, 'triangle'); }
+  function zagrajKlik() { zagrajTon(420, 0.04, 'square'); }
+  function zagrajWygrana() {
+    [523, 659, 784, 1046].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.16, 'triangle'); }, i * 110);
+    });
+  }
+  function zagrajPrzegrana() {
+    zagrajTon(220, 0.14, 'sawtooth');
+    setTimeout(function () { zagrajTon(130, 0.24, 'sawtooth'); }, 120);
+  }
+  function zagrajRemis() { zagrajTon(350, 0.16, 'square'); }
+
+  // Tajemnicza, mroczna sylwetka krupiera - kapelusz + plaszcz + swiecace
+  // oczy. Rysowana na canvasie tymi samymi technikami co przeciwnicy
+  // w Bitwie/Minecraft (proste ksztalty, brak potrzeby grafik).
+  function narysujCien() {
+    var ctx = canvasCien.getContext('2d');
+    var w = canvasCien.width, h = canvasCien.height;
+    ctx.clearRect(0, 0, w, h);
+    var cx = w / 2;
+
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.beginPath();
+    ctx.ellipse(cx, h - 8, 34, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    var gradient = ctx.createLinearGradient(0, 30, 0, h - 12);
+    gradient.addColorStop(0, '#2a1f38');
+    gradient.addColorStop(1, '#0a0810');
+    ctx.fillStyle = gradient;
+
+    ctx.beginPath();
+    ctx.moveTo(cx - 40, h - 12);
+    ctx.quadraticCurveTo(cx - 44, h * 0.55, cx - 26, h * 0.42);
+    ctx.lineTo(cx - 20, h * 0.36);
+    ctx.lineTo(cx + 20, h * 0.36);
+    ctx.lineTo(cx + 26, h * 0.42);
+    ctx.quadraticCurveTo(cx + 44, h * 0.55, cx + 40, h - 12);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(cx, h * 0.30, 17, 19, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.ellipse(cx, h * 0.20, 32, 7, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(cx - 16, h * 0.205);
+    ctx.lineTo(cx - 13, h * 0.06);
+    ctx.lineTo(cx + 13, h * 0.06);
+    ctx.lineTo(cx + 16, h * 0.205);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.shadowColor = '#a855f7';
+    ctx.shadowBlur = 8;
+    ctx.fillStyle = '#d8b4fe';
+    ctx.beginPath();
+    ctx.ellipse(cx - 7, h * 0.28, 2.6, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(cx + 7, h * 0.28, 2.6, 1.8, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+  }
+
+  function nowaTalia() {
+    var t = [];
+    KOLORY.forEach(function (kolor) {
+      RANGI.forEach(function (range) {
+        t.push({ range: range, kolor: kolor });
+      });
+    });
+    for (var i = t.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = t[i]; t[i] = t[j]; t[j] = tmp;
+    }
+    return t;
+  }
+
+  function dobierzZTalii() {
+    if (talia.length === 0) talia = nowaTalia();
+    return talia.pop();
+  }
+
+  function wartoscKarty(karta) {
+    if (karta.range === 'A') return 11;
+    if (karta.range === 'K' || karta.range === 'Q' || karta.range === 'J') return 10;
+    return parseInt(karta.range, 10);
+  }
+
+  function obliczSume(karty) {
+    var suma = 0, asy = 0;
+    karty.forEach(function (k) {
+      suma += wartoscKarty(k);
+      if (k.range === 'A') asy++;
+    });
+    while (suma > 21 && asy > 0) { suma -= 10; asy--; }
+    return suma;
+  }
+
+  function stworzKarteEl(karta, ukryta) {
+    var el = document.createElement('div');
+    el.className = 'karta' + (ukryta ? ' karta-tyl' : '');
+    if (!ukryta) {
+      var czerwona = (karta.kolor === '♥' || karta.kolor === '♦');
+      el.style.color = czerwona ? '#c41818' : '#16130a';
+      var range = document.createElement('span');
+      range.className = 'karta-range';
+      range.textContent = karta.range;
+      var kolor = document.createElement('span');
+      kolor.className = 'karta-kolor';
+      kolor.textContent = karta.kolor;
+      el.appendChild(range);
+      el.appendChild(kolor);
+    }
+    return el;
+  }
+
+  function odswiezKarty() {
+    kartyGracza.innerHTML = '';
+    rekaGracza.forEach(function (k) { kartyGracza.appendChild(stworzKarteEl(k, false)); });
+    sumaGracza.textContent = '(' + obliczSume(rekaGracza) + ')';
+
+    kartyKrupiera.innerHTML = '';
+    rekaKrupiera.forEach(function (k, i) {
+      var ukryta = krupierUkryty && i === 1;
+      kartyKrupiera.appendChild(stworzKarteEl(k, ukryta));
+    });
+    sumaKrupiera.textContent = krupierUkryty ? '(' + wartoscKarty(rekaKrupiera[0]) + ' + ?)' : '(' + obliczSume(rekaKrupiera) + ')';
+  }
+
+  function aktualizujWygrane() {
+    wygraneEtykieta.textContent = 'Wygrane: ' + wygraneGracza + ' / ' + CEL_WYGRANYCH;
+  }
+
+  function ustawStanPrzyciskow(wlaczone) {
+    btnDobierz.disabled = !wlaczone;
+    btnPas.disabled = !wlaczone;
+  }
+
+  function rozpocznijRozdanie() {
+    if (talia.length < 15) talia = nowaTalia();
+    rekaGracza = [dobierzZTalii(), dobierzZTalii()];
+    rekaKrupiera = [dobierzZTalii(), dobierzZTalii()];
+    krupierUkryty = true;
+    komunikatRozdania.textContent = '';
+    trwaRozdanie = true;
+    odswiezKarty();
+    zagrajRozdanie();
+    ustawStanPrzyciskow(true);
+
+    var sumaGraczaPocz = obliczSume(rekaGracza);
+    if (sumaGraczaPocz === 21) {
+      // Naturalny blackjack - od razu odslaniamy i rozstrzygamy
+      dobierzKarte_stanCzyKoniec(true);
+    }
+  }
+
+  function dobierzKarte() {
+    if (!trwaRozdanie) return;
+    inicjujDzwiek();
+    rekaGracza.push(dobierzZTalii());
+    odswiezKarty();
+    zagrajRozdanie();
+    var suma = obliczSume(rekaGracza);
+    if (suma > 21) {
+      zakonczRozdanie('przegrana', 'Przebiłaś 21! Krupier wygrywa to rozdanie.');
+    } else if (suma === 21) {
+      przejdzDoKrupiera();
+    }
+  }
+
+  function pas() {
+    if (!trwaRozdanie) return;
+    inicjujDzwiek();
+    zagrajKlik();
+    przejdzDoKrupiera();
+  }
+
+  function dobierzKarte_stanCzyKoniec(naturalny) {
+    przejdzDoKrupiera(naturalny);
+  }
+
+  function przejdzDoKrupiera(naturalnyBlackjack) {
+    ustawStanPrzyciskow(false);
+    krupierUkryty = false;
+    odswiezKarty();
+
+    function turaKrupiera() {
+      var sumaK = obliczSume(rekaKrupiera);
+      if (sumaK < 17) {
+        setTimeout(function () {
+          rekaKrupiera.push(dobierzZTalii());
+          odswiezKarty();
+          zagrajRozdanie();
+          turaKrupiera();
+        }, 550);
+      } else {
+        setTimeout(function () { rozstrzygnijRozdanie(); }, 400);
+      }
+    }
+    setTimeout(turaKrupiera, 450);
+  }
+
+  function rozstrzygnijRozdanie() {
+    var sumaG = obliczSume(rekaGracza);
+    var sumaK = obliczSume(rekaKrupiera);
+
+    if (sumaK > 21) {
+      zakonczRozdanie('wygrana', 'Krupier przebił 21! Wygrywasz to rozdanie.');
+    } else if (sumaG > sumaK) {
+      zakonczRozdanie('wygrana', 'Masz więcej niż krupier! Wygrywasz to rozdanie.');
+    } else if (sumaG < sumaK) {
+      zakonczRozdanie('przegrana', 'Krupier ma więcej. Przegrywasz to rozdanie.');
+    } else {
+      zakonczRozdanie('remis', 'Remis! Ta sama suma co krupier.');
+    }
+  }
+
+  function zakonczRozdanie(rezultat, opis) {
+    trwaRozdanie = false;
+    ustawStanPrzyciskow(false);
+    komunikatRozdania.textContent = opis;
+
+    if (rezultat === 'wygrana') {
+      zagrajWygrana();
+      wygraneGracza++;
+      aktualizujWygrane();
+    } else if (rezultat === 'przegrana') {
+      zagrajPrzegrana();
+    } else {
+      zagrajRemis();
+    }
+
+    if (wygraneGracza >= CEL_WYGRANYCH) {
+      setTimeout(function () { zakonczGre(true); }, 1300);
+      return;
+    }
+
+    setTimeout(function () {
+      if (trwa) rozpocznijRozdanie();
+    }, 1600);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    trwaRozdanie = false;
+    ustawStanPrzyciskow(false);
+    nakladka.style.display = 'flex';
+
+    if (wygrana) {
+      nakladkaTytul.textContent = '🎉 Pokonałaś krupiera!';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+      nakladkaBtn.style.display = 'none';
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+    }
+  }
+
+  function rozpocznijGre() {
+    talia = nowaTalia();
+    wygraneGracza = 0;
+    aktualizujWygrane();
+    nakladka.style.display = 'none';
+    trwa = true;
+    narysujCien();
+    rozpocznijRozdanie();
+  }
+
+  btnDobierz.addEventListener('click', dobierzKarte);
+  btnPas.addEventListener('click', pas);
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+
+  narysujCien();
+</script>
+</body>
+</html>
+"""
+
+SZABLON_SAMOLOT = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; overflow: hidden; background: #0d0d0d; touch-action: none; }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    background: #0d0d0d;
+  }
+
+  /* ---------- FAZA SKLADANIA ---------- */
+  #fazaSkladania {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(ellipse at 50% 30%, #2a2438, #0d0d0d 75%);
+  }
+  #paskPostepu {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .kropka-postepu {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    transition: background 0.25s ease;
+  }
+  .kropka-postepu.zrobiona { background: #e6c15c; }
+  #plotnoSkladania { width: 200px; height: 240px; }
+  .ksztaltPapieru {
+    fill: #f5f0e0;
+    stroke: #c9bfa0;
+    stroke-width: 1.5;
+    filter: drop-shadow(0 4px 10px rgba(0,0,0,0.5));
+    transition: opacity 0.32s ease;
+  }
+  #liniaZgiecia {
+    stroke: #a855f7;
+    stroke-width: 2;
+    stroke-dasharray: 5 4;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  #liniaZgiecia.widoczna { opacity: 0.85; }
+  #opisSkladania {
+    color: #d8cdb0;
+    font-size: 14px;
+    text-align: center;
+    margin: 14px 0 16px;
+    max-width: 260px;
+    line-height: 1.4;
+  }
+  #btnZegnij {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 11px 30px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  #btnZegnij:active { transform: scale(0.95); }
+  .blysk-zgiecia {
+    position: absolute;
+    inset: 0;
+    background: rgba(255,255,255,0.5);
+    pointer-events: none;
+    opacity: 0;
+  }
+  @keyframes blyskniecie {
+    0% { opacity: 0.55; }
+    100% { opacity: 0; }
+  }
+  .blysk-zgiecia.aktywny { animation: blyskniecie 0.28s ease-out; }
+
+  /* ---------- FAZA RZUTU ---------- */
+  #fazaRzutu {
+    position: absolute;
+    inset: 0;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(180deg, #6fa8dc 0%, #a8d0e8 55%, #cfe8f0 100%);
+  }
+  #samolotRzut { width: 140px; height: 140px; transition: transform 0.08s ease-out; }
+  #opisRzutu {
+    color: #16130a;
+    font-size: 15px;
+    font-weight: 700;
+    text-align: center;
+    margin-top: 14px;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.5);
+  }
+  #sladRzutu {
+    position: absolute;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: rgba(22,19,10,0.4);
+    pointer-events: none;
+  }
+
+  /* ---------- FAZA LOTU ---------- */
+  #fazaLotu {
+    position: absolute;
+    inset: 0;
+    display: none;
+    background: linear-gradient(180deg, #6fa8dc 0%, #a8d0e8 60%, #cfe8f0 100%);
+    overflow: hidden;
+  }
+  #samolotLot {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    left: 25%;
+    z-index: 5;
+  }
+  .chmura-para {
+    position: absolute;
+    width: 62px;
+  }
+  .chmura-blok {
+    position: absolute;
+    left: 0; right: 0;
+    background: #fdfdfd;
+    border-radius: 45%;
+    box-shadow: 0 3px 10px rgba(60,80,110,0.25), inset 0 -4px 8px rgba(150,170,200,0.25);
+  }
+  .chmura-blok::before, .chmura-blok::after {
+    content: '';
+    position: absolute;
+    background: inherit;
+    border-radius: 50%;
+  }
+  .chmura-blok::before { width: 55%; height: 75%; top: -30%; left: -8%; }
+  .chmura-blok::after { width: 60%; height: 80%; top: -35%; right: -10%; }
+  #wynikNaEkranieSamolot {
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.35);
+    z-index: 4;
+  }
+
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #nakladkaTytul { color: #f5f5f0; font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+  #nakladkaOpis { color: #d8cdb0; font-size: 14px; margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+  .gra-btn {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .gra-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+
+  <div id="fazaSkladania">
+    <div id="paskPostepu"></div>
+    <svg id="plotnoSkladania" viewBox="0 0 100 140">
+      <polygon id="ksztaltA" class="ksztaltPapieru" points=""></polygon>
+      <polygon id="ksztaltB" class="ksztaltPapieru" points="" style="opacity:0;"></polygon>
+      <line id="liniaZgiecia" x1="0" y1="0" x2="0" y2="0"></line>
+    </svg>
+    <div id="opisSkladania"></div>
+    <button id="btnZegnij">Zegnij! 🤏</button>
+    <div class="blysk-zgiecia" id="blyskZgiecia"></div>
+  </div>
+
+  <div id="fazaRzutu">
+    <svg id="samolotRzut" viewBox="0 0 100 140">
+      <polygon class="ksztaltPapieru" points="50,10 58,60 90,90 55,78 50,130 45,78 10,90 42,60"></polygon>
+    </svg>
+    <div id="opisRzutu">👆 Przeciągnij w górę, żeby rzucić!</div>
+  </div>
+
+  <div id="fazaLotu">
+    <div id="wynikNaEkranieSamolot">0 / 12</div>
+    <svg id="samolotLot" viewBox="0 0 100 140">
+      <polygon class="ksztaltPapieru" points="50,10 58,60 90,90 55,78 50,130 45,78 10,90 42,60"></polygon>
+    </svg>
+  </div>
+
+  <div id="nakladka">
+    <div id="nakladkaTytul">✈️ Samolot z papieru</div>
+    <div id="nakladkaOpis">Złóż samolot krok po kroku, rzuć nim i przeleć przez 12 prześwitów między chmurami!</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var fazaSkladania = document.getElementById('fazaSkladania');
+  var fazaRzutu = document.getElementById('fazaRzutu');
+  var fazaLotu = document.getElementById('fazaLotu');
+  var paskPostepu = document.getElementById('paskPostepu');
+  var ksztaltA = document.getElementById('ksztaltA');
+  var ksztaltB = document.getElementById('ksztaltB');
+  var liniaZgiecia = document.getElementById('liniaZgiecia');
+  var opisSkladania = document.getElementById('opisSkladania');
+  var btnZegnij = document.getElementById('btnZegnij');
+  var blyskZgiecia = document.getElementById('blyskZgiecia');
+  var opisRzutu = document.getElementById('opisRzutu');
+  var samolotLot = document.getElementById('samolotLot');
+  var wynikNaEkranieSamolot = document.getElementById('wynikNaEkranieSamolot');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        elOdmutowania.play().catch(function () {});
+      }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+
+  function zagrajTon(f, czasTrwania, typ) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czasTrwania + 0.02);
+    } catch (e) {}
+  }
+  // Chrupiacy, papierowy "trzask" zgiecia - podobny pomysl co chrupanie
+  // chipsow w Wezu, ale wyzsza czestotliwosc (cieńszy, bardziej "papierowy").
+  function zagrajZgiecie() {
+    if (!audioCtx) return;
+    try {
+      for (var i = 0; i < 3; i++) {
+        (function (i) {
+          setTimeout(function () {
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = 700 + Math.random() * 500;
+            gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.13, audioCtx.currentTime + 0.005);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.04);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+          }, i * 35);
+        })(i);
+      }
+    } catch (e) {}
+  }
+  function zagrajRzut() {
+    if (!audioCtx) return;
+    try {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(260, audioCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(680, audioCtx.currentTime + 0.22);
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.22, audioCtx.currentTime + 0.03);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.25);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + 0.26);
+    } catch (e) {}
+  }
+  function zagrajPunkt() { zagrajTon(800, 0.1, 'sine'); }
+  function zagrajZderzenie() {
+    zagrajTon(180, 0.15, 'sawtooth');
+    setTimeout(function () { zagrajTon(100, 0.22, 'sawtooth'); }, 110);
+  }
+  function zagrajZwyciestwo() {
+    [523, 659, 784, 1046].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.16, 'triangle'); }, i * 110);
+    });
+  }
+
+  // ========================================================
+  // FAZA 1: SKLADANIE
+  // ========================================================
+  var KROKI_SKLADANIA = [
+    {
+      punkty: '28,15 72,15 72,125 28,125',
+      opis: 'Weź kartkę papieru...',
+      liniaOd: null,
+    },
+    {
+      punkty: '50,15 72,50 72,125 28,125 28,50',
+      opis: 'Zegnij górne rogi do środka.',
+      liniaOd: [28, 15, 72, 15],
+    },
+    {
+      punkty: '50,15 60,50 60,125 40,125 40,50',
+      opis: 'Zegnij węższe boki jeszcze raz do środka.',
+      liniaOd: [28, 50, 72, 50],
+    },
+    {
+      punkty: '50,15 62,125 50,110 38,125',
+      opis: 'Złóż całość na pół wzdłuż środka.',
+      liniaOd: [50, 15, 50, 125],
+    },
+    {
+      punkty: '50,10 58,60 90,90 55,78 50,130 45,78 10,90 42,60',
+      opis: 'Zegnij skrzydła w dół po obu stronach.',
+      liniaOd: [50, 15, 50, 130],
+    },
+  ];
+
+  var krokSkladania = 0;
+
+  function zbudujPaskiPostepu() {
+    paskPostepu.innerHTML = '';
+    for (var i = 0; i < KROKI_SKLADANIA.length; i++) {
+      var kropka = document.createElement('div');
+      kropka.className = 'kropka-postepu';
+      paskPostepu.appendChild(kropka);
+    }
+  }
+
+  function odswiezPaskPostepu() {
+    var kropki = paskPostepu.querySelectorAll('.kropka-postepu');
+    kropki.forEach(function (k, i) {
+      k.classList.toggle('zrobiona', i < krokSkladania);
+    });
+  }
+
+  function pokazKrokSkladania(indeks) {
+    var krok = KROKI_SKLADANIA[indeks];
+    ksztaltA.setAttribute('points', krok.punkty);
+    ksztaltA.style.opacity = '1';
+    opisSkladania.textContent = krok.opis;
+    if (krok.liniaOd) {
+      liniaZgiecia.setAttribute('x1', krok.liniaOd[0]);
+      liniaZgiecia.setAttribute('y1', krok.liniaOd[1]);
+      liniaZgiecia.setAttribute('x2', krok.liniaOd[2]);
+      liniaZgiecia.setAttribute('y2', krok.liniaOd[3]);
+      liniaZgiecia.classList.add('widoczna');
+    } else {
+      liniaZgiecia.classList.remove('widoczna');
+    }
+    odswiezPaskPostepu();
+  }
+
+  function wykonajZgiecie() {
+    if (krokSkladania >= KROKI_SKLADANIA.length - 1) return;
+    inicjujDzwiek();
+    zagrajZgiecie();
+    blyskZgiecia.classList.remove('aktywny');
+    void blyskZgiecia.offsetWidth; // wymus restart animacji
+    blyskZgiecia.classList.add('aktywny');
+
+    var nastepny = krokSkladania + 1;
+    ksztaltB.setAttribute('points', KROKI_SKLADANIA[nastepny].punkty);
+    ksztaltB.style.opacity = '1';
+    ksztaltA.style.opacity = '0';
+
+    setTimeout(function () {
+      krokSkladania = nastepny;
+      var tmp = ksztaltA; ksztaltA = ksztaltB; ksztaltB = tmp;
+      opisSkladania.textContent = KROKI_SKLADANIA[krokSkladania].opis;
+      var krok = KROKI_SKLADANIA[krokSkladania];
+      if (krok.liniaOd) {
+        liniaZgiecia.setAttribute('x1', krok.liniaOd[0]);
+        liniaZgiecia.setAttribute('y1', krok.liniaOd[1]);
+        liniaZgiecia.setAttribute('x2', krok.liniaOd[2]);
+        liniaZgiecia.setAttribute('y2', krok.liniaOd[3]);
+        liniaZgiecia.classList.add('widoczna');
+      } else {
+        liniaZgiecia.classList.remove('widoczna');
+      }
+      odswiezPaskPostepu();
+
+      if (krokSkladania >= KROKI_SKLADANIA.length - 1) {
+        setTimeout(function () { przejdzDoRzutu(); }, 500);
+      }
+    }, 340);
+  }
+
+  btnZegnij.addEventListener('click', wykonajZgiecie);
+
+  function przejdzDoRzutu() {
+    fazaSkladania.style.display = 'none';
+    fazaRzutu.style.display = 'flex';
+    ustawObslugeRzutu();
+  }
+
+  // ========================================================
+  // FAZA 2: RZUT (przeciagniecie w gore)
+  // ========================================================
+  var poczatekRzutuY = null;
+  var poczatekRzutuCzas = null;
+  var obslugaRzutuAktywna = false;
+
+  function ustawObslugeRzutu() {
+    if (obslugaRzutuAktywna) return;
+    obslugaRzutuAktywna = true;
+    fazaRzutu.addEventListener('pointerdown', naciskRzutu);
+    fazaRzutu.addEventListener('pointermove', ruchRzutu);
+    fazaRzutu.addEventListener('pointerup', puszczenieRzutu);
+  }
+
+  function naciskRzutu(e) {
+    poczatekRzutuY = e.clientY;
+    poczatekRzutuCzas = Date.now();
+  }
+  function ruchRzutu(e) {
+    if (poczatekRzutuY === null) return;
+    var dy = poczatekRzutuY - e.clientY;
+    if (dy > 0) {
+      var samolotRzut = document.getElementById('samolotRzut');
+      samolotRzut.style.transform = 'translateY(' + (-Math.min(dy, 80)) + 'px) rotate(' + (-Math.min(dy * 0.3, 20)) + 'deg)';
+    }
+  }
+  function puszczenieRzutu(e) {
+    if (poczatekRzutuY === null) return;
+    var dy = poczatekRzutuY - e.clientY;
+    var dt = Math.max(1, Date.now() - poczatekRzutuCzas);
+    poczatekRzutuY = null;
+    if (dy < 35) return; // za slabe przeciagniecie - ignorujemy, sprobuj ponownie
+    var predkoscRzutu = dy / dt; // px/ms - im szybsze przeciagniecie, tym mocniejszy rzut
+    inicjujDzwiek();
+    zagrajRzut();
+    rozpocznijLot(predkoscRzutu);
+  }
+
+  // ========================================================
+  // FAZA 3: LOT (fizyka podobna do sprawdzonej gry z dronem,
+  // przetematyzowana - chmury zamiast rur, samolot zamiast drona)
+  // ========================================================
+  var SAMOLOT_X = 0.25;
+  var SAMOLOT_R = 16;
+  var GRAWITACJA = 1300;
+  var SILA_WZNIOSU = -360;
+  var PREDKOSC_START = 145;
+  var ODSTEP_SPAWN_START = 1.75;
+  var SZEROKOSC_CHMURY = 62;
+  var LUKA_START = 150;
+  var LUKA_MIN = 112;
+  var CEL_WYNIK = 12;
+  var MARGINES = 60;
+
+  var samolotY = 0;
+  var samolotVY = 0;
+  var chmury = [];
+  var wynikLotu = 0;
+  var trwaLot = false;
+  var czasOstatniLot = null;
+  var czasOdSpawnu = 0;
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+
+  function rozpocznijLot(predkoscRzutu) {
+    fazaRzutu.style.display = 'none';
+    fazaLotu.style.display = 'block';
+    chmury.forEach(function (c) { usunChmure(c); });
+    chmury = [];
+    wynikLotu = 0;
+    aktualizujWynikLotu();
+    samolotY = gra.clientHeight / 2;
+    // Mocniejszy rzut = wiekszy poczatkowy "zapas" predkosci w gore -
+    // czysto smakowe, bo trudnosc dalszego lotu jest zawsze taka sama.
+    samolotVY = SILA_WZNIOSU - Math.min(predkoscRzutu * 120, 200);
+    czasOdSpawnu = 0;
+    czasOstatniLot = null;
+    trwaLot = true;
+    rysujLot();
+    requestAnimationFrame(petlaLotu);
+  }
+
+  function stworzChmure(szer, wys, gapY, gapH) {
+    var gora = document.createElement('div');
+    gora.className = 'chmura-para';
+    gora.style.top = '0px';
+    gora.style.height = (gapY - gapH / 2) + 'px';
+    var blokGora = document.createElement('div');
+    blokGora.className = 'chmura-blok';
+    blokGora.style.top = '0'; blokGora.style.bottom = '0';
+    gora.appendChild(blokGora);
+
+    var dol = document.createElement('div');
+    dol.className = 'chmura-para';
+    dol.style.top = (gapY + gapH / 2) + 'px';
+    dol.style.height = (wys - (gapY + gapH / 2)) + 'px';
+    var blokDol = document.createElement('div');
+    blokDol.className = 'chmura-blok';
+    blokDol.style.top = '0'; blokDol.style.bottom = '0';
+    dol.appendChild(blokDol);
+
+    fazaLotu.appendChild(gora);
+    fazaLotu.appendChild(dol);
+    return { x: szer, elGora: gora, elDol: dol, minieta: false, gapY: gapY, gapH: gapH };
+  }
+
+  function usunChmure(c) {
+    if (c.elGora.parentNode) c.elGora.remove();
+    if (c.elDol.parentNode) c.elDol.remove();
+  }
+
+  function rysujLot() {
+    samolotLot.style.left = (gra.clientWidth * SAMOLOT_X) + 'px';
+    samolotLot.style.top = samolotY + 'px';
+    var obrot = Math.max(-22, Math.min(65, samolotVY / 9));
+    samolotLot.style.transform = 'translate(-50%, -50%) rotate(' + obrot + 'deg)';
+  }
+
+  function petlaLotu(czas) {
+    if (!trwaLot) { czasOstatniLot = null; return; }
+    if (czasOstatniLot === null) czasOstatniLot = czas;
+    var dt = Math.min((czas - czasOstatniLot) / 1000, 0.05);
+    czasOstatniLot = czas;
+
+    var wys = gra.clientHeight;
+    var szer = gra.clientWidth;
+    var mnoznik = 1 + Math.min(wynikLotu, 20) * 0.03;
+    var predkoscAktualna = PREDKOSC_START * mnoznik;
+
+    samolotVY += GRAWITACJA * dt;
+    samolotY += samolotVY * dt;
+
+    var samolotXpx = szer * SAMOLOT_X;
+    if (samolotY - SAMOLOT_R < 0 || samolotY + SAMOLOT_R > wys) {
+      zakonczLot();
+      return;
+    }
+
+    czasOdSpawnu += dt;
+    var odstepAktualny = ODSTEP_SPAWN_START / mnoznik;
+    if (czasOdSpawnu >= odstepAktualny) {
+      czasOdSpawnu = 0;
+      var lukaAktualna = Math.max(LUKA_MIN, LUKA_START - wynikLotu * 2);
+      var gapY = losowo(MARGINES + lukaAktualna / 2, wys - MARGINES - lukaAktualna / 2);
+      chmury.push(stworzChmure(szer + 40, wys, gapY, lukaAktualna));
+    }
+
+    for (var i = chmury.length - 1; i >= 0; i--) {
+      var c = chmury[i];
+      c.x -= predkoscAktualna * dt;
+      c.elGora.style.left = c.x + 'px';
+      c.elDol.style.left = c.x + 'px';
+      c.elGora.style.width = SZEROKOSC_CHMURY + 'px';
+      c.elDol.style.width = SZEROKOSC_CHMURY + 'px';
+
+      if (!c.minieta && c.x + SZEROKOSC_CHMURY < samolotXpx - SAMOLOT_R) {
+        c.minieta = true;
+        wynikLotu += 1;
+        zagrajPunkt();
+        aktualizujWynikLotu();
+        if (wynikLotu >= CEL_WYNIK) {
+          zakonczLotZwyciestwem();
+          return;
+        }
+      }
+
+      var wZasieguX = samolotXpx + SAMOLOT_R > c.x && samolotXpx - SAMOLOT_R < c.x + SZEROKOSC_CHMURY;
+      if (wZasieguX) {
+        var gorna = c.gapY - c.gapH / 2;
+        var dolna = c.gapY + c.gapH / 2;
+        if (samolotY - SAMOLOT_R < gorna || samolotY + SAMOLOT_R > dolna) {
+          zakonczLot();
+          return;
+        }
+      }
+
+      if (c.x + SZEROKOSC_CHMURY < -60) {
+        usunChmure(c);
+        chmury.splice(i, 1);
+      }
+    }
+
+    rysujLot();
+    requestAnimationFrame(petlaLotu);
+  }
+
+  document.addEventListener('pointerdown', function (e) {
+    if (fazaLotu.style.display !== 'block' || !trwaLot) return;
+    samolotVY = SILA_WZNIOSU;
+  });
+
+  function aktualizujWynikLotu() {
+    wynikNaEkranieSamolot.textContent = wynikLotu + ' / ' + CEL_WYNIK;
+  }
+
+  function zakonczLotZwyciestwem() {
+    trwaLot = false;
+    zagrajZwyciestwo();
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🎉 Udany lot!';
+    nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+    nakladkaBtn.style.display = 'none';
+    var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+    window.postMessage(wiadomoscZaliczenia, '*');
+    if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+  }
+
+  function zakonczLot() {
+    trwaLot = false;
+    zagrajZderzenie();
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '💨 Samolot spadł...';
+    nakladkaOpis.textContent = 'Wynik: ' + wynikLotu + ' / ' + CEL_WYNIK + '. Spróbuj rzucić jeszcze raz.';
+    nakladkaBtn.style.display = 'inline-block';
+    nakladkaBtn.textContent = 'Rzuć jeszcze raz';
+    nakladkaBtn.onclick = function () {
+      inicjujDzwiek();
+      nakladka.style.display = 'none';
+      fazaLotu.style.display = 'none';
+      fazaRzutu.style.display = 'flex';
+      var samolotRzut = document.getElementById('samolotRzut');
+      samolotRzut.style.transform = 'translateY(0) rotate(0deg)';
+    };
+  }
+
+  // ========================================================
+  // START
+  // ========================================================
+  zbudujPaskiPostepu();
+  pokazKrokSkladania(0);
+
+  nakladkaBtn.onclick = function () {
+    inicjujDzwiek();
+    nakladka.style.display = 'none';
+    krokSkladania = 0;
+    pokazKrokSkladania(0);
+    ksztaltB.style.opacity = '0';
+  };
+</script>
+</body>
+</html>
+"""
+
+SZABLON_ODYSEUSZ = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; overflow: hidden; background: #0d0d0d; touch-action: none; }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    background: #0d0d0d;
+  }
+  #canvasGry { display: block; width: 100%; height: 100%; }
+  #panel {
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 15px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    z-index: 4;
+    text-align: center;
+  }
+  #panel .poziomInfo { font-size: 12px; opacity: 0.85; font-weight: 600; }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #nakladkaTytul { color: #f5f5f0; font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+  #nakladkaOpis { color: #d8cdb0; font-size: 14px; margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+  .gra-btn {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .gra-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="canvasGry" width="380" height="560"></canvas>
+  <div id="panel">
+    <div id="trafienEtykieta">0 / 15</div>
+    <div class="poziomInfo" id="poziomEtykieta">Poziom 1 / 3</div>
+  </div>
+  <div id="nakladka">
+    <div id="nakladkaTytul">🏹 Odyseusz</div>
+    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby wystrzelić strzałę łukiem! Trafiaj nadciągające konie — im mocniej odciągniesz, tym dalej poleci strzała.</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var canvas = document.getElementById('canvasGry');
+  var ctx = canvas.getContext('2d');
+  var trafienEtykieta = document.getElementById('trafienEtykieta');
+  var poziomEtykieta = document.getElementById('poziomEtykieta');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var W = 380, H = 560;
+  var ZIEMIA_Y = 460;
+  var ODYSEUSZ_X = 55, ODYSEUSZ_Y = ZIEMIA_Y;
+
+  var GRAWITACJA = 620;
+  var MNOZNIK_MOCY = 5.4;
+  var MAX_PRZECIAGNIECIE = 100;
+
+  var POZIOMY = [
+    { koni: 5, predkoscKonia: 75, odstepSpawnu: 2.3, maxRownoczesnie: 1 },
+    { koni: 5, predkoscKonia: 115, odstepSpawnu: 1.8, maxRownoczesnie: 2 },
+    { koni: 5, predkoscKonia: 155, odstepSpawnu: 1.4, maxRownoczesnie: 2 },
+  ];
+  var CEL_LACZNY = POZIOMY.reduce(function (s, p) { return s + p.koni; }, 0);
+
+  var poziomIndeks = 0;
+  var trafionoLacznie = 0;
+  var trafionoWPoziomie = 0;
+  var zespawnowanoWPoziomie = 0;
+  var konie = [];
+  var strzaly = [];
+  var trwa = false;
+  var czasOstatni = null;
+  var czasOdSpawnu = 0;
+
+  var celowanie = false;
+  var startX = 0, startY = 0, aktX = 0, aktY = 0;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        elOdmutowania.play().catch(function () {});
+      }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+
+  function zagrajTon(f, czasTrwania, typ) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czasTrwania + 0.02);
+    } catch (e) {}
+  }
+
+  // Dzwiek napinania ciecziwy - CIAGLY oscylator, ktorego wysokosc
+  // tonu rosnie w miare odciagania (nie pojedynczy "strzal" dzwieku
+  // jak gdzie indziej), plus ostry "brzdek" zwolnienia na koniec.
+  // To najbardziej "responsywny na gest" dzwiek w calej aplikacji.
+  var oscylatorNapinania = null;
+  var gainNapinania = null;
+
+  function rozpocznijDzwiekNapinania() {
+    if (!audioCtx) return;
+    try {
+      oscylatorNapinania = audioCtx.createOscillator();
+      gainNapinania = audioCtx.createGain();
+      oscylatorNapinania.type = 'sawtooth';
+      oscylatorNapinania.frequency.value = 140;
+      gainNapinania.gain.value = 0.0001;
+      gainNapinania.gain.linearRampToValueAtTime(0.09, audioCtx.currentTime + 0.06);
+      oscylatorNapinania.connect(gainNapinania);
+      gainNapinania.connect(audioCtx.destination);
+      oscylatorNapinania.start();
+    } catch (e) { oscylatorNapinania = null; }
+  }
+
+  function aktualizujDzwiekNapinania(proc) {
+    if (!oscylatorNapinania) return;
+    try {
+      var f = 140 + Math.min(1, proc) * 260;
+      oscylatorNapinania.frequency.setTargetAtTime(f, audioCtx.currentTime, 0.03);
+    } catch (e) {}
+  }
+
+  function zakonczDzwiekNapinaniaBezStrzalu() {
+    if (oscylatorNapinania) {
+      try {
+        gainNapinania.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.05);
+        oscylatorNapinania.stop(audioCtx.currentTime + 0.12);
+      } catch (e) {}
+      oscylatorNapinania = null;
+    }
+  }
+
+  function zakonczDzwiekNapinaniaIStrzel() {
+    if (oscylatorNapinania) {
+      try {
+        gainNapinania.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.03);
+        oscylatorNapinania.stop(audioCtx.currentTime + 0.08);
+      } catch (e) {}
+      oscylatorNapinania = null;
+    }
+    zagrajTon(620, 0.07, 'triangle');
+    setTimeout(function () { zagrajTon(920, 0.05, 'triangle'); }, 35);
+  }
+
+  function zagrajTrafienie() {
+    zagrajTon(500, 0.06, 'square');
+    setTimeout(function () { zagrajTon(720, 0.09, 'square'); }, 60);
+  }
+  function zagrajPoziomUkonczony() {
+    [523, 659, 784].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.16, 'triangle'); }, i * 120);
+    });
+  }
+  function zagrajZwyciestwo() {
+    [523, 659, 784, 1046].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.16, 'triangle'); }, i * 110);
+    });
+  }
+
+  function losowo(min, max) { return Math.random() * (max - min) + min; }
+
+  // ========================================================
+  // RYSOWANIE
+  // ========================================================
+  function narysujTlo() {
+    var niebo = ctx.createLinearGradient(0, 0, 0, ZIEMIA_Y);
+    niebo.addColorStop(0, '#5a8fc4');
+    niebo.addColorStop(1, '#bcd9ec');
+    ctx.fillStyle = niebo;
+    ctx.fillRect(0, 0, W, ZIEMIA_Y);
+
+    // Slonce
+    ctx.fillStyle = 'rgba(255,244,214,0.85)';
+    ctx.beginPath();
+    ctx.arc(320, 70, 30, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ziemia
+    var ziemia = ctx.createLinearGradient(0, ZIEMIA_Y, 0, H);
+    ziemia.addColorStop(0, '#b89a5a');
+    ziemia.addColorStop(1, '#8a7038');
+    ctx.fillStyle = ziemia;
+    ctx.fillRect(0, ZIEMIA_Y, W, H - ZIEMIA_Y);
+
+    // Proste kolumny w tle dla klimatu
+    ctx.fillStyle = 'rgba(245,240,224,0.55)';
+    [130, 175, 220].forEach(function (x) {
+      ctx.fillRect(x, ZIEMIA_Y - 90, 10, 90);
+    });
+    ctx.fillStyle = 'rgba(245,240,224,0.7)';
+    ctx.fillRect(120, ZIEMIA_Y - 96, 115, 8);
+  }
+
+  function narysujOdyseusza(procNapiecia) {
+    var x = ODYSEUSZ_X, y = ODYSEUSZ_Y;
+    ctx.fillStyle = '#3a2f26';
+    ctx.beginPath();
+    ctx.ellipse(x, y + 4, 20, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nogi
+    ctx.strokeStyle = '#8a6a42';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.moveTo(x - 4, y - 30); ctx.lineTo(x - 8, y);
+    ctx.moveTo(x + 4, y - 30); ctx.lineTo(x + 8, y);
+    ctx.stroke();
+
+    // Tunika (tulow)
+    ctx.fillStyle = '#c9483a';
+    ctx.beginPath();
+    ctx.moveTo(x - 12, y - 30);
+    ctx.lineTo(x + 12, y - 30);
+    ctx.lineTo(x + 9, y - 68);
+    ctx.lineTo(x - 9, y - 68);
+    ctx.closePath();
+    ctx.fill();
+
+    // Glowa
+    ctx.fillStyle = '#e0b48a';
+    ctx.beginPath();
+    ctx.arc(x, y - 78, 10, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Luk (przod postaci) - krzywizna + ciecziwa odciagana proporcjonalnie
+    var bowX = x + 16;
+    var bowTopY = y - 88, bowBotY = y - 20;
+    var bowMidY = (bowTopY + bowBotY) / 2;
+    var uginiecie = 10;
+    ctx.strokeStyle = '#6b4a2a';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(bowX, bowTopY);
+    ctx.quadraticCurveTo(bowX + uginiecie, bowMidY, bowX, bowBotY);
+    ctx.stroke();
+
+    var punktCiecziwyX = bowX - procNapiecia * 26;
+    ctx.strokeStyle = '#e8e0c8';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(bowX, bowTopY);
+    ctx.lineTo(punktCiecziwyX, bowMidY);
+    ctx.lineTo(bowX, bowBotY);
+    ctx.stroke();
+  }
+
+  function narysujKonia(kon) {
+    ctx.save();
+    ctx.translate(kon.x, kon.y);
+    ctx.fillStyle = '#5a4030';
+    // Tulow
+    ctx.beginPath();
+    ctx.ellipse(0, -14, 22, 13, 0, 0, Math.PI * 2);
+    ctx.fill();
+    // Nogi
+    ctx.strokeStyle = '#5a4030';
+    ctx.lineWidth = 4;
+    var fazaNog = Math.sin(kon.fazaBiegu) * 6;
+    ctx.beginPath();
+    ctx.moveTo(-14, -4); ctx.lineTo(-14 + fazaNog, 12);
+    ctx.moveTo(-4, -4); ctx.lineTo(-4 - fazaNog, 12);
+    ctx.moveTo(8, -4); ctx.lineTo(8 + fazaNog, 12);
+    ctx.moveTo(16, -4); ctx.lineTo(16 - fazaNog, 12);
+    ctx.stroke();
+    // Szyja + glowa
+    ctx.fillStyle = '#5a4030';
+    ctx.beginPath();
+    ctx.moveTo(18, -22);
+    ctx.lineTo(30, -34);
+    ctx.lineTo(34, -26);
+    ctx.lineTo(22, -14);
+    ctx.closePath();
+    ctx.fill();
+    // Grzywa
+    ctx.strokeStyle = '#2a1f18';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(20, -26); ctx.lineTo(28, -20);
+    ctx.stroke();
+    // Ogon
+    ctx.beginPath();
+    ctx.moveTo(-22, -18); ctx.lineTo(-32, -6);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function narysujStrzale(s) {
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    var kat = Math.atan2(s.vy, s.vx);
+    ctx.rotate(kat);
+    ctx.strokeStyle = '#4a3a28';
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(-14, 0); ctx.lineTo(6, 0);
+    ctx.stroke();
+    ctx.fillStyle = '#c9c9d4';
+    ctx.beginPath();
+    ctx.moveTo(6, 0); ctx.lineTo(-2, -4); ctx.lineTo(-2, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function narysujPodgladLotu() {
+    if (!celowanie) return;
+    var dx = startX - aktX, dy = startY - aktY;
+    var dl = Math.min(Math.sqrt(dx * dx + dy * dy), MAX_PRZECIAGNIECIE);
+    var kat = Math.atan2(dy, dx);
+    var vx = Math.cos(kat) * dl * MNOZNIK_MOCY;
+    var vy = Math.sin(kat) * dl * MNOZNIK_MOCY;
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    var px = ODYSEUSZ_X + 16, py = ODYSEUSZ_Y - 54;
+    var pvx = vx, pvy = vy;
+    for (var i = 0; i < 14; i++) {
+      pvy += GRAWITACJA * 0.05;
+      px += pvx * 0.05;
+      py += pvy * 0.05;
+      if (py > ZIEMIA_Y) break;
+      ctx.beginPath();
+      ctx.arc(px, py, 2.2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function rysujWszystko() {
+    ctx.clearRect(0, 0, W, H);
+    narysujTlo();
+    var procNapiecia = 0;
+    if (celowanie) {
+      var dx = startX - aktX, dy = startY - aktY;
+      procNapiecia = Math.min(1, Math.sqrt(dx * dx + dy * dy) / MAX_PRZECIAGNIECIE);
+    }
+    narysujOdyseusza(procNapiecia);
+    konie.forEach(narysujKonia);
+    strzaly.forEach(narysujStrzale);
+    narysujPodgladLotu();
+  }
+
+  // ========================================================
+  // STEROWANIE (odciaganie ciecziwy)
+  // ========================================================
+  canvas.addEventListener('pointerdown', function (e) {
+    if (!trwa) return;
+    inicjujDzwiek();
+    var r = canvas.getBoundingClientRect();
+    startX = (e.clientX - r.left) * (W / r.width);
+    startY = (e.clientY - r.top) * (H / r.height);
+    aktX = startX; aktY = startY;
+    celowanie = true;
+    rozpocznijDzwiekNapinania();
+  });
+  canvas.addEventListener('pointermove', function (e) {
+    if (!celowanie) return;
+    var r = canvas.getBoundingClientRect();
+    aktX = (e.clientX - r.left) * (W / r.width);
+    aktY = (e.clientY - r.top) * (H / r.height);
+    var dx = startX - aktX, dy = startY - aktY;
+    var proc = Math.min(1, Math.sqrt(dx * dx + dy * dy) / MAX_PRZECIAGNIECIE);
+    aktualizujDzwiekNapinania(proc);
+  });
+  function zakonczCelowanie(e) {
+    if (!celowanie) return;
+    celowanie = false;
+    var dx = startX - aktX, dy = startY - aktY;
+    var dl = Math.sqrt(dx * dx + dy * dy);
+    if (dl < 12) {
+      zakonczDzwiekNapinaniaBezStrzalu();
+      return;
+    }
+    dl = Math.min(dl, MAX_PRZECIAGNIECIE);
+    var kat = Math.atan2(dy, dx);
+    var vx = Math.cos(kat) * dl * MNOZNIK_MOCY;
+    var vy = Math.sin(kat) * dl * MNOZNIK_MOCY;
+    strzaly.push({ x: ODYSEUSZ_X + 16, y: ODYSEUSZ_Y - 54, vx: vx, vy: vy });
+    zakonczDzwiekNapinaniaIStrzel();
+  }
+  canvas.addEventListener('pointerup', zakonczCelowanie);
+  canvas.addEventListener('pointercancel', zakonczCelowanie);
+
+  // ========================================================
+  // PETLA GRY
+  // ========================================================
+  function poziomAktualny() { return POZIOMY[poziomIndeks]; }
+
+  function zespawnujKonia() {
+    var p = poziomAktualny();
+    konie.push({
+      x: W + 30,
+      y: ZIEMIA_Y,
+      predkosc: p.predkoscKonia,
+      fazaBiegu: 0,
+    });
+    zespawnowanoWPoziomie++;
+  }
+
+  function aktualizujEtykiety() {
+    trafienEtykieta.textContent = trafionoLacznie + ' / ' + CEL_LACZNY;
+    poziomEtykieta.textContent = 'Poziom ' + (poziomIndeks + 1) + ' / ' + POZIOMY.length;
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
+    czasOstatni = czas;
+
+    var p = poziomAktualny();
+
+    // Spawnowanie koni
+    var koniNaEkranie = konie.length;
+    if (zespawnowanoWPoziomie < p.koni && koniNaEkranie < p.maxRownoczesnie) {
+      czasOdSpawnu += dt;
+      if (czasOdSpawnu >= p.odstepSpawnu) {
+        czasOdSpawnu = 0;
+        zespawnujKonia();
+      }
+    }
+
+    // Ruch koni
+    for (var i = konie.length - 1; i >= 0; i--) {
+      var k = konie[i];
+      k.x -= k.predkosc * dt;
+      k.fazaBiegu += dt * 10;
+      if (k.x < -40) konie.splice(i, 1);
+    }
+
+    // Ruch strzal + kolizje
+    for (var j = strzaly.length - 1; j >= 0; j--) {
+      var s = strzaly[j];
+      s.vy += GRAWITACJA * dt;
+      s.x += s.vx * dt;
+      s.y += s.vy * dt;
+
+      if (s.x > W + 20 || s.x < -20 || s.y > H + 20) {
+        strzaly.splice(j, 1);
+        continue;
+      }
+
+      var trafiony = -1;
+      for (var m = 0; m < konie.length; m++) {
+        var kk = konie[m];
+        if (Math.abs(s.x - kk.x) < 24 && Math.abs(s.y - (kk.y - 16)) < 26) {
+          trafiony = m;
+          break;
+        }
+      }
+      if (trafiony !== -1) {
+        konie.splice(trafiony, 1);
+        strzaly.splice(j, 1);
+        zagrajTrafienie();
+        trafionoLacznie++;
+        trafionoWPoziomie++;
+        aktualizujEtykiety();
+
+        if (trafionoWPoziomie >= p.koni) {
+          przejdzDoNastepnegoPoziomu();
+          return;
+        }
+      }
+    }
+
+    rysujWszystko();
+    requestAnimationFrame(petla);
+  }
+
+  function przejdzDoNastepnegoPoziomu() {
+    trwa = false;
+    konie = [];
+    strzaly = [];
+
+    if (poziomIndeks >= POZIOMY.length - 1) {
+      zakonczGre(true);
+      return;
+    }
+
+    zagrajPoziomUkonczony();
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🎯 Poziom ukończony!';
+    nakladkaOpis.textContent = 'Konie jadą szybciej na kolejnym poziomie...';
+    nakladkaBtn.style.display = 'inline-block';
+    nakladkaBtn.textContent = 'Następny poziom ▶';
+    nakladkaBtn.onclick = function () {
+      inicjujDzwiek();
+      poziomIndeks++;
+      trafionoWPoziomie = 0;
+      zespawnowanoWPoziomie = 0;
+      czasOdSpawnu = 0;
+      aktualizujEtykiety();
+      nakladka.style.display = 'none';
+      trwa = true;
+      czasOstatni = null;
+      requestAnimationFrame(petla);
+    };
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    nakladka.style.display = 'flex';
+    if (wygrana) {
+      zagrajZwyciestwo();
+      nakladkaTytul.textContent = '🏆 Wszystkie konie trafione!';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+      nakladkaBtn.style.display = 'none';
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+    }
+  }
+
+  function rozpocznijGre() {
+    poziomIndeks = 0;
+    trafionoLacznie = 0;
+    trafionoWPoziomie = 0;
+    zespawnowanoWPoziomie = 0;
+    konie = [];
+    strzaly = [];
+    czasOdSpawnu = 0;
+    czasOstatni = null;
+    aktualizujEtykiety();
+    nakladka.style.display = 'none';
+    trwa = true;
+    rysujWszystko();
+    requestAnimationFrame(petla);
+  }
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  rysujWszystko();
+</script>
+</body>
+</html>
+"""
+
+SZABLON_PARKOUR = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; -webkit-user-select: none; user-select: none; }
+  html, body { width: 100%; overflow: hidden; background: #0d0d0d; touch-action: none; }
+  #gra {
+    position: relative;
+    width: 100%;
+    height: 560px;
+    overflow: hidden;
+    background: #0d0d0d;
+    display: flex;
+    flex-direction: column;
+  }
+  #canvasGry { display: block; width: 100%; height: 450px; flex: 0 0 auto; }
+  #panel {
+    position: absolute;
+    top: 10px; left: 50%;
+    transform: translateX(-50%);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.6);
+    z-index: 4;
+    text-align: center;
+  }
+  #komunikatSpadku {
+    position: absolute;
+    top: 40px; left: 50%;
+    transform: translateX(-50%);
+    color: #ffb0b0;
+    font-size: 13px;
+    font-weight: 700;
+    text-shadow: 0 2px 5px rgba(0,0,0,0.7);
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  #komunikatSpadku.widoczny { opacity: 1; }
+  #paskMocyOtoczka {
+    position: absolute;
+    bottom: 96px; left: 50%;
+    transform: translateX(-50%);
+    width: 160px; height: 14px;
+    background: rgba(0,0,0,0.4);
+    border: 1.5px solid rgba(255,255,255,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    z-index: 4;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  #paskMocyOtoczka.widoczny { opacity: 1; }
+  #paskMocyWypelnienie {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #8fe89a, #f5d76e, #e6543c);
+    transition: width 0.05s linear;
+  }
+  #sterowanieParkour {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    padding: 10px 0;
+  }
+  .btn-kierunek {
+    width: 96px;
+    height: 68px;
+    background: linear-gradient(135deg, #3a3550, #262038);
+    border: 1px solid #5a4a2e;
+    border-radius: 14px;
+    color: #f5f5f0;
+    font-size: 26px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+  }
+  .btn-kierunek.laduje {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    transform: scale(0.94);
+  }
+  #nakladka {
+    position: absolute;
+    inset: 0;
+    background: rgba(10,10,10,0.94);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+    z-index: 10;
+  }
+  #nakladkaTytul { color: #f5f5f0; font-size: 21px; font-weight: 700; margin-bottom: 10px; }
+  #nakladkaOpis { color: #d8cdb0; font-size: 14px; margin-bottom: 18px; max-width: 280px; line-height: 1.5; }
+  .gra-btn {
+    background: linear-gradient(135deg, #e6c15c, #d4af37);
+    color: #16130a;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 26px;
+    font-weight: 700;
+    font-size: 15px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.4);
+  }
+  .gra-btn:active { transform: scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="canvasGry" width="380" height="450"></canvas>
+  <div id="panel">Platforma <span id="platformaEtykieta">1</span> / 12</div>
+  <div id="komunikatSpadku">Spadłaś! Wracasz do punktu kontrolnego.</div>
+  <div id="paskMocyOtoczka"><div id="paskMocyWypelnienie"></div></div>
+  <div id="sterowanieParkour">
+    <button class="btn-kierunek" id="btnLewo">⬅️</button>
+    <button class="btn-kierunek" id="btnPrawo">➡️</button>
+  </div>
+  <div id="nakladka">
+    <div id="nakladkaTytul">🧗 Parkour Odyseusza</div>
+    <div id="nakladkaOpis">Wspinaj się na szczyt wieży! Przytrzymaj strzałkę, żeby naładować skok — im dłużej trzymasz, tym wyżej i dalej skoczysz. Puść, żeby skoczyć.</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra = document.getElementById('gra');
+  var canvas = document.getElementById('canvasGry');
+  var ctx = canvas.getContext('2d');
+  var platformaEtykieta = document.getElementById('platformaEtykieta');
+  var komunikatSpadku = document.getElementById('komunikatSpadku');
+  var paskMocyOtoczka = document.getElementById('paskMocyOtoczka');
+  var paskMocyWypelnienie = document.getElementById('paskMocyWypelnienie');
+  var btnLewo = document.getElementById('btnLewo');
+  var btnPrawo = document.getElementById('btnPrawo');
+  var nakladka = document.getElementById('nakladka');
+  var nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis');
+  var nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var W = 380, H = 450;
+
+  var GRAWITACJA = 900;
+  var MOC_MIN = 180;
+  var MOC_MAX = 560;
+  var MNOZNIK_POZIOMY = 0.45;
+  var MAX_LADOWANIE_S = 1.1;
+  var POSTAC_R = 13;
+
+  // Uklad platform zweryfikowany fizycznie PRZED napisaniem tego kodu -
+  // kazdy kolejny skok jest osiagalny przy jakims % naladowania w
+  // przedziale 55-70%, wiec trasa jest uczciwa i przechodliwa.
+  var PLATFORMY = [
+    { x: 100, y: 0, w: 140 },
+    { x: 250, y: -70, w: 70 },
+    { x: 100, y: -150, w: 70 },
+    { x: 260, y: -210, w: 60 },
+    { x: 90, y: -290, w: 60 },
+    { x: 270, y: -350, w: 55 },
+    { x: 140, y: -440, w: 55 },
+    { x: 290, y: -500, w: 55 },
+    { x: 110, y: -580, w: 50 },
+    { x: 260, y: -660, w: 50 },
+    { x: 150, y: -750, w: 50 },
+    { x: 310, y: -840, w: 110 },
+  ];
+  var PLATFORMA_WYS = 12;
+
+  var postacX = 0, postacY = 0;
+  var postacVX = 0, postacVY = 0;
+  var naZiemi = true;
+  var platformaAktualna = 0;
+  var checkpoint = 0;
+  var kameraSwiatY = 0;
+
+  var ladowanie = false;
+  var kierunekLadowania = 0;
+  var czasLadowania = 0;
+
+  var trwa = false;
+  var czasOstatni = null;
+
+  var audioCtx = null;
+
+  function inicjujDzwiek() {
+    try {
+      var oknoNadrzedne;
+      try { oknoNadrzedne = window.top; } catch (eDostep) { oknoNadrzedne = window; }
+      if (oknoNadrzedne.__wspolnyKontekstAudio && oknoNadrzedne.__wspolnyKontekstAudio.state !== 'closed') {
+        audioCtx = oknoNadrzedne.__wspolnyKontekstAudio;
+      } else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
+      }
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
+      if (elOdmutowania && !elOdmutowania.src) {
+        elOdmutowania.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+        elOdmutowania.play().catch(function () {});
+      }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+
+  function zagrajTon(f, czasTrwania, typ) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = typ || 'square';
+      osc.frequency.value = f;
+      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
+      osc.connect(gain); gain.connect(audioCtx.destination);
+      osc.start(); osc.stop(audioCtx.currentTime + czasTrwania + 0.02);
+    } catch (e) {}
+  }
+
+  // Dzwiek ladowania skoku - ciagly, rosnacy oscylator (ta sama technika
+  // co przy napinaniu luku w grze Odyseusz), ale nizszy i "grubszy"
+  // (sawtooth w niskim rejestrze) - kojarzy sie z "zbieraniem sily",
+  // nie z ciecziwa.
+  var oscylatorLadowania = null;
+  var gainLadowania = null;
+
+  function rozpocznijDzwiekLadowania() {
+    if (!audioCtx) return;
+    try {
+      oscylatorLadowania = audioCtx.createOscillator();
+      gainLadowania = audioCtx.createGain();
+      oscylatorLadowania.type = 'sawtooth';
+      oscylatorLadowania.frequency.value = 90;
+      gainLadowania.gain.value = 0.0001;
+      gainLadowania.gain.linearRampToValueAtTime(0.08, audioCtx.currentTime + 0.08);
+      oscylatorLadowania.connect(gainLadowania);
+      gainLadowania.connect(audioCtx.destination);
+      oscylatorLadowania.start();
+    } catch (e) { oscylatorLadowania = null; }
+  }
+  function aktualizujDzwiekLadowania(proc) {
+    if (!oscylatorLadowania) return;
+    try {
+      var f = 90 + Math.min(1, proc) * 170;
+      oscylatorLadowania.frequency.setTargetAtTime(f, audioCtx.currentTime, 0.03);
+    } catch (e) {}
+  }
+  function zakonczDzwiekLadowania() {
+    if (oscylatorLadowania) {
+      try {
+        gainLadowania.gain.setTargetAtTime(0.0001, audioCtx.currentTime, 0.04);
+        oscylatorLadowania.stop(audioCtx.currentTime + 0.1);
+      } catch (e) {}
+      oscylatorLadowania = null;
+    }
+  }
+  function zagrajSkok() {
+    zagrajTon(260, 0.09, 'triangle');
+    setTimeout(function () { zagrajTon(180, 0.07, 'triangle'); }, 50);
+  }
+  function zagrajLadowanie() { zagrajTon(200, 0.05, 'square'); }
+  function zagrajSpadek() {
+    zagrajTon(300, 0.1, 'sawtooth');
+    setTimeout(function () { zagrajTon(160, 0.15, 'sawtooth'); }, 90);
+    setTimeout(function () { zagrajTon(90, 0.2, 'sawtooth'); }, 200);
+  }
+  function zagrajZwyciestwo() {
+    [523, 659, 784, 1046].forEach(function (f, i) {
+      setTimeout(function () { zagrajTon(f, 0.16, 'triangle'); }, i * 110);
+    });
+  }
+
+  // ========================================================
+  // RYSOWANIE
+  // ========================================================
+  function swiatDoEkranuY(worldY) { return worldY - kameraSwiatY + H * 0.72; }
+
+  function narysujTlo() {
+    var niebo = ctx.createLinearGradient(0, 0, H);
+    niebo.addColorStop(0, '#2a3a5c');
+    niebo.addColorStop(1, '#6a8fc4');
+    ctx.fillStyle = niebo;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  function narysujPlatforme(p) {
+    var y = swiatDoEkranuY(p.y);
+    if (y < -30 || y > H + 30) return;
+    var grad = ctx.createLinearGradient(0, y, 0, y + PLATFORMA_WYS);
+    grad.addColorStop(0, '#e6c15c');
+    grad.addColorStop(1, '#a9781f');
+    ctx.fillStyle = grad;
+    ctx.fillRect(p.x - p.w / 2, y, p.w, PLATFORMA_WYS);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(p.x - p.w / 2, y, p.w, PLATFORMA_WYS);
+  }
+
+  function narysujMete() {
+    var top = PLATFORMY[PLATFORMY.length - 1];
+    var y = swiatDoEkranuY(top.y);
+    ctx.font = '26px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('🏁', top.x, y - 10);
+  }
+
+  function narysujPostac() {
+    var x = postacX;
+    var y = swiatDoEkranuY(postacY);
+    ctx.fillStyle = '#c9483a';
+    ctx.beginPath();
+    ctx.arc(x, y - POSTAC_R, POSTAC_R, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#e0b48a';
+    ctx.beginPath();
+    ctx.arc(x, y - POSTAC_R * 2.1, 6, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function rysujWszystko() {
+    ctx.clearRect(0, 0, W, H);
+    narysujTlo();
+    PLATFORMY.forEach(narysujPlatforme);
+    narysujMete();
+    narysujPostac();
+  }
+
+  // ========================================================
+  // STEROWANIE
+  // ========================================================
+  function rozpocznijLadowanie(kierunek) {
+    if (!trwa || !naZiemi || ladowanie) return;
+    inicjujDzwiek();
+    ladowanie = true;
+    kierunekLadowania = kierunek;
+    czasLadowania = 0;
+    paskMocyOtoczka.classList.add('widoczny');
+    paskMocyWypelnienie.style.width = '0%';
+    rozpocznijDzwiekLadowania();
+    (kierunek < 0 ? btnLewo : btnPrawo).classList.add('laduje');
+  }
+
+  function wykonajSkok() {
+    if (!ladowanie) return;
+    var proc = Math.min(1, czasLadowania / MAX_LADOWANIE_S);
+    var moc = MOC_MIN + proc * (MOC_MAX - MOC_MIN);
+    postacVY = -moc;
+    postacVX = kierunekLadowania * moc * MNOZNIK_POZIOMY;
+    naZiemi = false;
+    ladowanie = false;
+    paskMocyOtoczka.classList.remove('widoczny');
+    btnLewo.classList.remove('laduje');
+    btnPrawo.classList.remove('laduje');
+    zakonczDzwiekLadowania();
+    zagrajSkok();
+  }
+
+  btnLewo.addEventListener('pointerdown', function () { rozpocznijLadowanie(-1); });
+  btnPrawo.addEventListener('pointerdown', function () { rozpocznijLadowanie(1); });
+  btnLewo.addEventListener('pointerup', wykonajSkok);
+  btnPrawo.addEventListener('pointerup', wykonajSkok);
+  btnLewo.addEventListener('pointerleave', wykonajSkok);
+  btnPrawo.addEventListener('pointerleave', wykonajSkok);
+
+  // ========================================================
+  // PETLA GRY
+  // ========================================================
+  function aktualizujEtykiete() {
+    platformaEtykieta.textContent = (platformaAktualna + 1);
+  }
+
+  function pokazKomunikatSpadku() {
+    komunikatSpadku.classList.add('widoczny');
+    setTimeout(function () { komunikatSpadku.classList.remove('widoczny'); }, 1800);
+  }
+
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.033);
+    czasOstatni = czas;
+
+    if (ladowanie) {
+      czasLadowania += dt;
+      var proc = Math.min(1, czasLadowania / MAX_LADOWANIE_S);
+      paskMocyWypelnienie.style.width = (proc * 100) + '%';
+      aktualizujDzwiekLadowania(proc);
+    }
+
+    if (!naZiemi) {
+      var postacYPrzedRuchem = postacY;
+      postacVY += GRAWITACJA * dt;
+      postacX += postacVX * dt;
+      postacY += postacVY * dt;
+
+      if (postacX < POSTAC_R) postacX = POSTAC_R;
+      if (postacX > W - POSTAC_R) postacX = W - POSTAC_R;
+
+      // Sprawdzenie ladowania - TYLKO gdy spadamy (vy>0), porownujac
+      // pozycje SPRZED tej klatki z pozycja PO niej (nie projektujac
+      // dodatkowy krok naprzod od juz zaktualizowanej pozycji).
+      if (postacVY > 0) {
+        for (var i = 0; i < PLATFORMY.length; i++) {
+          var p = PLATFORMY[i];
+          if (postacYPrzedRuchem <= p.y && postacY >= p.y) {
+            if (postacX > p.x - p.w / 2 - POSTAC_R * 0.5 && postacX < p.x + p.w / 2 + POSTAC_R * 0.5) {
+              postacY = p.y;
+              postacVX = 0; postacVY = 0;
+              naZiemi = true;
+              platformaAktualna = i;
+              if (i > checkpoint) checkpoint = i;
+              aktualizujEtykiete();
+              zagrajLadowanie();
+
+              if (i === PLATFORMY.length - 1) {
+                zakonczGre(true);
+                return;
+              }
+              break;
+            }
+          }
+        }
+      }
+
+      // Spadek ponizej wszystkiego - powrot do punktu kontrolnego
+      var dolnaGranica = PLATFORMY[0].y + 140;
+      if (postacY > dolnaGranica) {
+        var cp = PLATFORMY[checkpoint];
+        postacX = cp.x; postacY = cp.y;
+        postacVX = 0; postacVY = 0;
+        naZiemi = true;
+        platformaAktualna = checkpoint;
+        aktualizujEtykiete();
+        zagrajSpadek();
+        pokazKomunikatSpadku();
+      }
+    }
+
+    var celKamery = postacY - H * 0.02;
+    kameraSwiatY += (celKamery - kameraSwiatY) * Math.min(1, dt * 4);
+
+    rysujWszystko();
+    requestAnimationFrame(petla);
+  }
+
+  function zakonczGre(wygrana) {
+    trwa = false;
+    if (wygrana) {
+      zagrajZwyciestwo();
+      nakladka.style.display = 'flex';
+      nakladkaTytul.textContent = '🏆 Szczyt zdobyty!';
+      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
+      nakladkaBtn.style.display = 'none';
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+    }
+  }
+
+  function rozpocznijGre() {
+    var start = PLATFORMY[0];
+    postacX = start.x; postacY = start.y;
+    postacVX = 0; postacVY = 0;
+    naZiemi = true;
+    platformaAktualna = 0;
+    checkpoint = 0;
+    kameraSwiatY = postacY - H * 0.02;
+    ladowanie = false;
+    aktualizujEtykiete();
+    nakladka.style.display = 'none';
+    trwa = true;
+    czasOstatni = null;
+    rysujWszystko();
+    requestAnimationFrame(petla);
+  }
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  rysujWszystko();
+</script>
+</body>
+</html>
+"""
+
+SZABLON_LABIRYNT = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
+  html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:700px; overflow:hidden; background:#0d0d0d; }
+  #widok { display:block; width:100%; height:400px; background:#12100e; }
+
+  #hud { position:absolute; top:0; left:0; right:0; padding:6px 8px; z-index:5; pointer-events:none; }
+  .pasek-otoczka { height:12px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.25); border-radius:6px; overflow:hidden; margin-bottom:3px; }
+  .pasek-wyp { height:100%; transition:width 0.18s ease; }
+  #paskHp { background:linear-gradient(90deg,#c0392b,#e74c3c); }
+  #paskXp { background:linear-gradient(90deg,#8e6cc4,#b89ae6); }
+  #hudTekst { display:flex; justify-content:space-between; color:#f0e8d0; font-size:11px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,0.9); }
+
+  #dziennik { position:absolute; top:64px; left:8px; right:8px; z-index:5; pointer-events:none; }
+  .wpis-dziennika { color:#f0e8d0; font-size:11px; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.95); margin-bottom:2px; opacity:0; animation:pokazWpis 2.6s ease forwards; }
+  @keyframes pokazWpis { 0%{opacity:0;transform:translateY(-4px);} 12%{opacity:1;transform:translateY(0);} 78%{opacity:1;} 100%{opacity:0;} }
+
+  #panelDolny { position:absolute; top:400px; left:0; right:0; bottom:0; background:linear-gradient(180deg,#1a1520,#100d16); border-top:2px solid #4a3a2e; padding:8px; overflow-y:auto; }
+  #rzadPrzyciskow { display:flex; gap:6px; margin-bottom:8px; }
+  .btn-panel { flex:1; background:linear-gradient(135deg,#3a3550,#262038); border:1px solid #5a4a2e; border-radius:9px; color:#f0e8d0; font-size:11px; font-weight:700; padding:9px 2px; }
+  .btn-panel.aktywny { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
+  .btn-panel .odznaka { display:inline-block; background:#c0392b; color:#fff; border-radius:8px; padding:0 5px; font-size:10px; margin-left:3px; }
+
+  .sekcja { display:none; }
+  .sekcja.widoczna { display:block; }
+
+  .wiersz-statu { display:flex; align-items:center; gap:6px; padding:3px 5px; background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:3px; }
+  .wiersz-statu .nazwa { flex:1; color:#d8cdb0; font-size:11px; font-weight:600; }
+  .wiersz-statu .wartosc { color:#f0dfa8; font-size:12px; font-weight:700; min-width:44px; text-align:right; }
+  .btn-plus { width:24px; height:24px; border-radius:6px; border:none; background:linear-gradient(135deg,#7ec98a,#3fae55); color:#0d1a0d; font-size:15px; font-weight:700; }
+  .btn-plus:disabled { opacity:0.22; }
+
+  .siatka-ekw { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+  .slot-ekw { position:relative; aspect-ratio:1/1; background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.14); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .slot-ekw .tier-kropka { position:absolute; top:2px; right:2px; width:7px; height:7px; border-radius:50%; }
+  .slot-ekw.pusty { opacity:0.3; }
+  .naglowek-sekcji { color:#a89878; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; margin:7px 0 4px; font-weight:700; }
+  .zalozone-wiersz { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); border-radius:7px; padding:5px 7px; margin-bottom:3px; }
+  .zalozone-wiersz .ikona { font-size:17px; }
+  .zalozone-wiersz .opis { flex:1; }
+  .zalozone-wiersz .tytul { font-size:11px; font-weight:700; }
+  .zalozone-wiersz .staty { font-size:10px; color:#a89878; }
+
+  #nakladka { position:absolute; inset:0; background:rgba(8,6,10,0.95); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:22px; z-index:20; }
+  #nakladkaTytul { color:#f5f5f0; font-size:21px; font-weight:700; margin-bottom:10px; }
+  #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.55; }
+  .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px; padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  .gra-btn:active { transform:scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="widok" width="380" height="400"></canvas>
+
+  <div id="hud">
+    <div class="pasek-otoczka"><div class="pasek-wyp" id="paskHp" style="width:100%"></div></div>
+    <div class="pasek-otoczka" style="height:7px"><div class="pasek-wyp" id="paskXp" style="width:0%"></div></div>
+    <div id="hudTekst">
+      <span id="hudHp">100 / 100</span>
+      <span id="hudPoziom">Poziom 1</span>
+      <span id="hudMikstury">🧪 0</span>
+    </div>
+  </div>
+  <div id="dziennik"></div>
+
+  <div id="panelDolny">
+    <div id="rzadPrzyciskow">
+      <button class="btn-panel aktywny" id="btnStaty">📊 Statystyki<span class="odznaka" id="odznakaPkt" style="display:none">0</span></button>
+      <button class="btn-panel" id="btnEkw">🎒 Plecak<span class="odznaka" id="odznakaEkw" style="display:none">0</span></button>
+      <button class="btn-panel" id="btnMikstura">🧪 Wypij</button>
+    </div>
+    <div class="sekcja widoczna" id="sekcjaStaty"></div>
+    <div class="sekcja" id="sekcjaEkw"></div>
+  </div>
+
+  <div id="nakladka">
+    <div id="nakladkaTytul">⚔️ Labirynt Cieni</div>
+    <div id="nakladkaOpis">Przemierz labirynt, zbieraj łupy, rozwijaj postać i pokonaj <b>Władcę Labiryntu</b>.<br><br>Dotknij ekranu i przeciągnij, żeby iść — atakujesz automatycznie.</div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var widok = document.getElementById('widok');
+  var ctx = widok.getContext('2d');
+  var paskHp = document.getElementById('paskHp'), paskXp = document.getElementById('paskXp');
+  var hudHp = document.getElementById('hudHp'), hudPoziom = document.getElementById('hudPoziom'), hudMikstury = document.getElementById('hudMikstury');
+  var dziennikEl = document.getElementById('dziennik');
+  var sekcjaStaty = document.getElementById('sekcjaStaty'), sekcjaEkw = document.getElementById('sekcjaEkw');
+  var btnStaty = document.getElementById('btnStaty'), btnEkw = document.getElementById('btnEkw'), btnMikstura = document.getElementById('btnMikstura');
+  var odznakaPkt = document.getElementById('odznakaPkt'), odznakaEkw = document.getElementById('odznakaEkw');
+  var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul'), nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var WID = 380, WYS = 400;
+  var KAFEL = 44, SIATKA = 68;
+
+  // ---------- DZWIEK ----------
+  var audioCtx = null;
+  function inicjujDzwiek() {
+    try {
+      var okno; try { okno = window.top; } catch (e) { okno = window; }
+      if (okno.__wspolnyKontekstAudio && okno.__wspolnyKontekstAudio.state !== 'closed') audioCtx = okno.__wspolnyKontekstAudio;
+      else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { okno.__wspolnyKontekstAudio = audioCtx; } catch (e2) {}
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var el = document.getElementById('odblokowanieDzwiekuIOS');
+      if (el && !el.src) { el.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='; el.play().catch(function(){}); }
+    } catch (e) {}
+  }
+  ['pointerdown','touchstart','click'].forEach(function (ev) { document.addEventListener(ev, inicjujDzwiek, { passive:true }); });
+
+  function ton(f, dl, typ, glosnosc) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = typ || 'square'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(glosnosc || 0.16, audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dl);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(); o.stop(audioCtx.currentTime + dl + 0.02);
+    } catch (e) {}
+  }
+  function dzwiekCiecia() { ton(300, 0.07, 'sawtooth', 0.13); setTimeout(function(){ ton(170,0.05,'sawtooth',0.09); }, 40); }
+  function dzwiekMagii() { ton(560, 0.06, 'sine', 0.12); setTimeout(function(){ ton(820,0.08,'sine',0.1); }, 45); }
+  function dzwiekTrafienia() { ton(200, 0.05, 'square', 0.1); }
+  function dzwiekKryt() { ton(880, 0.05, 'square', 0.16); setTimeout(function(){ ton(1180,0.09,'square',0.14); }, 40); }
+  function dzwiekSmierciWroga() { ton(160, 0.09, 'sawtooth', 0.12); setTimeout(function(){ ton(80,0.16,'sawtooth',0.1); }, 80); }
+  function dzwiekLup() { ton(660, 0.07, 'triangle', 0.13); setTimeout(function(){ ton(990,0.11,'triangle',0.12); }, 60); }
+  function dzwiekAwans() { [523,659,784,1046].forEach(function (f,i) { setTimeout(function(){ ton(f,0.16,'triangle',0.15); }, i*95); }); }
+  function dzwiekMikstura() { ton(400,0.07,'sine',0.13); setTimeout(function(){ ton(700,0.13,'sine',0.12); }, 70); }
+  function dzwiekObrazenia() { ton(150, 0.1, 'sawtooth', 0.13); }
+  function dzwiekZwyciestwo() { [523,659,784,1046,1318].forEach(function (f,i) { setTimeout(function(){ ton(f,0.2,'triangle',0.16); }, i*130); }); }
+  function dzwiekSmierciGracza() { [300,240,180,120].forEach(function (f,i) { setTimeout(function(){ ton(f,0.26,'sawtooth',0.14); }, i*150); }); }
+
+  // ---------- DANE: BRONIE, PANCERZ, TIERY ----------
+  var TIERY = [
+    { nazwa:'Zwykły',     kolor:'#b8b8b8', mnoznik:1.00 },
+    { nazwa:'Niezwykły',  kolor:'#5ec46a', mnoznik:1.35 },
+    { nazwa:'Rzadki',     kolor:'#5aa8e6', mnoznik:1.75 },
+    { nazwa:'Epicki',     kolor:'#b06ce8', mnoznik:2.25 },
+    { nazwa:'Legendarny', kolor:'#e6b53c', mnoznik:2.95 },
+  ];
+
+  var RODZAJE_BRONI = {
+    miecz:      { nazwa:'Miecz',              ikona:'⚔️', zasieg:62,  tempo:0.42, obr:13, magiczna:false, opis:'Zrównoważony' },
+    topor:      { nazwa:'Topór',              ikona:'🪓', zasieg:58,  tempo:0.62, obr:22, magiczna:false, opis:'Powolny, mocny' },
+    mlot:       { nazwa:'Młot',               ikona:'🔨', zasieg:54,  tempo:0.85, obr:34, magiczna:false, opis:'Bardzo powolny, miażdżący' },
+    sztylety:   { nazwa:'Sztylety',           ikona:'🗡️', zasieg:46,  tempo:0.22, obr:7,  magiczna:false, opis:'Błyskawiczne, wysoki krytyk', bonusKryt:0.12 },
+    rozdzka:    { nazwa:'Różdżka',            ikona:'🪄', zasieg:210, tempo:0.50, obr:11, magiczna:true,  opis:'Pocisk na dystans' },
+    rozdzkaOgnia:{nazwa:'Różdżka Ognia',      ikona:'🔥', zasieg:190, tempo:0.62, obr:15, magiczna:true,  opis:'Podpala wrogów', efekt:'ogien' },
+    rozdzkaPior:{ nazwa:'Różdżka Piorunów',   ikona:'⚡', zasieg:200, tempo:0.55, obr:13, magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
+    rozdzkaWody:{ nazwa:'Różdżka Wody',       ikona:'💧', zasieg:205, tempo:0.44, obr:10, magiczna:true,  opis:'Spowalnia wrogów', efekt:'woda' },
+  };
+  var KLUCZE_BRONI = Object.keys(RODZAJE_BRONI);
+
+  var RODZAJE_PANCERZA = {
+    helm:   { nazwa:'Hełm',      ikona:'🪖', slot:'helm',   obrona:7,  bonus:'unik' },
+    zbroja: { nazwa:'Zbroja',    ikona:'🛡️', slot:'zbroja', obrona:14, bonus:'zdrowie' },
+    buty:   { nazwa:'Buty',      ikona:'🥾', slot:'buty',   obrona:5,  bonus:'predkosc' },
+    amulet: { nazwa:'Amulet',    ikona:'📿', slot:'amulet', obrona:2,  bonus:'magia' },
+  };
+  var KLUCZE_PANCERZA = Object.keys(RODZAJE_PANCERZA);
+
+  var DEF_STATOW = [
+    { klucz:'zdrowie',   nazwa:'Zdrowie',          ikona:'❤️', naPunkt:16,   sufiks:'' },
+    { klucz:'atak',      nazwa:'Atak',             ikona:'⚔️', naPunkt:4,    sufiks:'' },
+    { klucz:'magia',     nazwa:'Magia',            ikona:'✨', naPunkt:4,    sufiks:'' },
+    { klucz:'predkosc',  nazwa:'Prędkość',         ikona:'👟', naPunkt:7,    sufiks:'' },
+    { klucz:'unik',      nazwa:'Unik',             ikona:'💨', naPunkt:0.018, sufiks:'%', proc:true, limit:0.5 },
+    { klucz:'kryt',      nazwa:'Szansa kryt.',     ikona:'🎯', naPunkt:0.022, sufiks:'%', proc:true, limit:0.75 },
+    { klucz:'obrKryt',   nazwa:'Obrażenia kryt.',  ikona:'💥', naPunkt:0.09, sufiks:'%', proc:true, mnozny:true },
+    { klucz:'obrona',    nazwa:'Obrona',           ikona:'🛡️', naPunkt:6,    sufiks:'' },
+    { klucz:'przebicie', nazwa:'Przebicie panc.',  ikona:'🔻', naPunkt:5,    sufiks:'' },
+  ];
+
+  // ---------- STAN ----------
+  var mapa = [], komnaty = [], komnataBossa = null;
+  var gracz, wrogowie = [], pociski = [], lupyNaZiemi = [], czastki = [], teksty = [];
+  var trwa = false, czasOstatni = null, kamX = 0, kamY = 0;
+  var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
+  var bossPrzywolany = false, wygrana = false;
+
+  function losowo(a, b) { return Math.random() * (b - a) + a; }
+  function losCalk(a, b) { return Math.floor(losowo(a, b + 1)); }
+
+  // ---------- GENEROWANIE MAPY ----------
+  function generujMape() {
+    mapa = [];
+    for (var y = 0; y < SIATKA; y++) mapa.push(new Array(SIATKA).fill(0));
+    komnaty = [];
+    var proby = 0;
+    while (komnaty.length < 14 && proby < 500) {
+      proby++;
+      var w = losCalk(8, 16), h = losCalk(8, 16);
+      var x = losCalk(2, SIATKA - w - 3), y = losCalk(2, SIATKA - h - 3);
+      var kol = komnaty.some(function (k) { return !(x+w+2 < k.x || x > k.x+k.w+2 || y+h+2 < k.y || y > k.y+k.h+2); });
+      if (kol) continue;
+      komnaty.push({ x:x, y:y, w:w, h:h, cx:Math.floor(x+w/2), cy:Math.floor(y+h/2) });
+    }
+    komnaty.forEach(function (k) {
+      for (var yy = k.y; yy < k.y+k.h; yy++) for (var xx = k.x; xx < k.x+k.w; xx++) mapa[yy][xx] = 1;
+    });
+    function korytarz(x, y) {
+      for (var dy = -1; dy <= 1; dy++) for (var dx = -1; dx <= 1; dx++) {
+        var nx = x+dx, ny = y+dy;
+        if (nx > 0 && nx < SIATKA-1 && ny > 0 && ny < SIATKA-1) mapa[ny][nx] = 1;
+      }
+    }
+    for (var i = 1; i < komnaty.length; i++) {
+      var a = komnaty[i-1], b = komnaty[i];
+      var x = a.cx, y = a.cy;
+      while (x !== b.cx) { korytarz(x, y); x += (b.cx > x ? 1 : -1); }
+      while (y !== b.cy) { korytarz(x, y); y += (b.cy > y ? 1 : -1); }
+      korytarz(b.cx, b.cy);
+    }
+    // Komnata bossa = najdalsza od startowej
+    var start = komnaty[0];
+    var najdalsza = komnaty[1] || komnaty[0], najdal = -1;
+    komnaty.forEach(function (k, idx) {
+      if (idx === 0) return;
+      var d = Math.abs(k.cx-start.cx) + Math.abs(k.cy-start.cy);
+      if (d > najdal) { najdal = d; najdalsza = k; }
+    });
+    komnataBossa = najdalsza;
+  }
+
+  function czySciana(px, py) {
+    var tx = Math.floor(px / KAFEL), ty = Math.floor(py / KAFEL);
+    if (tx < 0 || ty < 0 || tx >= SIATKA || ty >= SIATKA) return true;
+    return mapa[ty][tx] !== 1;
+  }
+
+  // ---------- PRZEDMIOTY ----------
+  function stworzBron(tier, rodzajKlucz) {
+    var rodzaj = rodzajKlucz || KLUCZE_BRONI[losCalk(0, KLUCZE_BRONI.length-1)];
+    var d = RODZAJE_BRONI[rodzaj];
+    var m = TIERY[tier].mnoznik;
+    return {
+      kategoria:'bron', rodzaj:rodzaj, tier:tier,
+      nazwa: TIERY[tier].nazwa + ' ' + d.nazwa,
+      ikona: d.ikona, obr: Math.round(d.obr * m), zasieg: d.zasieg, tempo: d.tempo,
+      magiczna: d.magiczna, efekt: d.efekt || null, bonusKryt: d.bonusKryt || 0, opis: d.opis,
+    };
+  }
+  function stworzPancerz(tier, rodzajKlucz) {
+    var rodzaj = rodzajKlucz || KLUCZE_PANCERZA[losCalk(0, KLUCZE_PANCERZA.length-1)];
+    var d = RODZAJE_PANCERZA[rodzaj];
+    var m = TIERY[tier].mnoznik;
+    var bonusWartosc = { unik:0.03, zdrowie:14, predkosc:6, magia:5 }[d.bonus] * m;
+    return {
+      kategoria:'pancerz', rodzaj:rodzaj, slot:d.slot, tier:tier,
+      nazwa: TIERY[tier].nazwa + ' ' + d.nazwa, ikona: d.ikona,
+      obrona: Math.round(d.obrona * m), bonusTyp: d.bonus,
+      bonusWartosc: (d.bonus === 'unik' ? Math.round(bonusWartosc*1000)/1000 : Math.round(bonusWartosc)),
+    };
+  }
+  function tierZPoziomu(poziom) {
+    var r = Math.random();
+    var szansaWyzszych = Math.min(0.62, 0.10 + poziom * 0.045);
+    if (r > 1 - szansaWyzszych * 0.10) return 4;
+    if (r > 1 - szansaWyzszych * 0.30) return 3;
+    if (r > 1 - szansaWyzszych * 0.62) return 2;
+    if (r > 1 - szansaWyzszych) return 1;
+    return 0;
+  }
+  function opisPrzedmiotu(p) {
+    if (p.kategoria === 'bron') return p.obr + ' obr. · ' + (p.magiczna ? 'magia' : 'atak') + ' · ' + p.opis;
+    var nazwyBonusow = { unik:'unik', zdrowie:'zdrowie', predkosc:'prędkość', magia:'magia' };
+    var wart = p.bonusTyp === 'unik' ? '+' + Math.round(p.bonusWartosc*100) + '% ' : '+' + p.bonusWartosc + ' ';
+    return p.obrona + ' obrony · ' + wart + nazwyBonusow[p.bonusTyp];
+  }
+
+  // ---------- GRACZ ----------
+  function nowyGracz() {
+    return {
+      x:0, y:0, r:13, hp:100, hpMax:100, poziom:1, xp:0, xpDoNastepnego:33,
+      punkty:0, mikstury:1,
+      staty:{ zdrowie:0, atak:0, magia:0, predkosc:0, unik:0, kryt:0, obrKryt:0, obrona:0, przebicie:0 },
+      ekwipunek:[], zalozone:{ bron:stworzBron(0,'miecz'), helm:null, zbroja:null, buty:null, amulet:null },
+      cooldown:0, kierunekX:1, kierunekY:0, migotanie:0,
+    };
+  }
+
+  function wartoscStatu(klucz) {
+    var def = DEF_STATOW.find(function (d) { return d.klucz === klucz; });
+    var baza = { zdrowie:100, atak:8, magia:8, predkosc:118, unik:0.02, kryt:0.05, obrKryt:1.5, obrona:0, przebicie:0 }[klucz];
+    var zPunktow = gracz.staty[klucz] * def.naPunkt;
+    var zPancerza = 0;
+    ['helm','zbroja','buty','amulet'].forEach(function (s) {
+      var p = gracz.zalozone[s];
+      if (!p) return;
+      if (klucz === 'obrona') zPancerza += p.obrona;
+      if (p.bonusTyp === klucz) zPancerza += p.bonusWartosc;
+      if (p.bonusTyp === 'zdrowie' && klucz === 'zdrowie') { /* juz dodane */ }
+    });
+    var suma = baza + zPunktow + zPancerza;
+    if (klucz === 'kryt') suma += (gracz.zalozone.bron ? gracz.zalozone.bron.bonusKryt : 0);
+    if (def.limit) suma = Math.min(def.limit, suma);
+    return suma;
+  }
+
+  function przeliczHpMax() {
+    var nowe = Math.round(wartoscStatu('zdrowie'));
+    var roznica = nowe - gracz.hpMax;
+    gracz.hpMax = nowe;
+    if (roznica > 0) gracz.hp = Math.min(gracz.hpMax, gracz.hp + roznica);
+    gracz.hp = Math.min(gracz.hp, gracz.hpMax);
+  }
+
+  function redukcja(pancerz, przebicie) {
+    var e = Math.max(0, pancerz - przebicie);
+    return e / (e + 60);
+  }
+
+  function dodajXp(ile) {
+    gracz.xp += ile;
+    while (gracz.xp >= gracz.xpDoNastepnego) {
+      gracz.xp -= gracz.xpDoNastepnego;
+      gracz.poziom++;
+      gracz.punkty += 3;
+      gracz.xpDoNastepnego = Math.floor(26 + gracz.poziom * gracz.poziom * 7);
+      gracz.hp = gracz.hpMax;
+      dziennik('⭐ Poziom ' + gracz.poziom + '! Masz ' + gracz.punkty + ' pkt. do rozdania.');
+      dzwiekAwans();
+    }
+    odswiezHud();
+  }
+
+  // ---------- WROGOWIE ----------
+  var TYPY_WROGOW = {
+    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:34,  atak:9,  pancerz:2,  predkosc:74,  xp:9,  r:11, kolor:'#8a6a4a' },
+    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:62,  atak:16, pancerz:12, predkosc:62,  xp:15, r:13, kolor:'#d8d0c0' },
+    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:48,  atak:13, pancerz:6,  predkosc:96,  xp:13, r:12, kolor:'#5a9a4a' },
+    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:44, atak:22, pancerz:4, predkosc:52, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
+    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:150, atak:28, pancerz:22, predkosc:44,  xp:34, r:17, kolor:'#a04a3a' },
+  };
+  var KLUCZE_WROGOW = Object.keys(TYPY_WROGOW);
+
+  function stworzWroga(x, y, typKlucz, poziomMapy) {
+    var t = TYPY_WROGOW[typKlucz];
+    var skala = 1 + (poziomMapy - 1) * 0.16;
+    return {
+      x:x, y:y, typ:typKlucz, r:t.r, ikona:t.ikona, kolor:t.kolor,
+      hp: Math.round(t.hp * skala), hpMax: Math.round(t.hp * skala),
+      atak: Math.round(t.atak * skala), pancerz: Math.round(t.pancerz * skala),
+      predkosc: t.predkosc, xp: t.xp, dystansowy: t.dystansowy || false,
+      cooldown: losowo(0, 1), spowolnienie:0, plonie:0, migotanie:0, boss:false,
+    };
+  }
+
+  function stworzBossa(x, y) {
+    return {
+      x:x, y:y, typ:'boss', r:26, ikona:'😈', kolor:'#c0392b',
+      hp:900, hpMax:900, atak:38, pancerz:70, predkosc:56, xp:400,
+      dystansowy:false, cooldown:0, spowolnienie:0, plonie:0, migotanie:0, boss:true,
+    };
+  }
+
+  // ---------- DZIENNIK / TEKSTY ----------
+  function dziennik(tekst) {
+    var el = document.createElement('div');
+    el.className = 'wpis-dziennika';
+    el.textContent = tekst;
+    dziennikEl.appendChild(el);
+    setTimeout(function () { if (el.parentNode) el.remove(); }, 2700);
+    while (dziennikEl.children.length > 4) dziennikEl.removeChild(dziennikEl.firstChild);
+  }
+  function tekstNaSwiecie(x, y, tekst, kolor) {
+    teksty.push({ x:x, y:y, tekst:tekst, kolor:kolor, zycie:0.9 });
+  }
+  function rozbryzg(x, y, kolor, ile) {
+    for (var i = 0; i < ile; i++) {
+      var k = losowo(0, Math.PI*2), v = losowo(40, 130);
+      czastki.push({ x:x, y:y, vx:Math.cos(k)*v, vy:Math.sin(k)*v, zycie:0.45, kolor:kolor });
+    }
+  }
+
+  // ---------- WALKA ----------
+  function zadajObrazeniaWrogowi(w, bazowe, magiczne) {
+    var statAtaku = magiczne ? wartoscStatu('magia') : wartoscStatu('atak');
+    var surowe = bazowe + statAtaku;
+    var kryt = Math.random() < wartoscStatu('kryt');
+    if (kryt) surowe *= wartoscStatu('obrKryt');
+    var finalne = surowe * (1 - redukcja(w.pancerz, wartoscStatu('przebicie')));
+    finalne = Math.max(1, Math.round(finalne));
+    w.hp -= finalne;
+    w.migotanie = 0.14;
+    tekstNaSwiecie(w.x, w.y - w.r, (kryt ? '✦' : '') + finalne, kryt ? '#ffd24a' : '#f0e8d0');
+    rozbryzg(w.x, w.y, kryt ? '#ffd24a' : '#c0392b', kryt ? 9 : 5);
+    if (kryt) dzwiekKryt(); else dzwiekTrafienia();
+    if (w.hp <= 0) zabijWroga(w);
+  }
+
+  function zabijWroga(w) {
+    var idx = wrogowie.indexOf(w);
+    if (idx === -1) return;
+    wrogowie.splice(idx, 1);
+    rozbryzg(w.x, w.y, w.kolor, 14);
+    dzwiekSmierciWroga();
+    dodajXp(w.xp);
+
+    if (w.boss) { zakonczGre(true); return; }
+
+    var r = Math.random();
+    if (r < 0.16) {
+      lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(tierZPoziomu(gracz.poziom)) });
+    } else if (r < 0.34) {
+      lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzPancerz(tierZPoziomu(gracz.poziom)) });
+    } else if (r < 0.50) {
+      lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:{ kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 } });
+    }
+  }
+
+  function znajdzNajblizszegoWroga(zasieg) {
+    var naj = null, najD = zasieg;
+    wrogowie.forEach(function (w) {
+      var d = Math.hypot(w.x - gracz.x, w.y - gracz.y);
+      if (d < najD) { najD = d; naj = w; }
+    });
+    return naj;
+  }
+
+  function atakujAutomatycznie(dt) {
+    gracz.cooldown -= dt;
+    if (gracz.cooldown > 0) return;
+    var bron = gracz.zalozone.bron;
+    var cel = znajdzNajblizszegoWroga(bron.zasieg);
+    if (!cel) return;
+    gracz.cooldown = bron.tempo;
+
+    var kat = Math.atan2(cel.y - gracz.y, cel.x - gracz.x);
+    gracz.kierunekX = Math.cos(kat); gracz.kierunekY = Math.sin(kat);
+
+    if (bron.magiczna) {
+      pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*330, vy:Math.sin(kat)*330, obr:bron.obr, efekt:bron.efekt, zycie:1.4, kolor: bron.efekt === 'ogien' ? '#e6743c' : bron.efekt === 'piorun' ? '#ffe066' : bron.efekt === 'woda' ? '#5aa8e6' : '#b89ae6' });
+      dzwiekMagii();
+    } else {
+      // Cios w luku - trafia WSZYSTKICH w stozku przed graczem
+      dzwiekCiecia();
+      var trafieni = wrogowie.filter(function (w) {
+        var d = Math.hypot(w.x - gracz.x, w.y - gracz.y);
+        if (d > bron.zasieg + w.r) return false;
+        var katDoWroga = Math.atan2(w.y - gracz.y, w.x - gracz.x);
+        var roznica = Math.abs(((katDoWroga - kat + Math.PI*3) % (Math.PI*2)) - Math.PI);
+        return roznica < 0.95;
+      });
+      trafieni.forEach(function (w) { zadajObrazeniaWrogowi(w, bron.obr, false); });
+      gracz.animCios = 0.16;
+    }
+  }
+
+  // ---------- PETLA ----------
+  function aktualizuj(dt) {
+    // Ruch gracza
+    var predkosc = wartoscStatu('predkosc');
+    if (joyAktywny) {
+      var dx = joyX - joyBazaX, dy = joyY - joyBazaY;
+      var dl = Math.hypot(dx, dy);
+      if (dl > 6) {
+        var sila = Math.min(1, dl / 52);
+        var nx = (dx/dl) * predkosc * sila * dt;
+        var ny = (dy/dl) * predkosc * sila * dt;
+        if (!czySciana(gracz.x + nx + Math.sign(nx)*gracz.r, gracz.y)) gracz.x += nx;
+        if (!czySciana(gracz.x, gracz.y + ny + Math.sign(ny)*gracz.r)) gracz.y += ny;
+      }
+    }
+
+    atakujAutomatycznie(dt);
+    if (gracz.animCios > 0) gracz.animCios -= dt;
+    if (gracz.migotanie > 0) gracz.migotanie -= dt;
+
+    // Przywolanie bossa
+    if (!bossPrzywolany && komnataBossa) {
+      var bx = (komnataBossa.cx + 0.5) * KAFEL, by = (komnataBossa.cy + 0.5) * KAFEL;
+      if (Math.hypot(gracz.x - bx, gracz.y - by) < 260) {
+        bossPrzywolany = true;
+        wrogowie.push(stworzBossa(bx, by));
+        dziennik('😈 Władca Labiryntu przebudził się!');
+        ton(90, 0.5, 'sawtooth', 0.2);
+        setTimeout(function () { ton(60, 0.7, 'sawtooth', 0.18); }, 400);
+      }
+    }
+
+    // Wrogowie
+    wrogowie.forEach(function (w) {
+      if (w.migotanie > 0) w.migotanie -= dt;
+      if (w.plonie > 0) {
+        w.plonie -= dt;
+        w.tykOgnia = (w.tykOgnia || 0) - dt;
+        if (w.tykOgnia <= 0) {
+          w.tykOgnia = 0.5;
+          w.hp -= 4;
+          tekstNaSwiecie(w.x, w.y - w.r, '4', '#e6743c');
+          if (w.hp <= 0) { zabijWroga(w); return; }
+        }
+      }
+      var mnoznikPredkosci = w.spowolnienie > 0 ? 0.5 : 1;
+      if (w.spowolnienie > 0) w.spowolnienie -= dt;
+
+      var d = Math.hypot(gracz.x - w.x, gracz.y - w.y);
+      var zasiegAtaku = w.dystansowy ? 200 : (w.r + gracz.r + 6);
+
+      if (d > zasiegAtaku * 0.9) {
+        var kat = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+        var nx = Math.cos(kat) * w.predkosc * mnoznikPredkosci * dt;
+        var ny = Math.sin(kat) * w.predkosc * mnoznikPredkosci * dt;
+        if (!czySciana(w.x + nx + Math.sign(nx)*w.r, w.y)) w.x += nx;
+        if (!czySciana(w.x, w.y + ny + Math.sign(ny)*w.r)) w.y += ny;
+      }
+
+      w.cooldown -= dt;
+      if (d < zasiegAtaku && w.cooldown <= 0) {
+        w.cooldown = w.boss ? 0.9 : 1.25;
+        if (w.dystansowy) {
+          var k2 = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+          pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*230, vy:Math.sin(k2)*230, obr:w.atak, wroga:true, zycie:1.6, kolor:'#c46ce8' });
+        } else {
+          zadajObrazeniaGraczowi(w.atak);
+        }
+      }
+    });
+
+    // Pociski
+    for (var i = pociski.length - 1; i >= 0; i--) {
+      var p = pociski[i];
+      p.x += p.vx * dt; p.y += p.vy * dt; p.zycie -= dt;
+      if (p.zycie <= 0 || czySciana(p.x, p.y)) { pociski.splice(i, 1); continue; }
+
+      if (p.wroga) {
+        if (Math.hypot(p.x - gracz.x, p.y - gracz.y) < gracz.r + 5) {
+          zadajObrazeniaGraczowi(p.obr);
+          pociski.splice(i, 1);
+        }
+      } else {
+        var trafiony = null;
+        for (var j = 0; j < wrogowie.length; j++) {
+          var w2 = wrogowie[j];
+          if (Math.hypot(p.x - w2.x, p.y - w2.y) < w2.r + 5) { trafiony = w2; break; }
+        }
+        if (trafiony) {
+          zadajObrazeniaWrogowi(trafiony, p.obr, true);
+          if (p.efekt === 'ogien' && trafiony.hp > 0) { trafiony.plonie = 2.5; }
+          if (p.efekt === 'woda' && trafiony.hp > 0) { trafiony.spowolnienie = 2.0; }
+          if (p.efekt === 'piorun') {
+            wrogowie.forEach(function (w3) {
+              if (w3 !== trafiony && Math.hypot(w3.x - p.x, w3.y - p.y) < 92) {
+                zadajObrazeniaWrogowi(w3, Math.round(p.obr * 0.55), true);
+              }
+            });
+          }
+          pociski.splice(i, 1);
+        }
+      }
+    }
+
+    // Lupy - podniesienie
+    for (var l = lupyNaZiemi.length - 1; l >= 0; l--) {
+      var lu = lupyNaZiemi[l];
+      if (Math.hypot(lu.x - gracz.x, lu.y - gracz.y) < gracz.r + 16) {
+        if (lu.przedmiot.kategoria === 'mikstura') {
+          gracz.mikstury++;
+          dziennik('🧪 Podniesiono miksturę zdrowia');
+        } else if (gracz.ekwipunek.length < 12) {
+          gracz.ekwipunek.push(lu.przedmiot);
+          dziennik(lu.przedmiot.ikona + ' ' + lu.przedmiot.nazwa);
+        } else {
+          dziennik('🎒 Plecak pełny!');
+          continue;
+        }
+        dzwiekLup();
+        lupyNaZiemi.splice(l, 1);
+        odswiezPanele(); odswiezHud();
+      }
+    }
+
+    // Czastki i teksty
+    for (var c = czastki.length - 1; c >= 0; c--) {
+      var cz = czastki[c];
+      cz.x += cz.vx*dt; cz.y += cz.vy*dt; cz.zycie -= dt;
+      cz.vx *= 0.92; cz.vy *= 0.92;
+      if (cz.zycie <= 0) czastki.splice(c, 1);
+    }
+    for (var tk = teksty.length - 1; tk >= 0; tk--) {
+      teksty[tk].y -= 34 * dt;
+      teksty[tk].zycie -= dt;
+      if (teksty[tk].zycie <= 0) teksty.splice(tk, 1);
+    }
+
+    // Kamera
+    kamX += (gracz.x - WID/2 - kamX) * Math.min(1, dt * 7);
+    kamY += (gracz.y - WYS/2 - kamY) * Math.min(1, dt * 7);
+  }
+
+  function zadajObrazeniaGraczowi(bazowe) {
+    if (Math.random() < wartoscStatu('unik')) {
+      tekstNaSwiecie(gracz.x, gracz.y - gracz.r, 'UNIK', '#9ae6c4');
+      ton(700, 0.05, 'sine', 0.09);
+      return;
+    }
+    var finalne = bazowe * (1 - redukcja(wartoscStatu('obrona'), 0));
+    finalne = Math.max(1, Math.round(finalne));
+    gracz.hp -= finalne;
+    gracz.migotanie = 0.2;
+    tekstNaSwiecie(gracz.x, gracz.y - gracz.r, '-' + finalne, '#e6543c');
+    dzwiekObrazenia();
+    odswiezHud();
+    if (gracz.hp <= 0) zakonczGre(false);
+  }
+
+  // ---------- RYSOWANIE ----------
+  function rysuj() {
+    ctx.fillStyle = '#0a0810';
+    ctx.fillRect(0, 0, WID, WYS);
+
+    var tx0 = Math.max(0, Math.floor(kamX / KAFEL) - 1), tx1 = Math.min(SIATKA-1, Math.ceil((kamX + WID) / KAFEL) + 1);
+    var ty0 = Math.max(0, Math.floor(kamY / KAFEL) - 1), ty1 = Math.min(SIATKA-1, Math.ceil((kamY + WYS) / KAFEL) + 1);
+
+    for (var ty = ty0; ty <= ty1; ty++) {
+      for (var tx = tx0; tx <= tx1; tx++) {
+        if (mapa[ty][tx] !== 1) continue;
+        var ex = tx*KAFEL - kamX, ey = ty*KAFEL - kamY;
+        var odcien = ((tx*7 + ty*13) % 5) * 4;
+        ctx.fillStyle = 'rgb(' + (34+odcien) + ',' + (30+odcien) + ',' + (26+odcien) + ')';
+        ctx.fillRect(ex, ey, KAFEL, KAFEL);
+        ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(ex+0.5, ey+0.5, KAFEL-1, KAFEL-1);
+      }
+    }
+    // Oznaczenie komnaty bossa
+    if (komnataBossa) {
+      var bx = (komnataBossa.cx+0.5)*KAFEL - kamX, by = (komnataBossa.cy+0.5)*KAFEL - kamY;
+      if (bx > -60 && bx < WID+60 && by > -60 && by < WYS+60) {
+        ctx.fillStyle = 'rgba(192,57,43,0.16)';
+        ctx.beginPath(); ctx.arc(bx, by, 90, 0, Math.PI*2); ctx.fill();
+      }
+    }
+
+    // Lupy
+    lupyNaZiemi.forEach(function (lu) {
+      var ex = lu.x - kamX, ey = lu.y - kamY;
+      if (ex < -30 || ex > WID+30 || ey < -30 || ey > WYS+30) return;
+      var kolorTieru = lu.przedmiot.kategoria === 'mikstura' ? '#e6543c' : TIERY[lu.przedmiot.tier].kolor;
+      ctx.save();
+      ctx.shadowColor = kolorTieru; ctx.shadowBlur = 12;
+      ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(lu.przedmiot.ikona, ex, ey + Math.sin(Date.now()/300)*3);
+      ctx.restore();
+    });
+
+    // Pociski
+    pociski.forEach(function (p) {
+      var ex = p.x - kamX, ey = p.y - kamY;
+      ctx.save();
+      ctx.shadowColor = p.kolor; ctx.shadowBlur = 10;
+      ctx.fillStyle = p.kolor;
+      ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+
+    // Wrogowie
+    wrogowie.forEach(function (w) {
+      var ex = w.x - kamX, ey = w.y - kamY;
+      if (ex < -50 || ex > WID+50 || ey < -50 || ey > WYS+50) return;
+      ctx.save();
+      if (w.migotanie > 0) { ctx.globalAlpha = 0.55; }
+      ctx.fillStyle = 'rgba(0,0,0,0.35)';
+      ctx.beginPath(); ctx.ellipse(ex, ey + w.r*0.8, w.r*0.9, w.r*0.35, 0, 0, Math.PI*2); ctx.fill();
+      ctx.font = (w.r*1.7) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(w.ikona, ex, ey);
+      ctx.restore();
+      if (w.plonie > 0) { ctx.font = '11px sans-serif'; ctx.fillText('🔥', ex + w.r*0.7, ey - w.r*0.7); }
+      // Pasek HP
+      var szer = w.boss ? 58 : w.r*2;
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(ex - szer/2, ey - w.r - 9, szer, 4);
+      ctx.fillStyle = w.boss ? '#e6b53c' : '#c0392b';
+      ctx.fillRect(ex - szer/2, ey - w.r - 9, szer * Math.max(0, w.hp/w.hpMax), 4);
+    });
+
+    // Gracz
+    var gx = gracz.x - kamX, gy = gracz.y - kamY;
+    ctx.save();
+    if (gracz.migotanie > 0) ctx.globalAlpha = 0.5;
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    ctx.beginPath(); ctx.ellipse(gx, gy + 11, 12, 4.5, 0, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#c9483a';
+    ctx.beginPath(); ctx.arc(gx, gy, gracz.r, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#e0b48a';
+    ctx.beginPath(); ctx.arc(gx, gy - 7, 7, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    // Bron w reku / animacja ciosu
+    var bron = gracz.zalozone.bron;
+    var wysun = gracz.animCios > 0 ? 22 : 15;
+    ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(bron.ikona, gx + gracz.kierunekX*wysun, gy + gracz.kierunekY*wysun);
+
+    // Czastki
+    czastki.forEach(function (cz) {
+      ctx.globalAlpha = Math.max(0, cz.zycie / 0.45);
+      ctx.fillStyle = cz.kolor;
+      ctx.fillRect(cz.x - kamX - 2, cz.y - kamY - 2, 4, 4);
+    });
+    ctx.globalAlpha = 1;
+
+    // Teksty
+    teksty.forEach(function (t) {
+      ctx.globalAlpha = Math.max(0, t.zycie / 0.9);
+      ctx.fillStyle = t.kolor;
+      ctx.font = 'bold 13px sans-serif'; ctx.textAlign = 'center';
+      ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3;
+      ctx.strokeText(t.tekst, t.x - kamX, t.y - kamY);
+      ctx.fillText(t.tekst, t.x - kamX, t.y - kamY);
+    });
+    ctx.globalAlpha = 1;
+
+    // Strzalka do bossa (gdy daleko)
+    if (komnataBossa && !wygrana) {
+      var bx2 = (komnataBossa.cx+0.5)*KAFEL, by2 = (komnataBossa.cy+0.5)*KAFEL;
+      var dBoss = Math.hypot(bx2 - gracz.x, by2 - gracz.y);
+      if (dBoss > 260) {
+        var katB = Math.atan2(by2 - gracz.y, bx2 - gracz.x);
+        ctx.save();
+        ctx.translate(WID/2, 40);
+        ctx.rotate(katB);
+        ctx.fillStyle = 'rgba(230,181,60,0.75)';
+        ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-6,-7); ctx.lineTo(-6,7); ctx.closePath(); ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // Drazek
+    if (joyAktywny) {
+      ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(joyBazaX, joyBazaY, 46, 0, Math.PI*2); ctx.stroke();
+      var ddx = joyX - joyBazaX, ddy = joyY - joyBazaY;
+      var dd = Math.hypot(ddx, ddy);
+      var ogr = Math.min(dd, 46);
+      var jx = joyBazaX + (dd ? ddx/dd : 0) * ogr, jy = joyBazaY + (dd ? ddy/dd : 0) * ogr;
+      ctx.fillStyle = 'rgba(230,193,92,0.5)';
+      ctx.beginPath(); ctx.arc(jx, jy, 19, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // ---------- PANELE UI ----------
+  function odswiezHud() {
+    paskHp.style.width = Math.max(0, (gracz.hp / gracz.hpMax) * 100) + '%';
+    paskXp.style.width = ((gracz.xp / gracz.xpDoNastepnego) * 100) + '%';
+    hudHp.textContent = Math.max(0, Math.round(gracz.hp)) + ' / ' + gracz.hpMax;
+    hudPoziom.textContent = 'Poziom ' + gracz.poziom;
+    hudMikstury.textContent = '🧪 ' + gracz.mikstury;
+    odznakaPkt.style.display = gracz.punkty > 0 ? 'inline-block' : 'none';
+    odznakaPkt.textContent = gracz.punkty;
+    odznakaEkw.style.display = gracz.ekwipunek.length > 0 ? 'inline-block' : 'none';
+    odznakaEkw.textContent = gracz.ekwipunek.length;
+  }
+
+  function odswiezPanele() {
+    // STATY
+    sekcjaStaty.innerHTML = '';
+    var naglowek = document.createElement('div');
+    naglowek.className = 'naglowek-sekcji';
+    naglowek.textContent = gracz.punkty > 0 ? ('Punkty do rozdania: ' + gracz.punkty) : 'Statystyki postaci';
+    sekcjaStaty.appendChild(naglowek);
+
+    DEF_STATOW.forEach(function (d) {
+      var w = document.createElement('div');
+      w.className = 'wiersz-statu';
+      var wart = wartoscStatu(d.klucz);
+      var tekstWart;
+      if (d.proc) tekstWart = (d.mnozny ? Math.round(wart*100) : Math.round(wart*100)) + '%';
+      else tekstWart = Math.round(wart);
+      w.innerHTML = '<span>' + d.ikona + '</span><span class="nazwa">' + d.nazwa + '</span><span class="wartosc">' + tekstWart + '</span>';
+      var btn = document.createElement('button');
+      btn.className = 'btn-plus'; btn.textContent = '+';
+      btn.disabled = gracz.punkty <= 0;
+      btn.addEventListener('click', function () {
+        if (gracz.punkty <= 0) return;
+        gracz.punkty--;
+        gracz.staty[d.klucz]++;
+        if (d.klucz === 'zdrowie') przeliczHpMax();
+        ton(620, 0.05, 'triangle', 0.12);
+        odswiezPanele(); odswiezHud();
+      });
+      w.appendChild(btn);
+      sekcjaStaty.appendChild(w);
+    });
+
+    // EKWIPUNEK
+    sekcjaEkw.innerHTML = '';
+    var nagZal = document.createElement('div');
+    nagZal.className = 'naglowek-sekcji'; nagZal.textContent = 'Założone';
+    sekcjaEkw.appendChild(nagZal);
+    [['bron','Broń'],['helm','Hełm'],['zbroja','Zbroja'],['buty','Buty'],['amulet','Amulet']].forEach(function (para) {
+      var p = gracz.zalozone[para[0]];
+      var w = document.createElement('div');
+      w.className = 'zalozone-wiersz';
+      if (p) {
+        w.innerHTML = '<span class="ikona">' + p.ikona + '</span><span class="opis"><span class="tytul" style="color:' + TIERY[p.tier].kolor + '">' + p.nazwa + '</span><br><span class="staty">' + opisPrzedmiotu(p) + '</span></span>';
+      } else {
+        w.innerHTML = '<span class="ikona" style="opacity:0.3">➖</span><span class="opis"><span class="tytul" style="opacity:0.4">Brak: ' + para[1] + '</span></span>';
+      }
+      sekcjaEkw.appendChild(w);
+    });
+
+    var nagPlecak = document.createElement('div');
+    nagPlecak.className = 'naglowek-sekcji';
+    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/12) — dotknij, żeby założyć';
+    sekcjaEkw.appendChild(nagPlecak);
+
+    var siatka = document.createElement('div');
+    siatka.className = 'siatka-ekw';
+    for (var i = 0; i < 12; i++) {
+      var slot = document.createElement('div');
+      var p = gracz.ekwipunek[i];
+      if (p) {
+        slot.className = 'slot-ekw';
+        slot.textContent = p.ikona;
+        slot.title = p.nazwa + ' — ' + opisPrzedmiotu(p);
+        var kropka = document.createElement('div');
+        kropka.className = 'tier-kropka';
+        kropka.style.background = TIERY[p.tier].kolor;
+        slot.appendChild(kropka);
+        slot.style.borderColor = TIERY[p.tier].kolor;
+        (function (przedmiot, indeks) {
+          slot.addEventListener('click', function () { zaloz(przedmiot, indeks); });
+        })(p, i);
+      } else {
+        slot.className = 'slot-ekw pusty';
+        slot.textContent = '·';
+      }
+      siatka.appendChild(slot);
+    }
+    sekcjaEkw.appendChild(siatka);
+  }
+
+  function zaloz(przedmiot, indeks) {
+    var slot = przedmiot.kategoria === 'bron' ? 'bron' : przedmiot.slot;
+    var stary = gracz.zalozone[slot];
+    gracz.zalozone[slot] = przedmiot;
+    gracz.ekwipunek.splice(indeks, 1);
+    if (stary) gracz.ekwipunek.push(stary);
+    przeliczHpMax();
+    dziennik('✅ Założono: ' + przedmiot.nazwa);
+    ton(520, 0.06, 'triangle', 0.13);
+    odswiezPanele(); odswiezHud();
+  }
+
+  btnStaty.addEventListener('click', function () {
+    btnStaty.classList.add('aktywny'); btnEkw.classList.remove('aktywny');
+    sekcjaStaty.classList.add('widoczna'); sekcjaEkw.classList.remove('widoczna');
+  });
+  btnEkw.addEventListener('click', function () {
+    btnEkw.classList.add('aktywny'); btnStaty.classList.remove('aktywny');
+    sekcjaEkw.classList.add('widoczna'); sekcjaStaty.classList.remove('widoczna');
+  });
+  btnMikstura.addEventListener('click', function () {
+    if (gracz.mikstury <= 0) { dziennik('🧪 Nie masz mikstur!'); return; }
+    if (gracz.hp >= gracz.hpMax) { dziennik('❤️ Masz pełne zdrowie'); return; }
+    gracz.mikstury--;
+    var ile = Math.round(gracz.hpMax * 0.45);
+    gracz.hp = Math.min(gracz.hpMax, gracz.hp + ile);
+    tekstNaSwiecie(gracz.x, gracz.y - 18, '+' + ile, '#7ec98a');
+    dzwiekMikstura();
+    dziennik('🧪 Wypito miksturę (+' + ile + ' HP)');
+    odswiezHud();
+  });
+
+  // ---------- DRAZEK ----------
+  widok.addEventListener('pointerdown', function (e) {
+    if (!trwa) return;
+    inicjujDzwiek();
+    var r = widok.getBoundingClientRect();
+    joyBazaX = (e.clientX - r.left) * (WID / r.width);
+    joyBazaY = (e.clientY - r.top) * (WYS / r.height);
+    joyX = joyBazaX; joyY = joyBazaY;
+    joyAktywny = true;
+  });
+  widok.addEventListener('pointermove', function (e) {
+    if (!joyAktywny) return;
+    var r = widok.getBoundingClientRect();
+    joyX = (e.clientX - r.left) * (WID / r.width);
+    joyY = (e.clientY - r.top) * (WYS / r.height);
+  });
+  function puscDrazek() { joyAktywny = false; }
+  widok.addEventListener('pointerup', puscDrazek);
+  widok.addEventListener('pointercancel', puscDrazek);
+  widok.addEventListener('pointerleave', puscDrazek);
+
+  // ---------- PETLA GLOWNA ----------
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.04);
+    czasOstatni = czas;
+    aktualizuj(dt);
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function zaludnijMape() {
+    wrogowie = []; lupyNaZiemi = [];
+    komnaty.forEach(function (k, idx) {
+      if (idx === 0) return;               // komnata startowa zostaje pusta
+      if (k === komnataBossa) return;      // boss przywolywany osobno
+      var ile = losCalk(3, 6);
+      var poziomKomnaty = 1 + Math.floor(idx / 2);
+      for (var i = 0; i < ile; i++) {
+        var typ = KLUCZE_WROGOW[Math.min(KLUCZE_WROGOW.length-1, losCalk(0, Math.min(4, 1 + Math.floor(idx/2))))];
+        var wx = (k.x + losowo(1, k.w-1)) * KAFEL;
+        var wy = (k.y + losowo(1, k.h-1)) * KAFEL;
+        wrogowie.push(stworzWroga(wx, wy, typ, poziomKomnaty));
+      }
+      if (Math.random() < 0.45) {
+        lupyNaZiemi.push({
+          x:(k.x + k.w/2) * KAFEL, y:(k.y + k.h/2) * KAFEL,
+          przedmiot: Math.random() < 0.4 ? { kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 }
+                     : (Math.random() < 0.5 ? stworzBron(tierZPoziomu(idx)) : stworzPancerz(tierZPoziomu(idx)))
+        });
+      }
+    });
+  }
+
+  function zakonczGre(zwyciestwo) {
+    trwa = false;
+    wygrana = zwyciestwo;
+    nakladka.style.display = 'flex';
+    if (zwyciestwo) {
+      dzwiekZwyciestwo();
+      nakladkaTytul.textContent = '👑 Władca Labiryntu pokonany!';
+      nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!<br><br>Ukończono na poziomie ' + gracz.poziom + '.';
+      nakladkaBtn.style.display = 'none';
+      var wiad = { type:'streamlit-child:zaliczono', wartosc:true };
+      window.postMessage(wiad, '*');
+      if (window.parent && window.parent !== window) window.parent.postMessage(wiad, '*');
+    } else {
+      dzwiekSmierciGracza();
+      nakladkaTytul.textContent = '💀 Poległaś...';
+      nakladkaOpis.innerHTML = 'Dotarłaś do poziomu ' + gracz.poziom + '.<br>Labirynt czeka na kolejną próbę.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Spróbuj ponownie';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  function rozpocznijGre() {
+    generujMape();
+    gracz = nowyGracz();
+    var start = komnaty[0];
+    gracz.x = (start.cx + 0.5) * KAFEL;
+    gracz.y = (start.cy + 0.5) * KAFEL;
+    przeliczHpMax();
+    gracz.hp = gracz.hpMax;
+    pociski = []; czastki = []; teksty = [];
+    bossPrzywolany = false; wygrana = false;
+    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    zaludnijMape();
+    odswiezHud(); odswiezPanele();
+    nakladka.style.display = 'none';
+    trwa = true; czasOstatni = null;
+    dziennik('⚔️ Znajdź Władcę Labiryntu (strzałka u góry)');
+    requestAnimationFrame(petla);
+  }
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+
+  // Ekran startowy - podglad
+  generujMape();
+  gracz = nowyGracz();
+  gracz.x = (komnaty[0].cx+0.5)*KAFEL; gracz.y = (komnaty[0].cy+0.5)*KAFEL;
+  kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+  przeliczHpMax(); odswiezHud(); odswiezPanele(); rysuj();
+</script>
+</body>
+</html>
+"""
+
 # ======================================================================
 # STYL APLIKACJI
 # ======================================================================
@@ -7364,6 +11249,78 @@ def renderuj_minecraft(etap_dane):
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dom_minecraft"))
 
 
+def renderuj_snake(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_SNAKE, 620, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_SNAKE, height=680, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_snake"), etykieta_bledow=t("bledy_etykieta_snake"))
+
+
+def renderuj_blackjack(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_BLACKJACK, 600, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_BLACKJACK, height=660, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_blackjack"), etykieta_bledow=t("bledy_etykieta_blackjack"))
+
+
+def renderuj_samolot(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_SAMOLOT, 560, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_SAMOLOT, height=620, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_samolot"), etykieta_bledow=t("bledy_etykieta_samolot"))
+
+
+def renderuj_odyseusz(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_ODYSEUSZ, 560, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_ODYSEUSZ, height=620, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_odyseusz"), etykieta_bledow=t("bledy_etykieta_odyseusz"))
+
+
+def renderuj_parkour(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_PARKOUR, 560, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_PARKOUR, height=620, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_parkour"), etykieta_bledow=t("bledy_etykieta_parkour"))
+
+
+def renderuj_labirynt(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_LABIRYNT, 700, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
+    components.html(SZABLON_LABIRYNT, height=760, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_labirynt"), etykieta_bledow=t("bledy_etykieta_labirynt"))
+
+
 @st.cache_data(ttl=300)  # 5 minut - dość świeżo, a nie odpytuje API bez przerwy
 def pobierz_dzisiejszy_wordle():
     """Próbuje pobrać dzisiejsze słowo z (angielskiego) NYT Wordle.
@@ -7408,7 +11365,7 @@ def renderuj_wordle(etap_dane):
         "background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; "
         "padding:0.6rem 1.4rem; border-radius:30px; font-weight:700; "
         "letter-spacing:0.01em; box-shadow:0 3px 10px rgba(0,0,0,0.35); "
-        "margin-bottom:1rem;'>🆆 Otwórz dzisiejsze Wordle</a>",
+        "margin-bottom:1rem;'>📝 Otwórz dzisiejsze Wordle</a>",
         unsafe_allow_html=True,
     )
 
@@ -7693,6 +11650,18 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_bitwa(etap_dane)
     elif typ == "minecraft":
         wynik = renderuj_minecraft(etap_dane)
+    elif typ == "snake":
+        wynik = renderuj_snake(etap_dane)
+    elif typ == "blackjack":
+        wynik = renderuj_blackjack(etap_dane)
+    elif typ == "samolot":
+        wynik = renderuj_samolot(etap_dane)
+    elif typ == "odyseusz":
+        wynik = renderuj_odyseusz(etap_dane)
+    elif typ == "parkour":
+        wynik = renderuj_parkour(etap_dane)
+    elif typ == "labirynt":
+        wynik = renderuj_labirynt(etap_dane)
     else:
         wynik = None
 
