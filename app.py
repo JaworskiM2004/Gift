@@ -540,7 +540,7 @@ TEKST = {
         "jeszcze_nie": "Jeszcze nie",
         "tak_ukonczylam": "Tak, ukończyłam!",
         "napewno_dron": "Na pewno ukończyłaś cały lot bez rozbicia?",
-        "napewno_snake": "Na pewno wąż zjadł wszystkie 15 oliwek?",
+        "napewno_snake": "Na pewno wąż zjadł wszystkie 20 oliwek?",
         "napewno_blackjack": "Na pewno pokonałaś krupiera 3 razy?",
         "napewno_samolot": "Na pewno samolot doleciał co najmniej 300 m?",
         "napewno_odyseusz": "Na pewno zaliczyłaś wszystkie 3 etapy strzelnicy?",
@@ -604,7 +604,7 @@ TEKST = {
         "jeszcze_nie": "Not yet",
         "tak_ukonczylam": "Yes, I completed it!",
         "napewno_dron": "Are you sure you finished the whole flight without crashing?",
-        "napewno_snake": "Are you sure the snake ate all 15 olives?",
+        "napewno_snake": "Are you sure the snake ate all 20 olives?",
         "napewno_blackjack": "Are you sure you beat the dealer 3 times?",
         "napewno_samolot": "Are you sure the plane flew at least 300 m?",
         "napewno_odyseusz": "Are you sure you cleared all 3 shooting stages?",
@@ -1858,8 +1858,8 @@ SZABLON_ZABY = """
   var ZABA_X = 0.22;
   var ZABA_R = 14;
   var ZABA_WYSOKOSC = 30;
-  var GRAWITACJA = 2450;
-  var SILA_SKOKU = -570;
+  var GRAWITACJA = 1650;   // wolniejszy opad - dluzszy, plaskszy lot
+  var SILA_SKOKU = -560;
   var PODLOZE_WYSOKOSC = 26;
   var KOLEC_SZEROKOSC = 30;
   var KOLEC_WYSOKOSC = 35;
@@ -1876,8 +1876,8 @@ SZABLON_ZABY = """
   // Szczelina: kolec z ziemi (zwykla wysokosc) + kolec z sufitu z DUZO
   // wiekszym prześwitem niz zwykly 'sufit' - trzeba przelecieć w oknie
   // wysokosci w trakcie skoku, nie tylko przeskoczyc albo nie skakac.
-  var SZCZELINA_PRZERWA_OD_ZIEMI = 138;
-  var SZCZELINA_ODSUNIECIE = 52;   // kolec sufitowy przesuniety w bok, wiec
+  var SZCZELINA_PRZERWA_OD_ZIEMI = 152;
+  var SZCZELINA_ODSUNIECIE = 74;   // kolec sufitowy przesuniety w bok, wiec
                                    // liczy sie WYCZUCIE CZASU, a nie trafienie
                                    // w waskie okno wysokosci w jednym punkcie
   // Ruchomy kolec sufitowy: oscyluje sinusoidalnie miedzy nisko (podobnie
@@ -3278,10 +3278,10 @@ SZABLON_PIANO = """
       <p id="nakladkaOpis">Wybierz melodię:</p>
       <div id="wyborPiosenki">
         <button class="gra-btn" id="btnPiosenkaKotek">🐱 Wlazł kotek</button>
+        <button class="gra-btn" id="btnPiosenkaHappyBirthday">🎁 Happy Birthday</button>
+        <button class="gra-btn" id="btnPiosenkaOda">🎻 Oda do radości</button>
         <button class="gra-btn" id="btnPiosenkaJanie">🎼 Panie Janie</button>
         <button class="gra-btn" id="btnPiosenkaStoLat">🎂 Sto lat</button>
-        <button class="gra-btn" id="btnPiosenkaOda">🎻 Oda do radości</button>
-        <button class="gra-btn" id="btnPiosenkaHappyBirthday">🎁 Happy Birthday</button>
       </div>
       <button class="gra-btn" id="nakladkaBtn" style="display:none;">Jeszcze raz</button>
       <button id="btnZmienPiosenke">🔄 Zmień melodię</button>
@@ -4283,14 +4283,14 @@ SZABLON_BITWA = """
       var z = losowyZestawZywiolow(4);
       return [
         nowyWrog('Czarodziej', 'czarodziej', z[0], 9),
-        nowyWrog('Czołg', 'tank', z[1], 26),
+        nowyWrog('Czołg', 'tank', z[1], 52),
         nowyWrog('Wojownik', 'wojownik', z[2], 13),
         nowyWrog('Łucznik', 'dystans', z[3], 12),
       ];
     },
     function () {
       return [
-        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 46), { boss: true }),
+        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 69), { boss: true }),
       ];
     },
   ];
@@ -4638,7 +4638,7 @@ SZABLON_BITWA = """
                       wrog.typ === 'tarcza' ? losowaLiczba(5, 7) :
                       wrog.typ === 'dzida' ? losowaLiczba(6, 8) :
                       wrog.typ === 'czarodziej' ? losowaLiczba(7, 10) :
-                      wrog.typ === 'tank' ? losowaLiczba(2, 4) :
+                      wrog.typ === 'tank' ? losowaLiczba(1, 3) :
                       losowaLiczba(5, 8);
             // Czarodziej przebija blok - magia ignoruje tarcze fizyczna
             var blokDzialaTutaj = blokAktywny && wrog.typ !== 'czarodziej';
@@ -4755,7 +4755,9 @@ SZABLON_BITWA = """
             graczHpMax = Math.round(graczHpMax * 1.20);
             mnoznikObrazen = 1.4;
           }
-          graczHp = Math.min(graczHpMax, graczHp + 10);
+          // Po kazdym etapie zdrowie wraca do PELNA - takze po podniesieniu
+          // maksimum, zeby nie startowac nastepnego poziomu z 28/35.
+          graczHp = graczHpMax;
           rozpocznijPoziom(poziomIndeks + 1);
         };
       }
@@ -7166,7 +7168,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
-  <div id="panel"><span id="wynikEtykieta">0 / 15</span></div>
+  <div id="panel"><span id="wynikEtykieta">0 / 20</span></div>
   <div id="plansza"></div>
   <div id="sterowanieDiag">
     <button class="btn-diag" id="btnLG">↖</button>
@@ -7176,7 +7178,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   </div>
   <div id="nakladka">
     <div id="nakladkaTytul">🫒 Wąż na skos</div>
-    <div id="nakladkaOpis">Zbierz 15 oliwek! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
+    <div id="nakladkaOpis">Zbierz 20 oliwek! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -7196,10 +7198,10 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
   var KOMORKA = 24;           // przeliczane przy starcie z faktycznej szerokosci
   var SIATKA_N = 16;          // 16x16 pol
-  var CEL_WYNIK = 15;
+  var CEL_WYNIK = 20;
   var MARGINES_OD_SCIAN = 2;  // oliwki nie pojawiaja sie przy krawedziach
   var TICK_START = 260;
-  var TICK_PRZYROST = 4; // ms szybciej za kazda zjedzona oliwke
+  var TICK_PRZYROST = 5.5; // ms szybciej za kazda zjedzona oliwke
   var TICK_MIN = 160;
 
   // Cztery kierunki PO PRZEKATNEJ - gora/dol/lewo/prawo w klasycznym
@@ -8024,7 +8026,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   <div id="paskKlikow"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">✈️ Lot papierowego samolotu</div>
-    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>5 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>100 m</b>.</div>
+    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>5 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>200 m</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -8037,7 +8039,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
   var W=380, H=560, ZIEMIA=470;          // ZIEMIA - ekranowe y linii gruntu przy starcie
-  var CEL_METROW=100;
+  var CEL_METROW=200;
 
   // Fizyka - wartosci dobrane i sprawdzone symulacja PRZED napisaniem gry:
   // dobra gra daje ~640m, plaski spam tylko ~115m.
@@ -8484,15 +8486,15 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 <div id="gra">
   <canvas id="plotno" width="380" height="560"></canvas>
   <div id="panel">
-    <div id="etapEtykieta">Etap 1 / 3</div>
-    <div id="punktyEtykieta">0 pkt</div>
-    <div id="progEtykieta">Potrzebujesz 8 / 10</div>
+    <div id="etapEtykieta">Etap 1 / 6</div>
+    <div id="punktyEtykieta">Cele: 0 / 1</div>
+    <div id="progEtykieta">Strzał: 0</div>
   </div>
   <div id="strzalyPasek"></div>
   <div id="komunikat"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">🏹 Odyseusz — strzelnica</div>
-    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — masz dokładnie tyle strzał, ile celów.<br><br>Trzeba trafić <b>wszystkie</b>, żeby przejść dalej. Sześć coraz trudniejszych etapów.</div>
+    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — strzał masz <b>bez ograniczeń</b>.<br><br>Trafienie wszystkich celów otwiera kolejny etap. Sześć coraz trudniejszych etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -8508,12 +8510,15 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   var W=380, H=560, ZIEMIA_Y=470;
   var LUCZNIK_X=48, LUCZNIK_Y=ZIEMIA_Y;
   var GRAWITACJA=560, MNOZNIK_MOCY=6.9, MAX_PRZECIAGNIECIE=100;
-  var PROC_PROGU=0.75;
+
 
   // Punkt wylotu strzaly (czubek luku)
   var WYLOT_X=LUCZNIK_X+16, WYLOT_Y=LUCZNIK_Y-54;
 
-  var etapIdx=0, punkty=0, strzalyPozostale=0;
+  var etapIdx=0;
+  // Strzaly sa NIESKONCZONE - liczymy tylko, ilu uzyto. Zadnych punktow:
+  // zeby przejsc dalej, trzeba po prostu trafic WSZYSTKIE cele.
+  var strzalyWEtapie=0, strzalyLacznie=0, celeLacznie=0;
   var tarcze=[], przeszkody=[], strzaly=[], czastki=[], teksty=[];
   var trwa=false, czasOstatni=null, celowanie=false;
   var startX=0,startY=0,aktX=0,aktY=0;
@@ -8566,10 +8571,8 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     }
     if(strzelono){ ton(620,0.07,'triangle',0.10); setTimeout(function(){ton(920,0.05,'triangle',0.08);},35); }
   }
-  function dzwiekTrafienia(pkt){
-    if(pkt>=9){ [700,900,1200].forEach(function(f,i){setTimeout(function(){ton(f,0.12,'triangle',0.17);},i*80);}); }
-    else if(pkt>=6){ ton(560,0.09,'square',0.15); setTimeout(function(){ton(760,0.1,'square',0.13);},60); }
-    else { ton(360,0.09,'square',0.13); }
+  function dzwiekTrafienia(){
+    [700,900,1200].forEach(function(f,i){ setTimeout(function(){ ton(f,0.12,'triangle',0.15); }, i*80); });
   }
   function dzwiekPudla(){ ton(200,0.12,'sawtooth',0.12); setTimeout(function(){ton(130,0.16,'sawtooth',0.1);},100); }
   function dzwiekBloku(){ ton(150,0.1,'square',0.14); setTimeout(function(){ton(95,0.14,'square',0.11);},80); }
@@ -8633,21 +8636,20 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     },
   ];
 
-  function maxPunktowEtapu(){ return ETAPY[etapIdx].tarcze.length * 10; }
-  function progEtapu(){ return Math.ceil(maxPunktowEtapu() * PROC_PROGU); }
+  function trafionychCeli(){ return tarcze.filter(function(t){ return t.trafiona; }).length; }
+  function wszystkieTrafione(){ return tarcze.length > 0 && trafionychCeli() === tarcze.length; }
 
   function wczytajEtap(){
     var e = ETAPY[etapIdx];
     tarcze = e.tarcze.map(function(t){
       return { x:t.x, y:t.y, bazaY:t.y, r:t.r, kat:t.kat*Math.PI/180,
                ruch:t.ruch||null, amp:t.amp||0, tempo:t.tempo||1, faza:t.faza||0,
-               trafiona:false, zdobyte:0, blysk:0 };
+               trafiona:false, blysk:0 };
     });
     przeszkody = e.przeszkody.map(function(p){
       return { x:p.x, y:p.y, bazaY:p.y, w:p.w, h:p.h, ruch:p.ruch, amp:p.amp, tempo:p.tempo, faza:p.faza };
     });
-    punkty = 0;
-    strzalyPozostale = tarcze.length;
+    strzalyWEtapie = 0;
     strzaly = []; czastki = []; teksty = [];
     czekaNaOcene = false;
     odswiezPanel();
@@ -8656,14 +8658,16 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
   function odswiezPanel(){
     etapEtykieta.textContent = 'Etap ' + (etapIdx+1) + ' / ' + ETAPY.length;
-    punktyEtykieta.textContent = punkty + ' pkt';
-    progEtykieta.textContent = 'Potrzebujesz ' + progEtapu() + ' / ' + maxPunktowEtapu();
+    punktyEtykieta.textContent = 'Cele: ' + trafionychCeli() + ' / ' + tarcze.length;
+    progEtykieta.textContent = 'Strzał w tym etapie: ' + strzalyWEtapie + '  ·  łącznie: ' + (strzalyLacznie + strzalyWEtapie);
     strzalyPasek.innerHTML = '';
-    for (var i=0;i<tarcze.length;i++){
+    tarcze.forEach(function (t) {
       var d=document.createElement('div');
-      d.className='strzala-kropka'+(i>=strzalyPozostale?' zuzyta':'');
+      d.className='strzala-kropka'+(t.trafiona?' zuzyta':'');
+      d.style.borderRadius='50%'; d.style.width='13px'; d.style.height='13px';
+      d.style.background = t.trafiona ? '#7ec98a' : '#c0392b';
       strzalyPasek.appendChild(d);
-    }
+    });
   }
 
   // ---------- RYSOWANIE ----------
@@ -8800,7 +8804,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     return { x:(e.clientX-r.left)*(W/r.width), y:(e.clientY-r.top)*(H/r.height) };
   }
   plotno.addEventListener('pointerdown', function(e){
-    if(!trwa || strzalyPozostale<=0 || strzaly.length>0 || czekaNaOcene) return;
+    if(!trwa || strzaly.length>0 || czekaNaOcene) return;
     inicjujDzwiek();
     var p=poz(e); startX=p.x; startY=p.y; aktX=p.x; aktY=p.y;
     celowanie=true; napinajStart();
@@ -8820,7 +8824,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     dl=Math.min(dl,MAX_PRZECIAGNIECIE);
     var kat=Math.atan2(dy,dx);
     strzaly.push({ x:WYLOT_X, y:WYLOT_Y, vx:Math.cos(kat)*dl*MNOZNIK_MOCY, vy:Math.sin(kat)*dl*MNOZNIK_MOCY });
-    strzalyPozostale--;
+    strzalyWEtapie++;
     odswiezPanel();
     napinajKoniec(true);
     komunikat.textContent='';
@@ -8839,7 +8843,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
   function zakonczStrzale(s, idx){
     strzaly.splice(idx,1);
-    if(strzalyPozostale<=0 && strzaly.length===0){
+    if(wszystkieTrafione()){
       czekaNaOcene=true;
       setTimeout(ocenEtap, 900);
     }
@@ -8847,35 +8851,24 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
   function ocenEtap(){
     czekaNaOcene=false;
-    var prog=progEtapu(), maks=maxPunktowEtapu();
-    if(punkty>=prog){
-      if(etapIdx>=ETAPY.length-1){ zakonczGre(true); return; }
-      dzwiekEtapu();
-      trwa=false;
-      nakladka.style.display='flex';
-      nakladkaTytul.textContent='🎯 Etap '+(etapIdx+1)+' zaliczony! '+punkty+'/'+maks;
-      nakladkaOpis.innerHTML=ETAPY[etapIdx+1].opis;
-      nakladkaBtn.style.display='inline-block';
-      nakladkaBtn.textContent='Następny etap ▶';
-      nakladkaBtn.onclick=function(){
-        inicjujDzwiek(); etapIdx++; wczytajEtap();
-        nakladka.style.display='none'; trwa=true; czasOstatni=null;
-        requestAnimationFrame(petla);
-      };
-    } else {
-      dzwiekPudla();
-      trwa=false;
-      nakladka.style.display='flex';
-      nakladkaTytul.textContent='🏹 '+punkty+' / '+maks+' — za mało';
-      nakladkaOpis.innerHTML='Potrzebujesz <b>'+prog+'</b> pkt (75%).<br><br>Wskazówka: podgląd toru pokazuje, gdzie poleci strzała — dopasuj kąt i siłę, zanim puścisz.';
-      nakladkaBtn.style.display='inline-block';
-      nakladkaBtn.textContent='Spróbuj ponownie';
-      nakladkaBtn.onclick=function(){
-        inicjujDzwiek(); wczytajEtap();
-        nakladka.style.display='none'; trwa=true; czasOstatni=null;
-        requestAnimationFrame(petla);
-      };
-    }
+    celeLacznie += tarcze.length;
+    strzalyLacznie += strzalyWEtapie;
+    if(etapIdx>=ETAPY.length-1){ zakonczGre(true); return; }
+    dzwiekEtapu();
+    trwa=false;
+    nakladka.style.display='flex';
+    var idealnie = strzalyWEtapie === tarcze.length;
+    nakladkaTytul.textContent = idealnie
+      ? ('🎯 Etap '+(etapIdx+1)+' bezbłędnie! '+strzalyWEtapie+' strzał')
+      : ('🎯 Etap '+(etapIdx+1)+' zaliczony — '+strzalyWEtapie+' strzał');
+    nakladkaOpis.innerHTML=ETAPY[etapIdx+1].opis;
+    nakladkaBtn.style.display='inline-block';
+    nakladkaBtn.textContent='Następny etap ▶';
+    nakladkaBtn.onclick=function(){
+      inicjujDzwiek(); etapIdx++; wczytajEtap();
+      nakladka.style.display='none'; trwa=true; czasOstatni=null;
+      requestAnimationFrame(petla);
+    };
   }
 
   function aktualizuj(dt, czasAbs){
@@ -8912,11 +8905,9 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
         var tt=tarcze[t2];
         if(tt.trafiona) continue;
         if(!czyTrafiony(tt, s.x, s.y)) continue;
-        var pkt=10;
-        tt.trafiona=true; tt.zdobyte=pkt; tt.blysk=1;
-        punkty+=pkt;
+        tt.trafiona=true; tt.blysk=1;
         odswiezPanel();
-        dzwiekTrafienia(pkt);
+        dzwiekTrafienia();
         var kolor = '#ffd24a';
         teksty.push({x:tt.x,y:tt.y-tt.r-16,tekst:'TRAFIONY!',kolor:kolor,zycie:1.1});
         for(var c2=0;c2<16;c2++) czastki.push({x:s.x,y:s.y,vx:losowo(-130,130),vy:losowo(-130,130),zycie:0.5,kolor:kolor});
@@ -8929,7 +8920,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
       if(s.y>ZIEMIA_Y || s.x>W+40 || s.x<-40 || s.y>H+40){
         dzwiekPudla();
         teksty.push({x:Math.min(W-30,Math.max(30,s.x)),y:Math.min(ZIEMIA_Y-10,s.y),tekst:'PUDŁO',kolor:'#e6543c',zycie:1.1});
-        komunikat.textContent='Pudło! Popraw kąt lub siłę.';
+        komunikat.textContent='Pudło — strzelaj dalej, strzał masz bez liku.';
         zakonczStrzale(s,i); continue;
       }
     }
@@ -8960,8 +8951,13 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     nakladka.style.display='flex';
     if(zwyciestwo){
       dzwiekZwyciestwa();
-      nakladkaTytul.textContent='🏆 Wszystkie trzy etapy zaliczone!';
-      nakladkaOpis.innerHTML='Etap zaliczony automatycznie!';
+      var celnosc = celeLacznie > 0 ? Math.round(celeLacznie / strzalyLacznie * 100) : 0;
+      nakladkaTytul.textContent='🏆 Wszystkie etapy zaliczone!';
+      nakladkaOpis.innerHTML='Etap zaliczony automatycznie!<br><br>'
+        + '🎯 Trafionych celów: <b>' + celeLacznie + '</b><br>'
+        + '🏹 Wystrzelonych strzał: <b>' + strzalyLacznie + '</b><br>'
+        + '📊 Celność: <b>' + celnosc + '%</b>'
+        + (strzalyLacznie === celeLacznie ? '<br><br>✨ Bezbłędnie — ani jednej zmarnowanej strzały!' : '');
       nakladkaBtn.style.display='none';
       var w={type:'streamlit-child:zaliczono',wartosc:true};
       window.postMessage(w,'*');
@@ -8971,6 +8967,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
   function rozpocznijGre(){
     etapIdx=0; czasAbs=0;
+    strzalyLacznie=0; celeLacznie=0;
     wczytajEtap();
     nakladka.style.display='none';
     trwa=true; czasOstatni=null;
@@ -9477,8 +9474,10 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
       postacX += postacVX * dt;
       postacY += postacVY * dt;
 
-      if (postacX < POSTAC_R) postacX = POSTAC_R;
-      if (postacX > W - POSTAC_R) postacX = W - POSTAC_R;
+      // Odbicie od bocznych scian zamiast przyklejania sie do nich -
+      // mozna teraz celowo odbijac sie od krawedzi.
+      if (postacX < POSTAC_R) { postacX = POSTAC_R; postacVX = Math.abs(postacVX) * 0.82; }
+      if (postacX > W - POSTAC_R) { postacX = W - POSTAC_R; postacVX = -Math.abs(postacVX) * 0.82; }
 
       // Sprawdzenie ladowania - TYLKO gdy spadamy (vy>0), porownujac
       // pozycje SPRZED tej klatki z pozycja PO niej (nie projektujac
@@ -9568,7 +9567,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   #gra { position:relative; width:100%; height:700px; overflow:hidden; background:#0d0d0d; }
   #widok { display:block; width:100%; height:400px; background:#12100e; }
 
-  #hud { position:absolute; top:0; left:0; right:0; padding:6px 8px; z-index:5; pointer-events:none; }
+  #hud { position:absolute; top:0; left:0; width:56%; padding:6px 8px; z-index:5; pointer-events:none; }
+  #btnSkrzynia { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:6;
+    background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:22px;
+    padding:9px 20px; font-weight:700; font-size:13px; box-shadow:0 3px 10px rgba(0,0,0,0.5); display:none; }
   .pasek-otoczka { height:12px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.25); border-radius:6px; overflow:hidden; margin-bottom:3px; }
   .pasek-wyp { height:100%; transition:width 0.18s ease; }
   #paskHp { background:linear-gradient(90deg,#c0392b,#e74c3c); }
@@ -9628,6 +9630,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     </div>
   </div>
   <div id="dziennik"></div>
+  <button id="btnSkrzynia">📦 Otwórz skrzynkę</button>
 
   <div id="panelDolny">
     <div id="rzadPrzyciskow">
@@ -9652,6 +9655,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var paskHp = document.getElementById('paskHp'), paskXp = document.getElementById('paskXp');
   var hudHp = document.getElementById('hudHp'), hudPoziom = document.getElementById('hudPoziom'), hudMikstury = document.getElementById('hudMikstury');
   var dziennikEl = document.getElementById('dziennik');
+  var btnSkrzynia = document.getElementById('btnSkrzynia');
   var sekcjaStaty = document.getElementById('sekcjaStaty'), sekcjaEkw = document.getElementById('sekcjaEkw');
   var btnStaty = document.getElementById('btnStaty'), btnEkw = document.getElementById('btnEkw'), btnMikstura = document.getElementById('btnMikstura');
   var odznakaPkt = document.getElementById('odznakaPkt'), odznakaEkw = document.getElementById('odznakaEkw');
@@ -9660,8 +9664,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var WID = 380, WYS = 400;
   var KAFEL = 44;
   var SIATKA = 68;                 // rosnie z kazdym poziomem labiryntu
-  var POZIOMY_SIATKI = [68, 84, 100];
-  var POZIOMY_KOMNAT = [14, 18, 22];
+  var POZIOMY_SIATKI = [86, 106, 126];
+  var POZIOMY_KOMNAT = [18, 24, 30];
   var poziomLabiryntu = 0;         // 0,1,2 -> wyswietlane jako 1,2,3
 
   // ---------- DZWIEK ----------
@@ -9722,7 +9726,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Kazda bron ma teraz WLASNY charakter, a nie tylko inne liczby.
   var RODZAJE_BRONI = {
     miecz:      { nazwa:'Miecz',            ikona:'🗡️', zasieg:66,  tempo:0.40, obr:21, magiczna:false,
-                  opis:'Leczy 12% zadanych obrażeń', efektBroni:'wampiryzm' },
+                  opis:'Leczy 8% zadanych obrażeń', efektBroni:'wampiryzm' },
     topor:      { nazwa:'Topór',            ikona:'🪓', zasieg:62,  tempo:0.60, obr:36, magiczna:false,
                   opis:'Ogłusza wroga na chwilę', efektBroni:'ogluszenie' },
     mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false,
@@ -9735,8 +9739,6 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:180, tempo:0.72, obr:9,  magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
     rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:190, tempo:0.66, obr:8,  magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
     rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:6,  magiczna:true,  opis:'Mocno spowalnia wrogów', efekt:'zima' },
-    rozdzkaMrozu:{nazwa:'Różdżka Zamrożenia',ikona:'💧',zasieg:185, tempo:0.70, obr:7,  magiczna:true,  opis:'Zamraża wroga w miejscu', efekt:'mroz' },
-    rozdzkaZarzenia:{nazwa:'Różdżka Żaru',  ikona:'☄️', zasieg:170, tempo:0.80, obr:11, magiczna:true,  opis:'Silny ogień, dłużej pali', efekt:'zar' },
     rozdzkaWiedzmy:{nazwa:'Różdżka Wiedźmy',ikona:'🌈', zasieg:205, tempo:0.62, obr:4, magiczna:true,
                     opis:'+1 obrażeń za każdego zabitego wroga', mityczna:true },
   };
@@ -9763,7 +9765,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // ---------- STAN ----------
   var mapa = [], komnaty = [], komnataBossa = null;
-  var gracz, wrogowie = [], pociski = [], lupyNaZiemi = [], czastki = [], teksty = [];
+  var gracz, wrogowie = [], pociski = [], lupyNaZiemi = [], czastki = [], teksty = [], skrzynie = [];
   var trwa = false, czasOstatni = null, kamX = 0, kamY = 0;
   var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
   var bossPrzywolany = false, wygrana = false;
@@ -9826,11 +9828,38 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // ---------- PRZEDMIOTY ----------
+  // Skrzynie zamiast lezacych luzem przedmiotow. Poswiata pokazuje jakosc lupu.
+  function stworzSkrzynie(x, y, tier) {
+    return { x:x, y:y, tier:tier, otwarta:false, faza:Math.random()*6 };
+  }
+  function otworzSkrzynie(sk) {
+    if (sk.otwarta) return;
+    sk.otwarta = true;
+    var ile = 1 + (sk.tier >= 3 ? 2 : sk.tier >= 1 ? 1 : 0);
+    for (var i = 0; i < ile; i++) {
+      var r = Math.random(), przedmiot;
+      if (r < 0.14) przedmiot = { kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 };
+      else if (r < 0.57) przedmiot = stworzBron(sk.tier);
+      else przedmiot = stworzPancerz(sk.tier);
+      lupyNaZiemi.push({ x: sk.x + losowo(-26, 26), y: sk.y + losowo(-20, 20), przedmiot: przedmiot });
+    }
+    dziennik('📦 Skrzynka otwarta: ' + ile + (ile === 1 ? ' przedmiot!' : ' przedmioty!'));
+    dzwiekLup();
+    rozbryzg(sk.x, sk.y, TIERY[sk.tier].kolor, 16);
+  }
+  function skrzyniaWZasiegu() {
+    for (var i = 0; i < skrzynie.length; i++) {
+      if (skrzynie[i].otwarta) continue;
+      if (Math.hypot(skrzynie[i].x - gracz.x, skrzynie[i].y - gracz.y) < 52) return skrzynie[i];
+    }
+    return null;
+  }
+
   function stworzBron(tier, rodzajKlucz) {
     var rodzaj = rodzajKlucz;
     if (!rodzaj) {
       var pula = KLUCZE_BRONI.filter(function (k) { return !RODZAJE_BRONI[k].mityczna; });
-      if (tier >= 3 && Math.random() < 0.10) rodzaj = 'rozdzkaWiedzmy';
+      if (Math.random() < (tier >= 3 ? 0.10 : 0.025)) rodzaj = 'rozdzkaWiedzmy';
       else rodzaj = pula[losCalk(0, pula.length-1)];
     }
     var d = RODZAJE_BRONI[rodzaj];
@@ -9928,6 +9957,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function dodajXp(ile) {
+    if (trybNieskonczony) return;   // w arenie liczy sie tylko to, jak silna juz jestes
     gracz.xp += ile;
     while (gracz.xp >= gracz.xpDoNastepnego) {
       gracz.xp -= gracz.xpDoNastepnego;
@@ -9953,11 +9983,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   function stworzWroga(x, y, typKlucz, poziomMapy) {
     var t = TYPY_WROGOW[typKlucz];
+    // Wrogowie na kolejnych pietrach bija ZNACZNIE mocniej, nie tylko
+    // maja wiecej zycia - inaczej postac szybko stawala sie nietykalna.
     var skala = 1 + (poziomMapy - 1) * 0.16;
+    var skalaAtaku = skala * (1 + poziomLabiryntu * 0.55);
     return {
       x:x, y:y, typ:typKlucz, r:t.r, ikona:t.ikona, kolor:t.kolor,
       hp: Math.round(t.hp * skala), hpMax: Math.round(t.hp * skala),
-      atak: Math.round(t.atak * skala), pancerz: Math.round(t.pancerz * skala),
+      atak: Math.round(t.atak * skalaAtaku), pancerz: Math.round(t.pancerz * skala),
       predkosc: t.predkosc, xp: Math.round(t.xp * (1 + poziomLabiryntu * 0.5)),
       dystansowy: t.dystansowy || false,
       cooldown: losowo(0, 1), spowolnienie:0, zamrozony:0, plonie:0, migotanie:0, boss:false,
@@ -9971,12 +10004,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // Trzy bossy o ROZNYCH mechanikach - kazdy wymaga innego sposobu gry.
   var DEFINICJE_BOSSOW = [
-    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:900,  atak:38, pancerz:70,  predkosc:88, r:26,
-      wzorzec:'goniacy', opis:'Goni cię i bije z bliska.' },
-    { nazwa:'Wiedźma Otchłani', ikona:'🧝', kolor:'#8a5ac4', hp:1500, atak:30, pancerz:95,  predkosc:44, r:27,
-      wzorzec:'salwy',   opis:'Wystrzeliwuje salwy pocisków — uciekaj!' },
-    { nazwa:'Tytan Popiołów',  ikona:'👺', kolor:'#e6743c', hp:2300, atak:44, pancerz:125, predkosc:62, r:30,
-      wzorzec:'szarza',  opis:'Salwy, przywołania i śmiertelna szarża.' },
+    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:1100, atak:44, pancerz:70,  predkosc:92, r:26,
+      wzorzec:'goniacy', opis:'Goni cię i szarżuje — nie daj się osaczyć.' },
+    { nazwa:'Wiedźma Otchłani', ikona:'🧝', kolor:'#8a5ac4', hp:1700, atak:34, pancerz:95,  predkosc:46, r:27,
+      wzorzec:'salwy',   opis:'Gęste salwy pocisków i groźni pomocnicy.' },
+    { nazwa:'Tytan Popiołów',  ikona:'👺', kolor:'#e6743c', hp:4200, atak:72, pancerz:130, predkosc:66, r:32,
+      wzorzec:'tytan',   opis:'Sam, ale w trzech fazach. Szarżuje po długim rozpędzie.' },
   ];
 
   function stworzBossa(x, y) {
@@ -9988,7 +10021,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       dystansowy:false, cooldown:0, spowolnienie:0, zamrozony:0, plonie:0, migotanie:0, boss:true,
       czuwa:true, czujnosc:9999, wzorzec:d.wzorzec,
       cooldownSalwy: 2.4, cooldownSzarzy: 5.5, szarzaTrwa:0, szarzaVX:0, szarzaVY:0,
-      cooldownPrzywolania: 8,
+      cooldownPrzywolania: 8, faza:0, przygotowanieSzarzy:0, uleczylSie:false,
+      mnoznikSalw:1, poleSpowolnienia:false, poswiata:null,
     };
   }
 
@@ -10051,12 +10085,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       return;
     }
 
+    if (trybNieskonczony) return;   // w arenie nie wypadaja lupy
     var r = Math.random();
     if (r < 0.16) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(tierZPoziomu(gracz.poziom)) });
     } else if (r < 0.34) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzPancerz(tierZPoziomu(gracz.poziom)) });
-    } else if (r < 0.50) {
+    } else if (r < 0.375) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:{ kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 } });
     }
   }
@@ -10089,7 +10124,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.cooldown -= dt;
     if (gracz.cooldown > 0) return;
     var bron = gracz.zalozone.bron;
-    var cel = znajdzNajblizszegoWroga(bron.zasieg);
+    var zasiegTeraz = bron.zasieg;
+    if (bron.efektBroni === 'rzut' && (bron._doRzutu || 0) <= 1) zasiegTeraz = bron.zasieg * 2.6;
+    var cel = znajdzNajblizszegoWroga(zasiegTeraz);
     if (!cel) return;
     gracz.cooldown = bron.tempo;
 
@@ -10100,8 +10137,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       bron._doRzutu = (bron._doRzutu || 0) - 1;
       if (bron._doRzutu <= 0) {
         bron._doRzutu = 4;
-        pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*380, vy:Math.sin(kat)*380,
-                       obr:Math.round(bron.obr*1.6), efekt:null, zycie:1.1, kolor:'#d8d0b0' });
+        pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*430, vy:Math.sin(kat)*430,
+                       obr:Math.round(bron.obr*1.6), efekt:null, zycie:2.2, kolor:'#d8d0b0',
+                       ksztalt:'wlocznia', kat:kat });
         ton(300, 0.09, 'triangle', 0.13);
         return;
       }
@@ -10126,7 +10164,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         zadajObrazeniaWrogowi(w, bron.obr);
         var zadane = przed - w.hp;
         if (bron.efektBroni === 'wampiryzm' && zadane > 0 && gracz.hp > 0) {
-          var lecz = Math.max(1, Math.round(zadane * 0.12));
+          var lecz = Math.max(1, Math.round(zadane * 0.08));
           gracz.hp = Math.min(gracz.hpMax, gracz.hp + lecz);
           tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + lecz, '#7ec98a');
           odswiezHud();
@@ -10148,6 +10186,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function aktualizuj(dt) {
     // Ruch gracza
     var predkosc = wartoscStatu('predkosc');
+    if (gracz._spowolnionyPrzezBossa > 0) { predkosc *= 0.55; gracz._spowolnionyPrzezBossa -= dt; }
     if (joyAktywny) {
       var dx = joyX - joyBazaX, dy = joyY - joyBazaY;
       var dl = Math.hypot(dx, dy);
@@ -10163,6 +10202,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     atakujAutomatycznie(dt);
     if (gracz.animCios > 0) gracz.animCios -= dt;
     if (gracz.migotanie > 0) gracz.migotanie -= dt;
+
+    if (trybNieskonczony) {
+      aktualizujArene(dt);
+      hudPoziom.textContent = '♾️ ' + czasAreny.toFixed(1) + 's · fala ' + (1 + Math.floor(czasAreny/12));
+    }
 
     // Przywolanie bossa
     if (!bossPrzywolany && !pytanieOBossa && komnataBossa) {
@@ -10183,7 +10227,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (gracz.y < gora) gracz.y = gora;
       if (gracz.y > dol) gracz.y = dol;
       cooldownSlug -= dt;
-      if (cooldownSlug <= 0 && wrogowie.length < 9) {
+      if (poziomLabiryntu < 2 && cooldownSlug <= 0 && wrogowie.length < 9) {
         cooldownSlug = 7 - poziomLabiryntu;
         var typSlugi = ['szczur','goblin','szkielet'][Math.min(2, poziomLabiryntu)];
         for (var sl = 0; sl < 1 + poziomLabiryntu; sl++) {
@@ -10261,38 +10305,100 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           w.cooldown -= dt;
           return;
         }
-        if (w.wzorzec === 'salwy' || w.wzorzec === 'szarza') {
+        // ---- TYTAN: trzy fazy ----
+        if (w.wzorzec === 'tytan') {
+          var procHp = w.hp / w.hpMax;
+          if (w.faza < 1 && procHp <= 0.75) {
+            w.faza = 1; w.mnoznikSalw = 2; w.poswiata = '#a855f7';
+            dziennik('🟣 ' + w.nazwa + ' wpada w furię — więcej pocisków!');
+            ton(150, 0.4, 'sawtooth', 0.18);
+          }
+          if (w.faza < 2 && procHp <= 0.50) {
+            w.faza = 2; w.mnoznikSalw = 3; w.poswiata = '#e6543c'; w.poleSpowolnienia = true;
+            dziennik('🔴 ' + w.nazwa + ' rozpościera pole spowolnienia!');
+            ton(110, 0.5, 'sawtooth', 0.2);
+          }
+          if (!w.uleczylSie && procHp <= 0.25) {
+            w.uleczylSie = true; w.hp = w.hpMax;
+            w.faza = 3; w.poswiata = '#ffd24a';
+            dziennik('💛 ' + w.nazwa + ' regeneruje się w pełni! Fazy zostają.');
+            [523,392,330,262].forEach(function (f,i) { setTimeout(function(){ ton(f,0.3,'sawtooth',0.18); }, i*180); });
+          }
+          if (w.faza >= 2 && w.hp / w.hpMax <= 0.50) w.predkosc = 92;
+
+          // Pole spowolnienia wokol bossa
+          if (w.poleSpowolnienia && d < 190) gracz._spowolnionyPrzezBossa = 0.15;
+
           w.cooldownSalwy -= dt;
           if (w.cooldownSalwy <= 0) {
-            w.cooldownSalwy = w.wzorzec === 'szarza' ? 2.1 : 2.7;
-            var ileP = w.wzorzec === 'szarza' ? 9 : 7;
-            var katBazowy = Math.atan2(gracz.y - w.y, gracz.x - w.x);
-            for (var s2 = 0; s2 < ileP; s2++) {
-              var kk = katBazowy + (s2 - (ileP-1)/2) * 0.30;
-              pociski.push({ x:w.x, y:w.y, vx:Math.cos(kk)*215, vy:Math.sin(kk)*215,
-                             obr:Math.round(w.atak*0.55), wroga:true, zycie:2.6, kolor:'#e86ca0' });
+            w.cooldownSalwy = 2.3 / w.mnoznikSalw;
+            var ileT = 9 + w.faza * 3;
+            var katT = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+            for (var sT = 0; sT < ileT; sT++) {
+              var kT = katT + (sT - (ileT-1)/2) * 0.26;
+              pociski.push({ x:w.x, y:w.y, vx:Math.cos(kT)*235, vy:Math.sin(kT)*235,
+                             obr:Math.round(w.atak*0.75), wroga:true, zycie:2.8, kolor: w.poswiata || '#e86ca0' });
+            }
+            ton(170, 0.14, 'sawtooth', 0.14);
+          }
+
+          // Szarza z ROZPEDEM - boss najpierw staje i sie napina
+          if (w.przygotowanieSzarzy > 0) {
+            w.przygotowanieSzarzy -= dt;
+            if (w.przygotowanieSzarzy <= 0) {
+              w.szarzaTrwa = 1.1;
+              var kT2 = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+              w.szarzaVX = Math.cos(kT2) * 620; w.szarzaVY = Math.sin(kT2) * 620;
+              ton(90, 0.35, 'sawtooth', 0.2);
+            }
+            return;   // stoi w miejscu i sie przygotowuje
+          }
+          w.cooldownSzarzy -= dt;
+          if (w.cooldownSzarzy <= 0 && d > 80) {
+            w.cooldownSzarzy = 7.5;
+            w.przygotowanieSzarzy = 1.1;
+            dziennik('⚠️ ' + w.nazwa + ' szykuje szarżę — uciekaj!');
+            ton(200, 0.5, 'square', 0.16);
+            return;
+          }
+        }
+
+        // ---- WIEDZMA: gestsze salwy + grozniejsi pomocnicy ----
+        if (w.wzorzec === 'salwy') {
+          w.cooldownSalwy -= dt;
+          if (w.cooldownSalwy <= 0) {
+            w.cooldownSalwy = 2.0;
+            var katW = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+            for (var sW = 0; sW < 11; sW++) {
+              var kW = katW + (sW - 5) * 0.24;
+              pociski.push({ x:w.x, y:w.y, vx:Math.cos(kW)*230, vy:Math.sin(kW)*230,
+                             obr:Math.round(w.atak*1.35), wroga:true, zycie:2.8, kolor:'#e86ca0' });
             }
             ton(180, 0.14, 'sawtooth', 0.14);
           }
+          w.cooldownPrzywolania -= dt;
+          if (w.cooldownPrzywolania <= 0 && wrogowie.length < 14) {
+            w.cooldownPrzywolania = 9;
+            for (var pz = 0; pz < 3; pz++) {
+              var pom = stworzWroga(w.x + losowo(-80,80), w.y + losowo(-80,80),
+                                    Math.random() < 0.5 ? 'ogr' : 'mag', 9 + poziomLabiryntu*3);
+              pom.czuwa = true;
+              wrogowie.push(pom);
+            }
+            dziennik('💀 ' + w.nazwa + ' przywołuje ogry i magów!');
+          }
         }
-        if (w.wzorzec === 'szarza') {
+
+        // ---- WLADCA: goni i SZARZUJE ----
+        if (w.wzorzec === 'goniacy') {
           w.cooldownSzarzy -= dt;
-          if (w.cooldownSzarzy <= 0 && d > 90) {
-            w.cooldownSzarzy = 6.5; w.szarzaTrwa = 0.9;
-            var ks = Math.atan2(gracz.y - w.y, gracz.x - w.x);
-            w.szarzaVX = Math.cos(ks) * 430; w.szarzaVY = Math.sin(ks) * 430;
+          if (w.cooldownSzarzy <= 0 && d > 100) {
+            w.cooldownSzarzy = 5.0; w.szarzaTrwa = 0.85;
+            var kG = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+            w.szarzaVX = Math.cos(kG) * 460; w.szarzaVY = Math.sin(kG) * 460;
             dziennik('⚠️ ' + w.nazwa + ' szarżuje!');
             ton(120, 0.3, 'sawtooth', 0.18);
             return;
-          }
-          w.cooldownPrzywolania -= dt;
-          if (w.cooldownPrzywolania <= 0 && wrogowie.length < 16) {
-            w.cooldownPrzywolania = 11;
-            for (var pz = 0; pz < 2; pz++) {
-              wrogowie.push(stworzWroga(w.x + losowo(-70,70), w.y + losowo(-70,70), 'szkielet', 6 + poziomLabiryntu*3));
-              wrogowie[wrogowie.length-1].czuwa = true;
-            }
-            dziennik('💀 ' + w.nazwa + ' przywołuje sługi!');
           }
         }
       }
@@ -10355,11 +10461,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Lupy - podniesienie
     for (var l = lupyNaZiemi.length - 1; l >= 0; l--) {
       var lu = lupyNaZiemi[l];
+      if (lu.blokadaPodniesienia > 0) { lu.blokadaPodniesienia -= dt; continue; }
       if (Math.hypot(lu.x - gracz.x, lu.y - gracz.y) < gracz.r + 16) {
         if (lu.przedmiot.kategoria === 'mikstura') {
           gracz.mikstury++;
           dziennik('🧪 Podniesiono miksturę zdrowia');
-        } else if (gracz.ekwipunek.length < 12) {
+        } else if (gracz.ekwipunek.length < 30) {
           gracz.ekwipunek.push(lu.przedmiot);
           dziennik(lu.przedmiot.ikona + ' ' + lu.przedmiot.nazwa);
         } else {
@@ -10393,6 +10500,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       }
     }
 
+    var skBlisko = skrzyniaWZasiegu();
+    if (btnSkrzynia) {
+      if (skBlisko) {
+        btnSkrzynia.style.display = 'block';
+        btnSkrzynia.textContent = '📦 Otwórz ' + TIERY[skBlisko.tier].nazwa.toLowerCase() + ' skrzynkę';
+        btnSkrzynia.style.borderBottom = '3px solid ' + TIERY[skBlisko.tier].kolor;
+      } else btnSkrzynia.style.display = 'none';
+    }
+
     // Kamera
     kamX += (gracz.x - WID/2 - kamX) * Math.min(1, dt * 7);
     kamY += (gracz.y - WYS/2 - kamY) * Math.min(1, dt * 7);
@@ -10411,13 +10527,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // ---------- RYSOWANIE ----------
   // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
-  var MINI_BOK = 96, MINI_MARGINES = 8;
+  var MINI_BOK = 88, MINI_MARGINES = 6;
   function rysujMinimape() {
     var skala = MINI_BOK / (SIATKA * KAFEL);
-    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_MARGINES + 30;
+    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_MARGINES;
 
     ctx.save();
-    ctx.globalAlpha = 0.82;
+    ctx.globalAlpha = 0.55;   // polprzezroczysta, zeby nie zaslaniala
     ctx.fillStyle = '#0a0810';
     ctx.fillRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
     ctx.strokeStyle = 'rgba(230,193,92,0.55)'; ctx.lineWidth = 1.5;
@@ -10431,7 +10547,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                    Math.max(2, k.w*KAFEL*skala), Math.max(2, k.h*KAFEL*skala));
     });
 
-    // Lupy
+    skrzynie.forEach(function (sk) {
+      if (sk.otwarta) return;
+      ctx.fillStyle = TIERY[sk.tier].kolor;
+      ctx.fillRect(mx + sk.x*skala - 1.5, my + sk.y*skala - 1.5, 3.5, 3.5);
+    });
     ctx.fillStyle = 'rgba(230,193,92,0.9)';
     lupyNaZiemi.forEach(function (lu) {
       ctx.fillRect(mx + lu.x*skala - 1, my + lu.y*skala - 1, 2.5, 2.5);
@@ -10498,6 +10618,27 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.fillText('🌀', px2, py2);
     }
 
+    // Skrzynie
+    skrzynie.forEach(function (sk) {
+      var ex = sk.x - kamX, ey = sk.y - kamY;
+      if (ex < -50 || ex > WID+50 || ey < -50 || ey > WYS+50) return;
+      var kol = TIERY[sk.tier].kolor;
+      if (!sk.otwarta) {
+        ctx.save();
+        ctx.shadowColor = kol; ctx.shadowBlur = 12 + Math.sin(Date.now()/380 + sk.faza)*7;
+        ctx.fillStyle = '#6b4a2a'; ctx.fillRect(ex-14, ey-10, 28, 20);
+        ctx.fillStyle = kol; ctx.fillRect(ex-14, ey-14, 28, 7); ctx.fillRect(ex-3, ey-4, 6, 8);
+        ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(ex-14, ey-14, 28, 24);
+        ctx.restore();
+      } else {
+        ctx.globalAlpha = 0.45;
+        ctx.fillStyle = '#4a3a28'; ctx.fillRect(ex-14, ey-4, 28, 14);
+        ctx.fillStyle = '#3a2f26'; ctx.fillRect(ex-15, ey-16, 30, 7);
+        ctx.globalAlpha = 1;
+      }
+    });
+
     // Lupy
     lupyNaZiemi.forEach(function (lu) {
       var ex = lu.x - kamX, ey = lu.y - kamY;
@@ -10516,7 +10657,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.save();
       ctx.shadowColor = p.kolor; ctx.shadowBlur = 10;
       ctx.fillStyle = p.kolor;
-      ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2); ctx.fill();
+      if (p.ksztalt === 'wlocznia') {
+        ctx.translate(ex, ey); ctx.rotate(Math.atan2(p.vy, p.vx));
+        ctx.fillRect(-13, -1.6, 22, 3.2);
+        ctx.beginPath(); ctx.moveTo(13,0); ctx.lineTo(4,-5); ctx.lineTo(4,5); ctx.closePath(); ctx.fill();
+      } else {
+        ctx.beginPath(); ctx.arc(ex, ey, 5, 0, Math.PI*2); ctx.fill();
+      }
       ctx.restore();
     });
 
@@ -10528,8 +10675,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (w.migotanie > 0) { ctx.globalAlpha = 0.55; }
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath(); ctx.ellipse(ex, ey + w.r*0.8, w.r*0.9, w.r*0.35, 0, 0, Math.PI*2); ctx.fill();
+      if (w.poswiata) { ctx.shadowColor = w.poswiata; ctx.shadowBlur = 20 + Math.sin(Date.now()/220)*8; }
+      if (w.przygotowanieSzarzy > 0) { ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 26; }
       ctx.font = (w.r*1.7) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(w.ikona, ex, ey);
+      ctx.shadowBlur = 0;
+      if (w.poleSpowolnienia) {
+        ctx.globalAlpha = 0.16; ctx.fillStyle = '#e6543c';
+        ctx.beginPath(); ctx.arc(ex, ey, 190, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 1;
+      }
       ctx.restore();
       if (w.plonie > 0) { ctx.font = '11px sans-serif'; ctx.fillText('🔥', ex + w.r*0.7, ey - w.r*0.7); }
       // Pasek HP
@@ -10686,7 +10841,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     var nagPlecak = document.createElement('div');
     nagPlecak.className = 'naglowek-sekcji';
-    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/12) — dotknij, żeby założyć · ✕ wyrzuca';
+    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/30) — dotknij, żeby założyć · ✕ wyrzuca';
     sekcjaEkw.appendChild(nagPlecak);
 
     var btnPolacz = document.createElement('button');
@@ -10699,7 +10854,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     var siatka = document.createElement('div');
     siatka.className = 'siatka-ekw';
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < 30; i++) {
       var slot = document.createElement('div');
       var p = gracz.ekwipunek[i];
       if (p) {
@@ -10788,7 +10943,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var p = gracz.ekwipunek[indeks];
     if (!p) return;
     gracz.ekwipunek.splice(indeks, 1);
-    lupyNaZiemi.push({ x: gracz.x + losowo(-24, 24), y: gracz.y + losowo(-24, 24), przedmiot: p });
+    lupyNaZiemi.push({ x: gracz.x + losowo(-30, 30), y: gracz.y + losowo(-30, 30),
+                       przedmiot: p, blokadaPodniesienia: 2.5 });
     dziennik('🗑️ Wyrzucono: ' + p.nazwa);
     ton(220, 0.07, 'square', 0.12);
     odswiezPanele(); odswiezHud();
@@ -10805,6 +10961,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ton(520, 0.06, 'triangle', 0.13);
     odswiezPanele(); odswiezHud();
   }
+
+  if (btnSkrzynia) btnSkrzynia.addEventListener('click', function () {
+    inicjujDzwiek();
+    var sk = skrzyniaWZasiegu();
+    if (sk) { otworzSkrzynie(sk); btnSkrzynia.style.display = 'none'; }
+  });
 
   btnStaty.addEventListener('click', function () {
     btnStaty.classList.add('aktywny'); btnEkw.classList.remove('aktywny');
@@ -10859,7 +11021,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function zaludnijMape() {
-    wrogowie = []; lupyNaZiemi = [];
+    wrogowie = []; lupyNaZiemi = []; skrzynie = [];
     var start = komnaty[0];
 
     // Trudnosc rosnie z ODLEGLOSCIA od komnaty startowej, a NIE z losowym
@@ -10890,19 +11052,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         wrogowie.push(stworzWroga(wx, wy, typ, poziomKomnaty));
       }
 
-      // Skrzynki - im glebiej, tym lepsze i czestsze
-      var szansaLupu = 0.5 + glebokosc * 0.35;
-      if (Math.random() < szansaLupu) {
-        var tierLupu = tierZPoziomu(Math.round(glebokosc * 9) + poziomLabiryntu * 3);
-        lupyNaZiemi.push({
-          x:(k.x + k.w/2) * KAFEL, y:(k.y + k.h/2) * KAFEL,
-          przedmiot: Math.random() < 0.3 ? { kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 }
-                     : (Math.random() < 0.5 ? stworzBron(tierLupu) : stworzPancerz(tierLupu))
-        });
+      // SKRZYNIE - im glebiej, tym lepszej jakosci
+      if (Math.random() < 0.62 + glebokosc * 0.3) {
+        skrzynie.push(stworzSkrzynie((k.x + k.w/2) * KAFEL, (k.y + k.h/2) * KAFEL,
+                                     tierZPoziomu(Math.round(glebokosc * 9) + poziomLabiryntu * 3)));
       }
-      if (Math.random() < 0.3 + glebokosc * 0.3) {
+      if (glebokosc > 0.45 && Math.random() < 0.35) {
+        skrzynie.push(stworzSkrzynie((k.x + k.w*0.28) * KAFEL, (k.y + k.h*0.72) * KAFEL,
+                                     tierZPoziomu(Math.round(glebokosc * 11) + poziomLabiryntu * 3)));
+      }
+      if (Math.random() < 0.09 + glebokosc * 0.06) {
         lupyNaZiemi.push({
-          x:(k.x + k.w*0.3) * KAFEL, y:(k.y + k.h*0.7) * KAFEL,
+          x:(k.x + k.w*0.7) * KAFEL, y:(k.y + k.h*0.3) * KAFEL,
           przedmiot: { kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 }
         });
       }
@@ -10979,14 +11140,41 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bjn3) bjn3.style.display = 'none';
     if (zwyciestwo) {
       dzwiekZwyciestwo();
-      nakladkaTytul.textContent = '👑 Wszystkie trzy labirynty pokonane!';
-      nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!<br><br>Ukończono na poziomie postaci ' + gracz.poziom + '.';
-      nakladkaBtn.style.display = 'none';
       var wiad = { type:'streamlit-child:zaliczono', wartosc:true };
       window.postMessage(wiad, '*');
       if (window.parent && window.parent !== window) window.parent.postMessage(wiad, '*');
+      nakladkaTytul.textContent = '👑 Wszystkie trzy labirynty pokonane!';
+      nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!<br><br>Ukończono na poziomie postaci <b>' + gracz.poziom + '</b>.'
+        + '<br><br>Sprawdzisz, jak długo wytrzymasz w <b>trybie nieskończonym</b>?';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = '♾️ Tryb nieskończony';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
+      if (!document.getElementById('btnZakoncz')) {
+        var bz = document.createElement('button');
+        bz.id = 'btnZakoncz'; bz.className = 'gra-btn';
+        bz.style.marginTop = '10px';
+        bz.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
+        bz.style.color = '#f0e8d0';
+        bz.textContent = '✔ Zakończ';
+        bz.onclick = function () {
+          nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
+          nakladkaBtn.style.display = 'none';
+          document.getElementById('btnZakoncz').style.display = 'none';
+        };
+        nakladkaBtn.parentNode.appendChild(bz);
+      }
+      document.getElementById('btnZakoncz').style.display = 'inline-block';
     } else {
       dzwiekSmierciGracza();
+      if (trybNieskonczony) {
+        nakladkaTytul.textContent = '♾️ Wytrzymałaś ' + czasAreny.toFixed(1) + 's!';
+        nakladkaOpis.innerHTML = 'Fala <b>' + (1 + Math.floor(czasAreny/12)) + '</b>, poziom postaci <b>' + gracz.poziom + '</b>.'
+          + '<br><br>Etap i tak jest już zaliczony.';
+        nakladkaBtn.style.display = 'inline-block';
+        nakladkaBtn.textContent = '♾️ Jeszcze raz';
+        nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
+        return;
+      }
       nakladkaTytul.textContent = '💀 Poległaś...';
       nakladkaOpis.innerHTML = 'Dotarłaś do poziomu ' + gracz.poziom + '.<br>Labirynt czeka na kolejną próbę.';
       nakladkaBtn.style.display = 'inline-block';
@@ -10995,7 +11183,60 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
   }
 
+  // ---------- TRYB NIESKONCZONY (arena jak w Brotato) ----------
+  var trybNieskonczony = false, czasAreny = 0, cooldownFali = 0;
+
+  function uruchomTrybNieskonczony() {
+    trybNieskonczony = true;
+    czasAreny = 0; cooldownFali = 0;
+    poziomLabiryntu = 2;
+    portal = null; arenaZamknieta = false; pytanieOBossa = false; bossPrzywolany = true;
+    var bz2 = document.getElementById('btnZakoncz'); if (bz2) bz2.style.display = 'none';
+    SIATKA = 70;
+    mapa = [];
+    for (var y = 0; y < SIATKA; y++) mapa.push(new Array(SIATKA).fill(0));
+    for (var y2 = 4; y2 < SIATKA - 4; y2++)
+      for (var x2 = 4; x2 < SIATKA - 4; x2++) mapa[y2][x2] = 1;
+    komnaty = [{ x:4, y:4, w:SIATKA-8, h:SIATKA-8, cx:Math.floor(SIATKA/2), cy:Math.floor(SIATKA/2) }];
+    komnataBossa = null;
+    gracz.x = (SIATKA/2) * KAFEL; gracz.y = (SIATKA/2) * KAFEL;
+    gracz.hp = gracz.hpMax;
+    wrogowie = []; pociski = []; lupyNaZiemi = []; skrzynie = []; czastki = []; teksty = [];
+    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    nakladka.style.display = 'none';
+    odswiezHud(); odswiezPanele();
+    dziennik('♾️ Tryb nieskończony! Przetrwaj jak najdłużej.');
+    trwa = true; czasOstatni = null;
+    requestAnimationFrame(petla);
+  }
+
+  function aktualizujArene(dt) {
+    czasAreny += dt;
+    var poziomFali = 1 + Math.floor(czasAreny / 12);
+    cooldownFali -= dt;
+    if (cooldownFali <= 0 && wrogowie.length < 40) {
+      cooldownFali = Math.max(0.7, 2.6 - czasAreny * 0.012);
+      var ileNaraz = 1 + Math.floor(czasAreny / 30);
+      for (var i = 0; i < ileNaraz; i++) {
+        var rog = Math.floor(Math.random() * 4), mrg = 7;
+        var sx = (rog % 2 === 0 ? mrg : SIATKA - mrg) * KAFEL + losowo(-60, 60);
+        var sy = (rog < 2 ? mrg : SIATKA - mrg) * KAFEL + losowo(-60, 60);
+        var pula = czasAreny < 40 ? ['szczur','goblin']
+                 : czasAreny < 90 ? ['goblin','szkielet','mag']
+                 : ['szkielet','mag','ogr'];
+        var nw = stworzWroga(sx, sy, pula[Math.floor(Math.random()*pula.length)], poziomFali);
+        var wzm = 1 + czasAreny * 0.016;
+        nw.hp = Math.round(nw.hp * wzm); nw.hpMax = nw.hp;
+        nw.atak = Math.round(nw.atak * wzm);
+        nw.predkosc = Math.min(190, nw.predkosc * (1 + czasAreny * 0.0035));
+        nw.czuwa = true; nw.czujnosc = 99999;
+        wrogowie.push(nw);
+      }
+    }
+  }
+
   function rozpocznijGre() {
+    trybNieskonczony = false;
     poziomLabiryntu = 0;
     portal = null; arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
     var bjn2 = document.getElementById('btnJeszczeNie');
