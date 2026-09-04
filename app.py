@@ -11692,6 +11692,16 @@ def zainicjuj_stan():
 
 def renderuj_haslo(etap_dane):
     klucz = etap_dane["klucz"]
+
+    # Treść zagadki MUSI być widoczna — bez niej nie da się jej rozwiązać.
+    # (Przy wcześniejszym usuwaniu zbędnych instrukcji z etapów ta treść
+    # zniknęła razem z nimi, choć tutaj jest sednem zadania.)
+    if etap_dane.get("tresc"):
+        st.markdown(tt(etap_dane["tresc"]))
+
+    if etap_dane.get("format_info"):
+        st.caption(tt(etap_dane["format_info"]))
+
     wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
         if znormalizuj(wpisane) == znormalizuj(etap_dane["odpowiedz"]):
@@ -12075,6 +12085,10 @@ def renderuj_wordle(etap_dane):
 def renderuj_data(etap_dane):
     klucz = etap_dane["klucz"]
 
+    # Samo pytanie — inaczej nie wiadomo, jaką datę wpisać.
+    if etap_dane.get("tresc"):
+        st.markdown(tt(etap_dane["tresc"]))
+
     placeholder = t("wybierz")
     kol1, kol2, kol3 = st.columns(3)
     with kol1:
@@ -12132,7 +12146,15 @@ def narysuj_szachownice(figury):
 
 def renderuj_szachy(etap_dane):
     klucz = etap_dane["klucz"]
+
+    # Polecenie zadania (co właściwie trzeba znaleźć) — bez niego etap
+    # jest nie do rozwiązania.
+    if etap_dane.get("tresc"):
+        st.markdown(tt(etap_dane["tresc"]))
+
     narysuj_szachownice(etap_dane["figury"])
+    if etap_dane.get("format_info"):
+        st.caption(tt(etap_dane["format_info"]))
     wpisane = st.text_input(t("twoj_ruch"), key=f"pole_{klucz}", label_visibility="collapsed")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
         oczyszczony = wpisane.replace(",", " ").replace("+", "").replace("#", "")
