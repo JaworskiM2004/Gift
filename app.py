@@ -484,6 +484,54 @@ ETAPY = [
     },
 ]
 
+# ======================================================================
+# KATEGORIE ETAPÓW
+# ======================================================================
+# Menu jest podzielone na cztery grupy, żeby 21 kafelków nie wysypywało
+# się jedną wielką ścianą. Podział według tego, CZEGO gra wymaga:
+# myślenia, refleksu, precyzji albo dłuższego zaangażowania.
+
+KATEGORIE = [
+    {
+        "id": "zagadki",
+        "emoji": "🧠",
+        "nazwa": {"pl": "Zagadki", "en": "Riddles"},
+        "opis": {"pl": "Do pomyślenia — bez pośpiechu", "en": "Think it through"},
+        "kolor": "#7ea8e6",
+        "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman"],
+    },
+    {
+        "id": "zrecznosciowki",
+        "emoji": "⚡",
+        "nazwa": {"pl": "Zręcznościówki", "en": "Reflex games"},
+        "opis": {"pl": "Refleks i szybkie palce", "en": "Fast reflexes"},
+        "kolor": "#e6c15c",
+        "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake"],
+    },
+    {
+        "id": "precyzja",
+        "emoji": "🎯",
+        "nazwa": {"pl": "Precyzja", "en": "Precision"},
+        "opis": {"pl": "Spokojnie, liczy się celność", "en": "Take your time, aim well"},
+        "kolor": "#7ec98a",
+        "etapy": ["bitwa", "blackjack", "samolot", "odyseusz", "parkour"],
+    },
+    {
+        "id": "przygody",
+        "emoji": "🏰",
+        "nazwa": {"pl": "Wielkie przygody", "en": "Big adventures"},
+        "opis": {"pl": "Na dłużej — całe światy", "en": "Whole worlds to explore"},
+        "kolor": "#b98ae6",
+        "etapy": ["minecraft", "labirynt"],
+    },
+]
+
+def etapy_kategorii(kat):
+    """Etapy danej kategorii, w kolejności z definicji."""
+    wg_klucza = {e["klucz"]: e for e in ETAPY}
+    return [wg_klucza[k] for k in kat["etapy"] if k in wg_klucza]
+
+
 PLIK_STANU = "stan_gry.json"
 
 # ======================================================================
@@ -515,6 +563,9 @@ TEKST = {
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
         "menu_tytul": "Wybierz etap",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
+        "ukonczonych": "ukończonych",
+        "otworz": "Otwórz →",
+        "powrot_kategorie": "⬅️ Wróć do kategorii",
         "zobacz_kod": "Zobacz kod do sejfu 🔓",
         "reset_btn": "🔄 Resetuj wszystko",
         "reset_ostrzezenie": "⚠️ To usunie CAŁY postęp (wszystkie rozwiązane etapy) i nie da się tego cofnąć. Na pewno?",
@@ -579,6 +630,9 @@ TEKST = {
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
         "menu_tytul": "Choose a stage",
         "wszystko_rozwiazane": "🎉 You solved everything!",
+        "ukonczonych": "completed",
+        "otworz": "Open →",
+        "powrot_kategorie": "⬅️ Back to categories",
         "zobacz_kod": "See the safe code 🔓",
         "reset_btn": "🔄 Reset everything",
         "reset_ostrzezenie": "⚠️ This deletes ALL progress (every solved stage) and can't be undone. Are you sure?",
@@ -11414,22 +11468,30 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
 
 .szachownica {
     display: grid;
+    /* Bez jawnych WIERSZY siatka dobierala ich wysokosc do zawartosci,
+       przez co pola byly prostokatne mimo kwadratowego kontenera.
+       repeat(8, 1fr) w obu osiach + aspect-ratio 1 daje idealne kwadraty. */
     grid-template-columns: repeat(8, 1fr);
-    width: 100%;
-    max-width: 320px;
-    aspect-ratio: 1;
+    grid-template-rows: repeat(8, 1fr);
+    width: min(320px, 92vw);
+    aspect-ratio: 1 / 1;
     margin: 1rem auto;
     border: 3px solid #d4af37;
     border-radius: 6px;
     overflow: hidden;
+    box-sizing: border-box;
     box-shadow: 0 4px 16px rgba(0,0,0,0.5);
 }
 .szach-pole {
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.7rem;
+    /* Rozmiar figur skalowany do pola, zeby nie rozpychal wierszy */
+    font-size: clamp(1.1rem, 7.4vw, 2rem);
     line-height: 1;
+    min-width: 0;
+    min-height: 0;
+    overflow: hidden;
 }
 .szach-jasne { background: #e8d9b5; }
 .szach-ciemne { background: #8a6d3b; }
@@ -11483,6 +11545,82 @@ div.stButton > button:disabled {
 /* Kafelki nawigacji w siatce (menu etapow + klodka na powitaniu) - samo
    emoji, bez tla/ramki/cienia - czysciej i bardziej minimalistycznie.
    Stan (rozwiazany/zablokowany) i tak pokazuje juz sama etykieta (✅/🔒). */
+/* ---- KAFELKI KATEGORII W MENU ---- */
+.licznik-globalny {
+    text-align: center;
+    color: #a89878;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+    margin: -0.6rem 0 1.2rem;
+}
+.kafel-kategorii {
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(0,0,0,0.28));
+    border: 1.5px solid var(--kolor);
+    border-radius: 16px;
+    padding: 0.9rem 0.7rem 0.75rem;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+}
+.kafel-emoji {
+    font-size: 2.4rem;
+    line-height: 1;
+    filter: drop-shadow(0 0 10px var(--kolor));
+    margin-bottom: 0.35rem;
+}
+.kafel-nazwa {
+    color: var(--kolor);
+    font-weight: 800;
+    font-size: 0.98rem;
+    letter-spacing: 0.01em;
+}
+.kafel-opis {
+    color: #a89878;
+    font-size: 0.7rem;
+    line-height: 1.3;
+    margin: 0.25rem 0 0.5rem;
+    min-height: 1.8em;
+}
+.kafel-pasek {
+    height: 5px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 3px;
+    overflow: hidden;
+}
+.kafel-pasek-wyp {
+    height: 100%;
+    background: var(--kolor);
+    border-radius: 3px;
+    transition: width 0.35s ease;
+}
+.kafel-licznik {
+    color: #d8cdb0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    margin-top: 0.3rem;
+}
+/* Przyciski "Otwórz" pod kafelkami kategorii siedzą w kolumnach, więc bez
+   tego odziedziczyłyby wygląd wielkiego kwadratowego kafelka z emoji.
+   Celujemy w nie przez klasę generowaną z ich key (.st-key-kat_<id>). */
+.st-key-kat_zagadki button,
+.st-key-kat_zrecznosciowki button,
+.st-key-kat_precyzja button,
+.st-key-kat_przygody button {
+    aspect-ratio: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+    border-radius: 22px !important;
+    font-size: 0.82rem !important;
+    font-weight: 700 !important;
+    padding: 0.45rem 0.7rem !important;
+    width: 100% !important;
+    background: linear-gradient(135deg, #e6c15c, #d4af37) !important;
+    color: #16130a !important;
+    border: none !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.4) !important;
+    margin-top: -0.3rem;
+}
+
 div[data-testid="stColumn"] div.stButton > button {
     aspect-ratio: 1 / 1;
     height: auto;
@@ -12270,29 +12408,41 @@ def pokaz_powitanie():
         st.rerun()
 
 
+def _postep_kategorii(kat):
+    etapy = etapy_kategorii(kat)
+    zrobione = sum(1 for e in etapy if e["klucz"] in st.session_state.rozwiazane)
+    return zrobione, len(etapy)
+
+
 def pokaz_menu():
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
 
-    kolumny = st.columns(5)
-    for i, etap_dane in enumerate(ETAPY):
-        klucz = etap_dane["klucz"]
-        rozwiazany = klucz in st.session_state.rozwiazane
-        nieudany = klucz in st.session_state.nieudane
-        if rozwiazany:
-            etykieta = etap_dane["emoji"] + " ✅"
-        elif nieudany:
-            etykieta = "🔒"
-        else:
-            etykieta = etap_dane["emoji"]
-        with kolumny[i % 5]:
-            if st.button(
-                etykieta,
-                key=f"menu_{klucz}",
-                type="primary" if rozwiazany else "secondary",
-                disabled=nieudany,
-            ):
-                st.session_state.ekran = f"etap:{klucz}"
-                st.rerun()
+    zrobione_lacznie = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
+    st.markdown(
+        f"<p class='licznik-globalny'>{zrobione_lacznie} / {len(ETAPY)} {t('ukonczonych')}</p>",
+        unsafe_allow_html=True,
+    )
+
+    for wiersz in range(0, len(KATEGORIE), 2):
+        kolumny = st.columns(2)
+        for i, kat in enumerate(KATEGORIE[wiersz:wiersz + 2]):
+            zrobione, ile = _postep_kategorii(kat)
+            komplet = zrobione == ile
+            proc = int(zrobione / ile * 100) if ile else 0
+            with kolumny[i]:
+                st.markdown(
+                    f"""<div class='kafel-kategorii' style='--kolor:{kat["kolor"]}'>
+                        <div class='kafel-emoji'>{kat["emoji"]}</div>
+                        <div class='kafel-nazwa'>{tt(kat["nazwa"])}{" ✅" if komplet else ""}</div>
+                        <div class='kafel-opis'>{tt(kat["opis"])}</div>
+                        <div class='kafel-pasek'><div class='kafel-pasek-wyp' style='width:{proc}%'></div></div>
+                        <div class='kafel-licznik'>{zrobione} / {ile}</div>
+                    </div>""",
+                    unsafe_allow_html=True,
+                )
+                if st.button(t("otworz"), key=f"kat_{kat['id']}"):
+                    st.session_state.ekran = f"kategoria:{kat['id']}"
+                    st.rerun()
 
     wszystkie = all(e["klucz"] in st.session_state.rozwiazane for e in ETAPY)
     if wszystkie:
@@ -12439,6 +12589,41 @@ def pokaz_final():
 # GŁÓWNA LOGIKA
 # ======================================================================
 
+def pokaz_kategorie(kat):
+    st.markdown(
+        f"<h1 class='tytul' style='color:{kat['kolor']}'>{kat['emoji']} {tt(kat['nazwa'])}</h1>",
+        unsafe_allow_html=True,
+    )
+    zrobione, ile = _postep_kategorii(kat)
+    st.markdown(
+        f"<p class='licznik-globalny'>{zrobione} / {ile} {t('ukonczonych')}</p>",
+        unsafe_allow_html=True,
+    )
+
+    etapy = etapy_kategorii(kat)
+    for wiersz in range(0, len(etapy), 4):
+        kolumny = st.columns(4)
+        for i, etap_dane in enumerate(etapy[wiersz:wiersz + 4]):
+            klucz = etap_dane["klucz"]
+            rozwiazany = klucz in st.session_state.rozwiazane
+            nieudany = klucz in st.session_state.nieudane
+            etykieta = (etap_dane["emoji"] + " ✅") if rozwiazany else ("🔒" if nieudany else etap_dane["emoji"])
+            with kolumny[i]:
+                if st.button(
+                    etykieta,
+                    key=f"menu_{klucz}",
+                    type="primary" if rozwiazany else "secondary",
+                    disabled=nieudany,
+                ):
+                    st.session_state.ekran = f"etap:{klucz}"
+                    st.rerun()
+
+    st.markdown("<div style='margin-top:1.4rem;'></div>", unsafe_allow_html=True)
+    if st.button(t("powrot_kategorie"), key="powrot_do_kategorii"):
+        st.session_state.ekran = "menu"
+        st.rerun()
+
+
 def main():
     st.set_page_config(page_title=f"Dla {IMIE}", page_icon="🔒", layout="centered")
     wstaw_styl()
@@ -12461,6 +12646,14 @@ def main():
         pokaz_powitanie()
     elif ekran == "final":
         pokaz_final()
+    elif ekran.startswith("kategoria:"):
+        kat_id = ekran.split(":", 1)[1]
+        kat = next((k for k in KATEGORIE if k["id"] == kat_id), None)
+        if kat is None:
+            st.session_state.ekran = "menu"
+            st.rerun()
+        else:
+            pokaz_kategorie(kat)
     elif ekran.startswith("etap:"):
         klucz = ekran.split(":", 1)[1]
         etap_dane = next((e for e in ETAPY if e["klucz"] == klucz), None)
