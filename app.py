@@ -3389,6 +3389,22 @@ SZABLON_PIANO = """
   var kafelki = [];
   var czasOdOstatniegoSpawnu = 0;
   var ODSTEP_KAFELKOW_PIKSELE = WYSOKOSC_KAFELKA * 2.4;
+  // Odstepy miedzy kafelkami sa TERAZ ZROZNICOWANE i odpowiadaja rytmowi
+  // melodii - dluzsza nuta to wiekszy odstep do nastepnego kafelka.
+  // Bez tego wszystko szlo w rownym metrum i nie bylo slychac piosenki.
+  var RYTMY = {
+    kotek: [1,1,1,1,1,1,1,1,1.8, 1,1,1,1,1,1,1,1,2.2],
+    janie: [1,1,1,1, 1,1,1,1, 1,1,1.8, 1,1,1.8,
+            0.6,0.6,0.6,0.6,1,1, 0.6,0.6,0.6,0.6,1,1,
+            1,1,1.8, 1,1,2.2],
+    stoLat: [1,1,1,1,1,0.7,0.7,0.7,1.6, 1,1,1,1,1,0.7,0.7,0.7,1.6,
+             1,1.6, 1,1,1,1,1,1,0.7,0.7,0.7,1.4, 1,1,0.7,0.7,1,2.2],
+    oda: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+          1,1,1,1,1,1,1,1,1,1,1,1,1,1,2.2],
+    happyBirthday: [0.6,0.5,1,1,1,1.8, 0.6,0.5,1,1,1,1.8,
+                    0.6,0.5,1,1,1,1,1.4, 0.6,0.5,1,1,1,2.2],
+  };
+  function rytmAktywny() { return RYTMY[piosenkaAktywna] || null; }
   var STREFA_TRAFIEN_PROC = 0.55; // od tej wysokosci w dol liczy sie jako "mozna trafic"
   var trwa = false;
   var czasOstatni = null;
@@ -3493,7 +3509,9 @@ SZABLON_PIANO = """
     // wizualny odstep zostaje taki sam nawet gdy predkosc rosnie) -
     // niezaleznie od tego, czy poprzedni zostal juz trafiony.
     czasOdOstatniegoSpawnu += dt;
-    var progCzasowy = ODSTEP_KAFELKOW_PIKSELE / predkosc;
+    var r = rytmAktywny();
+    var mnoznikRytmu = (r && r[indeksDoSpawnu > 0 ? indeksDoSpawnu - 1 : 0]) || 1;
+    var progCzasowy = (ODSTEP_KAFELKOW_PIKSELE * mnoznikRytmu) / predkosc;
     if (czasOdOstatniegoSpawnu >= progCzasowy && indeksDoSpawnu < NUTY.length) {
       czasOdOstatniegoSpawnu = 0;
       stworzKafelek(indeksDoSpawnu);
@@ -8474,7 +8492,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   <div id="komunikat"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">🏹 Odyseusz — strzelnica</div>
-    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — masz dokładnie tyle strzał, ile celów.<br><br>Trzeba trafić <b>wszystkie</b>, żeby przejść dalej. Trzy coraz trudniejsze etapy.</div>
+    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — masz dokładnie tyle strzał, ile celów.<br><br>Trzeba trafić <b>wszystkie</b>, żeby przejść dalej. Sześć coraz trudniejszych etapów.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -8533,7 +8551,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
       oscNap=audioCtx.createOscillator(); gainNap=audioCtx.createGain();
       oscNap.type='sawtooth'; oscNap.frequency.value=140;
       gainNap.gain.value=0.0001;
-      gainNap.gain.linearRampToValueAtTime(0.09,audioCtx.currentTime+0.06);
+      gainNap.gain.linearRampToValueAtTime(0.035,audioCtx.currentTime+0.06);   // wyraznie ciszej
       oscNap.connect(gainNap); gainNap.connect(audioCtx.destination); oscNap.start();
     }catch(e){ oscNap=null; }
   }
@@ -8546,7 +8564,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
       try{ gainNap.gain.setTargetAtTime(0.0001,audioCtx.currentTime,0.03); oscNap.stop(audioCtx.currentTime+0.09); }catch(e){}
       oscNap=null;
     }
-    if(strzelono){ ton(620,0.07,'triangle',0.17); setTimeout(function(){ton(920,0.05,'triangle',0.14);},35); }
+    if(strzelono){ ton(620,0.07,'triangle',0.10); setTimeout(function(){ton(920,0.05,'triangle',0.08);},35); }
   }
   function dzwiekTrafienia(pkt){
     if(pkt>=9){ [700,900,1200].forEach(function(f,i){setTimeout(function(){ton(f,0.12,'triangle',0.17);},i*80);}); }
@@ -8585,6 +8603,33 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
                { x:340, y:150, r:15, kat:-56, ruch:'pion', amp:42, tempo:0.85, faza:1.1 } ],
       przeszkody:[ { x:182, y:330, w:14, h:92, ruch:'pion', amp:56, tempo:1.5, faza:0.4 },
                    { x:278, y:206, w:14, h:82, ruch:'pion', amp:48, tempo:1.05, faza:2.2 } ],
+    },
+    {
+      nazwa:'Etap 4 — dwa cele w ruchu',
+      opis:'Oba cele przesuwają się w przeciwnych fazach. Trzeba złapać właściwy moment.',
+      tarcze:[ { x:262, y:300, r:14, kat:-36, ruch:'pion', amp:52, tempo:0.95, faza:0 },
+               { x:338, y:196, r:14, kat:-52, ruch:'pion', amp:48, tempo:1.15, faza:3.1 } ],
+      przeszkody:[ { x:198, y:300, w:15, h:104, ruch:'pion', amp:64, tempo:1.3, faza:1.4 } ],
+    },
+    {
+      nazwa:'Etap 5 — wąski korytarz',
+      opis:'Trzy cele za gęstą zaporą trzech ruchomych bloków. Cierpliwości!',
+      tarcze:[ { x:244, y:344, r:13, kat:-30 },
+               { x:316, y:242, r:13, kat:-46 },
+               { x:346, y:138, r:14, kat:-58 } ],
+      przeszkody:[ { x:176, y:330, w:14, h:88, ruch:'pion', amp:58, tempo:1.6, faza:0.2 },
+                   { x:248, y:250, w:14, h:80, ruch:'pion', amp:52, tempo:1.2, faza:1.9 },
+                   { x:300, y:170, w:14, h:74, ruch:'pion', amp:46, tempo:0.95, faza:3.4 } ],
+    },
+    {
+      nazwa:'Etap 6 — finał',
+      opis:'Cztery malutkie cele, dwa w ruchu, i zapory na całej drodze. Ostatnia próba!',
+      tarcze:[ { x:228, y:360, r:12, kat:-28 },
+               { x:296, y:272, r:12, kat:-42, ruch:'pion', amp:40, tempo:1.05, faza:0.7 },
+               { x:344, y:186, r:13, kat:-54 },
+               { x:352, y:104, r:13, kat:-62, ruch:'pion', amp:34, tempo:0.8, faza:2.6 } ],
+      przeszkody:[ { x:180, y:334, w:14, h:86, ruch:'pion', amp:56, tempo:1.45, faza:0.5 },
+                   { x:262, y:236, w:14, h:78, ruch:'pion', amp:50, tempo:1.1, faza:2.4 } ],
     },
   ];
 
@@ -9662,6 +9707,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function dzwiekSmierciGracza() { [300,240,180,120].forEach(function (f,i) { setTimeout(function(){ ton(f,0.26,'sawtooth',0.14); }, i*150); }); }
 
   // ---------- DANE: BRONIE, PANCERZ, TIERY ----------
+  var KOLOR_MITYCZNY = '#ff7ae0';
   var TIERY = [
     { nazwa:'Zwykły',     kolor:'#b8b8b8', mnoznik:1.00 },
     { nazwa:'Niezwykły',  kolor:'#5ec46a', mnoznik:1.35 },
@@ -9673,17 +9719,26 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Bron biala ma KROTKI zasieg, wiec musi zadawac wyraznie wiecej
   // obrazen niz rozdzki - inaczej nie ma powodu jej uzywac. Rozdzki
   // platza dystansem, wiec ich obrazenia sa nizsze.
+  // Kazda bron ma teraz WLASNY charakter, a nie tylko inne liczby.
   var RODZAJE_BRONI = {
-    miecz:      { nazwa:'Miecz',              ikona:'🗡️', zasieg:66,  tempo:0.40, obr:21, magiczna:false, opis:'Zrównoważony, tnie łukiem' },
-    topor:      { nazwa:'Topór',              ikona:'🪓', zasieg:62,  tempo:0.60, obr:36, magiczna:false, opis:'Powolny, bardzo mocny' },
-    mlot:       { nazwa:'Młot',               ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false, opis:'Miażdżący, szeroki zamach' },
-    sztylety:   { nazwa:'Sztylety',           ikona:'⚔️', zasieg:50,  tempo:0.20, obr:14, magiczna:false, opis:'Błyskawiczne ciosy' },
-    rozdzka:    { nazwa:'Różdżka',            ikona:'🪄', zasieg:205, tempo:0.52, obr:9,  magiczna:true,  opis:'Pocisk na dystans' },
-    rozdzkaOgnia:{nazwa:'Różdżka Ognia',      ikona:'🔥', zasieg:185, tempo:0.64, obr:12, magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
-    rozdzkaPior:{ nazwa:'Różdżka Piorunów',   ikona:'⚡', zasieg:195, tempo:0.58, obr:11, magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
-    rozdzkaWody:{ nazwa:'Różdżka Lodu',       ikona:'❄️', zasieg:200, tempo:0.46, obr:8,  magiczna:true,  opis:'Mocno spowalnia wrogów', efekt:'woda' },
-    rozdzkaMrozu:{nazwa:'Różdżka Zamrożenia', ikona:'💧', zasieg:190, tempo:0.60, obr:10, magiczna:true,  opis:'Zamraża wroga w miejscu', efekt:'mroz' },
-    rozdzkaZarzenia:{nazwa:'Różdżka Żaru',    ikona:'☄️', zasieg:175, tempo:0.70, obr:16, magiczna:true,  opis:'Silny ogień, dłużej pali', efekt:'zar' },
+    miecz:      { nazwa:'Miecz',            ikona:'🗡️', zasieg:66,  tempo:0.40, obr:21, magiczna:false,
+                  opis:'Leczy 12% zadanych obrażeń', efektBroni:'wampiryzm' },
+    topor:      { nazwa:'Topór',            ikona:'🪓', zasieg:62,  tempo:0.60, obr:36, magiczna:false,
+                  opis:'Ogłusza wroga na chwilę', efektBroni:'ogluszenie' },
+    mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false,
+                  opis:'Miażdżący, szeroki zamach' },
+    sztylety:   { nazwa:'Sztylety',         ikona:'⚔️', zasieg:50,  tempo:0.20, obr:14, magiczna:false,
+                  opis:'Nakładają krwawienie', efektBroni:'krwawienie' },
+    wlocznia:   { nazwa:'Włócznia',         ikona:'🔱', zasieg:96,  tempo:0.52, obr:26, magiczna:false,
+                  opis:'Długi zasięg, co jakiś czas rzut', efektBroni:'rzut' },
+    rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:200, tempo:0.60, obr:7,  magiczna:true,  opis:'Pocisk na dystans' },
+    rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:180, tempo:0.72, obr:9,  magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
+    rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:190, tempo:0.66, obr:8,  magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
+    rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:6,  magiczna:true,  opis:'Mocno spowalnia wrogów', efekt:'zima' },
+    rozdzkaMrozu:{nazwa:'Różdżka Zamrożenia',ikona:'💧',zasieg:185, tempo:0.70, obr:7,  magiczna:true,  opis:'Zamraża wroga w miejscu', efekt:'mroz' },
+    rozdzkaZarzenia:{nazwa:'Różdżka Żaru',  ikona:'☄️', zasieg:170, tempo:0.80, obr:11, magiczna:true,  opis:'Silny ogień, dłużej pali', efekt:'zar' },
+    rozdzkaWiedzmy:{nazwa:'Różdżka Wiedźmy',ikona:'🌈', zasieg:205, tempo:0.62, obr:4, magiczna:true,
+                    opis:'+1 obrażeń za każdego zabitego wroga', mityczna:true },
   };
   var KLUCZE_BRONI = Object.keys(RODZAJE_BRONI);
 
@@ -9772,14 +9827,24 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // ---------- PRZEDMIOTY ----------
   function stworzBron(tier, rodzajKlucz) {
-    var rodzaj = rodzajKlucz || KLUCZE_BRONI[losCalk(0, KLUCZE_BRONI.length-1)];
+    var rodzaj = rodzajKlucz;
+    if (!rodzaj) {
+      var pula = KLUCZE_BRONI.filter(function (k) { return !RODZAJE_BRONI[k].mityczna; });
+      if (tier >= 3 && Math.random() < 0.10) rodzaj = 'rozdzkaWiedzmy';
+      else rodzaj = pula[losCalk(0, pula.length-1)];
+    }
     var d = RODZAJE_BRONI[rodzaj];
+    if (d.mityczna) {
+      return { kategoria:'bron', rodzaj:rodzaj, tier:4, mityczna:true,
+        nazwa:'Mityczna ' + d.nazwa, ikona:d.ikona, obr:d.obr, zasieg:d.zasieg, tempo:d.tempo,
+        magiczna:true, efekt:null, opis:d.opis, ladunki:0 };
+    }
     var m = TIERY[tier].mnoznik;
     return {
       kategoria:'bron', rodzaj:rodzaj, tier:tier,
       nazwa: TIERY[tier].nazwa + ' ' + d.nazwa,
       ikona: d.ikona, obr: Math.round(d.obr * m), zasieg: d.zasieg, tempo: d.tempo,
-      magiczna: d.magiczna, efekt: d.efekt || null, opis: d.opis,
+      magiczna: d.magiczna, efekt: d.efekt || null, efektBroni: d.efektBroni || null, opis: d.opis,
     };
   }
   function stworzPancerz(tier, rodzajKlucz) {
@@ -9804,7 +9869,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return 0;
   }
   function opisPrzedmiotu(p) {
-    if (p.kategoria === 'bron') return p.obr + ' obr. · ' + (p.magiczna ? 'dystans' : 'zwarcie') + ' · ' + p.opis;
+    if (p.kategoria === 'bron') return p.obr + ' obr.' + (p.mityczna && p.ladunki ? ' (+' + p.ladunki + ')' : '') + ' · ' + (p.magiczna ? 'dystans' : 'zwarcie') + ' · ' + p.opis;
     var nazwyBonusow = { zdrowie:'zdrowia', predkosc:'prędkości', obrazenia:'obrażeń' };
     return p.obrona + ' obrony · +' + p.bonusWartosc + ' ' + nazwyBonusow[p.bonusTyp];
   }
@@ -9963,6 +10028,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var idx = wrogowie.indexOf(w);
     if (idx === -1) return;
     wrogowie.splice(idx, 1);
+    var bronT = gracz.zalozone.bron;
+    if (bronT && bronT.mityczna) {
+      bronT.ladunki = (bronT.ladunki || 0) + 1;
+      bronT.obr = RODZAJE_BRONI[bronT.rodzaj].obr + bronT.ladunki;
+      bronT.tempo = Math.max(0.24, RODZAJE_BRONI[bronT.rodzaj].tempo - bronT.ladunki * 0.006);
+      if (bronT.ladunki % 5 === 0) { dziennik('🌈 Różdżka Wiedźmy rośnie w siłę! (' + bronT.ladunki + ')'); odswiezPanele(); }
+    }
     rozbryzg(w.x, w.y, w.kolor, 14);
     dzwiekSmierciWroga();
     dodajXp(w.xp);
@@ -10024,8 +10096,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var kat = Math.atan2(cel.y - gracz.y, cel.x - gracz.x);
     gracz.kierunekX = Math.cos(kat); gracz.kierunekY = Math.sin(kat);
 
+    if (bron.efektBroni === 'rzut') {
+      bron._doRzutu = (bron._doRzutu || 0) - 1;
+      if (bron._doRzutu <= 0) {
+        bron._doRzutu = 4;
+        pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*380, vy:Math.sin(kat)*380,
+                       obr:Math.round(bron.obr*1.6), efekt:null, zycie:1.1, kolor:'#d8d0b0' });
+        ton(300, 0.09, 'triangle', 0.13);
+        return;
+      }
+    }
+
     if (bron.magiczna) {
-      var kolorP = { ogien:'#e6743c', zar:'#ff9a3c', piorun:'#ffe066', woda:'#7ec4e8', mroz:'#5aa8e6' }[bron.efekt] || '#b89ae6';
+      var kolorP = { ogien:'#e6743c', zar:'#ff9a3c', piorun:'#ffe066', zima:'#a8e0f5', mroz:'#5aa8e6' }[bron.efekt] || (bron.mityczna ? '#ff7ae0' : '#b89ae6');
       pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*330, vy:Math.sin(kat)*330, obr:bron.obr, efekt:bron.efekt, zycie:1.4, kolor: kolorP });
       dzwiekMagii();
     } else {
@@ -10038,7 +10121,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var roznica = Math.abs(((katDoWroga - kat + Math.PI*3) % (Math.PI*2)) - Math.PI);
         return roznica < 0.95;
       });
-      trafieni.forEach(function (w) { zadajObrazeniaWrogowi(w, bron.obr); });
+      trafieni.forEach(function (w) {
+        var przed = w.hp;
+        zadajObrazeniaWrogowi(w, bron.obr);
+        var zadane = przed - w.hp;
+        if (bron.efektBroni === 'wampiryzm' && zadane > 0 && gracz.hp > 0) {
+          var lecz = Math.max(1, Math.round(zadane * 0.12));
+          gracz.hp = Math.min(gracz.hpMax, gracz.hp + lecz);
+          tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + lecz, '#7ec98a');
+          odswiezHud();
+        }
+        if (bron.efektBroni === 'ogluszenie' && w.hp > 0 && Math.random() < 0.55) {
+          w.zamrozony = Math.max(w.zamrozony || 0, 0.7);
+          tekstNaSwiecie(w.x, w.y - w.r - 8, '💫', '#ffe066');
+        }
+        if (bron.efektBroni === 'krwawienie' && w.hp > 0) {
+          w.krwawienie = 3.0;
+          w.krwawienieObr = Math.max(2, Math.round(bron.obr * 0.35));
+        }
+      });
       gracz.animCios = 0.16;
     }
   }
@@ -10099,6 +10200,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Wrogowie
     wrogowie.forEach(function (w) {
       if (w.migotanie > 0) w.migotanie -= dt;
+      if (w.krwawienie > 0) {
+        w.krwawienie -= dt;
+        w.tykKrwi = (w.tykKrwi || 0) - dt;
+        if (w.tykKrwi <= 0) {
+          w.tykKrwi = 0.6;
+          w.hp -= w.krwawienieObr;
+          tekstNaSwiecie(w.x, w.y - w.r, '' + w.krwawienieObr, '#e6543c');
+          if (w.hp <= 0) { zabijWroga(w); return; }
+        }
+      }
       if (w.plonie > 0) {
         w.plonie -= dt;
         w.tykOgnia = (w.tykOgnia || 0) - dt;
@@ -10227,7 +10338,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           zadajObrazeniaWrogowi(trafiony, p.obr);
           if (p.efekt === 'ogien' && trafiony.hp > 0) { trafiony.plonie = 2.5; }
           if (p.efekt === 'zar' && trafiony.hp > 0) { trafiony.plonie = 4.5; }
-          if (p.efekt === 'woda' && trafiony.hp > 0) { trafiony.spowolnienie = 2.6; }
+          if (p.efekt === 'zima' && trafiony.hp > 0) { trafiony.spowolnienie = 3.2; }
           if (p.efekt === 'mroz' && trafiony.hp > 0) { trafiony.zamrozony = 1.5; }
           if (p.efekt === 'piorun') {
             wrogowie.forEach(function (w3) {
@@ -10252,7 +10363,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           gracz.ekwipunek.push(lu.przedmiot);
           dziennik(lu.przedmiot.ikona + ' ' + lu.przedmiot.nazwa);
         } else {
-          dziennik('🎒 Plecak pełny!');
+          dziennik('🎒 Plecak pełny — połącz pary albo coś wyrzuć!');
           continue;
         }
         dzwiekLup();
@@ -10299,6 +10410,46 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // ---------- RYSOWANIE ----------
+  // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
+  var MINI_BOK = 96, MINI_MARGINES = 8;
+  function rysujMinimape() {
+    var skala = MINI_BOK / (SIATKA * KAFEL);
+    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_MARGINES + 30;
+
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    ctx.fillStyle = '#0a0810';
+    ctx.fillRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
+    ctx.strokeStyle = 'rgba(230,193,92,0.55)'; ctx.lineWidth = 1.5;
+    ctx.strokeRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
+
+    // Komnaty
+    komnaty.forEach(function (k) {
+      var jestBossa = (k === komnataBossa);
+      ctx.fillStyle = jestBossa ? 'rgba(192,57,43,0.75)' : 'rgba(150,140,120,0.5)';
+      ctx.fillRect(mx + k.x*KAFEL*skala, my + k.y*KAFEL*skala,
+                   Math.max(2, k.w*KAFEL*skala), Math.max(2, k.h*KAFEL*skala));
+    });
+
+    // Lupy
+    ctx.fillStyle = 'rgba(230,193,92,0.9)';
+    lupyNaZiemi.forEach(function (lu) {
+      ctx.fillRect(mx + lu.x*skala - 1, my + lu.y*skala - 1, 2.5, 2.5);
+    });
+
+    // Portal
+    if (portal) {
+      ctx.fillStyle = '#b89ae6';
+      ctx.beginPath(); ctx.arc(mx + portal.x*skala, my + portal.y*skala, 3, 0, Math.PI*2); ctx.fill();
+    }
+
+    // Gracz
+    ctx.fillStyle = '#7ee8a0';
+    ctx.beginPath(); ctx.arc(mx + gracz.x*skala, my + gracz.y*skala, 3, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = '#0a0810'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.restore();
+  }
+
   function rysuj() {
     ctx.fillStyle = '#0a0810';
     ctx.fillRect(0, 0, WID, WYS);
@@ -10351,7 +10502,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     lupyNaZiemi.forEach(function (lu) {
       var ex = lu.x - kamX, ey = lu.y - kamY;
       if (ex < -30 || ex > WID+30 || ey < -30 || ey > WYS+30) return;
-      var kolorTieru = lu.przedmiot.kategoria === 'mikstura' ? '#e6543c' : TIERY[lu.przedmiot.tier].kolor;
+      var kolorTieru = lu.przedmiot.mityczna ? KOLOR_MITYCZNY : (lu.przedmiot.kategoria === 'mikstura' ? '#e6543c' : TIERY[lu.przedmiot.tier].kolor);
       ctx.save();
       ctx.shadowColor = kolorTieru; ctx.shadowBlur = 12;
       ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -10395,16 +10546,45 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (gracz.migotanie > 0) ctx.globalAlpha = 0.5;
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath(); ctx.ellipse(gx, gy + 11, 12, 4.5, 0, 0, Math.PI*2); ctx.fill();
+    // Plaszcz
+    ctx.fillStyle = '#2f5f8f';
+    ctx.beginPath();
+    ctx.moveTo(gx - gracz.r*0.95, gy + gracz.r*0.5);
+    ctx.lineTo(gx + gracz.r*0.95, gy + gracz.r*0.5);
+    ctx.lineTo(gx + gracz.r*0.6, gy - gracz.r*0.4);
+    ctx.lineTo(gx - gracz.r*0.6, gy - gracz.r*0.4);
+    ctx.closePath(); ctx.fill();
+    // Tulow
     ctx.fillStyle = '#c9483a';
-    ctx.beginPath(); ctx.arc(gx, gy, gracz.r, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx, gy, gracz.r*0.78, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#8a2f26';
+    ctx.fillRect(gx - gracz.r*0.75, gy - 1.5, gracz.r*1.5, 3);
+    // Glowa + wlosy
     ctx.fillStyle = '#e0b48a';
-    ctx.beginPath(); ctx.arc(gx, gy - 7, 7, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx, gy - 9, 7, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#4a3020';
+    ctx.beginPath(); ctx.arc(gx, gy - 11, 7, Math.PI, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#16130a';
+    ctx.fillRect(gx - 3, gy - 10, 1.8, 1.8);
+    ctx.fillRect(gx + 1.4, gy - 10, 1.8, 1.8);
     ctx.restore();
-    // Bron w reku / animacja ciosu
+
+    // Bron w reku - OBROCONA zgodnie z kierunkiem ataku, zeby ostrze
+    // bylo skierowane na wroga (wczesniej emoji zawsze patrzylo w bok,
+    // wiec postac "bila rekojescia").
     var bron = gracz.zalozone.bron;
     var wysun = gracz.animCios > 0 ? 22 : 15;
-    ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(bron.ikona, gx + gracz.kierunekX*wysun, gy + gracz.kierunekY*wysun);
+    var bx3 = gx + gracz.kierunekX*wysun, by3 = gy + gracz.kierunekY*wysun;
+    var katBroni = Math.atan2(gracz.kierunekY, gracz.kierunekX);
+    ctx.save();
+    ctx.translate(bx3, by3);
+    // Emoji broni jest narysowane ostrzem w GORE-PRAWO, wiec obracamy je
+    // tak, zeby ta strona pokrywala sie z kierunkiem ciosu.
+    ctx.rotate(katBroni + Math.PI/4);
+    if (gracz.kierunekX < 0) { ctx.scale(1, -1); ctx.rotate(-Math.PI/2); }
+    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(bron.ikona, 0, 0);
+    ctx.restore();
 
     // Czastki
     czastki.forEach(function (cz) {
@@ -10425,20 +10605,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     });
     ctx.globalAlpha = 1;
 
-    // Strzalka do bossa (gdy daleko)
-    if (komnataBossa && !wygrana) {
-      var bx2 = (komnataBossa.cx+0.5)*KAFEL, by2 = (komnataBossa.cy+0.5)*KAFEL;
-      var dBoss = Math.hypot(bx2 - gracz.x, by2 - gracz.y);
-      if (dBoss > 260) {
-        var katB = Math.atan2(by2 - gracz.y, bx2 - gracz.x);
-        ctx.save();
-        ctx.translate(WID/2, 40);
-        ctx.rotate(katB);
-        ctx.fillStyle = 'rgba(230,181,60,0.75)';
-        ctx.beginPath(); ctx.moveTo(14,0); ctx.lineTo(-6,-7); ctx.lineTo(-6,7); ctx.closePath(); ctx.fill();
-        ctx.restore();
-      }
-    }
+    // MINIMAPA w prawym gornym rogu - cala mapa w pomniejszeniu
+    rysujMinimape();
 
     // Drazek
     if (joyAktywny) {
@@ -10508,7 +10676,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var w = document.createElement('div');
       w.className = 'zalozone-wiersz';
       if (p) {
-        w.innerHTML = '<span class="ikona">' + p.ikona + '</span><span class="opis"><span class="tytul" style="color:' + TIERY[p.tier].kolor + '">' + p.nazwa + '</span><br><span class="staty">' + opisPrzedmiotu(p) + '</span></span>';
+        var kolNaz = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
+        w.innerHTML = '<span class="ikona">' + p.ikona + '</span><span class="opis"><span class="tytul" style="color:' + kolNaz + '">' + p.nazwa + '</span><br><span class="staty">' + opisPrzedmiotu(p) + '</span></span>';
       } else {
         w.innerHTML = '<span class="ikona" style="opacity:0.3">➖</span><span class="opis"><span class="tytul" style="opacity:0.4">Brak: ' + para[1] + '</span></span>';
       }
@@ -10517,8 +10686,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     var nagPlecak = document.createElement('div');
     nagPlecak.className = 'naglowek-sekcji';
-    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/12) — dotknij, żeby założyć';
+    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/12) — dotknij, żeby założyć · ✕ wyrzuca';
     sekcjaEkw.appendChild(nagPlecak);
+
+    var btnPolacz = document.createElement('button');
+    btnPolacz.className = 'btn-panel';
+    btnPolacz.style.width = '100%';
+    btnPolacz.style.marginBottom = '5px';
+    btnPolacz.innerHTML = '🔗 Połącz pary w lepsze przedmioty';
+    btnPolacz.addEventListener('click', polaczPrzedmioty);
+    sekcjaEkw.appendChild(btnPolacz);
 
     var siatka = document.createElement('div');
     siatka.className = 'siatka-ekw';
@@ -10531,12 +10708,20 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         slot.title = p.nazwa + ' — ' + opisPrzedmiotu(p);
         var kropka = document.createElement('div');
         kropka.className = 'tier-kropka';
-        kropka.style.background = TIERY[p.tier].kolor;
+        kropka.style.background = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
         slot.appendChild(kropka);
-        slot.style.borderColor = TIERY[p.tier].kolor;
+        slot.style.borderColor = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
         (function (przedmiot, indeks) {
           slot.addEventListener('click', function () { zaloz(przedmiot, indeks); });
         })(p, i);
+        var btnX = document.createElement('div');
+        btnX.textContent = '✕';
+        btnX.style.cssText = 'position:absolute;bottom:1px;left:2px;font-size:10px;color:#e6543c;'
+          + 'background:rgba(0,0,0,0.55);border-radius:4px;padding:0 3px;font-weight:700;';
+        (function (indeks) {
+          btnX.addEventListener('click', function (ev) { ev.stopPropagation(); wyrzucPrzedmiot(indeks); });
+        })(i);
+        slot.appendChild(btnX);
       } else {
         slot.className = 'slot-ekw pusty';
         slot.textContent = '·';
@@ -10544,6 +10729,69 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       siatka.appendChild(slot);
     }
     sekcjaEkw.appendChild(siatka);
+  }
+
+  // Laczy KAZDA pare identycznych przedmiotow (ten sam rodzaj i tier)
+  // w jeden o tier wyzej. Dziala tez z przedmiotem ZALOZONYM - wiec
+  // zwykle buty na nogach + zwykle buty w plecaku daja niezwykle.
+  // Mityczne sie nie lacza (sa jedyne w swoim rodzaju).
+  function mozeSieLaczyc(a, c) {
+    return a && c && !a.mityczna && !c.mityczna
+        && a.kategoria === c.kategoria && a.rodzaj === c.rodzaj
+        && a.tier === c.tier && a.tier < TIERY.length - 1;
+  }
+  function polaczPrzedmioty() {
+    var polaczono = 0, zmiana = true;
+    var SLOTY = ['bron','helm','zbroja','buty','amulet'];
+    while (zmiana) {
+      zmiana = false;
+      // para w samym plecaku
+      for (var i = 0; i < gracz.ekwipunek.length && !zmiana; i++) {
+        for (var j = i + 1; j < gracz.ekwipunek.length; j++) {
+          if (!mozeSieLaczyc(gracz.ekwipunek[i], gracz.ekwipunek[j])) continue;
+          var stary = gracz.ekwipunek[i];
+          var nowy = stary.kategoria === 'bron' ? stworzBron(stary.tier + 1, stary.rodzaj)
+                                                : stworzPancerz(stary.tier + 1, stary.rodzaj);
+          gracz.ekwipunek.splice(j, 1);
+          gracz.ekwipunek.splice(i, 1);
+          gracz.ekwipunek.push(nowy);
+          polaczono++; zmiana = true; break;
+        }
+      }
+      if (zmiana) continue;
+      // para: przedmiot ZALOZONY + jego odpowiednik z plecaka
+      for (var sI = 0; sI < SLOTY.length && !zmiana; sI++) {
+        var zal = gracz.zalozone[SLOTY[sI]];
+        if (!zal) continue;
+        for (var k = 0; k < gracz.ekwipunek.length; k++) {
+          if (!mozeSieLaczyc(zal, gracz.ekwipunek[k])) continue;
+          var nowy2 = zal.kategoria === 'bron' ? stworzBron(zal.tier + 1, zal.rodzaj)
+                                               : stworzPancerz(zal.tier + 1, zal.rodzaj);
+          gracz.ekwipunek.splice(k, 1);
+          gracz.zalozone[SLOTY[sI]] = nowy2;
+          polaczono++; zmiana = true; break;
+        }
+      }
+    }
+    if (polaczono > 0) {
+      przeliczHpMax();
+      dziennik('🔗 Połączono ' + polaczono + (polaczono === 1 ? ' parę!' : ' pary/par!'));
+      ton(560, 0.07, 'triangle', 0.14);
+      setTimeout(function () { ton(840, 0.11, 'triangle', 0.13); }, 70);
+    } else {
+      dziennik('🔗 Brak pasujących par do połączenia');
+    }
+    odswiezPanele(); odswiezHud();
+  }
+
+  function wyrzucPrzedmiot(indeks) {
+    var p = gracz.ekwipunek[indeks];
+    if (!p) return;
+    gracz.ekwipunek.splice(indeks, 1);
+    lupyNaZiemi.push({ x: gracz.x + losowo(-24, 24), y: gracz.y + losowo(-24, 24), przedmiot: p });
+    dziennik('🗑️ Wyrzucono: ' + p.nazwa);
+    ton(220, 0.07, 'square', 0.12);
+    odswiezPanele(); odswiezHud();
   }
 
   function zaloz(przedmiot, indeks) {
