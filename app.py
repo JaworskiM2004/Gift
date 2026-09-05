@@ -482,6 +482,12 @@ ETAPY = [
         "tytul": {"pl": "⚔️ Labirynt Cieni", "en": "⚔️ Labyrinth of Shadows"},
         "typ": "labirynt",
     },
+    {
+        "klucz": "fps",
+        "emoji": "🕶️",
+        "tytul": {"pl": "🕶️ Chwila Zawahania", "en": "🕶️ Moment of Hesitation"},
+        "typ": "fps",
+    },
 ]
 
 # ======================================================================
@@ -522,7 +528,7 @@ KATEGORIE = [
         "nazwa": {"pl": "Wielkie przygody", "en": "Big adventures"},
         "opis": {"pl": "Na dłużej — całe światy", "en": "Whole worlds to explore"},
         "kolor": "#b98ae6",
-        "etapy": ["minecraft", "labirynt"],
+        "etapy": ["minecraft", "labirynt", "fps"],
     },
 ]
 
@@ -580,6 +586,7 @@ TEKST = {
         "bledy_etykieta_odyseusz": "Ile razy musiałaś powtarzać etap?",
         "bledy_etykieta_parkour": "Ile razy spadłaś do punktu kontrolnego?",
         "bledy_etykieta_labirynt": "Ile razy poległaś w labiryncie?",
+        "bledy_etykieta_fps": "Ile razy zginęłaś?",
         "bledy_etykieta_zaba": "Ile razy żabka wpadła na przeszkodę?",
         "bledy_etykieta_memory": "Ile było pomyłek przy dopasowywaniu par?",
         "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
@@ -597,6 +604,7 @@ TEKST = {
         "napewno_odyseusz": "Na pewno zaliczyłaś wszystkie 3 etapy strzelnicy?",
         "napewno_parkour": "Na pewno dotarłaś na szczyt wieży?",
         "napewno_labirynt": "Na pewno pokonałaś Władcę Labiryntu?",
+        "napewno_fps": "Na pewno wyeliminowałaś wszystkich wrogów?",
         "napewno_zaba": "Na pewno żabka doskoczyła do końca?",
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
         "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
@@ -647,6 +655,7 @@ TEKST = {
         "bledy_etykieta_odyseusz": "How many times did you retry a stage?",
         "bledy_etykieta_parkour": "How many times did you fall back to the checkpoint?",
         "bledy_etykieta_labirynt": "How many times did you die in the labyrinth?",
+        "bledy_etykieta_fps": "How many times did you die?",
         "bledy_etykieta_zaba": "How many times did the frog hit an obstacle?",
         "bledy_etykieta_memory": "How many mismatched pairs did you have?",
         "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
@@ -664,6 +673,7 @@ TEKST = {
         "napewno_odyseusz": "Are you sure you cleared all 3 shooting stages?",
         "napewno_parkour": "Are you sure you reached the top of the tower?",
         "napewno_labirynt": "Are you sure you defeated the Lord of the Labyrinth?",
+        "napewno_fps": "Are you sure you eliminated every enemy?",
         "napewno_zaba": "Are you sure the frog made it all the way?",
         "napewno_memory": "Are you sure you matched all pairs in time?",
         "napewno_simon": "Are you sure you repeated the whole sequence?",
@@ -1182,74 +1192,103 @@ SZABLON_GRY = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -1744,74 +1783,103 @@ SZABLON_DRONA = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -2646,74 +2714,103 @@ SZABLON_ZABY = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -3119,74 +3216,103 @@ SZABLON_MEMORY = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -3491,74 +3617,103 @@ SZABLON_SIMON = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -4095,74 +4250,103 @@ SZABLON_PIANO = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -5312,74 +5496,103 @@ SZABLON_BITWA = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -7603,74 +7816,103 @@ SZABLON_MINECRAFT = """
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -8157,74 +8399,103 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -8723,74 +8994,103 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -9262,74 +9562,103 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -9859,74 +10188,103 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -10507,74 +10865,812 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
+</body>
+</html>
+"""
+
+SZABLON_FPS = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
+  html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:640px; background:#0d0d0d; overflow:hidden; }
+  #widok { display:block; width:100%; height:400px; background:#101018; }
+
+  #hud { position:absolute; top:0; left:0; right:0; padding:7px 10px; z-index:5; pointer-events:none;
+         display:flex; justify-content:space-between; align-items:flex-start; }
+  .hud-blok { color:#e8e8f0; font-size:12px; font-weight:800; text-shadow:0 2px 5px rgba(0,0,0,0.95); }
+  #hpPasekOtoczka { width:96px; height:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.28);
+                    border-radius:5px; overflow:hidden; margin-top:3px; }
+  #hpPasek { height:100%; width:100%; background:linear-gradient(90deg,#c0392b,#e74c3c); transition:width 0.2s ease; }
+
+  /* Wskaznik uplywu czasu - sedno gry: pokazuje, jak szybko plynie swiat */
+  #zegarOtoczka { position:absolute; top:52px; left:50%; transform:translateX(-50%); z-index:5;
+                  width:150px; height:5px; background:rgba(0,0,0,0.55); border-radius:3px; overflow:hidden; pointer-events:none; }
+  #zegarPasek { height:100%; width:4%; background:linear-gradient(90deg,#5aa8e6,#a8e0ff); transition:width 0.09s linear; }
+  #zegarNapis { position:absolute; top:60px; left:50%; transform:translateX(-50%); z-index:5;
+                color:#8fb8d8; font-size:9px; font-weight:800; letter-spacing:0.12em; pointer-events:none;
+                text-shadow:0 1px 4px rgba(0,0,0,0.9); }
+
+  #celownik { position:absolute; top:200px; left:50%; transform:translate(-50%,-50%); z-index:4; pointer-events:none;
+              color:rgba(255,255,255,0.8); font-size:19px; text-shadow:0 0 5px rgba(0,0,0,0.9); }
+
+  #panelSter { position:absolute; top:400px; left:0; right:0; bottom:0;
+               background:linear-gradient(180deg,#1a1520,#0f0d14); border-top:2px solid #3a3550;
+               display:flex; align-items:center; justify-content:space-between; padding:10px 14px; }
+  #padRuchu { display:grid; grid-template-columns:repeat(3,44px); grid-template-rows:repeat(2,44px); gap:5px; }
+  .btn-ruch3d { background:linear-gradient(135deg,#3a3550,#262038); border:1px solid #5a4a2e; border-radius:10px;
+                color:#f0e8d0; font-size:17px; padding:0; }
+  .btn-ruch3d:active, .btn-ruch3d.wcisniety { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
+  #btnStrzal { width:92px; height:92px; border-radius:50%; border:3px solid #8a2f26;
+               background:radial-gradient(circle at 35% 30%,#e6543c,#8a2f26); color:#fff;
+               font-size:30px; box-shadow:0 4px 14px rgba(0,0,0,0.55); }
+  #btnStrzal:active { transform:scale(0.94); }
+  #podpowiedz { position:absolute; bottom:4px; left:0; right:0; text-align:center; font-size:10px;
+                color:#7a7a90; pointer-events:none; }
+
+  #nakladka { position:absolute; inset:0; background:rgba(8,6,10,0.95); display:flex; flex-direction:column;
+              align-items:center; justify-content:center; text-align:center; padding:22px; z-index:20; }
+  #nakladkaTytul { color:#f5f5f0; font-size:21px; font-weight:700; margin-bottom:10px; }
+  #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
+  .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px;
+             padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  .gra-btn:active { transform:scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="widok" width="380" height="400"></canvas>
+
+  <div id="hud">
+    <div class="hud-blok">
+      <div id="hpNapis">100 HP</div>
+      <div id="hpPasekOtoczka"><div id="hpPasek"></div></div>
+    </div>
+    <div class="hud-blok" style="text-align:right">
+      <div id="wrogowieNapis">Wrogowie: 0</div>
+      <div id="amunicjaNapis" style="opacity:0.8">🔫 ∞</div>
+    </div>
+  </div>
+  <div id="zegarOtoczka"><div id="zegarPasek"></div></div>
+  <div id="zegarNapis">CZAS PŁYNIE, GDY SIĘ RUSZASZ</div>
+  <div id="celownik">✛</div>
+
+  <div id="panelSter">
+    <div id="padRuchu">
+      <button class="btn-ruch3d" id="btnLewoStrafe">⬅️</button>
+      <button class="btn-ruch3d" id="btnPrzod">⬆️</button>
+      <button class="btn-ruch3d" id="btnPrawoStrafe">➡️</button>
+      <button class="btn-ruch3d" id="btnObrotL">↺</button>
+      <button class="btn-ruch3d" id="btnTyl">⬇️</button>
+      <button class="btn-ruch3d" id="btnObrotP">↻</button>
+    </div>
+    <button id="btnStrzal">🔫</button>
+  </div>
+  <div id="podpowiedz">Przeciągnij po widoku, żeby się rozejrzeć</div>
+
+  <div id="nakladka">
+    <div id="nakladkaTytul">🕶️ Chwila Zawahania</div>
+    <div id="nakladkaOpis">
+      Strzelanka 3D, w której <b>czas płynie tylko wtedy, gdy Ty się ruszasz</b>.<br><br>
+      Stoisz nieruchomo — świat prawie zamiera i możesz spokojnie zaplanować ruch.
+      Ruszysz się albo rozejrzysz — wszystko rusza pełną prędkością.<br><br>
+      Przeciągaj po widoku, żeby celować. Wyeliminuj wszystkich wrogów.
+    </div>
+    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+  </div>
+</div>
+
+<script>
+  var gra=document.getElementById('gra');
+  var plotno=document.getElementById('widok'), ctx=plotno.getContext('2d');
+  var hpNapis=document.getElementById('hpNapis'), hpPasek=document.getElementById('hpPasek');
+  var wrogowieNapis=document.getElementById('wrogowieNapis');
+  var zegarPasek=document.getElementById('zegarPasek'), zegarNapis=document.getElementById('zegarNapis');
+  var nakladka=document.getElementById('nakladka'), nakladkaTytul=document.getElementById('nakladkaTytul');
+  var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
+
+  var SZER=380, WYS=400;
+  var KOLUMNA=2;                       // szerokosc paska w px (mniej promieni = plynniej)
+  var LICZBA_PROMIENI=Math.floor(SZER/KOLUMNA);
+  var FOV=Math.PI/3;
+  var HORYZONT=WYS*0.5;
+
+  // ---- Skala czasu: SEDNO GRY ----
+  var CZAS_BEZRUCH=0.045, CZAS_RUCH=1.0;
+  var skalaCzasu=CZAS_BEZRUCH, skalaDocelowa=CZAS_BEZRUCH;
+
+  var MAPA=[];
+  var graczX=0, graczY=0, graczKat=0, graczHp=100;
+  var wrogowie=[], pociski=[], blyski=[];
+  var trwa=false, czasOstatni=null;
+  var cooldownStrzalu=0, odrzut=0, migniecieObrazen=0;
+
+  var wcisniete={ przod:false, tyl:false, lewo:false, prawo:false, obrotL:false, obrotP:false };
+  var przeciaganie=false, ostatniDotykX=0, obrotZDotyku=0;
+
+  // ---------- DZWIEK ----------
+  var audioCtx=null;
+  function inicjujDzwiek(){
+    try{
+      var o; try{o=window.top;}catch(e){o=window;}
+      if(o.__wspolnyKontekstAudio && o.__wspolnyKontekstAudio.state!=='closed') audioCtx=o.__wspolnyKontekstAudio;
+      else if(!audioCtx||audioCtx.state==='closed'){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); try{o.__wspolnyKontekstAudio=audioCtx;}catch(e2){} }
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      var el=document.getElementById('odblokowanieDzwiekuIOS');
+      if(el&&!el.src){ el.src='data:audio/wav;base64,UklGRlwDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTgDAAA='; el.play().catch(function(){}); }
+    }catch(e){}
+  }
+  ['pointerdown','touchstart','click'].forEach(function(ev){ document.addEventListener(ev,inicjujDzwiek,{passive:true}); });
+  function ton(f,dl,typ,gl){
+    if(!audioCtx) return;
+    try{
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type=typ||'square'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gl||0.14,audioCtx.currentTime+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dl);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dl+0.02);
+    }catch(e){}
+  }
+  function dzwiekStrzalu(){
+    if(!audioCtx) return;
+    try{
+      var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type='sawtooth';
+      o.frequency.setValueAtTime(420,audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(70,audioCtx.currentTime+0.13);
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.26,audioCtx.currentTime+0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.15);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.16);
+    }catch(e){}
+  }
+  function dzwiekTrafienia(){ ton(760,0.06,'square',0.16); setTimeout(function(){ton(1080,0.09,'square',0.14);},50); }
+  function dzwiekZgonuWroga(){ ton(200,0.09,'sawtooth',0.15); setTimeout(function(){ton(95,0.18,'sawtooth',0.13);},80); }
+  function dzwiekObrazen(){ ton(150,0.14,'sawtooth',0.17); }
+  function dzwiekWrogaStrzal(){ ton(300,0.07,'square',0.10); }
+  function dzwiekZwyciestwa(){ [523,659,784,1046,1318].forEach(function(f,i){ setTimeout(function(){ton(f,0.2,'triangle',0.16);},i*125); }); }
+  function dzwiekPorazki(){ [320,250,190,130].forEach(function(f,i){ setTimeout(function(){ton(f,0.26,'sawtooth',0.15);},i*160); }); }
+
+  function losowo(a,b){ return Math.random()*(b-a)+a; }
+
+  // ---------- MAPA ----------
+  var SZEROKOSC_MAPY=24, WYSOKOSC_MAPY=24;
+  function generujMape(){
+    MAPA=[];
+    for(var y=0;y<WYSOKOSC_MAPY;y++){
+      var wiersz=[];
+      for(var x=0;x<SZEROKOSC_MAPY;x++){
+        var brzeg = (x===0||y===0||x===SZEROKOSC_MAPY-1||y===WYSOKOSC_MAPY-1);
+        wiersz.push(brzeg?1:0);
+      }
+      MAPA.push(wiersz);
+    }
+    // Slupy i sciany dzialowe - da sie za nimi schowac, ale arena zostaje otwarta
+    for(var i=0;i<26;i++){
+      var bx=2+Math.floor(Math.random()*(SZEROKOSC_MAPY-4));
+      var by=2+Math.floor(Math.random()*(WYSOKOSC_MAPY-4));
+      var dl=1+Math.floor(Math.random()*3);
+      var poziomo=Math.random()<0.5;
+      for(var j=0;j<dl;j++){
+        var tx=bx+(poziomo?j:0), ty=by+(poziomo?0:j);
+        if(tx>1&&tx<SZEROKOSC_MAPY-2&&ty>1&&ty<WYSOKOSC_MAPY-2) MAPA[ty][tx]=2;
+      }
+    }
+    // Srodek zawsze wolny (start gracza)
+    var sx=Math.floor(SZEROKOSC_MAPY/2), sy=Math.floor(WYSOKOSC_MAPY/2);
+    for(var dy=-2;dy<=2;dy++) for(var dx=-2;dx<=2;dx++) MAPA[sy+dy][sx+dx]=0;
+  }
+  function sciana(x,y){
+    var tx=Math.floor(x), ty=Math.floor(y);
+    if(tx<0||ty<0||tx>=SZEROKOSC_MAPY||ty>=WYSOKOSC_MAPY) return true;
+    return MAPA[ty][tx]!==0;
+  }
+
+  // ---------- RAYCASTING ----------
+  var buforGlebi=new Float32Array(LICZBA_PROMIENI);
+  function rzucPromien(kat){
+    var dx=Math.cos(kat), dy=Math.sin(kat);
+    var mx=Math.floor(graczX), my=Math.floor(graczY);
+    var deltaX=Math.abs(1/(dx||1e-9)), deltaY=Math.abs(1/(dy||1e-9));
+    var krokX,krokY,bokX,bokY,strona=0;
+    if(dx<0){krokX=-1;bokX=(graczX-mx)*deltaX;}else{krokX=1;bokX=(mx+1-graczX)*deltaX;}
+    if(dy<0){krokY=-1;bokY=(graczY-my)*deltaY;}else{krokY=1;bokY=(my+1-graczY)*deltaY;}
+    for(var i=0;i<80;i++){
+      if(bokX<bokY){bokX+=deltaX;mx+=krokX;strona=0;}
+      else{bokY+=deltaY;my+=krokY;strona=1;}
+      if(mx<0||my<0||mx>=SZEROKOSC_MAPY||my>=WYSOKOSC_MAPY) return {d:80,strona:strona,typ:1};
+      if(MAPA[my][mx]!==0){
+        var d = strona===0 ? (mx-graczX+(1-krokX)/2)/(dx||1e-9) : (my-graczY+(1-krokY)/2)/(dy||1e-9);
+        return {d:Math.abs(d),strona:strona,typ:MAPA[my][mx]};
+      }
+    }
+    return {d:80,strona:strona,typ:1};
+  }
+
+  function rysujSwiat(){
+    // Niebo i podloga
+    var g1=ctx.createLinearGradient(0,0,0,HORYZONT);
+    g1.addColorStop(0,'#1a1a2e'); g1.addColorStop(1,'#2e2a44');
+    ctx.fillStyle=g1; ctx.fillRect(0,0,SZER,HORYZONT);
+    var g2=ctx.createLinearGradient(0,HORYZONT,0,WYS);
+    g2.addColorStop(0,'#241f2e'); g2.addColorStop(1,'#12101a');
+    ctx.fillStyle=g2; ctx.fillRect(0,HORYZONT,SZER,WYS-HORYZONT);
+
+    for(var i=0;i<LICZBA_PROMIENI;i++){
+      var kamera=2*i/LICZBA_PROMIENI-1;
+      var kat=graczKat+Math.atan(kamera*Math.tan(FOV/2));
+      var r=rzucPromien(kat);
+      var dProst=r.d*Math.cos(kat-graczKat);      // korekta rybiego oka
+      buforGlebi[i]=dProst;
+      var wysSciany=Math.min(WYS*3, WYS/Math.max(0.12,dProst));
+      var gora=HORYZONT-wysSciany/2;
+
+      // Sciany zewnetrzne chlodne, slupy cieplejsze; sciany boczne ciemniejsze
+      var jasnosc=Math.max(0.16, Math.min(1, 1.5/(1+dProst*0.30)));
+      if(r.strona===1) jasnosc*=0.68;
+      var kol = r.typ===1
+        ? [Math.round(96*jasnosc), Math.round(104*jasnosc), Math.round(140*jasnosc)]
+        : [Math.round(150*jasnosc), Math.round(120*jasnosc), Math.round(88*jasnosc)];
+      ctx.fillStyle='rgb('+kol[0]+','+kol[1]+','+kol[2]+')';
+      ctx.fillRect(i*KOLUMNA, gora, KOLUMNA+1, wysSciany);
+    }
+  }
+
+  // Sprite'y (wrogowie i pociski) z testem glebi wzgledem scian
+  function rysujSprite(sx,sy,rozmiar,rysujKsztalt){
+    var dx=sx-graczX, dy=sy-graczY;
+    var odl=Math.hypot(dx,dy);
+    if(odl<0.12) return;
+    var roznica=((Math.atan2(dy,dx)-graczKat+Math.PI*3)%(Math.PI*2))-Math.PI;
+    if(Math.abs(roznica)>FOV/2+0.45) return;
+    var ekranX=(0.5+Math.tan(roznica)/(2*Math.tan(FOV/2)))*SZER;
+    var wys=Math.min(WYS*2.2, (WYS/odl)*rozmiar);
+    var indeks=Math.floor(ekranX/KOLUMNA);
+    if(indeks<0||indeks>=LICZBA_PROMIENI) return;
+    if(odl>buforGlebi[indeks]+0.25) return;      // schowany za sciana
+    rysujKsztalt(ekranX, HORYZONT, wys, odl);
+  }
+
+  function rysujWrogow(){
+    var posort=wrogowie.slice().sort(function(a,b){
+      return Math.hypot(b.x-graczX,b.y-graczY)-Math.hypot(a.x-graczX,a.y-graczY);
+    });
+    posort.forEach(function(w){
+      rysujSprite(w.x,w.y,0.85,function(ex,ey,h,odl){
+        var szer=h*0.42;
+        var gora=ey-h*0.5;
+        ctx.save();
+        if(w.migotanie>0) ctx.globalAlpha=0.55;
+        // Sylwetka: tulow, glowa, nogi
+        ctx.fillStyle='#c0392b';
+        ctx.fillRect(ex-szer*0.5, gora+h*0.26, szer, h*0.44);
+        ctx.fillStyle='#e0574a';
+        ctx.beginPath(); ctx.arc(ex, gora+h*0.17, h*0.115, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle='#7a2018';
+        ctx.fillRect(ex-szer*0.42, gora+h*0.70, szer*0.32, h*0.30);
+        ctx.fillRect(ex+szer*0.10, gora+h*0.70, szer*0.32, h*0.30);
+        // Oczy - swieca, zeby bylo widac gdzie patrzy
+        ctx.fillStyle='#ffe066';
+        ctx.fillRect(ex-h*0.055, gora+h*0.15, h*0.032, h*0.032);
+        ctx.fillRect(ex+h*0.022, gora+h*0.15, h*0.032, h*0.032);
+        ctx.restore();
+        // Pasek zycia nad wrogiem
+        if(w.hp<w.hpMax){
+          ctx.fillStyle='rgba(0,0,0,0.6)';
+          ctx.fillRect(ex-szer*0.5, gora-6, szer, 3);
+          ctx.fillStyle='#e6543c';
+          ctx.fillRect(ex-szer*0.5, gora-6, szer*(w.hp/w.hpMax), 3);
+        }
+      });
+    });
+  }
+
+  function rysujPociski(){
+    pociski.forEach(function(p){
+      rysujSprite(p.x,p.y,0.16,function(ex,ey,h,odl){
+        ctx.save();
+        ctx.shadowColor = p.wrogi ? '#ff9a3c' : '#a8e0ff';
+        ctx.shadowBlur = 12;
+        ctx.fillStyle = p.wrogi ? '#ffd24a' : '#dff0ff';
+        ctx.beginPath(); ctx.arc(ex, ey, Math.max(2, h*0.5), 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+      });
+    });
+  }
+
+  function rysujBron(){
+    var podnies = odrzut*16;
+    var bx=SZER*0.72, by=WYS-6+podnies;
+    ctx.save();
+    ctx.fillStyle='#2a2a34';
+    ctx.beginPath();
+    ctx.moveTo(bx-30, by); ctx.lineTo(bx+30, by);
+    ctx.lineTo(bx+16, by-52); ctx.lineTo(bx-8, by-52);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle='#3f3f4c';
+    ctx.fillRect(bx-6, by-92+podnies*0.4, 15, 46);
+    ctx.fillStyle='#555565';
+    ctx.fillRect(bx-6, by-96+podnies*0.4, 15, 6);
+    ctx.restore();
+  }
+
+  function rysujEfekty(){
+    // Blyski wystrzalow i trafien
+    for(var i=blyski.length-1;i>=0;i--){
+      var b=blyski[i];
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,b.zycie/b.max);
+      ctx.fillStyle=b.kolor;
+      ctx.beginPath(); ctx.arc(b.x,b.y,b.r*(1.6-b.zycie/b.max),0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+    // Czerwona winieta przy obrazeniach
+    if(migniecieObrazen>0){
+      ctx.save();
+      ctx.globalAlpha=Math.min(0.55, migniecieObrazen);
+      var g=ctx.createRadialGradient(SZER/2,HORYZONT,40,SZER/2,HORYZONT,SZER*0.75);
+      g.addColorStop(0,'rgba(192,57,43,0)'); g.addColorStop(1,'rgba(192,57,43,1)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,SZER,WYS);
+      ctx.restore();
+    }
+    // Chlodny filtr, gdy czas prawie stoi - od razu widac, ze swiat czeka
+    var zamrozenie=1-Math.min(1,(skalaCzasu-CZAS_BEZRUCH)/(0.45-CZAS_BEZRUCH));
+    if(zamrozenie>0.02){
+      ctx.save();
+      ctx.globalAlpha=zamrozenie*0.20;
+      ctx.fillStyle='#5aa8e6';
+      ctx.fillRect(0,0,SZER,WYS);
+      ctx.restore();
+    }
+  }
+
+  function rysuj(){
+    rysujSwiat();
+    rysujWrogow();
+    rysujPociski();
+    rysujBron();
+    rysujEfekty();
+  }
+
+  // ---------- STEROWANIE ----------
+  function podepnijPrzycisk(id, pole){
+    var el=document.getElementById(id);
+    function wl(e){ e.preventDefault(); wcisniete[pole]=true; el.classList.add('wcisniety'); inicjujDzwiek(); }
+    function wyl(){ wcisniete[pole]=false; el.classList.remove('wcisniety'); }
+    el.addEventListener('pointerdown',wl);
+    el.addEventListener('pointerup',wyl);
+    el.addEventListener('pointerleave',wyl);
+    el.addEventListener('pointercancel',wyl);
+  }
+  podepnijPrzycisk('btnPrzod','przod');
+  podepnijPrzycisk('btnTyl','tyl');
+  podepnijPrzycisk('btnLewoStrafe','lewo');
+  podepnijPrzycisk('btnPrawoStrafe','prawo');
+  podepnijPrzycisk('btnObrotL','obrotL');
+  podepnijPrzycisk('btnObrotP','obrotP');
+
+  plotno.addEventListener('pointerdown',function(e){
+    if(!trwa) return;
+    inicjujDzwiek();
+    przeciaganie=true;
+    ostatniDotykX=e.clientX;
+  });
+  plotno.addEventListener('pointermove',function(e){
+    if(!przeciaganie) return;
+    var r=plotno.getBoundingClientRect();
+    var d=(e.clientX-ostatniDotykX)*(SZER/r.width);
+    ostatniDotykX=e.clientX;
+    graczKat += d*0.0052;
+    obrotZDotyku += Math.abs(d);
+  });
+  function koniecPrzeciagania(){ przeciaganie=false; }
+  plotno.addEventListener('pointerup',koniecPrzeciagania);
+  plotno.addEventListener('pointercancel',koniecPrzeciagania);
+  plotno.addEventListener('pointerleave',koniecPrzeciagania);
+
+  document.getElementById('btnStrzal').addEventListener('click',function(){
+    inicjujDzwiek();
+    strzel();
+  });
+
+  function strzel(){
+    if(!trwa || cooldownStrzalu>0) return;
+    cooldownStrzalu=0.26;
+    odrzut=1;
+    dzwiekStrzalu();
+    pociski.push({ x:graczX+Math.cos(graczKat)*0.4, y:graczY+Math.sin(graczKat)*0.4,
+                   vx:Math.cos(graczKat)*7.0, vy:Math.sin(graczKat)*7.0, wrogi:false, zycie:2.4, obr:34 });
+    blyski.push({ x:SZER*0.72, y:WYS-92, r:16, kolor:'#ffe066', zycie:0.09, max:0.09 });
+  }
+
+  // ---------- WROGOWIE ----------
+  function stworzWroga(x,y){
+    return { x:x, y:y, hp:70, hpMax:70, predkosc:1.25, cooldown:losowo(0.6,2.2), migotanie:0 };
+  }
+  function rozstawWrogow(ile){
+    wrogowie=[];
+    var proby=0;
+    while(wrogowie.length<ile && proby<900){
+      proby++;
+      var x=1.5+Math.random()*(SZEROKOSC_MAPY-3);
+      var y=1.5+Math.random()*(WYSOKOSC_MAPY-3);
+      if(sciana(x,y)) continue;
+      if(Math.hypot(x-graczX,y-graczY)<6) continue;   // nie tuz przy graczu
+      wrogowie.push(stworzWroga(x,y));
+    }
+  }
+
+  function czyWidac(ax,ay,bx,by){
+    var d=Math.hypot(bx-ax,by-ay);
+    var krokow=Math.ceil(d*4);
+    for(var i=1;i<krokow;i++){
+      var t=i/krokow;
+      if(sciana(ax+(bx-ax)*t, ay+(by-ay)*t)) return false;
+    }
+    return true;
+  }
+
+  // ---------- PETLA ----------
+  function aktualizuj(dtRzeczywisty){
+    // --- Ruch GRACZA dzieje sie w czasie rzeczywistym ---
+    var predkosc=2.4, obrot=1.9;
+    var ruchX=0, ruchY=0, cokolwiek=false;
+
+    if(wcisniete.obrotL){ graczKat-=obrot*dtRzeczywisty; cokolwiek=true; }
+    if(wcisniete.obrotP){ graczKat+=obrot*dtRzeczywisty; cokolwiek=true; }
+    if(wcisniete.przod){ ruchX+=Math.cos(graczKat); ruchY+=Math.sin(graczKat); cokolwiek=true; }
+    if(wcisniete.tyl){ ruchX-=Math.cos(graczKat); ruchY-=Math.sin(graczKat); cokolwiek=true; }
+    if(wcisniete.lewo){ ruchX+=Math.sin(graczKat); ruchY-=Math.cos(graczKat); cokolwiek=true; }
+    if(wcisniete.prawo){ ruchX-=Math.sin(graczKat); ruchY+=Math.cos(graczKat); cokolwiek=true; }
+    if(obrotZDotyku>0.4){ cokolwiek=true; }
+    obrotZDotyku*=0.55;
+
+    var dl=Math.hypot(ruchX,ruchY);
+    if(dl>0){
+      ruchX/=dl; ruchY/=dl;
+      var nx=graczX+ruchX*predkosc*dtRzeczywisty;
+      var ny=graczY+ruchY*predkosc*dtRzeczywisty;
+      if(!sciana(nx+Math.sign(ruchX)*0.22, graczY)) graczX=nx;
+      if(!sciana(graczX, ny+Math.sign(ruchY)*0.22)) graczY=ny;
+    }
+
+    // --- Skala czasu: to jest cala mechanika gry ---
+    skalaDocelowa = cokolwiek ? CZAS_RUCH : CZAS_BEZRUCH;
+    // Szybkie przyspieszenie, wolniejsze zwalnianie - bez szarpania
+    var tempo = skalaDocelowa>skalaCzasu ? 11 : 3.4;
+    skalaCzasu += (skalaDocelowa-skalaCzasu)*Math.min(1, dtRzeczywisty*tempo);
+    var dt = dtRzeczywisty*skalaCzasu;      // czas SWIATA
+
+    zegarPasek.style.width=(skalaCzasu*100).toFixed(0)+'%';
+    zegarNapis.textContent = skalaCzasu>0.5 ? 'CZAS PŁYNIE' : (skalaCzasu>0.18 ? 'ZWALNIA…' : 'CZAS STOI');
+
+    if(cooldownStrzalu>0) cooldownStrzalu-=dtRzeczywisty;   // bron dziala w Twoim czasie
+    if(odrzut>0) odrzut-=dtRzeczywisty*5;
+    if(migniecieObrazen>0) migniecieObrazen-=dtRzeczywisty*1.6;
+
+    // --- WROGOWIE (czas swiata) ---
+    wrogowie.forEach(function(w){
+      if(w.migotanie>0) w.migotanie-=dt*4;
+      var d=Math.hypot(graczX-w.x, graczY-w.y);
+      var widzi=czyWidac(w.x,w.y,graczX,graczY);
+      if(widzi && d>2.0){
+        var kat=Math.atan2(graczY-w.y, graczX-w.x);
+        var nx=w.x+Math.cos(kat)*w.predkosc*dt;
+        var ny=w.y+Math.sin(kat)*w.predkosc*dt;
+        if(!sciana(nx,w.y)) w.x=nx;
+        if(!sciana(w.x,ny)) w.y=ny;
+      }
+      w.cooldown-=dt;
+      if(widzi && d<11 && w.cooldown<=0){
+        w.cooldown=losowo(1.5,2.6);
+        var k2=Math.atan2(graczY-w.y, graczX-w.x)+losowo(-0.07,0.07);
+        pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*3.6, vy:Math.sin(k2)*3.6, wrogi:true, zycie:4.5, obr:11 });
+        dzwiekWrogaStrzal();
+      }
+    });
+
+    // --- POCISKI (czas swiata) ---
+    for(var i=pociski.length-1;i>=0;i--){
+      var p=pociski[i];
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.zycie-=dt;
+      if(p.zycie<=0 || sciana(p.x,p.y)){ pociski.splice(i,1); continue; }
+      if(p.wrogi){
+        if(Math.hypot(p.x-graczX,p.y-graczY)<0.38){
+          graczHp-=p.obr;
+          migniecieObrazen=1;
+          dzwiekObrazen();
+          odswiezHud();
+          pociski.splice(i,1);
+          if(graczHp<=0){ zakoncz(false); return; }
+        }
+      } else {
+        for(var j=0;j<wrogowie.length;j++){
+          var w=wrogowie[j];
+          if(Math.hypot(p.x-w.x,p.y-w.y)<0.45){
+            w.hp-=p.obr; w.migotanie=1;
+            dzwiekTrafienia();
+            pociski.splice(i,1);
+            if(w.hp<=0){
+              wrogowie.splice(j,1);
+              dzwiekZgonuWroga();
+              odswiezHud();
+              if(wrogowie.length===0){ zakoncz(true); return; }
+            }
+            break;
+          }
+        }
+      }
+    }
+
+    for(var b=blyski.length-1;b>=0;b--){
+      blyski[b].zycie-=dtRzeczywisty;
+      if(blyski[b].zycie<=0) blyski.splice(b,1);
+    }
+  }
+
+  function odswiezHud(){
+    hpNapis.textContent=Math.max(0,Math.round(graczHp))+' HP';
+    hpPasek.style.width=Math.max(0,graczHp)+'%';
+    wrogowieNapis.textContent='Wrogowie: '+wrogowie.length;
+  }
+
+  function petla(czas){
+    if(!trwa){ czasOstatni=null; return; }
+    if(czasOstatni===null) czasOstatni=czas;
+    var dt=Math.min((czas-czasOstatni)/1000, 0.05);
+    czasOstatni=czas;
+    aktualizuj(dt);
+    if(!trwa) return;
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  function zakoncz(zwyciestwo){
+    trwa=false;
+    nakladka.style.display='flex';
+    if(zwyciestwo){
+      dzwiekZwyciestwa();
+      nakladkaTytul.textContent='🏆 Wszyscy wyeliminowani!';
+      nakladkaOpis.innerHTML='Etap zaliczony automatycznie!';
+      nakladkaBtn.style.display='none';
+      var w={type:'streamlit-child:zaliczono',wartosc:true};
+      window.postMessage(w,'*');
+      if(window.parent&&window.parent!==window) window.parent.postMessage(w,'*');
+    } else {
+      dzwiekPorazki();
+      nakladkaTytul.textContent='💀 Dostałaś za dużo…';
+      nakladkaOpis.innerHTML='Zostało wrogów: <b>'+wrogowie.length+'</b>.<br><br>'
+        + 'Wskazówka: gdy stoisz, świat prawie zamiera — wykorzystaj to, żeby zobaczyć nadlatujące pociski i wyjść z linii strzału.';
+      nakladkaBtn.style.display='inline-block';
+      nakladkaBtn.textContent='Spróbuj ponownie';
+      nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
+    }
+  }
+
+  function rozpocznijGre(){
+    generujMape();
+    graczX=SZEROKOSC_MAPY/2; graczY=WYSOKOSC_MAPY/2; graczKat=0;
+    graczHp=100;
+    pociski=[]; blyski=[];
+    cooldownStrzalu=0; odrzut=0; migniecieObrazen=0;
+    skalaCzasu=CZAS_BEZRUCH; skalaDocelowa=CZAS_BEZRUCH; obrotZDotyku=0;
+    Object.keys(wcisniete).forEach(function(k){ wcisniete[k]=false; });
+    rozstawWrogow(10);
+    odswiezHud();
+    nakladka.style.display='none';
+    trwa=true; czasOstatni=null;
+    requestAnimationFrame(petla);
+  }
+
+  nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
+  generujMape(); graczX=SZEROKOSC_MAPY/2; graczY=WYSOKOSC_MAPY/2;
+  rozstawWrogow(10); odswiezHud(); rysuj();
+</script>
+
+<script>
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
+  var natW = 0, natH = 0;
+
+  function przelicz() {
+    if (!wlaczony) {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      document.body.style.overflow = '';
+      return;
+    }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
+  }
+
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
+    }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
+  });
+
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
 })();
 </script>
 </body>
@@ -12294,74 +13390,103 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 </script>
 
 <script>
-/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
-   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
-   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
-   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
-   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
-   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
-   skalowanie nie psuje im celowania. */
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
 (function () {
   var korzen = document.getElementById('gra');
   if (!korzen) return;
 
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
-  przycisk.title = 'Pełny ekran';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
-    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
-    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
   document.body.appendChild(przycisk);
 
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
   var natW = 0, natH = 0;
 
-  function wPelnym() {
-    return !!(document.fullscreenElement || document.webkitFullscreenElement);
-  }
-
   function przelicz() {
-    if (wPelnym()) {
-      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-      korzen.style.transformOrigin = 'top left';
-      korzen.style.transform = 'scale(' + s + ')';
-      korzen.style.position = 'absolute';
-      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-      document.body.style.background = '#0d0d0d';
-      przycisk.textContent = '✕';
-      przycisk.title = 'Wyjdź z pełnego ekranu';
-    } else {
+    if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
       korzen.style.transformOrigin = '';
-      przycisk.textContent = '⛶';
-      przycisk.title = 'Pełny ekran';
+      document.body.style.overflow = '';
+      return;
     }
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.stopPropagation();
-    if (!wPelnym()) {
-      var r = korzen.getBoundingClientRect();
-      natW = r.width || 380;
-      natH = r.height || 560;
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      ramka.style.cssText =
+        'position:fixed !important;top:0 !important;left:0 !important;' +
+        'width:100vw !important;height:100vh !important;max-width:none !important;' +
+        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      try {
+        var d = ramka.ownerDocument;
+        styleRodzica = d.body.getAttribute('style') || '';
+        d.body.style.overflow = 'hidden';
+      } catch (e) {}
+    } else {
       var el = document.documentElement;
       var f = el.requestFullscreen || el.webkitRequestFullscreen;
       if (f) { try { f.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      ramka.setAttribute('style', styleRamki);
+      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g) { try { g.call(document); } catch (err) {} }
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
     }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
   });
 
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
   ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
     document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
   });
-  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
 })();
 </script>
 </body>
@@ -13182,6 +14307,17 @@ def renderuj_parkour(etap_dane):
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_parkour"), etykieta_bledow=t("bledy_etykieta_parkour"))
 
 
+def renderuj_fps(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_FPS, 640, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    components.html(SZABLON_FPS, height=700, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_fps"), etykieta_bledow=t("bledy_etykieta_fps"))
+
+
 def renderuj_labirynt(etap_dane):
     klucz = etap_dane["klucz"]
 
@@ -13559,6 +14695,8 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_parkour(etap_dane)
     elif typ == "labirynt":
         wynik = renderuj_labirynt(etap_dane)
+    elif typ == "fps":
+        wynik = renderuj_fps(etap_dane)
     else:
         wynik = None
 
