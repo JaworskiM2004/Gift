@@ -503,7 +503,7 @@ KATEGORIE = [
     {
         "id": "zrecznosciowki",
         "emoji": "⚡",
-        "nazwa": {"pl": "Zręcznościówki", "en": "Reflex games"},
+        "nazwa": {"pl": "Zręczność", "en": "Reflex"},
         "opis": {"pl": "Refleks i szybkie palce", "en": "Fast reflexes"},
         "kolor": "#e6c15c",
         "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake"],
@@ -1180,6 +1180,78 @@ SZABLON_GRY = """
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); startPoziom(0); };
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -1246,7 +1318,19 @@ SZABLON_DRONA = """
     /* left/top (pozycja) sa OSOBNE od transform (tylko obrot + stale
        centrowanie) - to przejscie wyglodzi WYLACZNIE zmiane kata przy
        podskoku, bez najmniejszego opoznienia w ruchu/kolizjach. */
-    transition: transform 0.15s ease-out;
+    /* Bez CSS-owego przejscia: obrot wygladzam w JS, zeby kazda klatka
+       nie przerywala poprzedniej animacji (to powodowalo zacinanie). */
+  }
+  .smiglo {
+    /* Smigla kreca sie CIAGLE i niezaleznie od przechylu drona - ich
+       animacja nigdy nie jest resetowana przy kliknieciu. */
+    transform-box: view-box;
+    animation: kreciSmiglo 0.22s linear infinite;
+  }
+  .smiglo-b { animation-duration: 0.19s; animation-direction: reverse; }
+  @keyframes kreciSmiglo {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
   #wynikNaEkranie {
     position: absolute;
@@ -1325,8 +1409,11 @@ SZABLON_DRONA = """
       <line x1="6" y1="6" x2="28" y2="28" stroke="#9a9a9a" stroke-width="2"/>
       <line x1="28" y1="6" x2="6" y2="28" stroke="#9a9a9a" stroke-width="2"/>
       <circle cx="6" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <g class="smiglo" style="transform-origin:6px 6px"><rect x="1.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
       <circle cx="28" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <g class="smiglo smiglo-b" style="transform-origin:28px 6px"><rect x="23.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
       <circle cx="6" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
+      <g class="smiglo smiglo-b" style="transform-origin:6px 28px"><rect x="1.5" y="27.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
       <circle cx="28" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
       <rect x="11" y="11" width="12" height="12" rx="3" fill="#1a1a1a" stroke="#e6c15c" stroke-width="1.5"/>
       <circle cx="17" cy="17" r="1.6" fill="#ff4d4d"/>
@@ -1367,6 +1454,7 @@ SZABLON_DRONA = """
   var trwa = false;
   var czasOstatni = null;
   var czasOdSpawnu = 0;
+  var obrotWygladzony = 0;
 
   var audioCtx = null;
 
@@ -1506,8 +1594,9 @@ SZABLON_DRONA = """
   function rysuj() {
     dron.style.left = (gra.clientWidth * DRON_X) + 'px';
     dron.style.top = dronY + 'px';
-    var obrot = Math.max(-25, Math.min(70, dronVY / 8));
-    dron.style.transform = 'translate(-50%, -50%) rotate(' + obrot + 'deg)';
+    var obrotCel = Math.max(-25, Math.min(70, dronVY / 8));
+    obrotWygladzony += (obrotCel - obrotWygladzony) * 0.22;
+    dron.style.transform = 'translate(-50%, -50%) rotate(' + obrotWygladzony.toFixed(2) + 'deg)';
 
     for (var i = 0; i < przeszkody.length; i++) {
       przeszkody[i].elGora.style.left = przeszkody[i].x + 'px';
@@ -1593,6 +1682,7 @@ SZABLON_DRONA = """
     dronY = gra.clientHeight / 2;
     dronVY = 0;
     czasOdSpawnu = 0;
+    obrotWygladzony = 0;
     czasOstatni = null;
     nakladka.style.display = 'none';
     trwa = true;
@@ -1651,6 +1741,78 @@ SZABLON_DRONA = """
   }, { passive: false });
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -2482,6 +2644,78 @@ SZABLON_ZABY = """
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -2883,6 +3117,78 @@ SZABLON_MEMORY = """
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -3182,6 +3488,78 @@ SZABLON_SIMON = """
   }
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -3714,6 +4092,78 @@ SZABLON_PIANO = """
     nakladkaBtn.style.display = 'none';
     btnZmienPiosenke.style.display = 'none';
   });
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -4334,17 +4784,18 @@ SZABLON_BITWA = """
     function () {
       // Poziom 4: czarodziej (przebija blok, sporo bije, mало HP, leczy
       // sojusznikow) + czolg (duzo HP, malo bije) + 2 dodatkowych.
-      var z = losowyZestawZywiolow(4);
+      var z = losowyZestawZywiolow(5);
       return [
         nowyWrog('Czarodziej', 'czarodziej', z[0], 9),
         nowyWrog('Czołg', 'tank', z[1], 52),
-        nowyWrog('Wojownik', 'wojownik', z[2], 13),
-        nowyWrog('Łucznik', 'dystans', z[3], 12),
+        nowyWrog('Łucznik', 'dystans', z[2], 12),
+        nowyWrog('Tarczownik', 'tarcza', z[3], 15),
+        nowyWrog('Włócznik', 'dzida', z[4], 15),
       ];
     },
     function () {
       return [
-        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 69), { boss: true }),
+        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 83), { boss: true }),
       ];
     },
   ];
@@ -4365,7 +4816,10 @@ SZABLON_BITWA = """
   var akcjaWTurze = 0; // 0 = wybor 1. akcji, 1 = wybor 2. akcji, 2 = tura wroga
   var akcjaOczekujacaTyp = null; // gdy wybrano akcje wymagajaca celu, czekamy na klikniecie wroga
   var blokAktywny = false;
-  var fiolkaUzyta = false; // jednorazowa na CALY przebieg (wszystkie poziomy), NIE resetuje sie miedzy poziomami
+  // Fiolka: JEDNA NA RUNDE, ale dostepna dopiero od 4. poziomu - wczesniej
+  // walki sa krotkie i leczenie tylko je rozwadnialo.
+  var POZIOM_OD_FIOLKI = 3;   // indeks 3 = czwarty poziom
+  var fiolkaUzyta = false;    // resetowana na starcie kazdego poziomu
   var mnoznikObrazen = 1; // "level up" po 2. poziomie -> 1.25
   var REGEN_NA_TURE = 2; // pasywne odnowienie HP na poczatku kazdej tury gracza
   var liczbaPorazek = 0; // ile razy zginela (na caly przebieg), zglaszane automatycznie przy wygranej
@@ -4546,7 +5000,7 @@ SZABLON_BITWA = """
     przyciski.forEach(function (btn) {
       var klucz = btn.dataset.akcja;
       var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null;
-      if (klucz === 'fiolka' && fiolkaUzyta) zablokuj = true;
+      if (klucz === 'fiolka' && (fiolkaUzyta || poziomIndeks < POZIOM_OD_FIOLKI)) zablokuj = true;
       btn.disabled = zablokuj;
       btn.classList.toggle('aktywny', akcjaOczekujacaTyp === klucz);
     });
@@ -4622,22 +5076,26 @@ SZABLON_BITWA = """
     zamigajISzarpnij(wrog._karta);
 
     if (!trafienieOK) {
-      pokazDziennik('❌ NIESKUTECZNE! Zły żywioł — ' + obrazenia + ' obr.', 1500);
+      pokazDziennik('❌ ZŁY ŻYWIOŁ! ' + zywiolEtykieta(zywiolAtaku) + ' vs ' + zywiolEtykieta(wrog.zywiol)
+                    + ' → tylko ' + obrazenia + ' obr. (zamiast ' + Math.round(8 * mnoznikObrazen) + ')', 2100);
       pokazLatajaceObrazenia(wrog._karta, 'nieskuteczne', '#9a9aa2');
       rozbryzgCzastek(wrog._karta, 'nieskuteczne', 5);
       dzwiekNieskuteczne();
     } else if (bron === 'luk' && (wrog.typ === 'tarcza' || wrog.typ === 'boss')) {
-      pokazDziennik('🛡️ Tarcza blokuje strzałę! Tylko ' + obrazenia + ' obr.', 1500);
+      pokazDziennik('🛡️ TARCZA blokuje strzałę! ' + obrazenia + ' obr. zamiast '
+                    + Math.round(8 * mnoznikObrazen) + ' — użyj broni białej', 2100);
       pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia + ' 🛡️', '#c9c9d4');
       rozbryzgCzastek(wrog._karta, 'nieskuteczne', 6);
       dzwiekBlok();
     } else if (bron === 'miecz' && wrog.typ === 'dystans') {
-      pokazDziennik('🏹💨 Zwinny łucznik unika części ciosu! Tylko ' + obrazenia + ' obr.', 1500);
+      pokazDziennik('🏹💨 ŁUCZNIK jest zwinny — miecz zadaje mu ' + obrazenia + ' zamiast '
+                    + Math.round(8 * mnoznikObrazen) + ' obr. Spróbuj z łuku!', 2100);
       pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia + ' 💨', '#c9c9d4');
       rozbryzgCzastek(wrog._karta, 'nieskuteczne', 6);
       dzwiekBlok();
     } else {
-      pokazDziennik('💥 Trafienie! ' + obrazenia + ' obrażeń.', 1300);
+      pokazDziennik('💥 CELNIE! ' + zywiolEtykieta(zywiolAtaku) + ' bije ' + zywiolEtykieta(wrog.zywiol)
+                    + ' → ' + obrazenia + ' obr. (pełne)', 1700);
       pokazLatajaceObrazenia(wrog._karta, '-' + obrazenia, '#fbbf24');
       rozbryzgCzastek(wrog._karta, zywiolAtaku, 9);
       dzwiekTrafienia();
@@ -4707,7 +5165,10 @@ SZABLON_BITWA = """
             rozbryzgCzastek(graczOtoczenie, blokDzialaTutaj ? 'nieskuteczne' : 'trafienie', blokDzialaTutaj ? 4 : 7);
             var opisBloku = blokAktywny && wrog.typ === 'czarodziej' ? ' (magia przebija blok!)' :
                              blokDzialaTutaj ? ' (zablokowane)' : '';
-            pokazDziennik((wrog.nazwa.replace('\\n', ' ')) + ' atakuje! -' + dmg + ' HP' + opisBloku, 1300);
+            var opisTypu = { dystans:'🏹 łucznik', tarcza:'🛡️ tarczownik', dzida:'🔱 włócznik',
+                             czarodziej:'🪄 czarodziej', tank:'🧱 czołg', wojownik:'⚔️ wojownik',
+                             boss:'👑 boss' }[wrog.typ] || wrog.typ;
+            pokazDziennik(opisTypu + ' zadaje ' + dmg + ' obr.' + opisBloku, 1700);
             if (wrog.typ === 'czarodziej') {
               zagrajCzarMagii();
             } else {
@@ -4826,6 +5287,7 @@ SZABLON_BITWA = """
     akcjaWTurze = 0;
     akcjaOczekujacaTyp = null;
     blokAktywny = false;
+    fiolkaUzyta = false;          // jedna fiolka na KAZDA runde
     poziomEtykieta.textContent = 'POZIOM ' + (idx + 1) + ' / ' + DEFINICJE_POZIOMOW.length +
       (wrogowie.length === 1 && wrogowie[0].typ === 'boss' ? '  —  BOSS' : '');
     nakladka.style.display = 'none';
@@ -4847,6 +5309,78 @@ SZABLON_BITWA = """
     graczHp = graczHpMax;
     rozpocznijPoziom(0);
   };
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -7067,6 +7601,78 @@ SZABLON_MINECRAFT = """
     rysuj();
   });
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -7548,6 +8154,78 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   }
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -8043,6 +8721,78 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
 
   narysujCien();
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -8080,7 +8830,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   <div id="paskKlikow"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">✈️ Lot papierowego samolotu</div>
-    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>5 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>200 m</b>.</div>
+    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>5 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>500 m</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -8093,18 +8843,22 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
   var W=380, H=560, ZIEMIA=470;          // ZIEMIA - ekranowe y linii gruntu przy starcie
-  var CEL_METROW=200;
+  var CEL_METROW=500;
 
   // Fizyka - wartosci dobrane i sprawdzone symulacja PRZED napisaniem gry:
   // dobra gra daje ~640m, plaski spam tylko ~115m.
   // DUZO wolniejszy lot - to papierowy samolot, ma byc czas na reakcje.
-  var G=205, OPOR=0.13, MOC=2.0, MAX_CIAG=100;   // ponad 2x wolniej
+  // Mocniejszy wyrzut, ale wolniejsze opadanie - lot zostaje spokojny.
+  // OPOR jest KWADRATOWY: szybki lot hamuje duzo mocniej niz wolny, wiec
+  // plaski rzut nie utrzymuje juz predkosci w nieskonczonosc (to wygladalo
+  // dziwnie i bylo najlepsza strategia).
+  var G=175, OPOR_KW=0.00048, MOC=3.6, MAX_CIAG=100;
   // Dotkniecie = PODSKOK (jak we Flappy): ustawia stala predkosc w gore
   // zamiast dodawac ciag wzdluz nosa. Dzieki temu nie oplaca sie juz
   // wystrzelic stromo i zuzyc wszystkich dotkniec od razu na starcie.
-  var PODSKOK_VY=-160, PODSKOK_VX=20, ODSTEP_KLIKOW=0.55;
-  var TRAMP_ODB=1.03, TRAMP_DOD=95, MIN_V_TRAMP=55;
-  var ZIEM_ODB=0.30, ZIEM_TARCIE=0.45;
+  var PODSKOK_VY=-178, PODSKOK_VX=26, ODSTEP_KLIKOW=0.55;
+  var TRAMP_ODB=1.03, TRAMP_DOD=120, MIN_V_TRAMP=150;
+  var ZIEM_ODB=0.26, ZIEM_TARCIE=0.24;
   var START_KLIKOW=5;
 
   var faza='celowanie';   // celowanie | lot | koniec
@@ -8298,7 +9052,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
     var px=samX, py=samY;
     ctx.fillStyle='rgba(255,255,255,0.75)';
     for(var i=0;i<26;i++){
-      pvy+=G*0.055; pvx*=(1-OPOR*0.055);
+      pvy+=G*0.055; pvx -= OPOR_KW*pvx*pvx*0.055;
       px+=pvx*0.055; py+=pvy*0.055;
       if(py>0) break;
       ctx.beginPath(); ctx.arc(ekrX(px),ekrY(py),2.3,0,Math.PI*2); ctx.fill();
@@ -8391,7 +9145,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   function aktualizuj(dt){
     if(faza==='lot'){
       czasLotu+=dt;
-      vy+=G*dt; vx*=(1-OPOR*dt);
+      vy+=G*dt; vx -= OPOR_KW*vx*vx*dt;
       samX+=vx*dt; samY+=vy*dt;
       kat=Math.atan2(vy,vx);
 
@@ -8505,6 +9259,78 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijLot(); };
   generujSwiat(); samX=0; samY=-40; kamX=samX-W*0.3; kamY=-80; odswiezKliki(); rysuj();
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -9030,6 +9856,78 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
   wczytajEtap(); rysuj();
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -9606,6 +10504,78 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
   rysujWszystko();
+</script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
 </script>
 </body>
 </html>
@@ -11322,6 +12292,78 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
   przeliczHpMax(); odswiezHud(); odswiezPanele(); rysuj();
 </script>
+
+<script>
+/* ---------- WSPOLNY PRZYCISK PELNEGO EKRANU (te same kilka linii w kazdej grze) ----------
+   Po wejsciu w pelny ekran gra przestaje byc uwieziona w malym oknie na
+   stronie: nie ma przypadkowego przewijania, dziala dotyk wieloma palcami
+   naraz, a wszystko jest po prostu wieksze. Skala liczona jest z rozmiaru
+   gry, wiec kazda gra dopasowuje sie sama - bez przerabiania jej ukladu.
+   Gry przeliczaja pozycje dotyku przez getBoundingClientRect(), wiec
+   skalowanie nie psuje im celowania. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.title = 'Pełny ekran';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:99999;width:32px;height:32px;' +
+    'border-radius:8px;border:1px solid rgba(255,255,255,0.35);' +
+    'background:rgba(18,16,24,0.72);color:#f0e8d0;font-size:15px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var natW = 0, natH = 0;
+
+  function wPelnym() {
+    return !!(document.fullscreenElement || document.webkitFullscreenElement);
+  }
+
+  function przelicz() {
+    if (wPelnym()) {
+      var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+      korzen.style.transformOrigin = 'top left';
+      korzen.style.transform = 'scale(' + s + ')';
+      korzen.style.position = 'absolute';
+      korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+      korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+      document.body.style.background = '#0d0d0d';
+      przycisk.textContent = '✕';
+      przycisk.title = 'Wyjdź z pełnego ekranu';
+    } else {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.transformOrigin = '';
+      przycisk.textContent = '⛶';
+      przycisk.title = 'Pełny ekran';
+    }
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.stopPropagation();
+    if (!wPelnym()) {
+      var r = korzen.getBoundingClientRect();
+      natW = r.width || 380;
+      natH = r.height || 560;
+      var el = document.documentElement;
+      var f = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f) { try { f.call(el); } catch (err) {} }
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g) { try { g.call(document); } catch (err) {} }
+    }
+  });
+
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+  window.addEventListener('resize', function () { if (wPelnym()) przelicz(); });
+})();
+</script>
 </body>
 </html>
 """
@@ -11571,8 +12613,11 @@ div.stButton > button:disabled {
 .kafel-nazwa {
     color: var(--kolor);
     font-weight: 800;
-    font-size: 0.98rem;
-    letter-spacing: 0.01em;
+    font-size: 0.92rem;
+    letter-spacing: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 .kafel-opis {
     color: #a89878;
