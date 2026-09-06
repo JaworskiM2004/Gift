@@ -11015,28 +11015,29 @@ SZABLON_FPS = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
-  html, body { width:100%; overflow:hidden; background:#0b0b0e; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  html, body { width:100%; overflow:hidden; background:#07080c; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
   #gra { position:relative; width:100%; height:560px; background:#0b0b0e; overflow:hidden; }
-  #widok { display:block; width:100%; height:560px; background:#e8e8ee; }
+  #widok { display:block; width:100%; height:560px; background:#0c0e16; }
 
   #hud { position:absolute; top:0; left:0; right:0; padding:8px 11px; z-index:5; pointer-events:none;
          display:flex; justify-content:space-between; align-items:flex-start; }
-  .hud-blok { color:#1a1a22; font-size:12px; font-weight:900; letter-spacing:0.03em;
-              text-shadow:0 1px 3px rgba(255,255,255,0.8); }
-  #hpOtoczka { width:104px; height:7px; background:rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.35);
+  .hud-blok { color:#e8ecf6; font-size:12px; font-weight:900; letter-spacing:0.03em;
+              text-shadow:0 1px 4px rgba(0,0,0,0.95); }
+  #hpOtoczka { width:104px; height:7px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.3);
                border-radius:4px; overflow:hidden; margin-top:3px; }
   #hpPasek { height:100%; width:100%; background:#d81f2a; transition:width 0.2s ease; }
 
   #zegarOtoczka { position:absolute; top:56px; left:50%; transform:translateX(-50%); z-index:5;
-                  width:132px; height:4px; background:rgba(0,0,0,0.2); border-radius:2px; overflow:hidden; pointer-events:none; }
-  #zegarPasek { height:100%; width:4%; background:#1a1a22; }
+                  width:132px; height:4px; background:rgba(0,0,0,0.6); border-radius:2px; overflow:hidden; pointer-events:none; }
+  #zegarPasek { height:100%; width:4%; background:#5ad0ff; }
   #zegarNapis { position:absolute; top:63px; left:50%; transform:translateX(-50%); z-index:5;
-                color:#3a3a46; font-size:8.5px; font-weight:900; letter-spacing:0.16em; pointer-events:none; }
+                color:#8fc4e0; font-size:8.5px; font-weight:900; letter-spacing:0.16em; pointer-events:none;
+                text-shadow:0 1px 4px rgba(0,0,0,0.9); }
   #celownik { position:absolute; top:46%; left:50%; transform:translate(-50%,-50%); z-index:4; pointer-events:none;
-              color:rgba(26,26,34,0.75); font-size:17px; }
+              color:rgba(255,255,255,0.8); font-size:17px; text-shadow:0 0 6px rgba(0,0,0,0.9); }
   #etapNapis { position:absolute; top:50%; left:0; right:0; text-align:center; z-index:6; pointer-events:none;
-               color:#1a1a22; font-size:26px; font-weight:900; letter-spacing:0.1em; opacity:0;
-               text-shadow:0 2px 12px rgba(255,255,255,0.9); }
+               color:#f0f4ff; font-size:26px; font-weight:900; letter-spacing:0.1em; opacity:0;
+               text-shadow:0 2px 14px rgba(0,0,0,0.95); }
   #etapNapis.pokaz { animation:pokazEtap 2.1s ease forwards; }
   @keyframes pokazEtap {
     0% { opacity:0; transform:scale(0.85); }
@@ -11050,10 +11051,10 @@ SZABLON_FPS = """<!DOCTYPE html>
                background:rgba(216,31,42,0.22); color:#d81f2a; font-size:26px; font-weight:900; }
   #btnStrzal:active { background:rgba(216,31,42,0.5); }
 
-  #nakladka { position:absolute; inset:0; background:rgba(245,245,248,0.97); display:flex; flex-direction:column;
+  #nakladka { position:absolute; inset:0; background:rgba(9,11,17,0.97); display:flex; flex-direction:column;
               align-items:center; justify-content:center; text-align:center; padding:24px; z-index:20; }
-  #nakladkaTytul { color:#1a1a22; font-size:20px; font-weight:900; margin-bottom:10px; letter-spacing:0.04em; }
-  #nakladkaOpis { color:#4a4a56; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
+  #nakladkaTytul { color:#f0f4ff; font-size:20px; font-weight:900; margin-bottom:10px; letter-spacing:0.04em; }
+  #nakladkaOpis { color:#a8b2c8; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
   .gra-btn { background:#d81f2a; color:#fff; border:none; border-radius:30px;
              padding:11px 28px; font-weight:900; font-size:15px; letter-spacing:0.05em;
              box-shadow:0 3px 12px rgba(216,31,42,0.4); }
@@ -11104,7 +11105,7 @@ SZABLON_FPS = """<!DOCTYPE html>
   var nakladka=document.getElementById('nakladka'), nakladkaTytul=document.getElementById('nakladkaTytul');
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
-  var SZER=380, WYS=560, KOLUMNA=2;
+  var SZER=380, WYS=560, KOLUMNA=1;   // pelna rozdzielczosc pozioma - ostrzejszy obraz
   var LICZBA_PROMIENI=Math.floor(SZER/KOLUMNA);
   var FOV=Math.PI/3, TAN_POL_FOV=Math.tan(FOV/2);
   var HORYZONT_BAZA=WYS*0.46;
@@ -11114,11 +11115,11 @@ SZABLON_FPS = """<!DOCTYPE html>
 
   // ---------- ETAPY ----------
   var ETAPY=[
-    { nazwa:'ETAP 1', podtytul:'Rozgrzewka', rozmiar:20, przeszkody:16, wrogow:6,
+    { nazwa:'ETAP 1', podtytul:'Rozpoznanie', rozmiar:28, pokoi:6, wrogow:6,
       hpWroga:60, atakWroga:9, predkoscWroga:1.05, tempoStrzalu:[1.9,3.2] },
-    { nazwa:'ETAP 2', podtytul:'Robi się gęsto', rozmiar:24, przeszkody:26, wrogow:9,
+    { nazwa:'ETAP 2', podtytul:'Głębiej w kompleks', rozmiar:34, pokoi:9, wrogow:9,
       hpWroga:70, atakWroga:12, predkoscWroga:1.30, tempoStrzalu:[1.5,2.6] },
-    { nazwa:'ETAP 3', podtytul:'Bez litości', rozmiar:28, przeszkody:34, wrogow:13,
+    { nazwa:'ETAP 3', podtytul:'Bez litości', rozmiar:40, pokoi:12, wrogow:13,
       hpWroga:80, atakWroga:15, predkoscWroga:1.55, tempoStrzalu:[1.1,2.0] },
   ];
   var etapIdx=0;
@@ -11200,46 +11201,133 @@ SZABLON_FPS = """<!DOCTYPE html>
     var c=document.createElement('canvas'); c.width=TEX; c.height=TEX;
     var t=c.getContext('2d'); rysuj(t); return c;
   }
+  // Ciemne, kontrastowe tekstury - stalowe plyty scienne i rdzawe oslony.
+  // Na ciemnym tle czerwoni wrogowie odcinaja sie duzo mocniej.
   var texSciana=zbudujTeksture(function(t){
-    t.fillStyle='#f2f2f6'; t.fillRect(0,0,TEX,TEX);
-    t.strokeStyle='#d6d6e0'; t.lineWidth=1.5;
-    for(var y=0;y<TEX;y+=16){
-      t.beginPath(); t.moveTo(0,y+0.5); t.lineTo(TEX,y+0.5); t.stroke();
-      var przes=(y/16)%2===0?0:16;
-      for(var x=przes;x<TEX;x+=32){
-        t.beginPath(); t.moveTo(x+0.5,y); t.lineTo(x+0.5,y+16); t.stroke();
+    t.fillStyle='#2a3040'; t.fillRect(0,0,TEX,TEX);
+    for(var y=0;y<TEX;y+=32){
+      for(var x=0;x<TEX;x+=32){
+        t.fillStyle='#333b4e'; t.fillRect(x+2,y+2,28,28);
+        t.fillStyle='#3d465c'; t.fillRect(x+2,y+2,28,2);
+        t.fillStyle='#1e2431'; t.fillRect(x+2,y+28,28,2);
       }
     }
-    t.fillStyle='rgba(0,0,0,0.03)';
-    for(var i=0;i<90;i++) t.fillRect(Math.random()*TEX,Math.random()*TEX,2,2);
+    t.fillStyle='#59657f';
+    for(var yy=8;yy<TEX;yy+=32) for(var xx=8;xx<TEX;xx+=32){
+      t.fillRect(xx,yy,3,3); t.fillRect(xx+16,yy,3,3);
+      t.fillRect(xx,yy+16,3,3); t.fillRect(xx+16,yy+16,3,3);
+    }
+    t.fillStyle='rgba(0,0,0,0.16)';
+    for(var i=0;i<110;i++) t.fillRect(Math.random()*TEX,Math.random()*TEX,2,2);
   });
   var texSlup=zbudujTeksture(function(t){
-    t.fillStyle='#e2e2ea'; t.fillRect(0,0,TEX,TEX);
-    t.fillStyle='#cfcfdb';
-    for(var x=0;x<TEX;x+=12) t.fillRect(x,0,5,TEX);
-    t.fillStyle='rgba(0,0,0,0.07)'; t.fillRect(0,0,TEX,3); t.fillRect(0,TEX-3,TEX,3);
+    t.fillStyle='#4a3428'; t.fillRect(0,0,TEX,TEX);
+    for(var x=0;x<TEX;x+=10){
+      t.fillStyle=(x/10)%2===0?'#5b4032':'#3d2a20';
+      t.fillRect(x,0,6,TEX);
+    }
+    t.fillStyle='#6d4d3a'; t.fillRect(0,0,TEX,5);
+    t.fillStyle='#241811'; t.fillRect(0,TEX-5,TEX,5);
+    t.fillStyle='rgba(200,120,60,0.10)';
+    for(var i=0;i<70;i++) t.fillRect(Math.random()*TEX,Math.random()*TEX,3,2);
   });
 
   // ---------- MAPA ----------
+  // Mapa to KOMPLEKS: pokoje polaczone korytarzami, z filarami, sciankami
+  // dzialowymi i oslonami. Kazda przeszkoda jest dodawana pojedynczo i od
+  // razu sprawdzana - jesli odcielaby ktorys pokoj, jest cofana. Uklad jest
+  // przez to zlozony, a mimo to zawsze w pelni przejsty.
+  var pokoje=[];
+  function osiagalnePola(){
+    var o=[];
+    for(var y=0;y<ROZMIAR;y++) o.push(new Array(ROZMIAR).fill(false));
+    var st=pokoje[0];
+    if(!st) return o;
+    var q=[[st.cx,st.cy]]; o[st.cy][st.cx]=true;
+    var sasiedzi=[[1,0],[-1,0],[0,1],[0,-1]];
+    while(q.length){
+      var p=q.shift();
+      for(var i=0;i<4;i++){
+        var nx=p[0]+sasiedzi[i][0], ny=p[1]+sasiedzi[i][1];
+        if(nx>=0&&nx<ROZMIAR&&ny>=0&&ny<ROZMIAR&&!o[ny][nx]&&MAPA[ny][nx]===0){
+          o[ny][nx]=true; q.push([nx,ny]);
+        }
+      }
+    }
+    return o;
+  }
+  function sprobujPrzeszkode(pola){
+    var zapis=pola.map(function(p){ return MAPA[p[1]][p[0]]; });
+    pola.forEach(function(p){ MAPA[p[1]][p[0]]=2; });
+    var o=osiagalnePola();
+    if(pokoje.some(function(p){ return !o[p.cy][p.cx]; })){
+      pola.forEach(function(p,i){ MAPA[p[1]][p[0]]=zapis[i]; });
+      return false;
+    }
+    return true;
+  }
+
   function generujMape(){
     var e=ETAPY[etapIdx];
     ROZMIAR=e.rozmiar;
     MAPA=[];
-    for(var y=0;y<ROZMIAR;y++){
-      var w=[];
-      for(var x=0;x<ROZMIAR;x++) w.push((x===0||y===0||x===ROZMIAR-1||y===ROZMIAR-1)?1:0);
-      MAPA.push(w);
+    for(var y=0;y<ROZMIAR;y++){ var w=[]; for(var x=0;x<ROZMIAR;x++) w.push(1); MAPA.push(w); }
+
+    pokoje=[];
+    var proby=0;
+    while(pokoje.length<e.pokoi && proby<1500){
+      proby++;
+      var pw=5+Math.floor(Math.random()*5), ph=5+Math.floor(Math.random()*5);
+      var px=2+Math.floor(Math.random()*Math.max(1,ROZMIAR-pw-4));
+      var py=2+Math.floor(Math.random()*Math.max(1,ROZMIAR-ph-4));
+      var kol=pokoje.some(function(p){
+        return !(px+pw+1<p.x || px>p.x+p.w+1 || py+ph+1<p.y || py>p.y+p.h+1);
+      });
+      if(kol) continue;
+      pokoje.push({x:px,y:py,w:pw,h:ph,cx:Math.floor(px+pw/2),cy:Math.floor(py+ph/2)});
     }
-    for(var i=0;i<e.przeszkody;i++){
-      var bx=2+Math.floor(Math.random()*(ROZMIAR-5)), by=2+Math.floor(Math.random()*(ROZMIAR-5));
-      var dl=1+Math.floor(Math.random()*3), poz=Math.random()<0.5;
-      for(var j=0;j<dl;j++){
-        var tx=bx+(poz?j:0), ty=by+(poz?0:j);
-        if(tx>1&&tx<ROZMIAR-2&&ty>1&&ty<ROZMIAR-2) MAPA[ty][tx]=2;
+    pokoje.forEach(function(p){
+      for(var y=p.y;y<p.y+p.h;y++) for(var x=p.x;x<p.x+p.w;x++) MAPA[y][x]=0;
+    });
+    function kuj(x,y){
+      for(var dy=0;dy<2;dy++) for(var dx=0;dx<2;dx++){
+        var nx=x+dx, ny=y+dy;
+        if(nx>0&&nx<ROZMIAR-1&&ny>0&&ny<ROZMIAR-1) MAPA[ny][nx]=0;
       }
     }
-    var sx=Math.floor(ROZMIAR/2), sy=Math.floor(ROZMIAR/2);
-    for(var dy=-2;dy<=2;dy++) for(var dx=-2;dx<=2;dx++) MAPA[sy+dy][sx+dx]=0;
+    for(var i=1;i<pokoje.length;i++){
+      var a=pokoje[i-1], bb=pokoje[i];
+      var cx=a.cx, cy=a.cy;
+      while(cx!==bb.cx){ kuj(cx,cy); cx+=(bb.cx>cx?1:-1); }
+      while(cy!==bb.cy){ kuj(cx,cy); cy+=(bb.cy>cy?1:-1); }
+      kuj(bb.cx,bb.cy);
+    }
+    pokoje.forEach(function(p,idx){
+      if(idx===0) return;
+      if(p.w>=7&&p.h>=7){
+        [[2,2],[p.w-3,2],[2,p.h-3],[p.w-3,p.h-3]].forEach(function(o){
+          sprobujPrzeszkode([[p.x+o[0], p.y+o[1]]]);
+        });
+      } else if(Math.random()<0.7){
+        var pion=Math.random()<0.5, pola=[];
+        if(pion){
+          var sx2=p.x+Math.floor(p.w/2);
+          for(var yy=p.y;yy<p.y+p.h;yy++) if(yy!==p.y+Math.floor(p.h/2)) pola.push([sx2,yy]);
+        } else {
+          var sy2=p.y+Math.floor(p.h/2);
+          for(var xx=p.x;xx<p.x+p.w;xx++) if(xx!==p.x+Math.floor(p.w/2)) pola.push([xx,sy2]);
+        }
+        sprobujPrzeszkode(pola);
+      }
+      for(var k=0;k<2;k++){
+        var ox=p.x+1+Math.floor(Math.random()*(p.w-2)), oy=p.y+1+Math.floor(Math.random()*(p.h-2));
+        if(MAPA[oy][ox]===0) sprobujPrzeszkode([[ox,oy]]);
+      }
+    });
+    var o2=osiagalnePola();
+    for(var y3=0;y3<ROZMIAR;y3++) for(var x3=0;x3<ROZMIAR;x3++){
+      if(MAPA[y3][x3]===0 && !o2[y3][x3]) MAPA[y3][x3]=1;
+    }
   }
   function sciana(x,y){
     var tx=Math.floor(x), ty=Math.floor(y);
@@ -11305,13 +11393,13 @@ SZABLON_FPS = """<!DOCTYPE html>
         if(x<SZER){
           var kx=fx+krokX*x, ky=fy+krokY*x;
           var ux=kx-Math.floor(kx), uy=ky-Math.floor(ky);
-          var baza=((Math.floor(kx)+Math.floor(ky))%2===0)?208:190;
-          if(ux<0.055||uy<0.055) baza-=34;        // fuga miedzy plytami
-          v=Math.round(baza*(1-mgla)+168*mgla);
+          var baza=((Math.floor(kx)+Math.floor(ky))%2===0)?52:40;
+          if(ux<0.06||uy<0.06) baza+=26;          // jasna fuga miedzy plytami
+          v=Math.round(baza*(1-mgla)+16*mgla);
         }
         if(v!==poprzV){
           if(poprzV>=0){
-            ctx.fillStyle='rgb('+poprzV+','+poprzV+','+(poprzV+8)+')';
+            ctx.fillStyle='rgb('+poprzV+','+(poprzV+3)+','+(poprzV+14)+')';
             ctx.fillRect(poczatek, y, x-poczatek+1, BLOK_Y+1);
           }
           poprzV=v; poczatek=x;
@@ -11322,7 +11410,7 @@ SZABLON_FPS = """<!DOCTYPE html>
   function rysujSufit(){
     var H=horyzont();
     var g=ctx.createLinearGradient(0,Math.max(0,H-WYS*0.9),0,Math.max(0,H));
-    g.addColorStop(0,'#fbfbff'); g.addColorStop(1,'#e7e7f0');
+    g.addColorStop(0,'#0c0e16'); g.addColorStop(1,'#1a1f2c');
     ctx.fillStyle=g; ctx.fillRect(0,0,SZER,Math.max(0,H));
     // Delikatne belki sufitowe zbiegajace sie do horyzontu
     var dirX=Math.cos(graczKat), dirY=Math.sin(graczKat);
@@ -11341,8 +11429,8 @@ SZABLON_FPS = """<!DOCTYPE html>
         var kx=fx+krokX*x, ky=fy+krokY*x;
         var ux=kx-Math.floor(kx), uy=ky-Math.floor(ky);
         if(ux<0.07||uy<0.07){
-          ctx.globalAlpha=(1-mgla)*0.35;
-          ctx.fillStyle='#d2d2e0';
+          ctx.globalAlpha=(1-mgla)*0.55;
+          ctx.fillStyle='#39415a';
           ctx.fillRect(x,y,BLOK_X*2+1,BLOK_Y+1);
         }
       }
@@ -11368,9 +11456,10 @@ SZABLON_FPS = """<!DOCTYPE html>
       if(tx<0) tx=0; if(tx>TEX-1) tx=TEX-1;
       ctx.drawImage(tex, tx, 0, 1, TEX, i*KOLUMNA, gora, KOLUMNA+1, h);
       // Mgla dystansowa + ciemniejsze sciany boczne = czytelna glebia
-      var cien = 1 - Math.max(0, Math.min(0.72, dProst*0.055 + (r.strona===1?0.14:0)));
-      if(cien<1){
-        ctx.fillStyle='rgba(150,150,168,'+(1-cien).toFixed(3)+')';
+      // Ciemna mgla zamiast jasnej - glebia bez rozmywania obrazu
+      var cien = Math.max(0, Math.min(0.78, dProst*0.042 + (r.strona===1?0.22:0)));
+      if(cien>0.01){
+        ctx.fillStyle='rgba(6,8,14,'+cien.toFixed(3)+')';
         ctx.fillRect(i*KOLUMNA, gora, KOLUMNA+1, h);
       }
     }
@@ -11517,14 +11606,14 @@ SZABLON_FPS = """<!DOCTYPE html>
     var zam=1-Math.min(1,(skalaCzasu-CZAS_BEZRUCH)/(0.45-CZAS_BEZRUCH));
     if(zam>0.02){
       ctx.save();
-      ctx.globalAlpha=zam*0.16; ctx.fillStyle='#6a7fd8';
+      ctx.globalAlpha=zam*0.22; ctx.fillStyle='#2e6ad8';
       ctx.fillRect(0,0,SZER,WYS);
       ctx.restore();
     }
     // Delikatna winieta dla glebi
     ctx.save();
     var v=ctx.createRadialGradient(SZER/2,WYS/2,WYS*0.30,SZER/2,WYS/2,WYS*0.78);
-    v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.20)');
+    v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.45)');
     ctx.fillStyle=v; ctx.fillRect(0,0,SZER,WYS);
     ctx.restore();
   }
@@ -11571,7 +11660,9 @@ SZABLON_FPS = """<!DOCTYPE html>
     if(!trwa) return;
     inicjujDzwiek();
     var p=wspolrzedne(e);
-    if(p.y < WYS*0.42) return;                 // gorna czesc ekranu to sam widok
+    // Gorna czesc ekranu = STRZAL. Osobny palec, wiec mozna strzelac
+    // w trakcie chodzenia i rozgladania sie jednoczesnie.
+    if(p.y < WYS*0.52){ strzel(); return; }
     var s = p.x < SZER/2 ? 'lewy' : 'prawy';
     if(drazki[s].id!==null) return;
     drazki[s]={ id:e.pointerId, bx:p.x, by:p.y, x:p.x, y:p.y };
@@ -11593,8 +11684,9 @@ SZABLON_FPS = """<!DOCTYPE html>
     plotno.addEventListener(ev,puscDrazek);
   });
 
-  document.getElementById('btnStrzal').addEventListener('click',function(e){
-    e.stopPropagation(); inicjujDzwiek(); strzel();
+  // pointerdown zamiast click - reaguje natychmiast i dziala przy wielu palcach
+  document.getElementById('btnStrzal').addEventListener('pointerdown',function(e){
+    e.preventDefault(); e.stopPropagation(); inicjujDzwiek(); strzel();
   });
   function strzel(){
     if(!trwa || cooldownStrzalu>0) return;
@@ -11605,19 +11697,35 @@ SZABLON_FPS = """<!DOCTYPE html>
                    wrogi:false, zycie:2.4, obr:34, ekranDX:1 });
   }
 
+  // Wrogowie rozstawiani RUNDAMI po kolejnych pokojach (poza startowym),
+  // zeby byli rozsiani po calym kompleksie i trzeba ich bylo szukac,
+  // zamiast zastac cala grupe w jednym miejscu.
+  function losowePoleWPokoju(p){
+    for(var i=0;i<60;i++){
+      var x=p.x+0.8+Math.random()*(p.w-1.6);
+      var y=p.y+0.8+Math.random()*(p.h-1.6);
+      if(!sciana(x,y)) return {x:x,y:y};
+    }
+    return null;
+  }
   function rozstawWrogow(){
     var e=ETAPY[etapIdx];
     wrogowie=[];
-    var proby=0;
-    while(wrogowie.length<e.wrogow && proby<1400){
-      proby++;
-      var x=1.5+Math.random()*(ROZMIAR-3), y=1.5+Math.random()*(ROZMIAR-3);
-      if(sciana(x,y)) continue;
-      if(Math.hypot(x-graczX,y-graczY)<6) continue;
-      wrogowie.push({ x:x, y:y, hp:e.hpWroga, hpMax:e.hpWroga,
-                      predkosc:e.predkoscWroga, atak:e.atakWroga,
-                      cooldown:losowo(e.tempoStrzalu[0],e.tempoStrzalu[1]),
-                      migotanie:0, faza:Math.random()*6 });
+    var dostepne=pokoje.slice(1);
+    if(dostepne.length===0) dostepne=pokoje.slice();
+    for(var i=0;i<e.wrogow;i++){
+      var p=dostepne[i % dostepne.length];
+      var poz=losowePoleWPokoju(p);
+      if(!poz) continue;
+      if(Math.hypot(poz.x-graczX,poz.y-graczY)<7) continue;
+      wrogowie.push({
+        x:poz.x, y:poz.y, hp:e.hpWroga, hpMax:e.hpWroga,
+        predkosc:e.predkoscWroga, atak:e.atakWroga,
+        cooldown:losowo(e.tempoStrzalu[0],e.tempoStrzalu[1]),
+        migotanie:0, faza:Math.random()*6,
+        kierunekKrazenia: Math.random()<0.5?1:-1,
+        celX:poz.x, celY:poz.y, macierzysty:p, czasZmianyCelu:losowo(1,4),
+      });
     }
   }
 
@@ -11639,7 +11747,8 @@ SZABLON_FPS = """<!DOCTYPE html>
     // Prawy drazek: rozgladanie sie
     if(wp.sila>0){
       graczKat += wp.x*wp.sila*2.5*dtR;
-      graczPitch = Math.max(-150, Math.min(150, graczPitch + wp.y*wp.sila*260*dtR));
+      // Minus: ciagniecie drazka W GORE podnosi wzrok (wczesniej bylo odwrotnie)
+      graczPitch = Math.max(-150, Math.min(150, graczPitch - wp.y*wp.sila*260*dtR));
     }
     // Lewy drazek: chodzenie wzgledem kierunku patrzenia
     if(wl.sila>0){
@@ -11670,19 +11779,57 @@ SZABLON_FPS = """<!DOCTYPE html>
     if(blyskWystrzalu>0) blyskWystrzalu-=dtR*9;
     if(migniecieObrazen>0) migniecieObrazen-=dtR*1.6;
 
+    // Wrogowie NIE szarzuja na gracza. Trzymaja dystans i ostrzeliwuja
+    // z odleglosci, a gdy podejdziesz za blisko - cofaja sie. Odpychaja
+    // sie tez nawzajem, wiec nie zlepiaja w jedna kupe. Kiedy nie widza
+    // gracza, przemieszczaja sie po swoim pokoju - trzeba ich szukac.
+    var DYST_MIN=5.5, DYST_MAX=10.0, SEPARACJA=2.2;
     wrogowie.forEach(function(w){
       if(w.migotanie>0) w.migotanie-=dt*4;
       w.faza+=dt*7;
       var d=Math.hypot(graczX-w.x, graczY-w.y);
       var widzi=czyWidac(w.x,w.y,graczX,graczY);
-      if(widzi && d>2.0){
-        var k=Math.atan2(graczY-w.y, graczX-w.x);
-        var nx=w.x+Math.cos(k)*w.predkosc*dt, ny=w.y+Math.sin(k)*w.predkosc*dt;
-        if(!sciana(nx,w.y)) w.x=nx;
-        if(!sciana(w.x,ny)) w.y=ny;
+      var rx=0, ry=0;
+
+      if(widzi){
+        if(d<DYST_MIN){ rx-=(graczX-w.x)/d; ry-=(graczY-w.y)/d; }          // za blisko
+        else if(d>DYST_MAX){ rx+=(graczX-w.x)/d; ry+=(graczY-w.y)/d; }     // za daleko
+        else {                                                              // krazy w bok
+          rx+=-(graczY-w.y)/d*w.kierunekKrazenia;
+          ry+= (graczX-w.x)/d*w.kierunekKrazenia;
+        }
+      } else {
+        w.czasZmianyCelu-=dt;
+        var pd=Math.hypot(w.celX-w.x, w.celY-w.y);
+        if(w.czasZmianyCelu<=0 || pd<0.7){
+          w.czasZmianyCelu=losowo(2,5);
+          var noweP=losowePoleWPokoju(w.macierzysty);
+          if(noweP){ w.celX=noweP.x; w.celY=noweP.y; }
+        }
+        if(pd>0.001){ rx+=(w.celX-w.x)/pd; ry+=(w.celY-w.y)/pd; }
       }
+
+      for(var si=0;si<wrogowie.length;si++){
+        var o=wrogowie[si];
+        if(o===w) continue;
+        var ox=w.x-o.x, oy=w.y-o.y, od=Math.hypot(ox,oy);
+        if(od>0.001 && od<SEPARACJA){
+          var sila=(SEPARACJA-od)/SEPARACJA;
+          rx+=ox/od*sila*1.8; ry+=oy/od*sila*1.8;
+        }
+      }
+
+      var dl=Math.hypot(rx,ry);
+      if(dl>0.001){
+        rx/=dl; ry/=dl;
+        var predkoscTeraz = w.predkosc * (widzi?1:0.65);
+        var nx=w.x+rx*predkoscTeraz*dt, ny=w.y+ry*predkoscTeraz*dt;
+        if(!sciana(nx+Math.sign(rx)*0.25, w.y)) w.x=nx;
+        if(!sciana(w.x, ny+Math.sign(ry)*0.25)) w.y=ny;
+      }
+
       w.cooldown-=dt;
-      if(widzi && d<12 && w.cooldown<=0){
+      if(widzi && d<14 && w.cooldown<=0){
         var e=ETAPY[etapIdx];
         w.cooldown=losowo(e.tempoStrzalu[0],e.tempoStrzalu[1]);
         var k2=Math.atan2(graczY-w.y, graczX-w.x)+losowo(-0.06,0.06);
@@ -11757,7 +11904,10 @@ SZABLON_FPS = """<!DOCTYPE html>
 
   function wczytajEtap(){
     generujMape();
-    graczX=ROZMIAR/2; graczY=ROZMIAR/2; graczKat=0; graczPitch=0;
+    // Start ZAWSZE w srodku pierwszego pokoju - przy mapie z pokojami
+    // srodek planszy moze wypasc w scianie.
+    var st=pokoje[0];
+    graczX=st.cx+0.5; graczY=st.cy+0.5; graczKat=0; graczPitch=0;
     graczHp=Math.min(100, graczHp+30);      // po etapie trochę zdrowia wraca
     pociski=[]; odlamki=[];
     cooldownStrzalu=0; odrzut=0; blyskWystrzalu=0; migniecieObrazen=0;
@@ -11816,7 +11966,7 @@ SZABLON_FPS = """<!DOCTYPE html>
   }
 
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
-  generujMape(); graczX=ROZMIAR/2; graczY=ROZMIAR/2; rozstawWrogow(); odswiezHud(); rysuj();
+  generujMape(); graczX=pokoje[0].cx+0.5; graczY=pokoje[0].cy+0.5; rozstawWrogow(); odswiezHud(); rysuj();
 </script>
 
 <script>
