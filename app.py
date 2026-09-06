@@ -3968,6 +3968,49 @@ SZABLON_PIANO = """
     var g = gwiazdkiMelodii(klucz);
     return '★'.repeat(g) + '☆'.repeat(5 - g);
   }
+
+  // Melodie UPORZADKOWANE od najlatwiejszej do najtrudniejszej. Wszystko
+  // (kolejnosc przyciskow i podpowiadanie kolejnej) idzie wedlug tej listy,
+  // a nie wedlug kolejnosci definicji w kodzie.
+  function kolejnoscWgTrudnosci() {
+    return Object.keys(PIOSENKI).sort(function (a, b2) {
+      var r = gwiazdkiMelodii(a) - gwiazdkiMelodii(b2);
+      if (r !== 0) return r;
+      return PIOSENKI[a].nuty.length - PIOSENKI[b2].nuty.length;
+    });
+  }
+  function nastepnaDoZagrania() {
+    var lista = kolejnoscWgTrudnosci();
+    for (var i = 0; i < lista.length; i++) {
+      if (!piosenkiUkonczone[lista[i]]) return lista[i];
+    }
+    return null;
+  }
+
+  var IKONY_PIOSENEK = { kotek:'🐱', happyBirthday:'🎁', oda:'🎻', janie:'🎼', stoLat:'🎂' };
+  var ID_PRZYCISKOW = {
+    kotek:'btnPiosenkaKotek', happyBirthday:'btnPiosenkaHappyBirthday',
+    oda:'btnPiosenkaOda', janie:'btnPiosenkaJanie', stoLat:'btnPiosenkaStoLat',
+  };
+
+  // Ustawia etykiety (gwiazdki, haczyk przy ukonczonych), porzadkuje
+  // przyciski wg trudnosci i podswietla te, ktora warto zagrac teraz.
+  function odswiezPrzyciskiPiosenek() {
+    var lista = kolejnoscWgTrudnosci();
+    var nastepna = nastepnaDoZagrania();
+    lista.forEach(function (klucz) {
+      var el = document.getElementById(ID_PRZYCISKOW[klucz]);
+      if (!el) return;
+      wyborPiosenki.appendChild(el);           // ustawia kolejnosc w DOM
+      var zrobiona = !!piosenkiUkonczone[klucz];
+      var podswietl = (klucz === nastepna);
+      el.innerHTML = (zrobiona ? '✅ ' : IKONY_PIOSENEK[klucz] + ' ') + PIOSENKI[klucz].nazwa
+        + '<br><span style="font-size:10px;letter-spacing:1px;opacity:' + (zrobiona ? '0.5' : '0.95') + '">'
+        + tekstGwiazdek(klucz) + '</span>';
+      el.style.opacity = zrobiona ? '0.55' : '1';
+      el.style.boxShadow = podswietl ? '0 0 0 2px #e6c15c, 0 3px 12px rgba(230,193,92,0.45)' : '';
+    });
+  }
   var PREDKOSC_PRZYROST = 10;
   var WYSOKOSC_KAFELKA = 70;
 
@@ -4192,17 +4235,21 @@ SZABLON_PIANO = """
         if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
         }
       } else {
-        var nastepnaPiosenka = kluczePiosenek.filter(function (k) { return !piosenkiUkonczone[k]; })[0];
+        var nastepnaPiosenka = nastepnaDoZagrania();   // kolejna wg TRUDNOSCI, nie wg kolejnosci w kodzie
         var ileZrobionych = kluczePiosenek.filter(function (k) { return piosenkiUkonczone[k]; }).length;
-        nakladkaTytul.textContent = '🎉 Udało się!';
-        nakladkaOpis.textContent = 'Zagraj jeszcze "' + PIOSENKI[nastepnaPiosenka].nazwa + '" (' + ileZrobionych + ' / ' + kluczePiosenek.length + ' zrobione), żeby zaliczyć cały etap.';
-        nakladkaBtn.textContent = '▶ ' + PIOSENKI[nastepnaPiosenka].nazwa;
+        odswiezPrzyciskiPiosenek();
+        nakladkaTytul.textContent = '🎉 Udało się! (' + ileZrobionych + ' / ' + kluczePiosenek.length + ')';
+        nakladkaOpis.innerHTML = 'Teraz trudniejsza: <b>' + PIOSENKI[nastepnaPiosenka].nazwa + '</b>'
+          + ' <span style="color:#e6c15c">' + tekstGwiazdek(nastepnaPiosenka) + '</span>';
+        nakladkaBtn.innerHTML = '▶ ' + PIOSENKI[nastepnaPiosenka].nazwa
+          + ' <span style="font-size:10px">' + tekstGwiazdek(nastepnaPiosenka) + '</span>';
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.onclick = function () { inicjujDzwiek(); wybierzPiosenke(nastepnaPiosenka); };
         btnZmienPiosenke.style.display = 'none';
       }
     } else {
       zagrajTon(140, 0.35, 'sawtooth');
+      odswiezPrzyciskiPiosenek();
       nakladkaTytul.textContent = powod === 'zly-pas' ? '🎹 Nie tam...' : '🎹 Kafelek uciekł...';
       nakladkaOpis.textContent = 'Doszłaś do ' + indeksNuty + ' / ' + NUTY.length + ' (' + PIOSENKI[piosenkaAktywna].nazwa + '). Spróbuj jeszcze raz.';
       nakladkaBtn.style.display = 'inline-block';
@@ -4224,13 +4271,7 @@ SZABLON_PIANO = """
     rozpocznijGre();
   }
 
-  [['btnPiosenkaKotek','kotek','🐱'],['btnPiosenkaJanie','janie','🎼'],
-   ['btnPiosenkaStoLat','stoLat','🎂'],['btnPiosenkaOda','oda','🎻'],
-   ['btnPiosenkaHappyBirthday','happyBirthday','🎁']].forEach(function (p) {
-    var el = document.getElementById(p[0]);
-    if (el) el.innerHTML = p[2] + ' ' + PIOSENKI[p[1]].nazwa
-      + '<br><span style="font-size:10px;color:#e6c15c;letter-spacing:1px;">' + tekstGwiazdek(p[1]) + '</span>';
-  });
+  odswiezPrzyciskiPiosenek();
 
   btnPiosenkaKotek.addEventListener('click', function () { wybierzPiosenke('kotek'); });
   btnPiosenkaJanie.addEventListener('click', function () { wybierzPiosenke('janie'); });
@@ -10974,48 +11015,48 @@ SZABLON_FPS = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
-  html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
-  #gra { position:relative; width:100%; height:640px; background:#0d0d0d; overflow:hidden; }
-  #widok { display:block; width:100%; height:400px; background:#101018; }
+  html, body { width:100%; overflow:hidden; background:#0b0b0e; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:560px; background:#0b0b0e; overflow:hidden; }
+  #widok { display:block; width:100%; height:560px; background:#e8e8ee; }
 
-  #hud { position:absolute; top:0; left:0; right:0; padding:7px 10px; z-index:5; pointer-events:none;
+  #hud { position:absolute; top:0; left:0; right:0; padding:8px 11px; z-index:5; pointer-events:none;
          display:flex; justify-content:space-between; align-items:flex-start; }
-  .hud-blok { color:#e8e8f0; font-size:12px; font-weight:800; text-shadow:0 2px 5px rgba(0,0,0,0.95); }
-  #hpPasekOtoczka { width:96px; height:8px; background:rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.28);
-                    border-radius:5px; overflow:hidden; margin-top:3px; }
-  #hpPasek { height:100%; width:100%; background:linear-gradient(90deg,#c0392b,#e74c3c); transition:width 0.2s ease; }
+  .hud-blok { color:#1a1a22; font-size:12px; font-weight:900; letter-spacing:0.03em;
+              text-shadow:0 1px 3px rgba(255,255,255,0.8); }
+  #hpOtoczka { width:104px; height:7px; background:rgba(0,0,0,0.18); border:1px solid rgba(0,0,0,0.35);
+               border-radius:4px; overflow:hidden; margin-top:3px; }
+  #hpPasek { height:100%; width:100%; background:#d81f2a; transition:width 0.2s ease; }
 
-  /* Wskaznik uplywu czasu - sedno gry: pokazuje, jak szybko plynie swiat */
-  #zegarOtoczka { position:absolute; top:52px; left:50%; transform:translateX(-50%); z-index:5;
-                  width:150px; height:5px; background:rgba(0,0,0,0.55); border-radius:3px; overflow:hidden; pointer-events:none; }
-  #zegarPasek { height:100%; width:4%; background:linear-gradient(90deg,#5aa8e6,#a8e0ff); transition:width 0.09s linear; }
-  #zegarNapis { position:absolute; top:60px; left:50%; transform:translateX(-50%); z-index:5;
-                color:#8fb8d8; font-size:9px; font-weight:800; letter-spacing:0.12em; pointer-events:none;
-                text-shadow:0 1px 4px rgba(0,0,0,0.9); }
+  #zegarOtoczka { position:absolute; top:56px; left:50%; transform:translateX(-50%); z-index:5;
+                  width:132px; height:4px; background:rgba(0,0,0,0.2); border-radius:2px; overflow:hidden; pointer-events:none; }
+  #zegarPasek { height:100%; width:4%; background:#1a1a22; }
+  #zegarNapis { position:absolute; top:63px; left:50%; transform:translateX(-50%); z-index:5;
+                color:#3a3a46; font-size:8.5px; font-weight:900; letter-spacing:0.16em; pointer-events:none; }
+  #celownik { position:absolute; top:46%; left:50%; transform:translate(-50%,-50%); z-index:4; pointer-events:none;
+              color:rgba(26,26,34,0.75); font-size:17px; }
+  #etapNapis { position:absolute; top:50%; left:0; right:0; text-align:center; z-index:6; pointer-events:none;
+               color:#1a1a22; font-size:26px; font-weight:900; letter-spacing:0.1em; opacity:0;
+               text-shadow:0 2px 12px rgba(255,255,255,0.9); }
+  #etapNapis.pokaz { animation:pokazEtap 2.1s ease forwards; }
+  @keyframes pokazEtap {
+    0% { opacity:0; transform:scale(0.85); }
+    18% { opacity:1; transform:scale(1); }
+    72% { opacity:1; }
+    100% { opacity:0; }
+  }
 
-  #celownik { position:absolute; top:200px; left:50%; transform:translate(-50%,-50%); z-index:4; pointer-events:none;
-              color:rgba(255,255,255,0.8); font-size:19px; text-shadow:0 0 5px rgba(0,0,0,0.9); }
+  #btnStrzal { position:absolute; right:16px; bottom:132px; z-index:7;
+               width:74px; height:74px; border-radius:50%; border:3px solid rgba(216,31,42,0.9);
+               background:rgba(216,31,42,0.22); color:#d81f2a; font-size:26px; font-weight:900; }
+  #btnStrzal:active { background:rgba(216,31,42,0.5); }
 
-  #panelSter { position:absolute; top:400px; left:0; right:0; bottom:0;
-               background:linear-gradient(180deg,#1a1520,#0f0d14); border-top:2px solid #3a3550;
-               display:flex; align-items:center; justify-content:space-between; padding:10px 14px; }
-  #padRuchu { display:grid; grid-template-columns:repeat(3,44px); grid-template-rows:repeat(2,44px); gap:5px; }
-  .btn-ruch3d { background:linear-gradient(135deg,#3a3550,#262038); border:1px solid #5a4a2e; border-radius:10px;
-                color:#f0e8d0; font-size:17px; padding:0; }
-  .btn-ruch3d:active, .btn-ruch3d.wcisniety { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
-  #btnStrzal { width:92px; height:92px; border-radius:50%; border:3px solid #8a2f26;
-               background:radial-gradient(circle at 35% 30%,#e6543c,#8a2f26); color:#fff;
-               font-size:30px; box-shadow:0 4px 14px rgba(0,0,0,0.55); }
-  #btnStrzal:active { transform:scale(0.94); }
-  #podpowiedz { position:absolute; bottom:4px; left:0; right:0; text-align:center; font-size:10px;
-                color:#7a7a90; pointer-events:none; }
-
-  #nakladka { position:absolute; inset:0; background:rgba(8,6,10,0.95); display:flex; flex-direction:column;
-              align-items:center; justify-content:center; text-align:center; padding:22px; z-index:20; }
-  #nakladkaTytul { color:#f5f5f0; font-size:21px; font-weight:700; margin-bottom:10px; }
-  #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
-  .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px;
-             padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  #nakladka { position:absolute; inset:0; background:rgba(245,245,248,0.97); display:flex; flex-direction:column;
+              align-items:center; justify-content:center; text-align:center; padding:24px; z-index:20; }
+  #nakladkaTytul { color:#1a1a22; font-size:20px; font-weight:900; margin-bottom:10px; letter-spacing:0.04em; }
+  #nakladkaOpis { color:#4a4a56; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
+  .gra-btn { background:#d81f2a; color:#fff; border:none; border-radius:30px;
+             padding:11px 28px; font-weight:900; font-size:15px; letter-spacing:0.05em;
+             box-shadow:0 3px 12px rgba(216,31,42,0.4); }
   .gra-btn:active { transform:scale(0.96); }
 </style>
 </head>
@@ -11023,74 +11064,70 @@ SZABLON_FPS = """<!DOCTYPE html>
 
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
-  <canvas id="widok" width="380" height="400"></canvas>
-
+  <canvas id="widok" width="380" height="560"></canvas>
   <div id="hud">
     <div class="hud-blok">
-      <div id="hpNapis">100 HP</div>
-      <div id="hpPasekOtoczka"><div id="hpPasek"></div></div>
+      <div id="hpNapis">100</div>
+      <div id="hpOtoczka"><div id="hpPasek"></div></div>
     </div>
     <div class="hud-blok" style="text-align:right">
-      <div id="wrogowieNapis">Wrogowie: 0</div>
-      <div id="amunicjaNapis" style="opacity:0.8">🔫 ∞</div>
+      <div id="etapEtykieta">ETAP 1 / 3</div>
+      <div id="wrogowieNapis" style="opacity:0.7">WROGOWIE 0</div>
     </div>
   </div>
   <div id="zegarOtoczka"><div id="zegarPasek"></div></div>
-  <div id="zegarNapis">CZAS PŁYNIE, GDY SIĘ RUSZASZ</div>
+  <div id="zegarNapis">CZAS STOI</div>
   <div id="celownik">✛</div>
-
-  <div id="panelSter">
-    <div id="padRuchu">
-      <button class="btn-ruch3d" id="btnLewoStrafe">⬅️</button>
-      <button class="btn-ruch3d" id="btnPrzod">⬆️</button>
-      <button class="btn-ruch3d" id="btnPrawoStrafe">➡️</button>
-      <button class="btn-ruch3d" id="btnObrotL">↺</button>
-      <button class="btn-ruch3d" id="btnTyl">⬇️</button>
-      <button class="btn-ruch3d" id="btnObrotP">↻</button>
-    </div>
-    <button id="btnStrzal">🔫</button>
-  </div>
-  <div id="podpowiedz">Przeciągnij po widoku, żeby się rozejrzeć</div>
+  <div id="etapNapis"></div>
+  <button id="btnStrzal">🔫</button>
 
   <div id="nakladka">
-    <div id="nakladkaTytul">🕶️ Chwila Zawahania</div>
+    <div id="nakladkaTytul">🕶️ CHWILA ZAWAHANIA</div>
     <div id="nakladkaOpis">
-      Strzelanka 3D, w której <b>czas płynie tylko wtedy, gdy Ty się ruszasz</b>.<br><br>
-      Stoisz nieruchomo — świat prawie zamiera i możesz spokojnie zaplanować ruch.
-      Ruszysz się albo rozejrzysz — wszystko rusza pełną prędkością.<br><br>
-      Przeciągaj po widoku, żeby celować. Wyeliminuj wszystkich wrogów.
+      <b>Czas płynie tylko wtedy, gdy Ty się ruszasz.</b><br><br>
+      Stoisz — świat zamiera i możesz spokojnie zaplanować ruch.
+      Ruszysz się — wszystko rusza pełną prędkością.<br><br>
+      <b>Lewy drążek</b> — chodzenie.<br>
+      <b>Prawy drążek</b> — rozglądanie się.<br><br>
+      Trzy etapy. Powodzenia.
     </div>
-    <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
+    <button class="gra-btn" id="nakladkaBtn">ZACZYNAMY ▶</button>
   </div>
 </div>
 
 <script>
-  var gra=document.getElementById('gra');
   var plotno=document.getElementById('widok'), ctx=plotno.getContext('2d');
   var hpNapis=document.getElementById('hpNapis'), hpPasek=document.getElementById('hpPasek');
-  var wrogowieNapis=document.getElementById('wrogowieNapis');
+  var wrogowieNapis=document.getElementById('wrogowieNapis'), etapEtykieta=document.getElementById('etapEtykieta');
   var zegarPasek=document.getElementById('zegarPasek'), zegarNapis=document.getElementById('zegarNapis');
+  var etapNapis=document.getElementById('etapNapis');
   var nakladka=document.getElementById('nakladka'), nakladkaTytul=document.getElementById('nakladkaTytul');
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
-  var SZER=380, WYS=400;
-  var KOLUMNA=2;                       // szerokosc paska w px (mniej promieni = plynniej)
+  var SZER=380, WYS=560, KOLUMNA=2;
   var LICZBA_PROMIENI=Math.floor(SZER/KOLUMNA);
-  var FOV=Math.PI/3;
-  var HORYZONT=WYS*0.5;
+  var FOV=Math.PI/3, TAN_POL_FOV=Math.tan(FOV/2);
+  var HORYZONT_BAZA=WYS*0.46;
 
-  // ---- Skala czasu: SEDNO GRY ----
-  var CZAS_BEZRUCH=0.045, CZAS_RUCH=1.0;
-  var skalaCzasu=CZAS_BEZRUCH, skalaDocelowa=CZAS_BEZRUCH;
+  var CZAS_BEZRUCH=0.04, CZAS_RUCH=1.0;
+  var skalaCzasu=CZAS_BEZRUCH;
 
-  var MAPA=[];
-  var graczX=0, graczY=0, graczKat=0, graczHp=100;
-  var wrogowie=[], pociski=[], blyski=[];
+  // ---------- ETAPY ----------
+  var ETAPY=[
+    { nazwa:'ETAP 1', podtytul:'Rozgrzewka', rozmiar:20, przeszkody:16, wrogow:6,
+      hpWroga:60, atakWroga:9, predkoscWroga:1.05, tempoStrzalu:[1.9,3.2] },
+    { nazwa:'ETAP 2', podtytul:'Robi się gęsto', rozmiar:24, przeszkody:26, wrogow:9,
+      hpWroga:70, atakWroga:12, predkoscWroga:1.30, tempoStrzalu:[1.5,2.6] },
+    { nazwa:'ETAP 3', podtytul:'Bez litości', rozmiar:28, przeszkody:34, wrogow:13,
+      hpWroga:80, atakWroga:15, predkoscWroga:1.55, tempoStrzalu:[1.1,2.0] },
+  ];
+  var etapIdx=0;
+
+  var MAPA=[], ROZMIAR=20;
+  var graczX=10, graczY=10, graczKat=0, graczPitch=0, graczHp=100;
+  var wrogowie=[], pociski=[], odlamki=[], blyskWystrzalu=0;
   var trwa=false, czasOstatni=null;
   var cooldownStrzalu=0, odrzut=0, migniecieObrazen=0;
-
-  var wcisniete={ przod:false, tyl:false, lewo:false, prawo:false, obrotL:false, obrotP:false };
-  var przeciaganie=false, ostatniDotykX=0, obrotZDotyku=0;
 
   // ---------- DZWIEK ----------
   var audioCtx=null;
@@ -11101,7 +11138,7 @@ SZABLON_FPS = """<!DOCTYPE html>
       else if(!audioCtx||audioCtx.state==='closed'){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); try{o.__wspolnyKontekstAudio=audioCtx;}catch(e2){} }
       if(audioCtx.state==='suspended') audioCtx.resume();
       var el=document.getElementById('odblokowanieDzwiekuIOS');
-      if(el&&!el.src){ el.src='data:audio/wav;base64,UklGRlwDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTgDAAA='; el.play().catch(function(){}); }
+      if(el&&!el.src){ el.src='data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='; el.play().catch(function(){}); }
     }catch(e){}
   }
   ['pointerdown','touchstart','click'].forEach(function(ev){ document.addEventListener(ev,inicjujDzwiek,{passive:true}); });
@@ -11122,54 +11159,97 @@ SZABLON_FPS = """<!DOCTYPE html>
     try{
       var o=audioCtx.createOscillator(), g=audioCtx.createGain();
       o.type='sawtooth';
-      o.frequency.setValueAtTime(420,audioCtx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(70,audioCtx.currentTime+0.13);
+      o.frequency.setValueAtTime(440,audioCtx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(65,audioCtx.currentTime+0.12);
       g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.26,audioCtx.currentTime+0.008);
-      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.15);
-      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.16);
+      g.gain.exponentialRampToValueAtTime(0.24,audioCtx.currentTime+0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.14);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.15);
     }catch(e){}
   }
-  function dzwiekTrafienia(){ ton(760,0.06,'square',0.16); setTimeout(function(){ton(1080,0.09,'square',0.14);},50); }
-  function dzwiekZgonuWroga(){ ton(200,0.09,'sawtooth',0.15); setTimeout(function(){ton(95,0.18,'sawtooth',0.13);},80); }
-  function dzwiekObrazen(){ ton(150,0.14,'sawtooth',0.17); }
-  function dzwiekWrogaStrzal(){ ton(300,0.07,'square',0.10); }
-  function dzwiekZwyciestwa(){ [523,659,784,1046,1318].forEach(function(f,i){ setTimeout(function(){ton(f,0.2,'triangle',0.16);},i*125); }); }
-  function dzwiekPorazki(){ [320,250,190,130].forEach(function(f,i){ setTimeout(function(){ton(f,0.26,'sawtooth',0.15);},i*160); }); }
-
+  // Charakterystyczny "brzek szkla" przy rozbiciu wroga (jak w SUPERHOT)
+  function dzwiekRozbicia(){
+    if(!audioCtx) return;
+    try{
+      for(var i=0;i<5;i++){
+        (function(i){
+          setTimeout(function(){
+            var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+            o.type='triangle';
+            o.frequency.value=900+Math.random()*1400;
+            g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+            g.gain.exponentialRampToValueAtTime(0.10,audioCtx.currentTime+0.005);
+            g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+0.13);
+            o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+0.14);
+          }, i*28);
+        })(i);
+      }
+    }catch(e){}
+  }
+  function dzwiekTrafienia(){ ton(700,0.05,'square',0.13); }
+  function dzwiekObrazen(){ ton(140,0.15,'sawtooth',0.17); }
+  function dzwiekWrogStrzal(){ ton(280,0.06,'square',0.08); }
+  function dzwiekEtapu(){ [523,659,784].forEach(function(f,i){ setTimeout(function(){ton(f,0.18,'triangle',0.15);},i*130); }); }
+  function dzwiekZwyciestwa(){ [523,659,784,1046,1318].forEach(function(f,i){ setTimeout(function(){ton(f,0.22,'triangle',0.16);},i*130); }); }
+  function dzwiekPorazki(){ [320,250,190,130].forEach(function(f,i){ setTimeout(function(){ton(f,0.28,'sawtooth',0.14);},i*165); }); }
   function losowo(a,b){ return Math.random()*(b-a)+a; }
 
+  // ---------- TEKSTURY (generowane raz, proceduralnie) ----------
+  var TEX=64;
+  function zbudujTeksture(rysuj){
+    var c=document.createElement('canvas'); c.width=TEX; c.height=TEX;
+    var t=c.getContext('2d'); rysuj(t); return c;
+  }
+  var texSciana=zbudujTeksture(function(t){
+    t.fillStyle='#f2f2f6'; t.fillRect(0,0,TEX,TEX);
+    t.strokeStyle='#d6d6e0'; t.lineWidth=1.5;
+    for(var y=0;y<TEX;y+=16){
+      t.beginPath(); t.moveTo(0,y+0.5); t.lineTo(TEX,y+0.5); t.stroke();
+      var przes=(y/16)%2===0?0:16;
+      for(var x=przes;x<TEX;x+=32){
+        t.beginPath(); t.moveTo(x+0.5,y); t.lineTo(x+0.5,y+16); t.stroke();
+      }
+    }
+    t.fillStyle='rgba(0,0,0,0.03)';
+    for(var i=0;i<90;i++) t.fillRect(Math.random()*TEX,Math.random()*TEX,2,2);
+  });
+  var texSlup=zbudujTeksture(function(t){
+    t.fillStyle='#e2e2ea'; t.fillRect(0,0,TEX,TEX);
+    t.fillStyle='#cfcfdb';
+    for(var x=0;x<TEX;x+=12) t.fillRect(x,0,5,TEX);
+    t.fillStyle='rgba(0,0,0,0.07)'; t.fillRect(0,0,TEX,3); t.fillRect(0,TEX-3,TEX,3);
+  });
+
   // ---------- MAPA ----------
-  var SZEROKOSC_MAPY=24, WYSOKOSC_MAPY=24;
   function generujMape(){
+    var e=ETAPY[etapIdx];
+    ROZMIAR=e.rozmiar;
     MAPA=[];
-    for(var y=0;y<WYSOKOSC_MAPY;y++){
-      var wiersz=[];
-      for(var x=0;x<SZEROKOSC_MAPY;x++){
-        var brzeg = (x===0||y===0||x===SZEROKOSC_MAPY-1||y===WYSOKOSC_MAPY-1);
-        wiersz.push(brzeg?1:0);
-      }
-      MAPA.push(wiersz);
+    for(var y=0;y<ROZMIAR;y++){
+      var w=[];
+      for(var x=0;x<ROZMIAR;x++) w.push((x===0||y===0||x===ROZMIAR-1||y===ROZMIAR-1)?1:0);
+      MAPA.push(w);
     }
-    // Slupy i sciany dzialowe - da sie za nimi schowac, ale arena zostaje otwarta
-    for(var i=0;i<26;i++){
-      var bx=2+Math.floor(Math.random()*(SZEROKOSC_MAPY-4));
-      var by=2+Math.floor(Math.random()*(WYSOKOSC_MAPY-4));
-      var dl=1+Math.floor(Math.random()*3);
-      var poziomo=Math.random()<0.5;
+    for(var i=0;i<e.przeszkody;i++){
+      var bx=2+Math.floor(Math.random()*(ROZMIAR-5)), by=2+Math.floor(Math.random()*(ROZMIAR-5));
+      var dl=1+Math.floor(Math.random()*3), poz=Math.random()<0.5;
       for(var j=0;j<dl;j++){
-        var tx=bx+(poziomo?j:0), ty=by+(poziomo?0:j);
-        if(tx>1&&tx<SZEROKOSC_MAPY-2&&ty>1&&ty<WYSOKOSC_MAPY-2) MAPA[ty][tx]=2;
+        var tx=bx+(poz?j:0), ty=by+(poz?0:j);
+        if(tx>1&&tx<ROZMIAR-2&&ty>1&&ty<ROZMIAR-2) MAPA[ty][tx]=2;
       }
     }
-    // Srodek zawsze wolny (start gracza)
-    var sx=Math.floor(SZEROKOSC_MAPY/2), sy=Math.floor(WYSOKOSC_MAPY/2);
+    var sx=Math.floor(ROZMIAR/2), sy=Math.floor(ROZMIAR/2);
     for(var dy=-2;dy<=2;dy++) for(var dx=-2;dx<=2;dx++) MAPA[sy+dy][sx+dx]=0;
   }
   function sciana(x,y){
     var tx=Math.floor(x), ty=Math.floor(y);
-    if(tx<0||ty<0||tx>=SZEROKOSC_MAPY||ty>=WYSOKOSC_MAPY) return true;
+    if(tx<0||ty<0||tx>=ROZMIAR||ty>=ROZMIAR) return true;
     return MAPA[ty][tx]!==0;
+  }
+  function czyWidac(ax,ay,bx,by){
+    var d=Math.hypot(bx-ax,by-ay), kr=Math.ceil(d*4);
+    for(var i=1;i<kr;i++){ var t=i/kr; if(sciana(ax+(bx-ax)*t, ay+(by-ay)*t)) return false; }
+    return true;
   }
 
   // ---------- RAYCASTING ----------
@@ -11177,95 +11257,182 @@ SZABLON_FPS = """<!DOCTYPE html>
   function rzucPromien(kat){
     var dx=Math.cos(kat), dy=Math.sin(kat);
     var mx=Math.floor(graczX), my=Math.floor(graczY);
-    var deltaX=Math.abs(1/(dx||1e-9)), deltaY=Math.abs(1/(dy||1e-9));
-    var krokX,krokY,bokX,bokY,strona=0;
-    if(dx<0){krokX=-1;bokX=(graczX-mx)*deltaX;}else{krokX=1;bokX=(mx+1-graczX)*deltaX;}
-    if(dy<0){krokY=-1;bokY=(graczY-my)*deltaY;}else{krokY=1;bokY=(my+1-graczY)*deltaY;}
-    for(var i=0;i<80;i++){
-      if(bokX<bokY){bokX+=deltaX;mx+=krokX;strona=0;}
-      else{bokY+=deltaY;my+=krokY;strona=1;}
-      if(mx<0||my<0||mx>=SZEROKOSC_MAPY||my>=WYSOKOSC_MAPY) return {d:80,strona:strona,typ:1};
+    var dX=Math.abs(1/(dx||1e-9)), dY=Math.abs(1/(dy||1e-9));
+    var kX,kY,bX,bY,strona=0;
+    if(dx<0){kX=-1;bX=(graczX-mx)*dX;}else{kX=1;bX=(mx+1-graczX)*dX;}
+    if(dy<0){kY=-1;bY=(graczY-my)*dY;}else{kY=1;bY=(my+1-graczY)*dY;}
+    for(var i=0;i<90;i++){
+      if(bX<bY){bX+=dX;mx+=kX;strona=0;} else {bY+=dY;my+=kY;strona=1;}
+      if(mx<0||my<0||mx>=ROZMIAR||my>=ROZMIAR) return {d:90,strona:strona,typ:1,wallX:0};
       if(MAPA[my][mx]!==0){
-        var d = strona===0 ? (mx-graczX+(1-krokX)/2)/(dx||1e-9) : (my-graczY+(1-krokY)/2)/(dy||1e-9);
-        return {d:Math.abs(d),strona:strona,typ:MAPA[my][mx]};
+        var d = strona===0 ? (mx-graczX+(1-kX)/2)/(dx||1e-9) : (my-graczY+(1-kY)/2)/(dy||1e-9);
+        d=Math.abs(d);
+        var wallX = strona===0 ? graczY+d*dy : graczX+d*dx;
+        wallX -= Math.floor(wallX);
+        return {d:d, strona:strona, typ:MAPA[my][mx], wallX:wallX};
       }
     }
-    return {d:80,strona:strona,typ:1};
+    return {d:90,strona:strona,typ:1,wallX:0};
+  }
+
+  function horyzont(){ return HORYZONT_BAZA + graczPitch; }
+
+  // Rzutowanie PODLOGI I SUFITU (floor casting). To najwieksza roznica
+  // wizualna: zamiast plaskiego gradientu widac prawdziwa, uciekajaca
+  // w glab posadzke, wiec od razu czuc przestrzen i wlasny ruch.
+  // Liczone w blokach (nie per piksel), zeby bylo plynnie na telefonie.
+  var BLOK_X=10, BLOK_Y=8;
+  function rysujPosadzke(){
+    var H=horyzont();
+    var dirX=Math.cos(graczKat), dirY=Math.sin(graczKat);
+    var planeX=-Math.sin(graczKat)*TAN_POL_FOV, planeY=Math.cos(graczKat)*TAN_POL_FOV;
+    var rx0=dirX-planeX, ry0=dirY-planeY;
+    var rx1=dirX+planeX, ry1=dirY+planeY;
+
+    for(var y=Math.max(0,Math.floor(H)+1); y<WYS; y+=BLOK_Y){
+      var p=y-H;
+      if(p<=0.5) continue;
+      var dyst=(0.5*WYS)/p;
+      if(dyst>34) continue;
+      var krokX=dyst*(rx1-rx0)/SZER, krokY=dyst*(ry1-ry0)/SZER;
+      var fx=graczX+dyst*rx0, fy=graczY+dyst*ry0;
+      var mgla=Math.max(0, Math.min(0.82, dyst*0.05));
+      // Sasiednie bloki o TYM SAMYM kolorze scalamy w jeden prostokat -
+      // bez tego wychodzilo ponad 1400 wywolan rysowania na klatke.
+      var poprzV=-1, poczatek=0;
+      for(var x=0; x<=SZER; x+=BLOK_X){
+        var v=-1;
+        if(x<SZER){
+          var kx=fx+krokX*x, ky=fy+krokY*x;
+          var ux=kx-Math.floor(kx), uy=ky-Math.floor(ky);
+          var baza=((Math.floor(kx)+Math.floor(ky))%2===0)?208:190;
+          if(ux<0.055||uy<0.055) baza-=34;        // fuga miedzy plytami
+          v=Math.round(baza*(1-mgla)+168*mgla);
+        }
+        if(v!==poprzV){
+          if(poprzV>=0){
+            ctx.fillStyle='rgb('+poprzV+','+poprzV+','+(poprzV+8)+')';
+            ctx.fillRect(poczatek, y, x-poczatek+1, BLOK_Y+1);
+          }
+          poprzV=v; poczatek=x;
+        }
+      }
+    }
+  }
+  function rysujSufit(){
+    var H=horyzont();
+    var g=ctx.createLinearGradient(0,Math.max(0,H-WYS*0.9),0,Math.max(0,H));
+    g.addColorStop(0,'#fbfbff'); g.addColorStop(1,'#e7e7f0');
+    ctx.fillStyle=g; ctx.fillRect(0,0,SZER,Math.max(0,H));
+    // Delikatne belki sufitowe zbiegajace sie do horyzontu
+    var dirX=Math.cos(graczKat), dirY=Math.sin(graczKat);
+    var planeX=-Math.sin(graczKat)*TAN_POL_FOV, planeY=Math.cos(graczKat)*TAN_POL_FOV;
+    var rx0=dirX-planeX, ry0=dirY-planeY, rx1=dirX+planeX, ry1=dirY+planeY;
+    ctx.save();
+    for(var y=Math.max(0,Math.floor(H)-1); y>0; y-=BLOK_Y){
+      var p=H-y;
+      if(p<=0.5) continue;
+      var dyst=(0.5*WYS)/p;
+      if(dyst>26) continue;
+      var krokX=dyst*(rx1-rx0)/SZER, krokY=dyst*(ry1-ry0)/SZER;
+      var fx=graczX+dyst*rx0, fy=graczY+dyst*ry0;
+      var mgla=Math.max(0,Math.min(0.9, dyst*0.06));
+      for(var x=0;x<SZER;x+=BLOK_X*2){
+        var kx=fx+krokX*x, ky=fy+krokY*x;
+        var ux=kx-Math.floor(kx), uy=ky-Math.floor(ky);
+        if(ux<0.07||uy<0.07){
+          ctx.globalAlpha=(1-mgla)*0.35;
+          ctx.fillStyle='#d2d2e0';
+          ctx.fillRect(x,y,BLOK_X*2+1,BLOK_Y+1);
+        }
+      }
+    }
+    ctx.restore();
   }
 
   function rysujSwiat(){
-    // Niebo i podloga
-    var g1=ctx.createLinearGradient(0,0,0,HORYZONT);
-    g1.addColorStop(0,'#1a1a2e'); g1.addColorStop(1,'#2e2a44');
-    ctx.fillStyle=g1; ctx.fillRect(0,0,SZER,HORYZONT);
-    var g2=ctx.createLinearGradient(0,HORYZONT,0,WYS);
-    g2.addColorStop(0,'#241f2e'); g2.addColorStop(1,'#12101a');
-    ctx.fillStyle=g2; ctx.fillRect(0,HORYZONT,SZER,WYS-HORYZONT);
+    var H=horyzont();
+    rysujSufit();
+    rysujPosadzke();
 
     for(var i=0;i<LICZBA_PROMIENI;i++){
       var kamera=2*i/LICZBA_PROMIENI-1;
-      var kat=graczKat+Math.atan(kamera*Math.tan(FOV/2));
+      var kat=graczKat+Math.atan(kamera*TAN_POL_FOV);
       var r=rzucPromien(kat);
-      var dProst=r.d*Math.cos(kat-graczKat);      // korekta rybiego oka
+      var dProst=r.d*Math.cos(kat-graczKat);
       buforGlebi[i]=dProst;
-      var wysSciany=Math.min(WYS*3, WYS/Math.max(0.12,dProst));
-      var gora=HORYZONT-wysSciany/2;
-
-      // Sciany zewnetrzne chlodne, slupy cieplejsze; sciany boczne ciemniejsze
-      var jasnosc=Math.max(0.16, Math.min(1, 1.5/(1+dProst*0.30)));
-      if(r.strona===1) jasnosc*=0.68;
-      var kol = r.typ===1
-        ? [Math.round(96*jasnosc), Math.round(104*jasnosc), Math.round(140*jasnosc)]
-        : [Math.round(150*jasnosc), Math.round(120*jasnosc), Math.round(88*jasnosc)];
-      ctx.fillStyle='rgb('+kol[0]+','+kol[1]+','+kol[2]+')';
-      ctx.fillRect(i*KOLUMNA, gora, KOLUMNA+1, wysSciany);
+      var h=Math.min(WYS*4, WYS/Math.max(0.12,dProst));
+      var gora=H-h/2;
+      var tex = r.typ===1 ? texSciana : texSlup;
+      var tx=Math.floor(r.wallX*TEX);
+      if(tx<0) tx=0; if(tx>TEX-1) tx=TEX-1;
+      ctx.drawImage(tex, tx, 0, 1, TEX, i*KOLUMNA, gora, KOLUMNA+1, h);
+      // Mgla dystansowa + ciemniejsze sciany boczne = czytelna glebia
+      var cien = 1 - Math.max(0, Math.min(0.72, dProst*0.055 + (r.strona===1?0.14:0)));
+      if(cien<1){
+        ctx.fillStyle='rgba(150,150,168,'+(1-cien).toFixed(3)+')';
+        ctx.fillRect(i*KOLUMNA, gora, KOLUMNA+1, h);
+      }
     }
   }
 
-  // Sprite'y (wrogowie i pociski) z testem glebi wzgledem scian
-  function rysujSprite(sx,sy,rozmiar,rysujKsztalt){
+  function rysujSprite(sx,sy,rozmiar,rysuj){
     var dx=sx-graczX, dy=sy-graczY;
     var odl=Math.hypot(dx,dy);
     if(odl<0.12) return;
-    var roznica=((Math.atan2(dy,dx)-graczKat+Math.PI*3)%(Math.PI*2))-Math.PI;
-    if(Math.abs(roznica)>FOV/2+0.45) return;
-    var ekranX=(0.5+Math.tan(roznica)/(2*Math.tan(FOV/2)))*SZER;
-    var wys=Math.min(WYS*2.2, (WYS/odl)*rozmiar);
-    var indeks=Math.floor(ekranX/KOLUMNA);
-    if(indeks<0||indeks>=LICZBA_PROMIENI) return;
-    if(odl>buforGlebi[indeks]+0.25) return;      // schowany za sciana
-    rysujKsztalt(ekranX, HORYZONT, wys, odl);
+    var roz=((Math.atan2(dy,dx)-graczKat+Math.PI*3)%(Math.PI*2))-Math.PI;
+    if(Math.abs(roz)>FOV/2+0.5) return;
+    var ex=(0.5+Math.tan(roz)/(2*TAN_POL_FOV))*SZER;
+    var idx=Math.floor(ex/KOLUMNA);
+    if(idx<0||idx>=LICZBA_PROMIENI) return;
+    if(odl>buforGlebi[idx]+0.3) return;
+    rysuj(ex, horyzont(), Math.min(WYS*2.6,(WYS/odl)*rozmiar), odl);
   }
 
   function rysujWrogow(){
-    var posort=wrogowie.slice().sort(function(a,b){
+    wrogowie.slice().sort(function(a,b){
       return Math.hypot(b.x-graczX,b.y-graczY)-Math.hypot(a.x-graczX,a.y-graczY);
-    });
-    posort.forEach(function(w){
-      rysujSprite(w.x,w.y,0.85,function(ex,ey,h,odl){
-        var szer=h*0.42;
-        var gora=ey-h*0.5;
+    }).forEach(function(w){
+      rysujSprite(w.x,w.y,0.9,function(ex,ey,h){
+        var s=h*0.40, gora=ey-h*0.5;
+        var krok=Math.sin(w.faza)*h*0.03;
+        // Cien na podlodze - bez niego postacie "unosily sie" nad ziemia
         ctx.save();
-        if(w.migotanie>0) ctx.globalAlpha=0.55;
-        // Sylwetka: tulow, glowa, nogi
-        ctx.fillStyle='#c0392b';
-        ctx.fillRect(ex-szer*0.5, gora+h*0.26, szer, h*0.44);
-        ctx.fillStyle='#e0574a';
-        ctx.beginPath(); ctx.arc(ex, gora+h*0.17, h*0.115, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle='#7a2018';
-        ctx.fillRect(ex-szer*0.42, gora+h*0.70, szer*0.32, h*0.30);
-        ctx.fillRect(ex+szer*0.10, gora+h*0.70, szer*0.32, h*0.30);
-        // Oczy - swieca, zeby bylo widac gdzie patrzy
-        ctx.fillStyle='#ffe066';
-        ctx.fillRect(ex-h*0.055, gora+h*0.15, h*0.032, h*0.032);
-        ctx.fillRect(ex+h*0.022, gora+h*0.15, h*0.032, h*0.032);
+        ctx.globalAlpha=0.22;
+        ctx.fillStyle='#3a3a48';
+        ctx.beginPath();
+        ctx.ellipse(ex, gora+h*1.0, s*0.52, h*0.055, 0, 0, Math.PI*2);
+        ctx.fill();
         ctx.restore();
-        // Pasek zycia nad wrogiem
+
+        ctx.save();
+        if(w.migotanie>0){ ctx.globalAlpha=0.55; }
+        // Charakterystyczna czerwona, "szklana" sylwetka
+        var g=ctx.createLinearGradient(ex-s*0.5, gora, ex+s*0.5, gora+h);
+        g.addColorStop(0,'#f0454f'); g.addColorStop(0.5,'#d81f2a'); g.addColorStop(1,'#a3121b');
+        ctx.fillStyle=g;
+        // tulow
+        ctx.beginPath();
+        ctx.moveTo(ex-s*0.46, gora+h*0.30);
+        ctx.lineTo(ex+s*0.46, gora+h*0.30);
+        ctx.lineTo(ex+s*0.34, gora+h*0.70);
+        ctx.lineTo(ex-s*0.34, gora+h*0.70);
+        ctx.closePath(); ctx.fill();
+        // glowa
+        ctx.beginPath(); ctx.arc(ex, gora+h*0.18, h*0.105, 0, Math.PI*2); ctx.fill();
+        // ramiona (wyciagniete z bronia w strone gracza)
+        ctx.fillRect(ex-s*0.62, gora+h*0.34, s*0.24, h*0.09);
+        ctx.fillRect(ex+s*0.38, gora+h*0.34, s*0.24, h*0.09);
+        // nogi z lekkim krokiem
+        ctx.fillRect(ex-s*0.34, gora+h*0.70+krok, s*0.26, h*0.30-krok);
+        ctx.fillRect(ex+s*0.08, gora+h*0.70-krok, s*0.26, h*0.30+krok);
+        // polysk
+        ctx.fillStyle='rgba(255,255,255,0.22)';
+        ctx.fillRect(ex-s*0.40, gora+h*0.32, s*0.14, h*0.34);
+        ctx.restore();
         if(w.hp<w.hpMax){
-          ctx.fillStyle='rgba(0,0,0,0.6)';
-          ctx.fillRect(ex-szer*0.5, gora-6, szer, 3);
-          ctx.fillStyle='#e6543c';
-          ctx.fillRect(ex-szer*0.5, gora-6, szer*(w.hp/w.hpMax), 3);
+          ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fillRect(ex-s*0.5, gora-7, s, 3);
+          ctx.fillStyle='#d81f2a'; ctx.fillRect(ex-s*0.5, gora-7, s*(w.hp/w.hpMax), 3);
         }
       });
     });
@@ -11273,234 +11440,282 @@ SZABLON_FPS = """<!DOCTYPE html>
 
   function rysujPociski(){
     pociski.forEach(function(p){
-      rysujSprite(p.x,p.y,0.16,function(ex,ey,h,odl){
+      rysujSprite(p.x,p.y,0.14,function(ex,ey,h){
+        // Smuga za pociskiem - widac tor lotu, gdy czas stoi
+        var dl=Math.max(4,h*1.6);
         ctx.save();
-        ctx.shadowColor = p.wrogi ? '#ff9a3c' : '#a8e0ff';
-        ctx.shadowBlur = 12;
-        ctx.fillStyle = p.wrogi ? '#ffd24a' : '#dff0ff';
-        ctx.beginPath(); ctx.arc(ex, ey, Math.max(2, h*0.5), 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha=0.35;
+        ctx.strokeStyle = p.wrogi ? '#d81f2a' : '#1a1a22';
+        ctx.lineWidth=Math.max(1.5,h*0.35);
+        ctx.beginPath(); ctx.moveTo(ex,ey); ctx.lineTo(ex-p.ekranDX*dl, ey); ctx.stroke();
+        ctx.restore();
+        ctx.fillStyle = p.wrogi ? '#d81f2a' : '#1a1a22';
+        ctx.beginPath(); ctx.arc(ex, ey, Math.max(2,h*0.5), 0, Math.PI*2); ctx.fill();
+      });
+    });
+  }
+
+  function rysujOdlamki(){
+    odlamki.forEach(function(o){
+      rysujSprite(o.x,o.y,0.22,function(ex,ey,h){
+        ctx.save();
+        ctx.globalAlpha=Math.max(0,o.zycie/o.max)*0.9;
+        ctx.translate(ex, ey - o.wysokosc*h*0.6);
+        ctx.rotate(o.obrot);
+        ctx.fillStyle='#d81f2a';
+        var r=Math.max(1.5,h*0.22);
+        ctx.beginPath(); ctx.moveTo(0,-r); ctx.lineTo(r*0.7,r*0.5); ctx.lineTo(-r*0.7,r*0.5);
+        ctx.closePath(); ctx.fill();
         ctx.restore();
       });
     });
   }
 
   function rysujBron(){
-    var podnies = odrzut*16;
-    var bx=SZER*0.72, by=WYS-6+podnies;
+    var p=odrzut*18, bx=SZER*0.70, by=WYS+4+p;
     ctx.save();
-    ctx.fillStyle='#2a2a34';
+    // Dlon / przedramie
+    ctx.fillStyle='#15151c';
     ctx.beginPath();
-    ctx.moveTo(bx-30, by); ctx.lineTo(bx+30, by);
-    ctx.lineTo(bx+16, by-52); ctx.lineTo(bx-8, by-52);
+    ctx.moveTo(bx-40,by); ctx.lineTo(bx+40,by); ctx.lineTo(bx+20,by-58); ctx.lineTo(bx-14,by-58);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle='#3f3f4c';
-    ctx.fillRect(bx-6, by-92+podnies*0.4, 15, 46);
-    ctx.fillStyle='#555565';
-    ctx.fillRect(bx-6, by-96+podnies*0.4, 15, 6);
+    // Korpus broni
+    ctx.fillStyle='#232330'; ctx.fillRect(bx-11, by-104+p*0.4, 24, 52);
+    // Lufa
+    ctx.fillStyle='#33333f'; ctx.fillRect(bx-4, by-128+p*0.4, 10, 28);
+    // Krawedzie / polysk
+    ctx.fillStyle='#4a4a5c'; ctx.fillRect(bx-11, by-104+p*0.4, 4, 52);
+    ctx.fillStyle='#5c5c70'; ctx.fillRect(bx-4, by-130+p*0.4, 10, 4);
+    if(blyskWystrzalu>0){
+      ctx.globalAlpha=blyskWystrzalu;
+      var gf=ctx.createRadialGradient(bx+1, by-132+p*0.4, 2, bx+1, by-132+p*0.4, 26*blyskWystrzalu);
+      gf.addColorStop(0,'#fff6c8'); gf.addColorStop(0.4,'#ffd24a'); gf.addColorStop(1,'rgba(255,180,40,0)');
+      ctx.fillStyle=gf;
+      ctx.beginPath(); ctx.arc(bx+1, by-132+p*0.4, 26*blyskWystrzalu, 0, Math.PI*2); ctx.fill();
+    }
     ctx.restore();
   }
 
   function rysujEfekty(){
-    // Blyski wystrzalow i trafien
-    for(var i=blyski.length-1;i>=0;i--){
-      var b=blyski[i];
+    // Wystrzal na moment rozswietla cala scene - widac, ze bron "swieci"
+    if(blyskWystrzalu>0){
       ctx.save();
-      ctx.globalAlpha=Math.max(0,b.zycie/b.max);
-      ctx.fillStyle=b.kolor;
-      ctx.beginPath(); ctx.arc(b.x,b.y,b.r*(1.6-b.zycie/b.max),0,Math.PI*2); ctx.fill();
-      ctx.restore();
-    }
-    // Czerwona winieta przy obrazeniach
-    if(migniecieObrazen>0){
-      ctx.save();
-      ctx.globalAlpha=Math.min(0.55, migniecieObrazen);
-      var g=ctx.createRadialGradient(SZER/2,HORYZONT,40,SZER/2,HORYZONT,SZER*0.75);
-      g.addColorStop(0,'rgba(192,57,43,0)'); g.addColorStop(1,'rgba(192,57,43,1)');
-      ctx.fillStyle=g; ctx.fillRect(0,0,SZER,WYS);
-      ctx.restore();
-    }
-    // Chlodny filtr, gdy czas prawie stoi - od razu widac, ze swiat czeka
-    var zamrozenie=1-Math.min(1,(skalaCzasu-CZAS_BEZRUCH)/(0.45-CZAS_BEZRUCH));
-    if(zamrozenie>0.02){
-      ctx.save();
-      ctx.globalAlpha=zamrozenie*0.20;
-      ctx.fillStyle='#5aa8e6';
+      ctx.globalAlpha=blyskWystrzalu*0.30;
+      ctx.fillStyle='#fff6d8';
       ctx.fillRect(0,0,SZER,WYS);
       ctx.restore();
     }
+    if(migniecieObrazen>0){
+      ctx.save();
+      ctx.globalAlpha=Math.min(0.5,migniecieObrazen);
+      var g=ctx.createRadialGradient(SZER/2,WYS/2,50,SZER/2,WYS/2,SZER*0.8);
+      g.addColorStop(0,'rgba(216,31,42,0)'); g.addColorStop(1,'rgba(216,31,42,1)');
+      ctx.fillStyle=g; ctx.fillRect(0,0,SZER,WYS);
+      ctx.restore();
+    }
+    // Gdy czas stoi - obraz lekko traci kolor i chlodnieje
+    var zam=1-Math.min(1,(skalaCzasu-CZAS_BEZRUCH)/(0.45-CZAS_BEZRUCH));
+    if(zam>0.02){
+      ctx.save();
+      ctx.globalAlpha=zam*0.16; ctx.fillStyle='#6a7fd8';
+      ctx.fillRect(0,0,SZER,WYS);
+      ctx.restore();
+    }
+    // Delikatna winieta dla glebi
+    ctx.save();
+    var v=ctx.createRadialGradient(SZER/2,WYS/2,WYS*0.30,SZER/2,WYS/2,WYS*0.78);
+    v.addColorStop(0,'rgba(0,0,0,0)'); v.addColorStop(1,'rgba(0,0,0,0.20)');
+    ctx.fillStyle=v; ctx.fillRect(0,0,SZER,WYS);
+    ctx.restore();
   }
 
-  function rysuj(){
-    rysujSwiat();
-    rysujWrogow();
-    rysujPociski();
-    rysujBron();
-    rysujEfekty();
+  // ---------- DRAZKI ----------
+  var drazki={
+    lewy:{ id:null, bx:0, by:0, x:0, y:0 },
+    prawy:{ id:null, bx:0, by:0, x:0, y:0 },
+  };
+  var PROMIEN_DRAZKA=48, MARTWA_STREFA=7;
+
+  function wychylenie(d){
+    if(d.id===null) return {x:0,y:0,sila:0};
+    var dx=d.x-d.bx, dy=d.y-d.by;
+    var dl=Math.hypot(dx,dy);
+    if(dl<MARTWA_STREFA) return {x:0,y:0,sila:0};
+    var sila=Math.min(1, dl/PROMIEN_DRAZKA);
+    return { x:dx/dl, y:dy/dl, sila:sila };
   }
 
-  // ---------- STEROWANIE ----------
-  function podepnijPrzycisk(id, pole){
-    var el=document.getElementById(id);
-    function wl(e){ e.preventDefault(); wcisniete[pole]=true; el.classList.add('wcisniety'); inicjujDzwiek(); }
-    function wyl(){ wcisniete[pole]=false; el.classList.remove('wcisniety'); }
-    el.addEventListener('pointerdown',wl);
-    el.addEventListener('pointerup',wyl);
-    el.addEventListener('pointerleave',wyl);
-    el.addEventListener('pointercancel',wyl);
+  function rysujDrazki(){
+    [['lewy','#1a1a22'],['prawy','#d81f2a']].forEach(function(par){
+      var d=drazki[par[0]];
+      if(d.id===null) return;
+      ctx.save();
+      ctx.globalAlpha=0.30;
+      ctx.strokeStyle=par[1]; ctx.lineWidth=2.5;
+      ctx.beginPath(); ctx.arc(d.bx,d.by,PROMIEN_DRAZKA,0,Math.PI*2); ctx.stroke();
+      var dx=d.x-d.bx, dy=d.y-d.by, dl=Math.hypot(dx,dy);
+      var ogr=Math.min(dl,PROMIEN_DRAZKA);
+      var jx=d.bx+(dl?dx/dl:0)*ogr, jy=d.by+(dl?dy/dl:0)*ogr;
+      ctx.globalAlpha=0.45;
+      ctx.fillStyle=par[1];
+      ctx.beginPath(); ctx.arc(jx,jy,19,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
   }
-  podepnijPrzycisk('btnPrzod','przod');
-  podepnijPrzycisk('btnTyl','tyl');
-  podepnijPrzycisk('btnLewoStrafe','lewo');
-  podepnijPrzycisk('btnPrawoStrafe','prawo');
-  podepnijPrzycisk('btnObrotL','obrotL');
-  podepnijPrzycisk('btnObrotP','obrotP');
 
+  function wspolrzedne(e){
+    var r=plotno.getBoundingClientRect();
+    return { x:(e.clientX-r.left)*(SZER/r.width), y:(e.clientY-r.top)*(WYS/r.height) };
+  }
   plotno.addEventListener('pointerdown',function(e){
     if(!trwa) return;
     inicjujDzwiek();
-    przeciaganie=true;
-    ostatniDotykX=e.clientX;
+    var p=wspolrzedne(e);
+    if(p.y < WYS*0.42) return;                 // gorna czesc ekranu to sam widok
+    var s = p.x < SZER/2 ? 'lewy' : 'prawy';
+    if(drazki[s].id!==null) return;
+    drazki[s]={ id:e.pointerId, bx:p.x, by:p.y, x:p.x, y:p.y };
   });
   plotno.addEventListener('pointermove',function(e){
-    if(!przeciaganie) return;
-    var r=plotno.getBoundingClientRect();
-    var d=(e.clientX-ostatniDotykX)*(SZER/r.width);
-    ostatniDotykX=e.clientX;
-    graczKat += d*0.0052;
-    obrotZDotyku += Math.abs(d);
+    ['lewy','prawy'].forEach(function(s){
+      if(drazki[s].id===e.pointerId){
+        var p=wspolrzedne(e);
+        drazki[s].x=p.x; drazki[s].y=p.y;
+      }
+    });
   });
-  function koniecPrzeciagania(){ przeciaganie=false; }
-  plotno.addEventListener('pointerup',koniecPrzeciagania);
-  plotno.addEventListener('pointercancel',koniecPrzeciagania);
-  plotno.addEventListener('pointerleave',koniecPrzeciagania);
-
-  document.getElementById('btnStrzal').addEventListener('click',function(){
-    inicjujDzwiek();
-    strzel();
+  function puscDrazek(e){
+    ['lewy','prawy'].forEach(function(s){
+      if(drazki[s].id===e.pointerId) drazki[s]={id:null,bx:0,by:0,x:0,y:0};
+    });
+  }
+  ['pointerup','pointercancel','pointerleave'].forEach(function(ev){
+    plotno.addEventListener(ev,puscDrazek);
   });
 
+  document.getElementById('btnStrzal').addEventListener('click',function(e){
+    e.stopPropagation(); inicjujDzwiek(); strzel();
+  });
   function strzel(){
     if(!trwa || cooldownStrzalu>0) return;
-    cooldownStrzalu=0.26;
-    odrzut=1;
+    cooldownStrzalu=0.24; odrzut=1; blyskWystrzalu=1;
     dzwiekStrzalu();
     pociski.push({ x:graczX+Math.cos(graczKat)*0.4, y:graczY+Math.sin(graczKat)*0.4,
-                   vx:Math.cos(graczKat)*7.0, vy:Math.sin(graczKat)*7.0, wrogi:false, zycie:2.4, obr:34 });
-    blyski.push({ x:SZER*0.72, y:WYS-92, r:16, kolor:'#ffe066', zycie:0.09, max:0.09 });
+                   vx:Math.cos(graczKat)*7.5, vy:Math.sin(graczKat)*7.5,
+                   wrogi:false, zycie:2.4, obr:34, ekranDX:1 });
   }
 
-  // ---------- WROGOWIE ----------
-  function stworzWroga(x,y){
-    return { x:x, y:y, hp:70, hpMax:70, predkosc:1.25, cooldown:losowo(0.6,2.2), migotanie:0 };
-  }
-  function rozstawWrogow(ile){
+  function rozstawWrogow(){
+    var e=ETAPY[etapIdx];
     wrogowie=[];
     var proby=0;
-    while(wrogowie.length<ile && proby<900){
+    while(wrogowie.length<e.wrogow && proby<1400){
       proby++;
-      var x=1.5+Math.random()*(SZEROKOSC_MAPY-3);
-      var y=1.5+Math.random()*(WYSOKOSC_MAPY-3);
+      var x=1.5+Math.random()*(ROZMIAR-3), y=1.5+Math.random()*(ROZMIAR-3);
       if(sciana(x,y)) continue;
-      if(Math.hypot(x-graczX,y-graczY)<6) continue;   // nie tuz przy graczu
-      wrogowie.push(stworzWroga(x,y));
+      if(Math.hypot(x-graczX,y-graczY)<6) continue;
+      wrogowie.push({ x:x, y:y, hp:e.hpWroga, hpMax:e.hpWroga,
+                      predkosc:e.predkoscWroga, atak:e.atakWroga,
+                      cooldown:losowo(e.tempoStrzalu[0],e.tempoStrzalu[1]),
+                      migotanie:0, faza:Math.random()*6 });
     }
   }
 
-  function czyWidac(ax,ay,bx,by){
-    var d=Math.hypot(bx-ax,by-ay);
-    var krokow=Math.ceil(d*4);
-    for(var i=1;i<krokow;i++){
-      var t=i/krokow;
-      if(sciana(ax+(bx-ax)*t, ay+(by-ay)*t)) return false;
+  function rozbijWroga(w){
+    for(var i=0;i<14;i++){
+      var k=losowo(0,Math.PI*2), v=losowo(0.6,2.4);
+      odlamki.push({ x:w.x, y:w.y, vx:Math.cos(k)*v, vy:Math.sin(k)*v,
+                     wysokosc:losowo(0.1,0.9), vw:losowo(0.4,1.6),
+                     obrot:losowo(0,6), vobrot:losowo(-7,7), zycie:0.9, max:0.9 });
     }
-    return true;
+    dzwiekRozbicia();
   }
 
   // ---------- PETLA ----------
-  function aktualizuj(dtRzeczywisty){
-    // --- Ruch GRACZA dzieje sie w czasie rzeczywistym ---
-    var predkosc=2.4, obrot=1.9;
-    var ruchX=0, ruchY=0, cokolwiek=false;
+  function aktualizuj(dtR){
+    var wl=wychylenie(drazki.lewy), wp=wychylenie(drazki.prawy);
+    var cos = wl.sila>0 || wp.sila>0;
 
-    if(wcisniete.obrotL){ graczKat-=obrot*dtRzeczywisty; cokolwiek=true; }
-    if(wcisniete.obrotP){ graczKat+=obrot*dtRzeczywisty; cokolwiek=true; }
-    if(wcisniete.przod){ ruchX+=Math.cos(graczKat); ruchY+=Math.sin(graczKat); cokolwiek=true; }
-    if(wcisniete.tyl){ ruchX-=Math.cos(graczKat); ruchY-=Math.sin(graczKat); cokolwiek=true; }
-    if(wcisniete.lewo){ ruchX+=Math.sin(graczKat); ruchY-=Math.cos(graczKat); cokolwiek=true; }
-    if(wcisniete.prawo){ ruchX-=Math.sin(graczKat); ruchY+=Math.cos(graczKat); cokolwiek=true; }
-    if(obrotZDotyku>0.4){ cokolwiek=true; }
-    obrotZDotyku*=0.55;
-
-    var dl=Math.hypot(ruchX,ruchY);
-    if(dl>0){
-      ruchX/=dl; ruchY/=dl;
-      var nx=graczX+ruchX*predkosc*dtRzeczywisty;
-      var ny=graczY+ruchY*predkosc*dtRzeczywisty;
-      if(!sciana(nx+Math.sign(ruchX)*0.22, graczY)) graczX=nx;
-      if(!sciana(graczX, ny+Math.sign(ruchY)*0.22)) graczY=ny;
+    // Prawy drazek: rozgladanie sie
+    if(wp.sila>0){
+      graczKat += wp.x*wp.sila*2.5*dtR;
+      graczPitch = Math.max(-150, Math.min(150, graczPitch + wp.y*wp.sila*260*dtR));
+    }
+    // Lewy drazek: chodzenie wzgledem kierunku patrzenia
+    if(wl.sila>0){
+      var predkosc=2.6*wl.sila;
+      var przod=-wl.y, bok=wl.x;
+      var rx=Math.cos(graczKat)*przod + Math.sin(graczKat)*(-bok);
+      var ry=Math.sin(graczKat)*przod + Math.cos(graczKat)*bok;
+      var dl=Math.hypot(rx,ry);
+      if(dl>0){
+        rx/=dl; ry/=dl;
+        var nx=graczX+rx*predkosc*dtR, ny=graczY+ry*predkosc*dtR;
+        if(!sciana(nx+Math.sign(rx)*0.22, graczY)) graczX=nx;
+        if(!sciana(graczX, ny+Math.sign(ry)*0.22)) graczY=ny;
+      }
     }
 
-    // --- Skala czasu: to jest cala mechanika gry ---
-    skalaDocelowa = cokolwiek ? CZAS_RUCH : CZAS_BEZRUCH;
-    // Szybkie przyspieszenie, wolniejsze zwalnianie - bez szarpania
-    var tempo = skalaDocelowa>skalaCzasu ? 11 : 3.4;
-    skalaCzasu += (skalaDocelowa-skalaCzasu)*Math.min(1, dtRzeczywisty*tempo);
-    var dt = dtRzeczywisty*skalaCzasu;      // czas SWIATA
+    // SEDNO: czas plynie tylko, gdy gracz cokolwiek robi
+    var cel = cos ? CZAS_RUCH : CZAS_BEZRUCH;
+    var tempo = cel>skalaCzasu ? 11 : 3.4;
+    skalaCzasu += (cel-skalaCzasu)*Math.min(1, dtR*tempo);
+    var dt = dtR*skalaCzasu;
 
     zegarPasek.style.width=(skalaCzasu*100).toFixed(0)+'%';
-    zegarNapis.textContent = skalaCzasu>0.5 ? 'CZAS PŁYNIE' : (skalaCzasu>0.18 ? 'ZWALNIA…' : 'CZAS STOI');
+    zegarNapis.textContent = skalaCzasu>0.5 ? 'CZAS PŁYNIE' : (skalaCzasu>0.18 ? 'ZWALNIA' : 'CZAS STOI');
 
-    if(cooldownStrzalu>0) cooldownStrzalu-=dtRzeczywisty;   // bron dziala w Twoim czasie
-    if(odrzut>0) odrzut-=dtRzeczywisty*5;
-    if(migniecieObrazen>0) migniecieObrazen-=dtRzeczywisty*1.6;
+    if(cooldownStrzalu>0) cooldownStrzalu-=dtR;
+    if(odrzut>0) odrzut-=dtR*5;
+    if(blyskWystrzalu>0) blyskWystrzalu-=dtR*9;
+    if(migniecieObrazen>0) migniecieObrazen-=dtR*1.6;
 
-    // --- WROGOWIE (czas swiata) ---
     wrogowie.forEach(function(w){
       if(w.migotanie>0) w.migotanie-=dt*4;
+      w.faza+=dt*7;
       var d=Math.hypot(graczX-w.x, graczY-w.y);
       var widzi=czyWidac(w.x,w.y,graczX,graczY);
       if(widzi && d>2.0){
-        var kat=Math.atan2(graczY-w.y, graczX-w.x);
-        var nx=w.x+Math.cos(kat)*w.predkosc*dt;
-        var ny=w.y+Math.sin(kat)*w.predkosc*dt;
+        var k=Math.atan2(graczY-w.y, graczX-w.x);
+        var nx=w.x+Math.cos(k)*w.predkosc*dt, ny=w.y+Math.sin(k)*w.predkosc*dt;
         if(!sciana(nx,w.y)) w.x=nx;
         if(!sciana(w.x,ny)) w.y=ny;
       }
       w.cooldown-=dt;
-      if(widzi && d<11 && w.cooldown<=0){
-        w.cooldown=losowo(1.5,2.6);
-        var k2=Math.atan2(graczY-w.y, graczX-w.x)+losowo(-0.07,0.07);
-        pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*3.6, vy:Math.sin(k2)*3.6, wrogi:true, zycie:4.5, obr:11 });
-        dzwiekWrogaStrzal();
+      if(widzi && d<12 && w.cooldown<=0){
+        var e=ETAPY[etapIdx];
+        w.cooldown=losowo(e.tempoStrzalu[0],e.tempoStrzalu[1]);
+        var k2=Math.atan2(graczY-w.y, graczX-w.x)+losowo(-0.06,0.06);
+        pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*3.9, vy:Math.sin(k2)*3.9,
+                       wrogi:true, zycie:5, obr:w.atak, ekranDX:1 });
+        dzwiekWrogStrzal();
       }
     });
 
-    // --- POCISKI (czas swiata) ---
     for(var i=pociski.length-1;i>=0;i--){
       var p=pociski[i];
       p.x+=p.vx*dt; p.y+=p.vy*dt; p.zycie-=dt;
+      p.ekranDX = Math.cos(Math.atan2(p.vy,p.vx)-graczKat)>0 ? 1 : -1;
       if(p.zycie<=0 || sciana(p.x,p.y)){ pociski.splice(i,1); continue; }
       if(p.wrogi){
         if(Math.hypot(p.x-graczX,p.y-graczY)<0.38){
-          graczHp-=p.obr;
-          migniecieObrazen=1;
-          dzwiekObrazen();
-          odswiezHud();
+          graczHp-=p.obr; migniecieObrazen=1;
+          dzwiekObrazen(); odswiezHud();
           pociski.splice(i,1);
           if(graczHp<=0){ zakoncz(false); return; }
         }
       } else {
         for(var j=0;j<wrogowie.length;j++){
-          var w=wrogowie[j];
-          if(Math.hypot(p.x-w.x,p.y-w.y)<0.45){
-            w.hp-=p.obr; w.migotanie=1;
+          var w2=wrogowie[j];
+          if(Math.hypot(p.x-w2.x,p.y-w2.y)<0.45){
+            w2.hp-=p.obr; w2.migotanie=1;
             dzwiekTrafienia();
             pociski.splice(i,1);
-            if(w.hp<=0){
+            if(w2.hp<=0){
+              rozbijWroga(w2);
               wrogowie.splice(j,1);
-              dzwiekZgonuWroga();
               odswiezHud();
-              if(wrogowie.length===0){ zakoncz(true); return; }
+              if(wrogowie.length===0){ nastepnyEtap(); return; }
             }
             break;
           }
@@ -11508,16 +11723,55 @@ SZABLON_FPS = """<!DOCTYPE html>
       }
     }
 
-    for(var b=blyski.length-1;b>=0;b--){
-      blyski[b].zycie-=dtRzeczywisty;
-      if(blyski[b].zycie<=0) blyski.splice(b,1);
+    for(var o=odlamki.length-1;o>=0;o--){
+      var od=odlamki[o];
+      od.x+=od.vx*dt; od.y+=od.vy*dt;
+      od.wysokosc+=od.vw*dt; od.vw-=3.2*dt;
+      od.obrot+=od.vobrot*dt;
+      od.zycie-=dt;
+      if(od.zycie<=0) odlamki.splice(o,1);
     }
   }
 
   function odswiezHud(){
-    hpNapis.textContent=Math.max(0,Math.round(graczHp))+' HP';
+    hpNapis.textContent=Math.max(0,Math.round(graczHp));
     hpPasek.style.width=Math.max(0,graczHp)+'%';
-    wrogowieNapis.textContent='Wrogowie: '+wrogowie.length;
+    wrogowieNapis.textContent='WROGOWIE '+wrogowie.length;
+    etapEtykieta.textContent='ETAP '+(etapIdx+1)+' / '+ETAPY.length;
+  }
+
+  function pokazNapisEtapu(){
+    var e=ETAPY[etapIdx];
+    etapNapis.innerHTML=e.nazwa+'<br><span style="font-size:13px;letter-spacing:0.06em;opacity:0.75">'+e.podtytul+'</span>';
+    etapNapis.classList.remove('pokaz');
+    void etapNapis.offsetWidth;
+    etapNapis.classList.add('pokaz');
+  }
+
+  function nastepnyEtap(){
+    if(etapIdx>=ETAPY.length-1){ zakoncz(true); return; }
+    etapIdx++;
+    dzwiekEtapu();
+    wczytajEtap();
+  }
+
+  function wczytajEtap(){
+    generujMape();
+    graczX=ROZMIAR/2; graczY=ROZMIAR/2; graczKat=0; graczPitch=0;
+    graczHp=Math.min(100, graczHp+30);      // po etapie trochę zdrowia wraca
+    pociski=[]; odlamki=[];
+    cooldownStrzalu=0; odrzut=0; blyskWystrzalu=0; migniecieObrazen=0;
+    skalaCzasu=CZAS_BEZRUCH;
+    drazki.lewy={id:null,bx:0,by:0,x:0,y:0};
+    drazki.prawy={id:null,bx:0,by:0,x:0,y:0};
+    rozstawWrogow();
+    odswiezHud();
+    pokazNapisEtapu();
+  }
+
+  function rysuj(){
+    rysujSwiat(); rysujWrogow(); rysujOdlamki(); rysujPociski();
+    rysujBron(); rysujEfekty(); rysujDrazki();
   }
 
   function petla(czas){
@@ -11531,12 +11785,12 @@ SZABLON_FPS = """<!DOCTYPE html>
     requestAnimationFrame(petla);
   }
 
-  function zakoncz(zwyciestwo){
+  function zakoncz(zw){
     trwa=false;
     nakladka.style.display='flex';
-    if(zwyciestwo){
+    if(zw){
       dzwiekZwyciestwa();
-      nakladkaTytul.textContent='🏆 Wszyscy wyeliminowani!';
+      nakladkaTytul.textContent='🏆 WSZYSTKIE ETAPY ZALICZONE';
       nakladkaOpis.innerHTML='Etap zaliczony automatycznie!';
       nakladkaBtn.style.display='none';
       var w={type:'streamlit-child:zaliczono',wartosc:true};
@@ -11544,33 +11798,25 @@ SZABLON_FPS = """<!DOCTYPE html>
       if(window.parent&&window.parent!==window) window.parent.postMessage(w,'*');
     } else {
       dzwiekPorazki();
-      nakladkaTytul.textContent='💀 Dostałaś za dużo…';
-      nakladkaOpis.innerHTML='Zostało wrogów: <b>'+wrogowie.length+'</b>.<br><br>'
-        + 'Wskazówka: gdy stoisz, świat prawie zamiera — wykorzystaj to, żeby zobaczyć nadlatujące pociski i wyjść z linii strzału.';
+      nakladkaTytul.textContent='💀 KONIEC';
+      nakladkaOpis.innerHTML='Poległaś na <b>'+ETAPY[etapIdx].nazwa+'</b>, zostało wrogów: <b>'+wrogowie.length+'</b>.'
+        + '<br><br>Pamiętaj: gdy stoisz, świat prawie zamiera. Wykorzystaj to, żeby zobaczyć nadlatujące pociski i zejść z linii strzału.';
       nakladkaBtn.style.display='inline-block';
-      nakladkaBtn.textContent='Spróbuj ponownie';
+      nakladkaBtn.textContent='JESZCZE RAZ';
       nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
     }
   }
 
   function rozpocznijGre(){
-    generujMape();
-    graczX=SZEROKOSC_MAPY/2; graczY=WYSOKOSC_MAPY/2; graczKat=0;
-    graczHp=100;
-    pociski=[]; blyski=[];
-    cooldownStrzalu=0; odrzut=0; migniecieObrazen=0;
-    skalaCzasu=CZAS_BEZRUCH; skalaDocelowa=CZAS_BEZRUCH; obrotZDotyku=0;
-    Object.keys(wcisniete).forEach(function(k){ wcisniete[k]=false; });
-    rozstawWrogow(10);
-    odswiezHud();
+    etapIdx=0; graczHp=100;
+    wczytajEtap();
     nakladka.style.display='none';
     trwa=true; czasOstatni=null;
     requestAnimationFrame(petla);
   }
 
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
-  generujMape(); graczX=SZEROKOSC_MAPY/2; graczY=WYSOKOSC_MAPY/2;
-  rozstawWrogow(10); odswiezHud(); rysuj();
+  generujMape(); graczX=ROZMIAR/2; graczY=ROZMIAR/2; rozstawWrogow(); odswiezHud(); rysuj();
 </script>
 
 <script>
@@ -14311,10 +14557,10 @@ def renderuj_fps(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_FPS, 640, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_FPS, 560, key=f"kmp_{klucz}")
         return True if wynik else None
 
-    components.html(SZABLON_FPS, height=700, scrolling=False)
+    components.html(SZABLON_FPS, height=620, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_fps"), etykieta_bledow=t("bledy_etykieta_fps"))
 
 
