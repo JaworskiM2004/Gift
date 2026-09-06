@@ -12721,6 +12721,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // startowej, dostepne WYLACZNIE zanim po raz pierwszy z niej wyjdziesz.
   var sekretnaKomnata = null, drzwiSekretne = null;
   var opuscilStartowa = false, wSekretnej = false, sekretnyBossZyje = false;
+  var pytanieOSekretnej = false, wyjscieSekretne = null, sekretnyPokonany = false;
   var arenaZamknieta = false;      // podczas walki z bossem nie mozna wyjsc
   var pytanieOBossa = false;
   var cooldownSlug = 0;
@@ -12791,14 +12792,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         for (var yy2 = kk.y; yy2 < kk.y + BOK; yy2++)
           for (var xx2 = kk.x; xx2 < kk.x + BOK; xx2++) mapa[yy2][xx2] = 1;
         sekretnaKomnata = { x:kk.x, y:kk.y, w:BOK, h:BOK, cx:kk.x+Math.floor(BOK/2), cy:kk.y+Math.floor(BOK/2) };
-        // Waskie przejscie z komnaty startowej do sekretnej
-        var px0 = Math.max(st0.x, Math.min(st0.x + st0.w - 1, sekretnaKomnata.cx));
-        var py0 = Math.max(st0.y, Math.min(st0.y + st0.h - 1, sekretnaKomnata.cy));
-        var cx0 = px0, cy0 = py0;
-        while (cx0 !== sekretnaKomnata.cx) { mapa[cy0][cx0] = 1; cx0 += (sekretnaKomnata.cx > cx0 ? 1 : -1); }
-        while (cy0 !== sekretnaKomnata.cy) { mapa[cy0][cx0] = 1; cy0 += (sekretnaKomnata.cy > cy0 ? 1 : -1); }
-        mapa[sekretnaKomnata.cy][sekretnaKomnata.cx] = 1;
-        drzwiSekretne = { x:(px0 + 0.5) * KAFEL, y:(py0 + 0.5) * KAFEL, tx:px0, ty:py0 };
+        // BEZ korytarza - komnata jest ODCIETA, a wchodzi sie do niej przez
+        // PYTANIE po podejsciu do drzwi. Wczesniejszy korytarz powodowal blad:
+        // pierwszy krok w niego liczyl sie juz jako "wyjscie z komnaty
+        // startowej", wiec przejscie zamykalo sie dokladnie w chwili wejscia.
+        drzwiSekretne = {
+          tx: st0.x + 1, ty: st0.y + 1,
+          x: (st0.x + 1.5) * KAFEL, y: (st0.y + 1.5) * KAFEL,
+        };
         break;
       }
     }
@@ -13094,11 +13095,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     dodajXp(w.xp);
 
     if (w.sekretny) {
-      // Nagroda za easter egga: mityczna Rozdzka Wiedzmy
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(4, 'rozdzkaWiedzmy') });
-      dziennik('🌈 Strażnik upuścił Różdżkę Wiedźmy!');
+      dziennik('🌈 Strażnik upuścił Różdżkę Wiedźmy! Podnieś ją i wejdź w portal.');
       dzwiekZwyciestwo();
-      sekretnyBossZyje = false;
+      sekretnyBossZyje = false; sekretnyPokonany = true;
+      wyjscieSekretne = { x:(sekretnaKomnata.cx+0.5)*KAFEL,
+                          y:(sekretnaKomnata.y+sekretnaKomnata.h-1.5)*KAFEL, faza:0 };
       return;
     }
     if (w.boss) {
@@ -13240,27 +13242,43 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
 
     // ---- SEKRETNA KOMNATA ----
-    if (sekretnaKomnata) {
+    if (sekretnaKomnata && !wSekretnej) {
       var st1 = komnaty[0];
       var wStartowej = gracz.x > st1.x*KAFEL && gracz.x < (st1.x+st1.w)*KAFEL
                     && gracz.y > st1.y*KAFEL && gracz.y < (st1.y+st1.h)*KAFEL;
-      var wSekr = gracz.x > sekretnaKomnata.x*KAFEL && gracz.x < (sekretnaKomnata.x+sekretnaKomnata.w)*KAFEL
-               && gracz.y > sekretnaKomnata.y*KAFEL && gracz.y < (sekretnaKomnata.y+sekretnaKomnata.h)*KAFEL;
-
-      if (!wStartowej && !wSekr && !opuscilStartowa) {
-        // Wyszedl gdzie indziej - przejscie do sekretnej komnaty znika
-        opuscilStartowa = true;
-        if (drzwiSekretne) { mapa[drzwiSekretne.ty][drzwiSekretne.tx] = 0; drzwiSekretne = null; }
-        dziennik('🚪 Ukryte przejście zamknęło się za tobą…');
+      if (!wStartowej && !opuscilStartowa) {
+        opuscilStartowa = true; drzwiSekretne = null;
+        dziennik('🚪 Ukryte przejście zniknęło…');
       }
-      if (wSekr && !wSekretnej) {
-        wSekretnej = true;
-        if (!sekretnyBossZyje) {
-          sekretnyBossZyje = true;
-          wrogowie.push(stworzSekretnegoBossa((sekretnaKomnata.cx+0.5)*KAFEL, (sekretnaKomnata.cy+0.5)*KAFEL));
-          dziennik('👻 Strażnik Progu budzi się…');
-          ton(140, 0.5, 'sine', 0.18);
-        }
+      if (drzwiSekretne && !opuscilStartowa && !pytanieOSekretnej
+          && Math.hypot(gracz.x - drzwiSekretne.x, gracz.y - drzwiSekretne.y) < 46) {
+        pytanieOSekretnej = true; trwa = false;
+        pokazPytanieOSekretnej();
+        return;
+      }
+    }
+
+    // Z komnaty Straznika nie da sie wyjsc przed jego pokonaniem
+    if (wSekretnej && sekretnaKomnata && !sekretnyPokonany) {
+      var lw=(sekretnaKomnata.x+1)*KAFEL, pw=(sekretnaKomnata.x+sekretnaKomnata.w-1)*KAFEL;
+      var gr=(sekretnaKomnata.y+1)*KAFEL, dl2=(sekretnaKomnata.y+sekretnaKomnata.h-1)*KAFEL;
+      if (gracz.x < lw) gracz.x = lw;
+      if (gracz.x > pw) gracz.x = pw;
+      if (gracz.y < gr) gracz.y = gr;
+      if (gracz.y > dl2) gracz.y = dl2;
+    }
+
+    // Portal powrotny po pokonaniu Straznika
+    if (wyjscieSekretne) {
+      wyjscieSekretne.faza += dt * 2.4;
+      if (Math.hypot(wyjscieSekretne.x - gracz.x, wyjscieSekretne.y - gracz.y) < 34 + gracz.r) {
+        var st2 = komnaty[0];
+        gracz.x = (st2.cx + 0.5) * KAFEL; gracz.y = (st2.cy + 0.5) * KAFEL;
+        kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+        wyjscieSekretne = null; wSekretnej = false;
+        opuscilStartowa = true; drzwiSekretne = null;
+        dziennik('✨ Wracasz do labiryntu.');
+        ton(520, 0.18, 'sine', 0.16);
       }
     }
 
@@ -13681,6 +13699,35 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         ctx.fillStyle = 'rgba(192,57,43,0.16)';
         ctx.beginPath(); ctx.arc(bx, by, 90, 0, Math.PI*2); ctx.fill();
       }
+    }
+
+    // Ukryte drzwi w komnacie startowej
+    if (drzwiSekretne && !opuscilStartowa) {
+      var dx2 = drzwiSekretne.x - kamX, dy2 = drzwiSekretne.y - kamY;
+      if (dx2 > -60 && dx2 < WID+60 && dy2 > -60 && dy2 < WYS+60) {
+        ctx.save();
+        ctx.shadowColor = '#7ec4e8'; ctx.shadowBlur = 14 + Math.sin(Date.now()/420)*7;
+        ctx.fillStyle = '#3a3550'; ctx.fillRect(dx2-15, dy2-24, 30, 44);
+        ctx.fillStyle = '#7ec4e8'; ctx.fillRect(dx2-12, dy2-21, 24, 38);
+        ctx.fillStyle = '#1a1622'; ctx.fillRect(dx2-8, dy2-16, 16, 30);
+        ctx.restore();
+        ctx.font = '15px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🚪', dx2, dy2-2);
+      }
+    }
+    // Portal powrotny z sekretnej komnaty
+    if (wyjscieSekretne) {
+      var wx2 = wyjscieSekretne.x - kamX, wy2 = wyjscieSekretne.y - kamY;
+      ctx.save();
+      for (var wr = 3; wr >= 1; wr--) {
+        ctx.globalAlpha = 0.2 * wr; ctx.fillStyle = '#7ec4e8';
+        ctx.beginPath();
+        ctx.arc(wx2, wy2, 30*(0.6+wr*0.22) + Math.sin(wyjscieSekretne.faza+wr)*4, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1; ctx.restore();
+      ctx.font = '20px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText('✨', wx2, wy2);
     }
 
     // Portal
@@ -14191,6 +14238,63 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ton(520,0.18,'triangle',0.16);
   }
 
+  // Pytanie przed wejsciem do sekretnej komnaty - z pelnym wyjasnieniem
+  // zasad, tak samo jak przed walka z bossem pietra.
+  function pokazPytanieOSekretnej() {
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🚪 Ukryte przejście';
+    nakladkaOpis.innerHTML =
+      'Za drzwiami czeka <b>Strażnik Progu</b> — trudny przeciwnik jak na sam początek.'
+      + '<br><br>Nie musisz tam wchodzić: to <b>dodatkowe wyzwanie</b>, a nie część labiryntu.'
+      + ' Za pokonanie Strażnika dostaniesz <b style="color:#ff7ae0">🌈 Różdżkę Wiedźmy</b> —'
+      + ' mityczną broń, która rośnie w siłę z każdym zabitym wrogiem.'
+      + '<br><br>⚠️ Wejść można <b>tylko teraz</b> — gdy opuścisz tę komnatę, przejście zniknie'
+      + ' na dobre. Z komnaty Strażnika nie wyjdziesz przed jego pokonaniem.'
+      + '<br><br>Zdrowie: <b>' + Math.round(gracz.hp) + ' / ' + gracz.hpMax + '</b>'
+      + ' · mikstury: <b>' + gracz.mikstury + '</b>';
+    nakladkaBtn.style.display = 'inline-block';
+    nakladkaBtn.textContent = '🚪 Wchodzę';
+    nakladkaBtn.onclick = function () {
+      inicjujDzwiek();
+      nakladka.style.display = 'none';
+      var bs = document.getElementById('btnNieWchodze'); if (bs) bs.style.display = 'none';
+      pytanieOSekretnej = false; wSekretnej = true;
+      gracz.x = (sekretnaKomnata.cx + 0.5) * KAFEL;
+      gracz.y = (sekretnaKomnata.y + sekretnaKomnata.h - 1.5) * KAFEL;
+      kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+      if (!sekretnyBossZyje) {
+        sekretnyBossZyje = true;
+        wrogowie.push(stworzSekretnegoBossa((sekretnaKomnata.cx+0.5)*KAFEL, (sekretnaKomnata.y+1.5)*KAFEL));
+      }
+      dziennik('👻 Strażnik Progu budzi się…');
+      ton(140, 0.5, 'sine', 0.18);
+      setTimeout(function () { ton(100, 0.6, 'sine', 0.16); }, 400);
+      trwa = true; czasOstatni = null;
+      requestAnimationFrame(petla);
+    };
+    if (!document.getElementById('btnNieWchodze')) {
+      var b2 = document.createElement('button');
+      b2.id = 'btnNieWchodze'; b2.className = 'gra-btn';
+      b2.style.marginTop = '10px';
+      b2.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
+      b2.style.color = '#f0e8d0';
+      b2.textContent = 'Nie teraz';
+      b2.onclick = function () {
+        inicjujDzwiek();
+        nakladka.style.display = 'none';
+        b2.style.display = 'none';
+        pytanieOSekretnej = false;
+        var kat3 = Math.atan2(gracz.y - drzwiSekretne.y, gracz.x - drzwiSekretne.x);
+        gracz.x = drzwiSekretne.x + Math.cos(kat3) * 95;
+        gracz.y = drzwiSekretne.y + Math.sin(kat3) * 95;
+        trwa = true; czasOstatni = null;
+        requestAnimationFrame(petla);
+      };
+      nakladkaBtn.parentNode.appendChild(b2);
+    }
+    document.getElementById('btnNieWchodze').style.display = 'inline-block';
+  }
+
   function pokazPytanieOBossa() {
     var d = DEFINICJE_BOSSOW[poziomLabiryntu];
     nakladka.style.display = 'flex';
@@ -14349,6 +14453,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function rozpocznijGre() {
     trybNieskonczony = false;
     poziomLabiryntu = 0; czasGry = 0; zaliczoneZglosozone = false;
+    wyjscieSekretne = null; pytanieOSekretnej = false; sekretnyPokonany = false;
     portal = null; arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
     var bjn2 = document.getElementById('btnJeszczeNie');
     if (bjn2) bjn2.style.display = 'none';
