@@ -1223,10 +1223,32 @@ SZABLON_GRY = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -1814,10 +1836,32 @@ SZABLON_DRONA = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -2745,10 +2789,32 @@ SZABLON_ZABY = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -3247,10 +3313,32 @@ SZABLON_MEMORY = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -3648,10 +3736,32 @@ SZABLON_SIMON = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -4322,10 +4432,32 @@ SZABLON_PIANO = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -5568,10 +5700,32 @@ SZABLON_BITWA = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -5725,7 +5879,6 @@ SZABLON_MINECRAFT = """
     width: 100%;
     max-width: 372px;
     height: auto;
-    aspect-ratio: 1 / 1;
     border-radius: 10px;
     border: 2px solid #6b5530;
     image-rendering: pixelated;
@@ -6327,6 +6480,8 @@ SZABLON_MINECRAFT = """
   var SZEROKOSC_SWIATA = 200;
   var WYSOKOSC_SWIATA = 40;
   var KOMORKA = 26;
+  // W poziomie pokazujemy WIECEJ kolumn swiata - panoramiczny ekran
+  // zyskuje sens, zamiast dokladac czarne pasy po bokach.
   var WIDOCZNE_KOLUMNY = 10;
   var WIDOCZNE_WIERSZE = 10;
   var ZASIEG = 2;
@@ -7290,6 +7445,28 @@ SZABLON_MINECRAFT = """
     setTimeout(function () { span.remove(); }, 850);
   }
 
+  // Przelicza uklad pod aktualny ksztalt okna. W poziomie: szerszy widok
+  // swiata (wiecej kolumn), w pionie: kwadratowy jak dotad.
+  var poziomoMc = false;
+  window.__wlasneSkalowanie = true;
+  function dopasujWidokMc() {
+    var el = document.getElementById('gra');
+    var w = el.clientWidth || 380, h = el.clientHeight || 700;
+    var byloPoziomo = poziomoMc;
+    poziomoMc = w > h * 1.15;
+    WIDOCZNE_KOLUMNY = poziomoMc ? 17 : 10;
+    WIDOCZNE_WIERSZE = 10;
+    canvas.width = WIDOCZNE_KOLUMNY * KOMORKA;
+    canvas.height = WIDOCZNE_WIERSZE * KOMORKA;
+    canvas.style.maxWidth = poziomoMc ? '96vw' : '372px';
+    canvas.style.aspectRatio = WIDOCZNE_KOLUMNY + ' / ' + WIDOCZNE_WIERSZE;
+    if (byloPoziomo !== poziomoMc) pokazDziennikMc(poziomoMc ? '🔄 Widok poziomy' : '🔄 Widok pionowy', 1200);
+    rysuj();
+  }
+  window.__dopasujGre = dopasujWidokMc;
+  window.addEventListener('resize', function () { setTimeout(dopasujWidokMc, 80); });
+  window.addEventListener('orientationchange', function () { setTimeout(dopasujWidokMc, 200); });
+
   function rysuj() {
     przeliczKamere();
     ctx.fillStyle = czyNoc() ? '#0e1533' : '#87ceeb';
@@ -7888,10 +8065,32 @@ SZABLON_MINECRAFT = """
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -8471,10 +8670,32 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -9066,10 +9287,32 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -9634,10 +9877,32 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -10260,10 +10525,32 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -10937,10 +11224,32 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -11017,7 +11326,7 @@ SZABLON_FPS = """<!DOCTYPE html>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
   html, body { width:100%; overflow:hidden; background:#07080c; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
   #gra { position:relative; width:100%; height:560px; background:#0b0b0e; overflow:hidden; }
-  #widok { display:block; width:100%; height:560px; background:#0c0e16; }
+  #widok { display:block; background:#0c0e16; }
 
   #hud { position:absolute; top:0; left:0; right:0; padding:8px 11px; z-index:5; pointer-events:none;
          display:flex; justify-content:space-between; align-items:flex-start; }
@@ -11090,6 +11399,8 @@ SZABLON_FPS = """<!DOCTYPE html>
       Ruszysz się — wszystko rusza pełną prędkością.<br><br>
       <b>Lewy drążek</b> — chodzenie.<br>
       <b>Prawy drążek</b> — rozglądanie się.<br><br>
+      <span style="color:#5ad0ff">Wskazówka: włącz <b>pełny ekran</b> (⛶) i obróć telefon
+      <b>poziomo</b> — szerszy kadr, większe drążki, dokładniejsze celowanie.</span><br><br>
       Trzy etapy. Powodzenia.
     </div>
     <button class="gra-btn" id="nakladkaBtn">ZACZYNAMY ▶</button>
@@ -11105,10 +11416,56 @@ SZABLON_FPS = """<!DOCTYPE html>
   var nakladka=document.getElementById('nakladka'), nakladkaTytul=document.getElementById('nakladkaTytul');
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
-  var SZER=380, WYS=560, KOLUMNA=1;   // pelna rozdzielczosc pozioma - ostrzejszy obraz
+  // Rozmiary sa ZMIENNE - gra dopasowuje sie do okna, a po obroceniu
+  // telefonu na poziom dostaje szerszy kadr i wieksze drazki.
+  var SZER=380, WYS=560, KOLUMNA=1;
   var LICZBA_PROMIENI=Math.floor(SZER/KOLUMNA);
   var FOV=Math.PI/3, TAN_POL_FOV=Math.tan(FOV/2);
   var HORYZONT_BAZA=WYS*0.46;
+  var poziomo=false;
+  var PROMIEN_DRAZKA=48, MARTWA_STREFA=7;
+  var CZULOSC_OBROTU=1.35;        // wyraznie nizsza niz wczesniej (bylo 2.5)
+  var CZULOSC_PITCH=150;
+
+  window.__wlasneSkalowanie = true;   // most ma nas nie skalowac transformem
+
+  function dopasujRozmiar(){
+    var el=document.getElementById('gra');
+    var w=Math.max(280, Math.round(el.clientWidth || 380));
+    var h=Math.max(320, Math.round(el.clientHeight || 560));
+    poziomo = w > h * 1.15;
+
+    SZER=w; WYS=h;
+    plotno.width=SZER; plotno.height=WYS;
+    plotno.style.width=SZER+'px'; plotno.style.height=WYS+'px';
+
+    // W poziomie szerszy kadr (naturalne dla panoramicznego ekranu),
+    // w pionie wezszy, zeby nie bylo efektu rybiego oka.
+    FOV = poziomo ? Math.PI/2.35 : Math.PI/3;
+    TAN_POL_FOV=Math.tan(FOV/2);
+
+    LICZBA_PROMIENI=Math.floor(SZER/KOLUMNA);
+    buforGlebi=new Float32Array(LICZBA_PROMIENI);
+    HORYZONT_BAZA=WYS*0.46;
+
+    PROMIEN_DRAZKA = Math.round(Math.min(96, Math.max(46, Math.min(SZER,WYS)*0.17)));
+    MARTWA_STREFA = Math.round(PROMIEN_DRAZKA*0.14);
+
+    // Czulosc maleje wraz z szerokoscia ekranu - wieksze plotno to
+    // dokladniejsze celowanie tym samym ruchem palca.
+    CZULOSC_OBROTU = 1.35 * (380/SZER) * (poziomo?0.85:1);
+    CZULOSC_PITCH = 150 * (WYS/560);
+
+    var bs=document.getElementById('btnStrzal');
+    if(bs){
+      var r=Math.round(Math.min(110, Math.max(66, Math.min(SZER,WYS)*0.19)));
+      bs.style.width=r+'px'; bs.style.height=r+'px';
+      bs.style.fontSize=Math.round(r*0.34)+'px';
+      bs.style.bottom=(poziomo? Math.round(WYS*0.30) : 132)+'px';
+    }
+    if(!trwa) rysuj();
+  }
+  window.__dopasujGre = dopasujRozmiar;
 
   var CZAS_BEZRUCH=0.04, CZAS_RUCH=1.0;
   var skalaCzasu=CZAS_BEZRUCH;
@@ -11124,6 +11481,7 @@ SZABLON_FPS = """<!DOCTYPE html>
   ];
   var etapIdx=0;
 
+  var buforGlebi=new Float32Array(LICZBA_PROMIENI);
   var MAPA=[], ROZMIAR=20;
   var graczX=10, graczY=10, graczKat=0, graczPitch=0, graczHp=100;
   var wrogowie=[], pociski=[], odlamki=[], blyskWystrzalu=0;
@@ -11341,7 +11699,6 @@ SZABLON_FPS = """<!DOCTYPE html>
   }
 
   // ---------- RAYCASTING ----------
-  var buforGlebi=new Float32Array(LICZBA_PROMIENI);
   function rzucPromien(kat){
     var dx=Math.cos(kat), dy=Math.sin(kat);
     var mx=Math.floor(graczX), my=Math.floor(graczY);
@@ -11623,8 +11980,6 @@ SZABLON_FPS = """<!DOCTYPE html>
     lewy:{ id:null, bx:0, by:0, x:0, y:0 },
     prawy:{ id:null, bx:0, by:0, x:0, y:0 },
   };
-  var PROMIEN_DRAZKA=48, MARTWA_STREFA=7;
-
   function wychylenie(d){
     if(d.id===null) return {x:0,y:0,sila:0};
     var dx=d.x-d.bx, dy=d.y-d.by;
@@ -11746,9 +12101,9 @@ SZABLON_FPS = """<!DOCTYPE html>
 
     // Prawy drazek: rozgladanie sie
     if(wp.sila>0){
-      graczKat += wp.x*wp.sila*2.5*dtR;
+      graczKat += wp.x*wp.sila*CZULOSC_OBROTU*dtR;
       // Minus: ciagniecie drazka W GORE podnosi wzrok (wczesniej bylo odwrotnie)
-      graczPitch = Math.max(-150, Math.min(150, graczPitch - wp.y*wp.sila*260*dtR));
+      graczPitch = Math.max(-WYS*0.27, Math.min(WYS*0.27, graczPitch - wp.y*wp.sila*CZULOSC_PITCH*dtR));
     }
     // Lewy drazek: chodzenie wzgledem kierunku patrzenia
     if(wl.sila>0){
@@ -11965,7 +12320,14 @@ SZABLON_FPS = """<!DOCTYPE html>
     requestAnimationFrame(petla);
   }
 
+  window.addEventListener('resize', function(){ setTimeout(dopasujRozmiar, 60); });
+  if(window.screen && screen.orientation && screen.orientation.addEventListener){
+    screen.orientation.addEventListener('change', function(){ setTimeout(dopasujRozmiar, 180); });
+  }
+  window.addEventListener('orientationchange', function(){ setTimeout(dopasujRozmiar, 180); });
+
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijGre(); };
+  dopasujRozmiar();
   generujMape(); graczX=pokoje[0].cx+0.5; graczY=pokoje[0].cy+0.5; rozstawWrogow(); odswiezHud(); rysuj();
 </script>
 
@@ -12001,10 +12363,32 @@ SZABLON_FPS = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
@@ -12286,6 +12670,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
   var bossPrzywolany = false, wygrana = false;
   var portal = null;               // pojawia sie po pokonaniu bossa
+  var czasGry = 0;                 // sekundy gry - napedza skalowanie trudnosci
+  // SEKRETNA KOMNATA (easter egg, tylko 1. pietro): wejscie w rogu komnaty
+  // startowej, dostepne WYLACZNIE zanim po raz pierwszy z niej wyjdziesz.
+  var sekretnaKomnata = null, drzwiSekretne = null;
+  var opuscilStartowa = false, wSekretnej = false, sekretnyBossZyje = false;
   var arenaZamknieta = false;      // podczas walki z bossem nie mozna wyjsc
   var pytanieOBossa = false;
   var cooldownSlug = 0;
@@ -12326,6 +12715,48 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       while (y !== b.cy) { korytarz(x, y); y += (b.cy > y ? 1 : -1); }
       korytarz(b.cx, b.cy);
     }
+    // Sekretna komnata: mala salka doklejona do rogu komnaty startowej,
+    // polaczona jednym przejsciem. Tylko na pierwszym pietrze.
+    sekretnaKomnata = null; drzwiSekretne = null;
+    wSekretnej = false; opuscilStartowa = false; sekretnyBossZyje = false;
+    if (poziomLabiryntu === 0 && komnaty.length > 0) {
+      var st0 = komnaty[0];
+      // Szukamy WOLNEGO miejsca w calej mapie, wybierajac najblizsze
+      // komnacie startowej. Ograniczenie do czterech rogow powodowalo, ze
+      // komnata powstawala tylko w kilkunastu procentach map.
+      var BOK = 7;
+      var kandydaci = [];
+      for (var ky = 2; ky + BOK < SIATKA - 2; ky++) {
+        for (var kx = 2; kx + BOK < SIATKA - 2; kx++) {
+          var wolne = true;
+          for (var sy2 = ky - 1; sy2 <= ky + BOK && wolne; sy2++) {
+            for (var sx2 = kx - 1; sx2 <= kx + BOK; sx2++) {
+              if (mapa[sy2] && mapa[sy2][sx2] === 1) { wolne = false; break; }
+            }
+          }
+          if (!wolne) continue;
+          var dyst = Math.abs(kx + BOK/2 - st0.cx) + Math.abs(ky + BOK/2 - st0.cy);
+          kandydaci.push({ x:kx, y:ky, d:dyst });
+        }
+      }
+      kandydaci.sort(function (a, c) { return a.d - c.d; });
+      for (var ki = 0; ki < Math.min(1, kandydaci.length); ki++) {
+        var kk = kandydaci[ki];
+        for (var yy2 = kk.y; yy2 < kk.y + BOK; yy2++)
+          for (var xx2 = kk.x; xx2 < kk.x + BOK; xx2++) mapa[yy2][xx2] = 1;
+        sekretnaKomnata = { x:kk.x, y:kk.y, w:BOK, h:BOK, cx:kk.x+Math.floor(BOK/2), cy:kk.y+Math.floor(BOK/2) };
+        // Waskie przejscie z komnaty startowej do sekretnej
+        var px0 = Math.max(st0.x, Math.min(st0.x + st0.w - 1, sekretnaKomnata.cx));
+        var py0 = Math.max(st0.y, Math.min(st0.y + st0.h - 1, sekretnaKomnata.cy));
+        var cx0 = px0, cy0 = py0;
+        while (cx0 !== sekretnaKomnata.cx) { mapa[cy0][cx0] = 1; cx0 += (sekretnaKomnata.cx > cx0 ? 1 : -1); }
+        while (cy0 !== sekretnaKomnata.cy) { mapa[cy0][cx0] = 1; cy0 += (sekretnaKomnata.cy > cy0 ? 1 : -1); }
+        mapa[sekretnaKomnata.cy][sekretnaKomnata.cx] = 1;
+        drzwiSekretne = { x:(px0 + 0.5) * KAFEL, y:(py0 + 0.5) * KAFEL, tx:px0, ty:py0 };
+        break;
+      }
+    }
+
     // Komnata bossa = najdalsza od startowej
     var start = komnaty[0];
     var najdalsza = komnaty[1] || komnaty[0], najdal = -1;
@@ -12488,12 +12919,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // ---------- WROGOWIE ----------
+  // Wszyscy szybsi niz wczesniej, plus dwa nowe typy: bombiarz (dopada
+  // i wybucha) oraz kusznik (strzela z duzo wiekszego dystansu).
   var TYPY_WROGOW = {
-    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:34,  atak:9,  pancerz:2,  predkosc:74,  xp:9,  r:11, kolor:'#8a6a4a' },
-    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:62,  atak:16, pancerz:12, predkosc:62,  xp:15, r:13, kolor:'#d8d0c0' },
-    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:48,  atak:13, pancerz:6,  predkosc:96,  xp:13, r:12, kolor:'#5a9a4a' },
-    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:44, atak:22, pancerz:4, predkosc:52, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
-    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:150, atak:28, pancerz:22, predkosc:44,  xp:34, r:17, kolor:'#a04a3a' },
+    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:34,  atak:9,  pancerz:2,  predkosc:96,  xp:9,  r:11, kolor:'#8a6a4a' },
+    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:62,  atak:16, pancerz:12, predkosc:82,  xp:15, r:13, kolor:'#d8d0c0' },
+    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:48,  atak:13, pancerz:6,  predkosc:120, xp:13, r:12, kolor:'#5a9a4a' },
+    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:44, atak:22, pancerz:4, predkosc:70, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
+    bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:40,  atak:34, pancerz:3,  predkosc:132, xp:20, r:12, kolor:'#e6743c', wybuchowy:true },
+    kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:52,  atak:18, pancerz:7,  predkosc:74,  xp:19, r:12, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
+    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:150, atak:28, pancerz:22, predkosc:60,  xp:34, r:17, kolor:'#a04a3a' },
   };
   var KLUCZE_WROGOW = Object.keys(TYPY_WROGOW);
 
@@ -12503,11 +12938,20 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // maja wiecej zycia - inaczej postac szybko stawala sie nietykalna.
     var skala = 1 + (poziomMapy - 1) * 0.16;
     var skalaAtaku = skala * (1 + poziomLabiryntu * 0.55);
+    // Trudnosc rosnie takze Z CZASEM gry - pod koniec nie da sie juz isc
+    // na rozped ze statystykami z poczatku.
+    var skalaCzasowa = 1 + Math.min(1.4, (czasGry / 60) * 0.17);
+    skala *= skalaCzasowa; skalaAtaku *= skalaCzasowa;
+    var elita = Math.random() < 0.11;   // rzadki, mocno wzmocniony wrog
     return {
       x:x, y:y, typ:typKlucz, r:t.r, ikona:t.ikona, kolor:t.kolor,
-      hp: Math.round(t.hp * skala), hpMax: Math.round(t.hp * skala),
-      atak: Math.round(t.atak * skalaAtaku), pancerz: Math.round(t.pancerz * skala),
-      predkosc: t.predkosc, xp: Math.round(t.xp * (1 + poziomLabiryntu * 0.5)),
+      hp: Math.round(t.hp * skala * (elita?2.4:1)), hpMax: Math.round(t.hp * skala * (elita?2.4:1)),
+      atak: Math.round(t.atak * skalaAtaku * (elita?1.7:1)),
+      pancerz: Math.round(t.pancerz * skala * (elita?1.5:1)),
+      predkosc: t.predkosc * (elita?1.2:1),
+      xp: Math.round(t.xp * (1 + poziomLabiryntu * 0.5) * (elita?3:1)),
+      elita: elita, wybuchowy: t.wybuchowy || false,
+      zasiegStrzalu: t.zasiegStrzalu || 200,
       dystansowy: t.dystansowy || false,
       cooldown: losowo(0, 1), spowolnienie:0, zamrozony:0, plonie:0, migotanie:0, boss:false,
       // Wrog SPI, dopoki gracz nie podejdzie w zasieg widzenia (albo go nie
@@ -12527,6 +12971,20 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     { nazwa:'Tytan Popiołów',  ikona:'👺', kolor:'#e6743c', hp:4200, atak:72, pancerz:130, predkosc:66, r:32,
       wzorzec:'tytan',   opis:'Sam, ale w trzech fazach. Szarżuje po długim rozpędzie.' },
   ];
+
+  // Boss sekretnej komnaty - trudny JAK NA START (bez przedmiotow i statystyk),
+  // ale z czytelnym, powtarzalnym wzorcem: da sie go pokonac samym unikaniem.
+  function stworzSekretnegoBossa(x, y) {
+    return {
+      x:x, y:y, typ:'boss', r:24, ikona:'👻', kolor:'#7ec4e8', nazwa:'Strażnik Progu',
+      hp:240, hpMax:240, atak:16, pancerz:10, predkosc:74, xp:180,
+      dystansowy:false, cooldown:0, spowolnienie:0, zamrozony:0, plonie:0, migotanie:0,
+      boss:true, sekretny:true, czuwa:true, czujnosc:9999, wzorzec:'salwy',
+      cooldownSalwy:2.6, cooldownSzarzy:99, szarzaTrwa:0, szarzaVX:0, szarzaVY:0,
+      cooldownPrzywolania:99, faza:0, przygotowanieSzarzy:0, uleczylSie:false,
+      mnoznikSalw:1, poleSpowolnienia:false, poswiata:'#7ec4e8',
+    };
+  }
 
   function stworzBossa(x, y) {
     var d = DEFINICJE_BOSSOW[poziomLabiryntu];
@@ -12589,6 +13047,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     dzwiekSmierciWroga();
     dodajXp(w.xp);
 
+    if (w.sekretny) {
+      // Nagroda za easter egga: mityczna Rozdzka Wiedzmy
+      lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(4, 'rozdzkaWiedzmy') });
+      dziennik('🌈 Strażnik upuścił Różdżkę Wiedźmy!');
+      dzwiekZwyciestwo();
+      sekretnyBossZyje = false;
+      return;
+    }
     if (w.boss) {
       arenaZamknieta = false;
       if (poziomLabiryntu >= POZIOMY_SIATKI.length - 1) { zakonczGre(true); return; }
@@ -12602,12 +13068,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
 
     if (trybNieskonczony) return;   // w arenie nie wypadaja lupy
-    var r = Math.random();
-    if (r < 0.16) {
+    // Zwykle potworki upuszczaja rzeczy TRZY RAZY rzadziej - przedmioty
+    // maja pochodzic glownie ze skrzyn. Elity nadrabiaja z nawiazka.
+    var r = Math.random() / (w.elita ? 3.2 : 1);
+    if (r < 0.053) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(tierZPoziomu(gracz.poziom)) });
-    } else if (r < 0.34) {
+    } else if (r < 0.113) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzPancerz(tierZPoziomu(gracz.poziom)) });
-    } else if (r < 0.375) {
+    } else if (r < 0.14) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:{ kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 } });
     }
   }
@@ -12719,9 +13187,35 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (gracz.animCios > 0) gracz.animCios -= dt;
     if (gracz.migotanie > 0) gracz.migotanie -= dt;
 
+    czasGry += dt;
     if (trybNieskonczony) {
       aktualizujArene(dt);
       hudPoziom.textContent = '♾️ ' + czasAreny.toFixed(1) + 's · fala ' + (1 + Math.floor(czasAreny/12));
+    }
+
+    // ---- SEKRETNA KOMNATA ----
+    if (sekretnaKomnata) {
+      var st1 = komnaty[0];
+      var wStartowej = gracz.x > st1.x*KAFEL && gracz.x < (st1.x+st1.w)*KAFEL
+                    && gracz.y > st1.y*KAFEL && gracz.y < (st1.y+st1.h)*KAFEL;
+      var wSekr = gracz.x > sekretnaKomnata.x*KAFEL && gracz.x < (sekretnaKomnata.x+sekretnaKomnata.w)*KAFEL
+               && gracz.y > sekretnaKomnata.y*KAFEL && gracz.y < (sekretnaKomnata.y+sekretnaKomnata.h)*KAFEL;
+
+      if (!wStartowej && !wSekr && !opuscilStartowa) {
+        // Wyszedl gdzie indziej - przejscie do sekretnej komnaty znika
+        opuscilStartowa = true;
+        if (drzwiSekretne) { mapa[drzwiSekretne.ty][drzwiSekretne.tx] = 0; drzwiSekretne = null; }
+        dziennik('🚪 Ukryte przejście zamknęło się za tobą…');
+      }
+      if (wSekr && !wSekretnej) {
+        wSekretnej = true;
+        if (!sekretnyBossZyje) {
+          sekretnyBossZyje = true;
+          wrogowie.push(stworzSekretnegoBossa((sekretnaKomnata.cx+0.5)*KAFEL, (sekretnaKomnata.cy+0.5)*KAFEL));
+          dziennik('👻 Strażnik Progu budzi się…');
+          ton(140, 0.5, 'sine', 0.18);
+        }
+      }
     }
 
     // Przywolanie bossa
@@ -12809,7 +13303,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         return;
       }
 
-      var zasiegAtaku = w.dystansowy ? 200 : (w.r + gracz.r + 6);
+      var zasiegAtaku = w.dystansowy ? (w.zasiegStrzalu || 200) : (w.r + gracz.r + 6);
 
       // ---- BOSS: wzorce ataku zalezne od poziomu labiryntu
       if (w.boss) {
@@ -12925,6 +13419,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var ny = Math.sin(kat) * w.predkosc * mnoznikPredkosci * dt;
         if (!czySciana(w.x + nx + Math.sign(nx)*w.r, w.y)) w.x += nx;
         if (!czySciana(w.x, w.y + ny + Math.sign(ny)*w.r)) w.y += ny;
+      }
+
+      // BOMBIARZ: dopada i wybucha, raniac wszystko dookola
+      if (w.wybuchowy && d < w.r + gracz.r + 16) {
+        rozbryzg(w.x, w.y, '#ffd24a', 26);
+        tekstNaSwiecie(w.x, w.y - w.r, '💥', '#e6743c');
+        ton(90, 0.32, 'sawtooth', 0.2);
+        if (d < 104) zadajObrazeniaGraczowi(w.atak);
+        var iw = wrogowie.indexOf(w);
+        if (iw !== -1) { wrogowie.splice(iw, 1); dodajXp(w.xp); odswiezHud(); }
+        return;
       }
 
       w.cooldown -= dt;
@@ -13055,18 +13560,36 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.strokeStyle = 'rgba(230,193,92,0.55)'; ctx.lineWidth = 1.5;
     ctx.strokeRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
 
-    // Komnaty
-    komnaty.forEach(function (k) {
-      var jestBossa = (k === komnataBossa);
-      ctx.fillStyle = jestBossa ? 'rgba(192,57,43,0.75)' : 'rgba(150,140,120,0.5)';
-      ctx.fillRect(mx + k.x*KAFEL*skala, my + k.y*KAFEL*skala,
-                   Math.max(2, k.w*KAFEL*skala), Math.max(2, k.h*KAFEL*skala));
-    });
+    // CALA przechodnia mapa, wiec widac takze KORYTARZE, nie tylko komnaty
+    var kaflik = Math.max(1, KAFEL * skala);
+    ctx.fillStyle = 'rgba(150,140,120,0.45)';
+    for (var my2 = 0; my2 < SIATKA; my2++) {
+      for (var mx2 = 0; mx2 < SIATKA; mx2++) {
+        if (mapa[my2][mx2] !== 1) continue;
+        ctx.fillRect(mx + mx2*KAFEL*skala, my + my2*KAFEL*skala, kaflik+0.6, kaflik+0.6);
+      }
+    }
+    // Sekretna komnata - widoczna tylko dopoki przejscie jest otwarte
+    if (sekretnaKomnata && !opuscilStartowa) {
+      ctx.fillStyle = 'rgba(126,196,232,0.6)';
+      ctx.fillRect(mx + sekretnaKomnata.x*KAFEL*skala, my + sekretnaKomnata.y*KAFEL*skala,
+                   Math.max(2, sekretnaKomnata.w*KAFEL*skala), Math.max(2, sekretnaKomnata.h*KAFEL*skala));
+    }
 
+    // Komnata bossa na czerwono
+    if (komnataBossa) {
+      ctx.fillStyle = 'rgba(192,57,43,0.65)';
+      ctx.fillRect(mx + komnataBossa.x*KAFEL*skala, my + komnataBossa.y*KAFEL*skala,
+                   Math.max(2, komnataBossa.w*KAFEL*skala), Math.max(2, komnataBossa.h*KAFEL*skala));
+    }
+
+    // Nieotwarte skrzynie jako "?" - nie zdradzamy, co jest w srodku
+    ctx.font = 'bold 9px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     skrzynie.forEach(function (sk) {
       if (sk.otwarta) return;
-      ctx.fillStyle = TIERY[sk.tier].kolor;
-      ctx.fillRect(mx + sk.x*skala - 1.5, my + sk.y*skala - 1.5, 3.5, 3.5);
+      ctx.fillStyle = '#f0e8d0';
+      ctx.fillText('?', mx + sk.x*skala, my + sk.y*skala);
     });
     ctx.fillStyle = 'rgba(230,193,92,0.9)';
     lupyNaZiemi.forEach(function (lu) {
@@ -13191,6 +13714,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (w.migotanie > 0) { ctx.globalAlpha = 0.55; }
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
       ctx.beginPath(); ctx.ellipse(ex, ey + w.r*0.8, w.r*0.9, w.r*0.35, 0, 0, Math.PI*2); ctx.fill();
+      if (w.elita) { ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 16 + Math.sin(Date.now()/260)*6; }
       if (w.poswiata) { ctx.shadowColor = w.poswiata; ctx.shadowBlur = 20 + Math.sin(Date.now()/220)*8; }
       if (w.przygotowanieSzarzy > 0) { ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 26; }
       ctx.font = (w.r*1.7) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
@@ -13584,6 +14108,22 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         });
       }
     });
+    ograniczRzadkoscSkrzyn();
+  }
+
+  // Na 1. i 2. pietrze pilnujemy puli skrzyn: najwyzej 1 niebieska,
+  // 2-3 zielone, reszta szara. Bez tego gracz byl od razu przepakowany.
+  function ograniczRzadkoscSkrzyn() {
+    if (poziomLabiryntu > 1) return;
+    var limitNiebieskich = 1;
+    var limitZielonych = 2 + poziomLabiryntu;
+    var niebieskie = 0, zielone = 0;
+    skrzynie.sort(function (a, c) { return c.tier - a.tier; });
+    skrzynie.forEach(function (sk) {
+      if (sk.tier > 2) sk.tier = 2;
+      if (sk.tier === 2) { if (niebieskie < limitNiebieskich) niebieskie++; else sk.tier = 1; }
+      if (sk.tier === 1) { if (zielone < limitZielonych) zielone++; else sk.tier = 0; }
+    });
   }
 
   // Kolejny poziom labiryntu: NOWA, wieksza mapa i mocniejsi wrogowie,
@@ -13648,6 +14188,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     document.getElementById('btnJeszczeNie').style.display='inline-block';
   }
 
+  function zglosZaliczenie() {
+    var wiad = { type:'streamlit-child:zaliczono', wartosc:true };
+    window.postMessage(wiad, '*');
+    if (window.parent && window.parent !== window) window.parent.postMessage(wiad, '*');
+  }
+
   function zakonczGre(zwyciestwo) {
     trwa = false;
     wygrana = zwyciestwo;
@@ -13656,9 +14202,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bjn3) bjn3.style.display = 'none';
     if (zwyciestwo) {
       dzwiekZwyciestwo();
-      var wiad = { type:'streamlit-child:zaliczono', wartosc:true };
-      window.postMessage(wiad, '*');
-      if (window.parent && window.parent !== window) window.parent.postMessage(wiad, '*');
+      // NIE zaliczamy od razu: zgloszenie wyniku przeladowuje komponent
+      // i gra by zniknela, zanim zdazysz wybrac tryb nieskonczony.
+      // Etap zalicza sie po kliknieciu "Zakoncz" (albo po smierci w arenie).
       nakladkaTytul.textContent = '👑 Wszystkie trzy labirynty pokonane!';
       nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!<br><br>Ukończono na poziomie postaci <b>' + gracz.poziom + '</b>.'
         + '<br><br>Sprawdzisz, jak długo wytrzymasz w <b>trybie nieskończonym</b>?';
@@ -13676,6 +14222,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
           nakladkaBtn.style.display = 'none';
           document.getElementById('btnZakoncz').style.display = 'none';
+          zglosZaliczenie();
         };
         nakladkaBtn.parentNode.appendChild(bz);
       }
@@ -13689,6 +14236,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.textContent = '♾️ Jeszcze raz';
         nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
+        // Po smierci w arenie etap i tak sie nalezy - zgłaszamy teraz
+        if (!zaliczoneZglosozone) { zaliczoneZglosozone = true; zglosZaliczenie(); }
         return;
       }
       nakladkaTytul.textContent = '💀 Poległaś...';
@@ -13700,7 +14249,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // ---------- TRYB NIESKONCZONY (arena jak w Brotato) ----------
-  var trybNieskonczony = false, czasAreny = 0, cooldownFali = 0;
+  var trybNieskonczony = false, czasAreny = 0, cooldownFali = 0, zaliczoneZglosozone = false;
 
   function uruchomTrybNieskonczony() {
     trybNieskonczony = true;
@@ -13753,7 +14302,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   function rozpocznijGre() {
     trybNieskonczony = false;
-    poziomLabiryntu = 0;
+    poziomLabiryntu = 0; czasGry = 0; zaliczoneZglosozone = false;
     portal = null; arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
     var bjn2 = document.getElementById('btnJeszczeNie');
     if (bjn2) bjn2.style.display = 'none';
@@ -13771,7 +14320,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     odswiezHud(); odswiezPanele();
     nakladka.style.display = 'none';
     trwa = true; czasOstatni = null;
-    dziennik('⚔️ Znajdź: ' + DEFINICJE_BOSSOW[0].nazwa + ' (strzałka u góry)');
+    dziennik('⚔️ Znajdź: ' + DEFINICJE_BOSSOW[0].nazwa);
+    if (sekretnaKomnata) {
+      setTimeout(function () {
+        dziennik('👀 W rogu tej komnaty jest ukryte przejście… ale tylko dopóki stąd nie wyjdziesz.');
+      }, 2200);
+    }
     requestAnimationFrame(petla);
   }
 
@@ -13817,10 +14371,32 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       korzen.style.position = '';
       korzen.style.left = '';
       korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
       korzen.style.transformOrigin = '';
       document.body.style.overflow = '';
       return;
     }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
     var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
     korzen.style.transformOrigin = 'top left';
     korzen.style.transform = 'scale(' + s + ')';
