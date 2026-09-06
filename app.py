@@ -4703,6 +4703,37 @@ SZABLON_BITWA = """
     padding: 6px 8px 10px;
     border-top: 1px solid rgba(212,175,55,0.25);
   }
+
+  /* ---- UKLAD POZIOMY (telefon obrocony w pelnym ekranie) ----
+     Zamiast scisniętej kolumny: wrogowie i arena po lewej, panel akcji
+     po prawej. Wszystko widac naraz, bez przewijania strony. */
+  #gra.poziomo {
+    flex-direction: row;
+    align-items: stretch;
+  }
+  #gra.poziomo #lewaKolumna {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+  #gra.poziomo #panelAkcji {
+    flex: 0 0 40%;
+    max-width: 330px;
+    border-top: none;
+    border-left: 1px solid rgba(212,175,55,0.25);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    overflow-y: auto;
+  }
+  #gra.poziomo .siatka-akcji {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 7px;
+  }
+  #gra.poziomo #poziomEtykieta { font-size: 0.72rem; }
+  #gra.poziomo #wrogowie { gap: 4px; padding: 4px 3px 0; }
+  #gra.poziomo #srodekAreny { min-height: 70px; }
   #podpowiedzTury {
     text-align: center;
     font-size: 12px;
@@ -4758,6 +4789,7 @@ SZABLON_BITWA = """
        zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
   <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
+    <div id="lewaKolumna">
     <div id="poziomEtykieta">POZIOM 1 / 5</div>
     <div id="wrogowie"></div>
     <div id="srodekAreny">
@@ -4769,6 +4801,7 @@ SZABLON_BITWA = """
           <div class="etykieta-hp" id="hpGraczaTekst">30 / 30</div>
         </div>
       </div>
+    </div>
     </div>
     <div id="panelAkcji">
       <div id="podpowiedzTury">Wybierz pierwszą akcję</div>
@@ -4783,6 +4816,19 @@ SZABLON_BITWA = """
 
 <script>
   var gra = document.getElementById('gra');
+
+  // Uklad dopasowuje sie do ksztaltu okna: po obroceniu telefonu
+  // w pelnym ekranie przechodzi na widok poziomy (arena obok akcji).
+  window.__wlasneSkalowanie = true;
+  function dopasujUkladBitwy() {
+    var w = gra.clientWidth || 380, h = gra.clientHeight || 560;
+    var poziomo = w > h * 1.15;
+    gra.classList.toggle('poziomo', poziomo);
+  }
+  window.__dopasujGre = dopasujUkladBitwy;
+  window.addEventListener('resize', function () { setTimeout(dopasujUkladBitwy, 80); });
+  window.addEventListener('orientationchange', function () { setTimeout(dopasujUkladBitwy, 200); });
+  setTimeout(dopasujUkladBitwy, 60);
   var wrogowieEl = document.getElementById('wrogowie');
   var canvasGracza = document.getElementById('canvasGracza');
   var graczOtoczenie = document.getElementById('graczOtoczenie');
