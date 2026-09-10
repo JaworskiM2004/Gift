@@ -1259,6 +1259,73 @@ SZABLON_GRY = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -1268,30 +1335,47 @@ SZABLON_GRY = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -1872,6 +1956,73 @@ SZABLON_DRONA = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -1881,30 +2032,47 @@ SZABLON_DRONA = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -2825,6 +2993,73 @@ SZABLON_ZABY = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -2834,30 +3069,47 @@ SZABLON_ZABY = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -3349,6 +3601,73 @@ SZABLON_MEMORY = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -3358,30 +3677,47 @@ SZABLON_MEMORY = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -3772,6 +4108,73 @@ SZABLON_SIMON = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -3781,30 +4184,47 @@ SZABLON_SIMON = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -4468,6 +4888,73 @@ SZABLON_PIANO = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -4477,30 +4964,47 @@ SZABLON_PIANO = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -5782,6 +6286,73 @@ SZABLON_BITWA = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -5791,30 +6362,47 @@ SZABLON_BITWA = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -8147,6 +8735,73 @@ SZABLON_MINECRAFT = """
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -8156,30 +8811,47 @@ SZABLON_MINECRAFT = """
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -8752,6 +9424,73 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -8761,30 +9500,47 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -9369,6 +10125,73 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -9378,30 +10201,47 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -9959,6 +10799,73 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -9968,30 +10875,47 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -10607,6 +11531,73 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -10616,30 +11607,47 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -11306,6 +12314,73 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -11315,30 +12390,47 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -12445,6 +13537,73 @@ SZABLON_FPS = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -12454,30 +13613,47 @@ SZABLON_FPS = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
@@ -12511,7 +13687,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
   html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
   #gra { position:relative; width:100%; height:700px; overflow:hidden; background:#0d0d0d; }
-  #widok { display:block; width:100%; height:400px; background:#12100e; }
+  #widok { display:block; width:100%; height:470px; background:#12100e; }
 
   #hud { position:absolute; top:0; left:0; width:56%; padding:6px 8px; z-index:5; pointer-events:none; }
   #btnSkrzynia { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:6;
@@ -12527,14 +13703,68 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   .wpis-dziennika { color:#f0e8d0; font-size:11px; font-weight:600; text-shadow:0 1px 3px rgba(0,0,0,0.95); margin-bottom:2px; opacity:0; animation:pokazWpis 2.6s ease forwards; }
   @keyframes pokazWpis { 0%{opacity:0;transform:translateY(-4px);} 12%{opacity:1;transform:translateY(0);} 78%{opacity:1;} 100%{opacity:0;} }
 
-  #panelDolny { position:absolute; top:400px; left:0; right:0; bottom:0; background:linear-gradient(180deg,#1a1520,#100d16); border-top:2px solid #4a3a2e; padding:8px; overflow-y:auto; }
-  #rzadPrzyciskow { display:flex; gap:6px; margin-bottom:8px; }
-  .btn-panel { flex:1; background:linear-gradient(135deg,#3a3550,#262038); border:1px solid #5a4a2e; border-radius:9px; color:#f0e8d0; font-size:11px; font-weight:700; padding:9px 2px; }
-  .btn-panel.aktywny { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
-  .btn-panel .odznaka { display:inline-block; background:#c0392b; color:#fff; border-radius:8px; padding:0 5px; font-size:10px; margin-left:3px; }
+  /* ---- PAS STEROWANIA POD EKRANEM GRY ----
+     Drazek nie zabiera juz miejsca na planszy: siedzi pod nia, a po jego
+     bokach sa przyciski ekwipunku i mikstury. */
+  #pasSterowania {
+    position:absolute; top:470px; left:0; right:0; bottom:0;
+    background:linear-gradient(180deg,#1a1520,#0f0d14);
+    border-top:2px solid #4a3a2e;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 14px;
+  }
+  .btn-boczny {
+    position:relative; width:64px; height:64px; border-radius:16px;
+    background:linear-gradient(135deg,#3a3550,#262038);
+    border:1.5px solid #5a4a2e; color:#f0e8d0; font-size:26px; padding:0;
+    box-shadow:0 3px 10px rgba(0,0,0,0.45);
+  }
+  .btn-boczny:active { transform:scale(0.94); }
+  .btn-boczny .odznaka {
+    position:absolute; top:-5px; right:-5px; background:#c0392b; color:#fff;
+    border-radius:9px; padding:1px 6px; font-size:11px; font-weight:800;
+  }
+  .licznik-mikstur {
+    position:absolute; bottom:-4px; right:-4px; background:#3f8a52; color:#fff;
+    border-radius:9px; padding:1px 6px; font-size:11px; font-weight:800;
+  }
+  #strefaDrazka { position:relative; width:150px; height:150px; touch-action:none; }
+  #drazekBaza {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:126px; height:126px; border-radius:50%;
+    background:radial-gradient(circle at 40% 35%, rgba(255,255,255,0.07), rgba(0,0,0,0.35));
+    border:2px solid rgba(230,193,92,0.35);
+  }
+  #drazekGalka {
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:56px; height:56px; border-radius:50%;
+    background:radial-gradient(circle at 38% 32%, #f0dfa8, #d4af37 60%, #8a6a1e);
+    box-shadow:0 3px 10px rgba(0,0,0,0.5);
+  }
 
-  .sekcja { display:none; }
-  .sekcja.widoczna { display:block; }
+  #btnStaty {
+    position:absolute; top:64px; left:8px; z-index:6;
+    width:38px; height:38px; border-radius:11px;
+    background:rgba(20,17,28,0.72); border:1.5px solid rgba(230,193,92,0.5);
+    color:#f0e8d0; font-size:17px; padding:0;
+  }
+  #btnStaty.aktywny { background:rgba(230,193,92,0.9); color:#16130a; }
+  #btnStaty .odznaka {
+    position:absolute; top:-5px; right:-5px; background:#c0392b; color:#fff;
+    border-radius:9px; padding:0 5px; font-size:10px; font-weight:800;
+  }
+  #nakladkaStatow {
+    position:absolute; top:0; left:0; right:0; height:470px; z-index:7;
+    background:rgba(12,10,18,0.82);
+    padding:10px 12px; overflow-y:auto; display:none;
+  }
+  #nakladkaStatow.widoczna { display:block; }
+  #nakladkaEkw {
+    position:absolute; top:0; left:0; right:0; height:470px; z-index:8;
+    background:linear-gradient(180deg, rgba(16,13,22,0.97), rgba(10,8,14,0.99));
+    padding:8px 10px; overflow-y:auto; display:none;
+  }
+  #nakladkaEkw.widoczna { display:block; }
 
   .wiersz-statu { display:flex; align-items:center; gap:6px; padding:3px 5px; background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:3px; }
   .wiersz-statu .nazwa { flex:1; color:#d8cdb0; font-size:11px; font-weight:600; }
@@ -12564,7 +13794,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
-  <canvas id="widok" width="380" height="400"></canvas>
+  <canvas id="widok" width="380" height="470"></canvas>
 
   <div id="hud">
     <div class="pasek-otoczka"><div class="pasek-wyp" id="paskHp" style="width:100%"></div></div>
@@ -12578,14 +13808,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   <div id="dziennik"></div>
   <button id="btnSkrzynia">📦 Otwórz skrzynkę</button>
 
-  <div id="panelDolny">
-    <div id="rzadPrzyciskow">
-      <button class="btn-panel aktywny" id="btnStaty">📊 Statystyki<span class="odznaka" id="odznakaPkt" style="display:none">0</span></button>
-      <button class="btn-panel" id="btnEkw">🎒 Plecak<span class="odznaka" id="odznakaEkw" style="display:none">0</span></button>
-      <button class="btn-panel" id="btnMikstura">🧪 Wypij</button>
-    </div>
-    <div class="sekcja widoczna" id="sekcjaStaty"></div>
-    <div class="sekcja" id="sekcjaEkw"></div>
+  <div id="nakladkaStatow"><div id="sekcjaStaty"></div></div>
+  <div id="nakladkaEkw"><div id="sekcjaEkw"></div></div>
+
+  <button id="btnStaty">📊<span class="odznaka" id="odznakaPkt" style="display:none">0</span></button>
+
+  <div id="pasSterowania">
+    <button class="btn-boczny" id="btnEkw">🎒<span class="odznaka" id="odznakaEkw" style="display:none">0</span></button>
+    <div id="strefaDrazka"><div id="drazekBaza"><div id="drazekGalka"></div></div></div>
+    <button class="btn-boczny" id="btnMikstura">🧪<span class="licznik-mikstur" id="licznikMikstur">0</span></button>
   </div>
 
   <div id="nakladka">
@@ -12607,7 +13838,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var odznakaPkt = document.getElementById('odznakaPkt'), odznakaEkw = document.getElementById('odznakaEkw');
   var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul'), nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
 
-  var WID = 380, WYS = 400;
+  var WID = 380, WYS = 470;
   var KAFEL = 44;
   var SIATKA = 68;                 // rosnie z kazdym poziomem labiryntu
   var POZIOMY_SIATKI = [86, 106, 126];
@@ -12672,15 +13903,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Kazda bron ma teraz WLASNY charakter, a nie tylko inne liczby.
   var RODZAJE_BRONI = {
     miecz:      { nazwa:'Miecz',            ikona:'🗡️', zasieg:66,  tempo:0.40, obr:21, magiczna:false,
-                  opis:'Leczy 8% zadanych obrażeń', efektBroni:'wampiryzm' },
+                  efektBroni:'wampiryzm' },
     topor:      { nazwa:'Topór',            ikona:'🪓', zasieg:62,  tempo:0.60, obr:36, magiczna:false,
-                  opis:'Ogłusza wroga na chwilę', efektBroni:'ogluszenie' },
+                  efektBroni:'krwawienieLecznicze' },
     mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false,
                   opis:'Miażdżący, szeroki zamach' },
     sztylety:   { nazwa:'Sztylety',         ikona:'⚔️', zasieg:50,  tempo:0.20, obr:14, magiczna:false,
-                  opis:'Nakładają krwawienie', efektBroni:'krwawienie' },
+                  efektBroni:'krwawienie' },
     wlocznia:   { nazwa:'Włócznia',         ikona:'🔱', zasieg:96,  tempo:0.52, obr:26, magiczna:false,
-                  opis:'Długi zasięg, co jakiś czas rzut', efektBroni:'rzut' },
+                  efektBroni:'rzut' },
+    kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:70, magiczna:false,
+                  pocisk:true, opis:'Powolny, ciężki bełt — ogromne obrażenia' },
     rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:200, tempo:0.60, obr:7,  magiczna:true,  opis:'Pocisk na dystans' },
     rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:180, tempo:0.72, obr:9,  magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
     rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:190, tempo:0.66, obr:8,  magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
@@ -12690,13 +13923,31 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   };
   var KLUCZE_BRONI = Object.keys(RODZAJE_BRONI);
 
-  var RODZAJE_PANCERZA = {
-    helm:   { nazwa:'Hełm',      ikona:'🪖', slot:'helm',   obrona:9,  bonus:'obrazenia' },
-    zbroja: { nazwa:'Zbroja',    ikona:'🛡️', slot:'zbroja', obrona:14, bonus:'zdrowie' },
-    buty:   { nazwa:'Buty',      ikona:'🥾', slot:'buty',   obrona:5,  bonus:'predkosc' },
-    amulet: { nazwa:'Amulet',    ikona:'📿', slot:'amulet', obrona:2,  bonus:'obrazenia' },
-  };
-  var KLUCZE_PANCERZA = Object.keys(RODZAJE_PANCERZA);
+  // Kazdy slot ma KILKA wariantow o roznym przeznaczeniu: czysta obrona,
+  // czysta ofensywa albo wersja mieszana (slabsza w obu, ale uniwersalna).
+  // Dzieki temu jest realny wybor, a nie tylko "wyzszy tier = lepsze".
+  var WARIANTY_PANCERZA = [
+    // HELM
+    { rodzaj:'helmPlyt',  slot:'helm', nazwa:'Hełm płytowy',       ikona:'🪖', obrona:12 },
+    { rodzaj:'helmUcz',   slot:'helm', nazwa:'Kaptur Uczonego',    ikona:'🎓', obrona:3, doswiadczenie:0.15 },
+    { rodzaj:'helmWoj',   slot:'helm', nazwa:'Hełm Wojownika',     ikona:'⛑️', obrona:7, obrazenia:3 },
+    // ZBROJA
+    { rodzaj:'zbrPlyt',   slot:'zbroja', nazwa:'Zbroja płytowa',    ikona:'🛡️', obrona:19 },
+    { rodzaj:'zbrBers',   slot:'zbroja', nazwa:'Napierśnik Berserkera', ikona:'🥋', obrona:5, obrazenia:8 },
+    { rodzaj:'zbrStraz',  slot:'zbroja', nazwa:'Zbroja Strażnika',  ikona:'🦺', obrona:12, obrazenia:4 },
+    { rodzaj:'zbrKata',   slot:'zbroja', nazwa:'Zbroja Kata',       ikona:'☠️', obrona:6, egzekucja:0.05 },
+    // BUTY
+    { rodzaj:'butWichr',  slot:'buty', nazwa:'Buty Wichru',        ikona:'👟', predkosc:26 },
+    { rodzaj:'butOkute',  slot:'buty', nazwa:'Buty okute',         ikona:'🥾', obrona:10 },
+    { rodzaj:'butWedr',   slot:'buty', nazwa:'Buty Wędrowca',      ikona:'🧦', obrona:5, predkosc:15 },
+    // AMULET
+    { rodzaj:'amMocy',    slot:'amulet', nazwa:'Amulet Mocy',      ikona:'📿', obrazenia:7 },
+    { rodzaj:'amZycia',   slot:'amulet', nazwa:'Amulet Życia',     ikona:'💠', zdrowie:30 },
+    { rodzaj:'amLowcy',   slot:'amulet', nazwa:'Amulet Łowcy',     ikona:'🔮', obrazenia:3, doswiadczenie:0.10 },
+  ];
+  var WARIANT_PO_RODZAJU = {};
+  WARIANTY_PANCERZA.forEach(function (w) { WARIANT_PO_RODZAJU[w.rodzaj] = w; });
+  var KLUCZE_PANCERZA = WARIANTY_PANCERZA.map(function (w) { return w.rodzaj; });
 
   // CZTERY czytelne statystyki zamiast dziewieciu. "Obrazenia" dzialaja
   // tak samo na bronie biale i rozdzki, wiec nie trzeba juz zgadywac,
@@ -12726,6 +13977,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var pytanieOBossa = false;
   var cooldownSlug = 0;
   var pociskiBossa = [];
+  var gazy = [];      // trujace chmury zostawiane przez Trucicieli
 
   function losowo(a, b) { return Math.random() * (b - a) + a; }
   function losCalk(a, b) { return Math.floor(losowo(a, b + 1)); }
@@ -12755,12 +14007,49 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         if (nx > 0 && nx < SIATKA-1 && ny > 0 && ny < SIATKA-1) mapa[ny][nx] = 1;
       }
     }
-    for (var i = 1; i < komnaty.length; i++) {
-      var a = komnaty[i-1], b = komnaty[i];
+    // Komnaty laczymy z NAJBLIZSZA juz podlaczona (algorytm Prima), a nie
+    // po kolei wg losowego rozstawienia. Wczesniej korytarze biegly przez
+    // cala mape i krzyzowaly sie ze soba - stad wrazenie blednika, w ktorym
+    // chodzi sie w kolko. Teraz kazde przejscie laczy sasiadow.
+    function polacz(a, b2) {
       var x = a.cx, y = a.cy;
-      while (x !== b.cx) { korytarz(x, y); x += (b.cx > x ? 1 : -1); }
-      while (y !== b.cy) { korytarz(x, y); y += (b.cy > y ? 1 : -1); }
-      korytarz(b.cx, b.cy);
+      // Losowa kolejnosc osi, zeby korytarze nie byly wszystkie takie same
+      if (Math.random() < 0.5) {
+        while (x !== b2.cx) { korytarz(x, y); x += (b2.cx > x ? 1 : -1); }
+        while (y !== b2.cy) { korytarz(x, y); y += (b2.cy > y ? 1 : -1); }
+      } else {
+        while (y !== b2.cy) { korytarz(x, y); y += (b2.cy > y ? 1 : -1); }
+        while (x !== b2.cx) { korytarz(x, y); x += (b2.cx > x ? 1 : -1); }
+      }
+      korytarz(b2.cx, b2.cy);
+    }
+    if (komnaty.length > 1) {
+      var podlaczone = [0];
+      var wolne = [];
+      for (var i = 1; i < komnaty.length; i++) wolne.push(i);
+      while (wolne.length) {
+        var najA = 0, najB = 0, najD = Infinity;
+        podlaczone.forEach(function (ia) {
+          wolne.forEach(function (ib) {
+            var dd = Math.abs(komnaty[ia].cx - komnaty[ib].cx)
+                   + Math.abs(komnaty[ia].cy - komnaty[ib].cy);
+            if (dd < najD) { najD = dd; najA = ia; najB = ib; }
+          });
+        });
+        polacz(komnaty[najA], komnaty[najB]);
+        podlaczone.push(najB);
+        wolne.splice(wolne.indexOf(najB), 1);
+      }
+      // Kilka dodatkowych skrotow, zeby nie bylo samych slepych odnog
+      var skroty = Math.max(1, Math.round(komnaty.length * 0.22));
+      for (var sIdx = 0; sIdx < skroty; sIdx++) {
+        var p1 = losCalk(0, komnaty.length - 1), p2 = losCalk(0, komnaty.length - 1);
+        if (p1 === p2) continue;
+        var dyst = Math.abs(komnaty[p1].cx - komnaty[p2].cx)
+                 + Math.abs(komnaty[p1].cy - komnaty[p2].cy);
+        if (dyst > SIATKA * 0.45) continue;      // tylko bliskie pary
+        polacz(komnaty[p1], komnaty[p2]);
+      }
     }
     // Sekretna komnata: mala salka doklejona do rogu komnaty startowej,
     // polaczona jednym przejsciem. Tylko na pierwszym pietrze.
@@ -12849,6 +14138,22 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return null;
   }
 
+  // Efekty broni ROSNA Z RZADKOSCIA - lepsza wersja tej samej broni
+  // działa realnie inaczej, nie tylko bije mocniej.
+  function procentWampiryzmu(tier) { return 0.02 + tier * 0.01; }        // 2% .. 6%
+  function coIleRzut(tier)        { return Math.max(2, 6 - tier); }      // co 6 .. co 2 ataki
+  function mnoznikKrwawienia(tier){ return 0.30 + tier * 0.09; }         // 30% .. 66% obr. bazowych
+
+  function opisEfektuBroni(bron) {
+    if (bron.opis) return bron.opis;
+    var t = bron.tier || 0;
+    if (bron.efektBroni === 'wampiryzm') return 'Leczy ' + Math.round(procentWampiryzmu(t)*100) + '% zadanych obrażeń';
+    if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 50% obrażeń od krwawienia';
+    if (bron.efektBroni === 'krwawienie') return 'Szybkie ciosy · nakładają krwawienie';
+    if (bron.efektBroni === 'rzut') return 'Długi zasięg · rzut co ' + coIleRzut(t) + '. atak';
+    return '';
+  }
+
   function stworzBron(tier, rodzajKlucz) {
     var rodzaj = rodzajKlucz;
     if (!rodzaj) {
@@ -12867,24 +14172,30 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       kategoria:'bron', rodzaj:rodzaj, tier:tier,
       nazwa: TIERY[tier].nazwa + ' ' + d.nazwa,
       ikona: d.ikona, obr: Math.round(d.obr * m), zasieg: d.zasieg, tempo: d.tempo,
-      magiczna: d.magiczna, efekt: d.efekt || null, efektBroni: d.efektBroni || null, opis: d.opis,
+      magiczna: d.magiczna, pocisk: d.pocisk || false,
+      efekt: d.efekt || null, efektBroni: d.efektBroni || null, opis: d.opis || null,
     };
   }
   function stworzPancerz(tier, rodzajKlucz) {
     var rodzaj = rodzajKlucz || KLUCZE_PANCERZA[losCalk(0, KLUCZE_PANCERZA.length-1)];
-    var d = RODZAJE_PANCERZA[rodzaj];
+    var d = WARIANT_PO_RODZAJU[rodzaj];
     var m = TIERY[tier].mnoznik;
-    var bonusWartosc = { zdrowie:22, predkosc:9, obrazenia:5 }[d.bonus] * m;
     return {
       kategoria:'pancerz', rodzaj:rodzaj, slot:d.slot, tier:tier,
-      nazwa: TIERY[tier].nazwa + ' ' + d.nazwa, ikona: d.ikona,
-      obrona: Math.round(d.obrona * m), bonusTyp: d.bonus,
-      bonusWartosc: Math.round(bonusWartosc),
+      nazwa: TIERY[tier].nazwa + ' ' + d.nazwa.toLowerCase(), ikona: d.ikona,
+      obrona: Math.round((d.obrona || 0) * m),
+      obrazenia: Math.round((d.obrazenia || 0) * m),
+      predkosc: Math.round((d.predkosc || 0) * m),
+      zdrowie: Math.round((d.zdrowie || 0) * m),
+      // Efekty procentowe rosna wolniej - inaczej bylyby zbyt mocne
+      doswiadczenie: d.doswiadczenie ? Math.round(d.doswiadczenie * (1 + tier * 0.55) * 100) / 100 : 0,
+      egzekucja: d.egzekucja ? Math.round(d.egzekucja * (1 + tier * 0.5) * 100) / 100 : 0,
     };
   }
   function tierZPoziomu(poziom) {
     var r = Math.random();
-    var szansaWyzszych = Math.min(0.62, 0.10 + poziom * 0.045);
+    // Wolniejsza krzywa niz wczesniej - legendarne maja byc rzadkoscia
+    var szansaWyzszych = Math.min(0.48, 0.06 + poziom * 0.028);
     if (r > 1 - szansaWyzszych * 0.10) return 4;
     if (r > 1 - szansaWyzszych * 0.30) return 3;
     if (r > 1 - szansaWyzszych * 0.62) return 2;
@@ -12892,9 +14203,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return 0;
   }
   function opisPrzedmiotu(p) {
-    if (p.kategoria === 'bron') return p.obr + ' obr.' + (p.mityczna && p.ladunki ? ' (+' + p.ladunki + ')' : '') + ' · ' + (p.magiczna ? 'dystans' : 'zwarcie') + ' · ' + p.opis;
-    var nazwyBonusow = { zdrowie:'zdrowia', predkosc:'prędkości', obrazenia:'obrażeń' };
-    return p.obrona + ' obrony · +' + p.bonusWartosc + ' ' + nazwyBonusow[p.bonusTyp];
+    if (p.kategoria === 'bron') return (p.mityczna && p.ladunki ? '+' + p.ladunki + ' z zabójstw · ' : '')
+      + (p.magiczna || p.pocisk ? 'dystans' : 'zwarcie') + ' · ' + opisEfektuBroni(p);
+    // Wypisujemy DOKLADNIE wszystko, co daje przedmiot
+    var czesci = [];
+    if (p.obrona)    czesci.push('+' + p.obrona + ' obrony');
+    if (p.obrazenia) czesci.push('+' + p.obrazenia + ' obrażeń');
+    if (p.predkosc)  czesci.push('+' + p.predkosc + ' prędkości');
+    if (p.zdrowie)   czesci.push('+' + p.zdrowie + ' zdrowia');
+    if (p.doswiadczenie) czesci.push('+' + Math.round(p.doswiadczenie*100) + '% doświadczenia');
+    if (p.egzekucja) czesci.push('☠️ dobija wrogów poniżej ' + Math.round(p.egzekucja*100) + '% życia');
+    return czesci.length ? czesci.join(' · ') : 'brak bonusów';
   }
 
   // ---------- GRACZ ----------
@@ -12931,10 +14250,29 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ['helm','zbroja','buty','amulet'].forEach(function (s) {
       var p = gracz.zalozone[s];
       if (!p) return;
-      if (klucz === 'obrona') zPancerza += p.obrona;
-      if (p.bonusTyp === klucz) zPancerza += p.bonusWartosc;
+      zPancerza += (p[klucz] || 0);      // obrona / obrazenia / predkosc / zdrowie
     });
     return baza + zPunktow + zPancerza;
+  }
+
+  // Bonusowe doswiadczenie z zalozonych przedmiotow
+  function bonusDoswiadczenia() {
+    var suma = 0;
+    ['helm','zbroja','buty','amulet'].forEach(function (s) {
+      var p = gracz.zalozone[s];
+      if (p) suma += (p.doswiadczenie || 0);
+    });
+    return suma;
+  }
+  // Prog EGZEKUCJI: wrog ponizej tego procentu zycia ginie od razu
+  // (nie dziala na bossow - inaczej byloby zbyt tanie)
+  function progEgzekucji() {
+    var suma = 0;
+    ['helm','zbroja','buty','amulet'].forEach(function (s) {
+      var p = gracz.zalozone[s];
+      if (p) suma += (p.egzekucja || 0);
+    });
+    return Math.min(0.30, suma);
   }
 
   function przeliczHpMax() {
@@ -12952,7 +14290,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   function dodajXp(ile) {
     if (trybNieskonczony) return;   // w arenie liczy sie tylko to, jak silna juz jestes
-    gracz.xp += ile;
+    gracz.xp += Math.round(ile * (1 + bonusDoswiadczenia()));
     while (gracz.xp >= gracz.xpDoNastepnego) {
       gracz.xp -= gracz.xpDoNastepnego;
       gracz.poziom++;
@@ -12975,6 +14313,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:44, atak:22, pancerz:4, predkosc:70, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
     bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:40,  atak:34, pancerz:3,  predkosc:132, xp:20, r:12, kolor:'#e6743c', wybuchowy:true },
     kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:52,  atak:18, pancerz:7,  predkosc:74,  xp:19, r:12, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
+    // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
+    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:46,  atak:14, pancerz:5,  predkosc:126, xp:18, r:12, kolor:'#6a5a8a',
+                dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
+    trujacy:  { nazwa:'Truciciel', ikona:'🧪', hp:58,  atak:8,  pancerz:6,  predkosc:104, xp:22, r:13, kolor:'#6a9a4a',
+                zachowanie:'uciekajacy', gazowy:true },
+    jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:72,  atak:20, pancerz:10, predkosc:138, xp:24, r:14, kolor:'#8a5a3a',
+                zachowanie:'szarzaBoki' },
+    lucznik:  { nazwa:'Łucznik',   ikona:'🎯', hp:44,  atak:20, pancerz:5,  predkosc:88,  xp:20, r:12, kolor:'#9a7a4a',
+                dystansowy:true, zasiegStrzalu:280, zachowanie:'okrazajacy' },
     ogr:      { nazwa:'Ogr',       ikona:'👹', hp:150, atak:28, pancerz:22, predkosc:60,  xp:34, r:17, kolor:'#a04a3a' },
   };
   var KLUCZE_WROGOW = Object.keys(TYPY_WROGOW);
@@ -12996,15 +14343,21 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       atak: Math.round(t.atak * skalaAtaku * (elita?1.7:1)),
       pancerz: Math.round(t.pancerz * skala * (elita?1.5:1)),
       predkosc: t.predkosc * (elita?1.2:1),
-      xp: Math.round(t.xp * (1 + poziomLabiryntu * 0.5) * (elita?3:1)),
+      xp: Math.round(t.xp * 0.62 * (1 + poziomLabiryntu * 0.5) * (elita?3:1)),
       elita: elita, wybuchowy: t.wybuchowy || false,
       zasiegStrzalu: t.zasiegStrzalu || 200,
+      zachowanie: t.zachowanie || 'goniacy',
+      gazowy: t.gazowy || false, cooldownGazu: losowo(0.4, 1.2),
+      kierunekKrazenia: Math.random() < 0.5 ? 1 : -1,
+      cooldownBoczny: losowo(0.6, 1.6),
       dystansowy: t.dystansowy || false,
       cooldown: losowo(0, 1), spowolnienie:0, zamrozony:0, plonie:0, migotanie:0, boss:false,
       // Wrog SPI, dopoki gracz nie podejdzie w zasieg widzenia (albo go nie
       // zrani). Bez tego cala mapa zbiegala sie do gracza juz na starcie.
       czuwa: false,
-      czujnosc: t.dystansowy ? 250 : 205,
+      // Zroznicowana czujnosc: czesc wrogow zauwaza cie dopiero z bliska,
+      // wiec pokoj nie rusza na ciebie caly naraz.
+      czujnosc: (t.dystansowy ? 250 : 205) * losowo(0.55, 1.25),
       bazaX: x, bazaY: y, kierunekPatrolu: losowo(0, Math.PI*2), czasPatrolu: losowo(0,3),
     };
   }
@@ -13076,6 +14429,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     tekstNaSwiecie(w.x, w.y - w.r, '' + finalne, '#f0e8d0');
     rozbryzg(w.x, w.y, '#c0392b', 5);
     dzwiekTrafienia();
+    // EGZEKUCJA - dobicie mocno rannego wroga (nie dotyczy bossow)
+    var prog = progEgzekucji();
+    if (w.hp > 0 && !w.boss && prog > 0 && w.hp / w.hpMax <= prog) {
+      w.hp = 0;
+      tekstNaSwiecie(w.x, w.y - w.r - 12, '☠️ EGZEKUCJA', '#e6543c');
+      rozbryzg(w.x, w.y, '#e6543c', 14);
+      ton(180, 0.09, 'square', 0.16);
+    }
     if (w.hp <= 0) zabijWroga(w);
   }
 
@@ -13118,12 +14479,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (trybNieskonczony) return;   // w arenie nie wypadaja lupy
     // Zwykle potworki upuszczaja rzeczy TRZY RAZY rzadziej - przedmioty
     // maja pochodzic glownie ze skrzyn. Elity nadrabiaja z nawiazka.
+    // Jeszcze rzadziej niz dotad: przedmioty maja byc wydarzeniem,
+    // a nie strumieniem. Postac nie ma byc legendarna na 2. pietrze.
     var r = Math.random() / (w.elita ? 3.2 : 1);
-    if (r < 0.053) {
+    if (r < 0.026) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(tierZPoziomu(gracz.poziom)) });
-    } else if (r < 0.113) {
+    } else if (r < 0.058) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzPancerz(tierZPoziomu(gracz.poziom)) });
-    } else if (r < 0.14) {
+    } else if (r < 0.085) {
       lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:{ kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 } });
     }
   }
@@ -13168,13 +14531,23 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bron.efektBroni === 'rzut') {
       bron._doRzutu = (bron._doRzutu || 0) - 1;
       if (bron._doRzutu <= 0) {
-        bron._doRzutu = 4;
+        bron._doRzutu = coIleRzut(bron.tier || 0);
         pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*430, vy:Math.sin(kat)*430,
                        obr:Math.round(bron.obr*1.6), efekt:null, zycie:2.2, kolor:'#d8d0b0',
                        ksztalt:'wlocznia', kat:kat });
         ton(300, 0.09, 'triangle', 0.13);
         return;
       }
+    }
+
+    if (bron.pocisk) {
+      // Kusza: powolny, ciezki belt - widac go lecacego, wiec trzeba celowac
+      pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*220, vy:Math.sin(kat)*220,
+                     obr:bron.obr, efekt:null, zycie:2.6, kolor:'#d8d0b0',
+                     ksztalt:'wlocznia', kat:kat });
+      ton(240, 0.10, 'square', 0.13);
+      setTimeout(function () { ton(150, 0.08, 'square', 0.10); }, 60);
+      return;
     }
 
     if (bron.magiczna) {
@@ -13196,18 +14569,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         zadajObrazeniaWrogowi(w, bron.obr);
         var zadane = przed - w.hp;
         if (bron.efektBroni === 'wampiryzm' && zadane > 0 && gracz.hp > 0) {
-          var lecz = Math.max(1, Math.round(zadane * 0.08));
+          var lecz = Math.max(1, Math.round(zadane * procentWampiryzmu(bron.tier || 0)));
           gracz.hp = Math.min(gracz.hpMax, gracz.hp + lecz);
           tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + lecz, '#7ec98a');
           odswiezHud();
         }
-        if (bron.efektBroni === 'ogluszenie' && w.hp > 0 && Math.random() < 0.55) {
-          w.zamrozony = Math.max(w.zamrozony || 0, 0.7);
-          tekstNaSwiecie(w.x, w.y - w.r - 8, '💫', '#ffe066');
-        }
-        if (bron.efektBroni === 'krwawienie' && w.hp > 0) {
-          w.krwawienie = 3.0;
-          w.krwawienieObr = Math.max(2, Math.round(bron.obr * 0.35));
+        if ((bron.efektBroni === 'krwawienie' || bron.efektBroni === 'krwawienieLecznicze') && w.hp > 0) {
+          w.krwawienie = 3.2;
+          w.krwawienieObr = Math.max(2, Math.round(bron.obr * mnoznikKrwawienia(bron.tier || 0)));
+          // Topor: krwawienie ODDAJE graczowi polowe zadanych obrazen
+          // (poza bossami - inaczej walki z nimi bylyby trywialne)
+          w.krwawienieLeczy = (bron.efektBroni === 'krwawienieLecznicze') && !w.boss;
         }
       });
       gracz.animCios = 0.16;
@@ -13222,8 +14594,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (joyAktywny) {
       var dx = joyX - joyBazaX, dy = joyY - joyBazaY;
       var dl = Math.hypot(dx, dy);
-      if (dl > 6) {
-        var sila = Math.min(1, dl / 52);
+      if (dl > 7) {
+        var sila = Math.min(1, dl / PROMIEN_DRAZKA);
         var nx = (dx/dl) * predkosc * sila * dt;
         var ny = (dy/dl) * predkosc * sila * dt;
         if (!czySciana(gracz.x + nx + Math.sign(nx)*gracz.r, gracz.y)) gracz.x += nx;
@@ -13325,6 +14697,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           w.tykKrwi = 0.6;
           w.hp -= w.krwawienieObr;
           tekstNaSwiecie(w.x, w.y - w.r, '' + w.krwawienieObr, '#e6543c');
+          if (w.krwawienieLeczy && gracz.hp > 0 && gracz.hp < gracz.hpMax) {
+            var oddane = Math.max(1, Math.round(w.krwawienieObr * 0.5));
+            gracz.hp = Math.min(gracz.hpMax, gracz.hp + oddane);
+            tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + oddane, '#7ec98a');
+            odswiezHud();
+          }
           if (w.hp <= 0) { zabijWroga(w); return; }
         }
       }
@@ -13477,12 +14855,55 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         }
       }
 
-      if (d > zasiegAtaku * 0.9) {
-        var kat = Math.atan2(gracz.y - w.y, gracz.x - w.x);
-        var nx = Math.cos(kat) * w.predkosc * mnoznikPredkosci * dt;
-        var ny = Math.sin(kat) * w.predkosc * mnoznikPredkosci * dt;
-        if (!czySciana(w.x + nx + Math.sign(nx)*w.r, w.y)) w.x += nx;
-        if (!czySciana(w.x, w.y + ny + Math.sign(ny)*w.r)) w.y += ny;
+      // ---- WZORZEC RUCHU zalezny od typu wroga ----
+      var katDoGracza = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+      var rx = 0, ry = 0, rusza = false;
+
+      if (w.zachowanie === 'okrazajacy') {
+        // Trzyma dystans i KRAZY wokol gracza - trudno go trafic w biegu
+        var DOBRY = 150;
+        if (d > DOBRY + 40) { rx = Math.cos(katDoGracza); ry = Math.sin(katDoGracza); }
+        else if (d < DOBRY - 40) { rx = -Math.cos(katDoGracza); ry = -Math.sin(katDoGracza); }
+        else { rx = -Math.sin(katDoGracza) * w.kierunekKrazenia; ry = Math.cos(katDoGracza) * w.kierunekKrazenia; }
+        rusza = true;
+      } else if (w.zachowanie === 'uciekajacy') {
+        // UCIEKA i zostawia za soba trujacy gaz
+        if (d < 210) { rx = -Math.cos(katDoGracza); ry = -Math.sin(katDoGracza); }
+        else { rx = -Math.sin(katDoGracza)*w.kierunekKrazenia; ry = Math.cos(katDoGracza)*w.kierunekKrazenia; }
+        rusza = true;
+        w.cooldownGazu -= dt;
+        if (w.cooldownGazu <= 0) {
+          w.cooldownGazu = 0.75;
+          gazy.push({ x:w.x, y:w.y, r:26, zycie:5.5, max:5.5, tyk:0,
+                      obr:Math.max(1, Math.round(w.atak*0.22)) });
+        }
+      } else if (w.zachowanie === 'szarzaBoki') {
+        // Biegnie WPROST na gracza, ale strzela na BOKI - nie da sie
+        // go bezkarnie okrazac
+        if (d > zasiegAtaku * 0.9) { rx = Math.cos(katDoGracza); ry = Math.sin(katDoGracza); rusza = true; }
+        w.cooldownBoczny -= dt;
+        if (w.cooldownBoczny <= 0 && d < 260) {
+          w.cooldownBoczny = 1.9;
+          [Math.PI/2, -Math.PI/2].forEach(function (odchyl) {
+            var kb = katDoGracza + odchyl;
+            pociski.push({ x:w.x, y:w.y, vx:Math.cos(kb)*195, vy:Math.sin(kb)*195,
+                           obr:Math.round(w.atak*0.7), wroga:true, zycie:2.2, kolor:'#e8a05a' });
+          });
+          ton(260, 0.07, 'square', 0.09);
+        }
+      } else if (d > zasiegAtaku * 0.9) {
+        rx = Math.cos(katDoGracza); ry = Math.sin(katDoGracza); rusza = true;
+      }
+
+      if (rusza) {
+        var dlR = Math.hypot(rx, ry);
+        if (dlR > 0.001) {
+          rx /= dlR; ry /= dlR;
+          var nx = rx * w.predkosc * mnoznikPredkosci * dt;
+          var ny = ry * w.predkosc * mnoznikPredkosci * dt;
+          if (!czySciana(w.x + nx + Math.sign(nx)*w.r, w.y)) w.x += nx;
+          if (!czySciana(w.x, w.y + ny + Math.sign(ny)*w.r)) w.y += ny;
+        }
       }
 
       // BOMBIARZ: dopada i wybucha, raniac wszystko dookola
@@ -13561,6 +14982,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         dzwiekLup();
         lupyNaZiemi.splice(l, 1);
         odswiezPanele(); odswiezHud();
+      }
+    }
+
+    // ---- TRUJACE CHMURY ----
+    for (var gi = gazy.length - 1; gi >= 0; gi--) {
+      var gz = gazy[gi];
+      gz.zycie -= dt;
+      if (gz.zycie <= 0) { gazy.splice(gi, 1); continue; }
+      gz.tyk -= dt;
+      if (gz.tyk <= 0 && Math.hypot(gz.x - gracz.x, gz.y - gracz.y) < gz.r + gracz.r) {
+        gz.tyk = 0.85;
+        zadajObrazeniaGraczowi(gz.obr);
+        if (!trwa) return;
       }
     }
 
@@ -13673,6 +15107,87 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.restore();
   }
 
+  // ---- KSZTALTY BRONI ----
+  // Kazda bron rysowana wektorowo wzdluz osi X (ostrze w prawo).
+  // Kolor akcentu zalezy od rzadkosci, wiec legendarna od razu rzuca sie w oczy.
+  function rysujKsztaltBroni(ctx, bron) {
+    if (!bron) return;
+    var kol = bron.mityczna ? KOLOR_MITYCZNY : TIERY[bron.tier].kolor;
+    var drewno = '#6b4a2a', metal = '#d8d8e4', ciemny = '#3a3a46';
+
+    function ostrze(dl, szer, kolorOstrza) {
+      ctx.fillStyle = kolorOstrza;
+      ctx.beginPath();
+      ctx.moveTo(0, -szer/2);
+      ctx.lineTo(dl - szer*0.9, -szer/2);
+      ctx.lineTo(dl, 0);
+      ctx.lineTo(dl - szer*0.9, szer/2);
+      ctx.lineTo(0, szer/2);
+      ctx.closePath(); ctx.fill();
+    }
+
+    switch (bron.rodzaj) {
+      case 'miecz':
+        ctx.fillStyle = drewno; ctx.fillRect(-8, -1.6, 7, 3.2);
+        ctx.fillStyle = kol;    ctx.fillRect(-1.5, -5, 3, 10);
+        ostrze(20, 5, metal);
+        ctx.fillStyle = kol; ctx.fillRect(2, -0.7, 15, 1.4);
+        break;
+      case 'topor':
+        ctx.fillStyle = drewno; ctx.fillRect(-9, -1.8, 20, 3.6);
+        ctx.fillStyle = metal;
+        ctx.beginPath();
+        ctx.moveTo(7, -2); ctx.lineTo(17, -10); ctx.lineTo(21, -1);
+        ctx.lineTo(21, 1); ctx.lineTo(17, 10); ctx.lineTo(7, 2);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle = kol; ctx.fillRect(6, -3, 3, 6);
+        break;
+      case 'mlot':
+        ctx.fillStyle = drewno; ctx.fillRect(-9, -2, 19, 4);
+        ctx.fillStyle = ciemny; ctx.fillRect(9, -9, 11, 18);
+        ctx.fillStyle = kol;    ctx.fillRect(17, -9, 3, 18);
+        break;
+      case 'sztylety':
+        ctx.fillStyle = drewno; ctx.fillRect(-6, -3.6, 5, 2.4);
+        ctx.fillStyle = drewno; ctx.fillRect(-6, 1.2, 5, 2.4);
+        ctx.save(); ctx.translate(0, -2.4); ostrze(12, 3.4, metal); ctx.restore();
+        ctx.save(); ctx.translate(0, 2.4);  ostrze(12, 3.4, metal); ctx.restore();
+        break;
+      case 'wlocznia':
+        ctx.fillStyle = drewno; ctx.fillRect(-12, -1.7, 30, 3.4);
+        ctx.fillStyle = kol;    ctx.fillRect(15, -2.6, 3, 5.2);
+        ctx.save(); ctx.translate(18, 0); ostrze(11, 5.6, metal); ctx.restore();
+        break;
+      case 'kusza':
+        ctx.fillStyle = drewno; ctx.fillRect(-10, -2, 22, 4);
+        ctx.strokeStyle = ciemny; ctx.lineWidth = 2.4;
+        ctx.beginPath(); ctx.moveTo(8, -11); ctx.lineTo(13, 0); ctx.lineTo(8, 11); ctx.stroke();
+        ctx.strokeStyle = '#e8e0c8'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(8, -11); ctx.lineTo(2, 0); ctx.lineTo(8, 11); ctx.stroke();
+        ctx.fillStyle = kol; ctx.fillRect(-10, -2, 5, 4);
+        break;
+      case 'rozdzka': case 'rozdzkaOgnia': case 'rozdzkaPior': case 'rozdzkaZimy': case 'rozdzkaWiedzmy':
+        var kolKrysztalu = bron.rodzaj === 'rozdzkaOgnia' ? '#ff7a3c'
+                        : bron.rodzaj === 'rozdzkaZimy'  ? '#7ec4e8'
+                        : bron.rodzaj === 'rozdzkaPior'  ? '#ffe066'
+                        : (bron.mityczna ? KOLOR_MITYCZNY : '#c58ae6');
+        ctx.fillStyle = drewno; ctx.fillRect(-9, -1.5, 20, 3);
+        ctx.save();
+        ctx.translate(15, 0);
+        ctx.shadowColor = kolKrysztalu; ctx.shadowBlur = 9;
+        ctx.fillStyle = kolKrysztalu;
+        ctx.beginPath();
+        ctx.moveTo(0, -5.5); ctx.lineTo(5, 0); ctx.lineTo(0, 5.5); ctx.lineTo(-5, 0);
+        ctx.closePath(); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle = kol; ctx.fillRect(8, -2.2, 3, 4.4);
+        break;
+      default:
+        ctx.font = '15px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(bron.ikona, 6, 0);
+    }
+  }
+
   function rysuj() {
     ctx.fillStyle = '#0a0810';
     ctx.fillRect(0, 0, WID, WYS);
@@ -13680,16 +15195,94 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var tx0 = Math.max(0, Math.floor(kamX / KAFEL) - 1), tx1 = Math.min(SIATKA-1, Math.ceil((kamX + WID) / KAFEL) + 1);
     var ty0 = Math.max(0, Math.floor(kamY / KAFEL) - 1), ty1 = Math.min(SIATKA-1, Math.ceil((kamY + WYS) / KAFEL) + 1);
 
+    // ---- PODLOGA ----
+    // Cztery warianty kafla zamiast jednolitej szachownicy: gladki, spekany,
+    // z kaluza i z gruzem. Wariant wynika ze wspolrzednych, wiec jest staly
+    // dla danego pola i nie migocze miedzy klatkami.
     for (var ty = ty0; ty <= ty1; ty++) {
       for (var tx = tx0; tx <= tx1; tx++) {
         if (mapa[ty][tx] !== 1) continue;
         var ex = tx*KAFEL - kamX, ey = ty*KAFEL - kamY;
-        var odcien = ((tx*7 + ty*13) % 5) * 4;
-        ctx.fillStyle = 'rgb(' + (34+odcien) + ',' + (30+odcien) + ',' + (26+odcien) + ')';
+        var ziarno = (tx*73856093 ^ ty*19349663) >>> 0;
+        var wariant = ziarno % 4;
+        var odcien = (ziarno % 7) * 3;
+        ctx.fillStyle = 'rgb(' + (32+odcien) + ',' + (28+odcien) + ',' + (25+odcien) + ')';
         ctx.fillRect(ex, ey, KAFEL, KAFEL);
-        ctx.strokeStyle = 'rgba(0,0,0,0.28)';
+
+        if (wariant === 1) {                       // spekany kamien
+          ctx.strokeStyle = 'rgba(0,0,0,0.34)'; ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(ex + KAFEL*0.2, ey + KAFEL*0.15);
+          ctx.lineTo(ex + KAFEL*0.5, ey + KAFEL*0.55);
+          ctx.lineTo(ex + KAFEL*0.35, ey + KAFEL*0.9);
+          ctx.stroke();
+        } else if (wariant === 2) {                // wilgotna plama
+          ctx.fillStyle = 'rgba(40,60,70,0.22)';
+          ctx.beginPath();
+          ctx.ellipse(ex + KAFEL*0.55, ey + KAFEL*0.6, KAFEL*0.26, KAFEL*0.17, 0.5, 0, Math.PI*2);
+          ctx.fill();
+        } else if (wariant === 3) {                // gruz
+          ctx.fillStyle = 'rgba(90,80,66,0.30)';
+          ctx.fillRect(ex + KAFEL*0.22, ey + KAFEL*0.7, 3, 3);
+          ctx.fillRect(ex + KAFEL*0.62, ey + KAFEL*0.3, 2, 2);
+          ctx.fillRect(ex + KAFEL*0.75, ey + KAFEL*0.72, 2, 2);
+        }
+        ctx.strokeStyle = 'rgba(0,0,0,0.30)';
         ctx.lineWidth = 1;
         ctx.strokeRect(ex+0.5, ey+0.5, KAFEL-1, KAFEL-1);
+      }
+    }
+
+    // ---- SCIANY: cegly i POCHODNIE ----
+    // Rysujemy tylko sciany SASIADUJACE z podloga - reszta i tak jest
+    // niewidoczna, wiec nie ma sensu jej rysowac.
+    for (var wy = ty0; wy <= ty1; wy++) {
+      for (var wx = tx0; wx <= tx1; wx++) {
+        if (mapa[wy][wx] === 1) continue;
+        var sasiadPodloga =
+          (mapa[wy+1] && mapa[wy+1][wx] === 1) || (mapa[wy-1] && mapa[wy-1][wx] === 1) ||
+          (mapa[wy][wx+1] === 1) || (mapa[wy][wx-1] === 1);
+        if (!sasiadPodloga) continue;
+        var sx = wx*KAFEL - kamX, sy = wy*KAFEL - kamY;
+        var z2 = (wx*83492791 ^ wy*29996224) >>> 0;
+        ctx.fillStyle = 'rgb(' + (22 + z2%5) + ',' + (20 + z2%4) + ',' + (26 + z2%6) + ')';
+        ctx.fillRect(sx, sy, KAFEL, KAFEL);
+        // Uklad cegiel z przesunieciem co drugi rzad
+        ctx.strokeStyle = 'rgba(255,255,255,0.055)'; ctx.lineWidth = 1;
+        var polowa = KAFEL/2;
+        ctx.beginPath();
+        ctx.moveTo(sx, sy + polowa + 0.5); ctx.lineTo(sx + KAFEL, sy + polowa + 0.5);
+        ctx.stroke();
+        var przes = (wy % 2 === 0) ? 0 : polowa;
+        ctx.beginPath();
+        ctx.moveTo(sx + przes + 0.5, sy); ctx.lineTo(sx + przes + 0.5, sy + polowa);
+        ctx.moveTo(sx + (przes + polowa) % KAFEL + 0.5, sy + polowa);
+        ctx.lineTo(sx + (przes + polowa) % KAFEL + 0.5, sy + KAFEL);
+        ctx.stroke();
+
+        // POCHODNIA - co kilkanascie scian, tylko przy podlodze od dolu
+        if (z2 % 17 === 0 && mapa[wy+1] && mapa[wy+1][wx] === 1) {
+          var pchX = sx + KAFEL/2, pchY = sy + KAFEL*0.72;
+          var migot = 0.72 + Math.sin(Date.now()/140 + wx*2.1 + wy) * 0.28;
+          ctx.fillStyle = '#5a3a20';
+          ctx.fillRect(pchX - 1.6, pchY - 2, 3.2, 9);
+          ctx.save();
+          ctx.globalAlpha = 0.30 * migot;
+          var pg = ctx.createRadialGradient(pchX, pchY, 2, pchX, pchY, 62);
+          pg.addColorStop(0, 'rgba(255,190,90,0.95)');
+          pg.addColorStop(1, 'rgba(255,150,40,0)');
+          ctx.fillStyle = pg;
+          ctx.beginPath(); ctx.arc(pchX, pchY, 62, 0, Math.PI*2); ctx.fill();
+          ctx.restore();
+          ctx.fillStyle = '#ffb03c';
+          ctx.beginPath();
+          ctx.ellipse(pchX, pchY - 5, 3 * migot, 5.5 * migot, 0, 0, Math.PI*2);
+          ctx.fill();
+          ctx.fillStyle = '#ffe89a';
+          ctx.beginPath();
+          ctx.ellipse(pchX, pchY - 5.5, 1.4 * migot, 2.8 * migot, 0, 0, Math.PI*2);
+          ctx.fill();
+        }
       }
     }
     // Oznaczenie komnaty bossa
@@ -13857,22 +15450,40 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.fillRect(gx + 1.4, gy - 10, 1.8, 1.8);
     ctx.restore();
 
-    // Bron w reku - OBROCONA zgodnie z kierunkiem ataku, zeby ostrze
-    // bylo skierowane na wroga (wczesniej emoji zawsze patrzylo w bok,
-    // wiec postac "bila rekojescia").
+    // Pasek zdrowia NAD POSTACIA - widac stan bez zerkania na gore ekranu
+    var szerPaska = 34;
+    var procHp = Math.max(0, gracz.hp / gracz.hpMax);
+    ctx.fillStyle = 'rgba(0,0,0,0.65)';
+    ctx.fillRect(gx - szerPaska/2 - 1, gy - 30, szerPaska + 2, 6);
+    ctx.fillStyle = procHp > 0.5 ? '#5fc46a' : (procHp > 0.25 ? '#e6c15c' : '#e6543c');
+    ctx.fillRect(gx - szerPaska/2, gy - 29, szerPaska * procHp, 4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1;
+    ctx.strokeRect(gx - szerPaska/2 - 1.5, gy - 30.5, szerPaska + 3, 7);
+
+    // Bron RYSOWANA, nie obracane emoji - ostrze faktycznie wskazuje cel,
+    // wlocznia ma drzewce, a rozdzka konczy sie krysztalem.
     var bron = gracz.zalozone.bron;
-    var wysun = gracz.animCios > 0 ? 22 : 15;
+    var wysun = gracz.animCios > 0 ? 20 : 13;
     var bx3 = gx + gracz.kierunekX*wysun, by3 = gy + gracz.kierunekY*wysun;
     var katBroni = Math.atan2(gracz.kierunekY, gracz.kierunekX);
     ctx.save();
     ctx.translate(bx3, by3);
-    // Emoji broni jest narysowane ostrzem w GORE-PRAWO, wiec obracamy je
-    // tak, zeby ta strona pokrywala sie z kierunkiem ciosu.
-    ctx.rotate(katBroni + Math.PI/4);
-    if (gracz.kierunekX < 0) { ctx.scale(1, -1); ctx.rotate(-Math.PI/2); }
-    ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(bron.ikona, 0, 0);
+    ctx.rotate(katBroni);          // 0 rad = ostrze w PRAWO
+    rysujKsztaltBroni(ctx, bron);
     ctx.restore();
+
+    // Trujace chmury - rysowane pod postaciami
+    gazy.forEach(function (gz) {
+      var ex = gz.x - kamX, ey = gz.y - kamY;
+      if (ex < -60 || ex > WID+60 || ey < -60 || ey > WYS+60) return;
+      ctx.save();
+      ctx.globalAlpha = Math.min(0.42, gz.zycie / gz.max * 0.42);
+      var gg = ctx.createRadialGradient(ex, ey, 3, ex, ey, gz.r);
+      gg.addColorStop(0, '#9ae05a'); gg.addColorStop(1, 'rgba(90,150,50,0)');
+      ctx.fillStyle = gg;
+      ctx.beginPath(); ctx.arc(ex, ey, gz.r, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
 
     // Czastki
     czastki.forEach(function (cz) {
@@ -13896,17 +15507,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // MINIMAPA w prawym gornym rogu - cala mapa w pomniejszeniu
     rysujMinimape();
 
-    // Drazek
-    if (joyAktywny) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.28)'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(joyBazaX, joyBazaY, 46, 0, Math.PI*2); ctx.stroke();
-      var ddx = joyX - joyBazaX, ddy = joyY - joyBazaY;
-      var dd = Math.hypot(ddx, ddy);
-      var ogr = Math.min(dd, 46);
-      var jx = joyBazaX + (dd ? ddx/dd : 0) * ogr, jy = joyBazaY + (dd ? ddy/dd : 0) * ogr;
-      ctx.fillStyle = 'rgba(230,193,92,0.5)';
-      ctx.beginPath(); ctx.arc(jx, jy, 19, 0, Math.PI*2); ctx.fill();
-    }
+    // (drazek jest osobnym elementem pod plansza - nie rysujemy go tutaj)
   }
 
   // ---------- PANELE UI ----------
@@ -13916,6 +15517,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     hudHp.textContent = Math.max(0, Math.round(gracz.hp)) + ' / ' + gracz.hpMax;
     hudPoziom.textContent = 'Lv ' + gracz.poziom + ' · Labirynt ' + (poziomLabiryntu+1) + '/3';
     hudMikstury.textContent = '🧪 ' + gracz.mikstury;
+    var lm = document.getElementById('licznikMikstur');
+    if (lm) lm.textContent = gracz.mikstury;
     odznakaPkt.style.display = gracz.punkty > 0 ? 'inline-block' : 'none';
     odznakaPkt.textContent = gracz.punkty;
     odznakaEkw.style.display = gracz.ekwipunek.length > 0 ? 'inline-block' : 'none';
@@ -13954,69 +15557,153 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       sekcjaStaty.appendChild(w);
     });
 
-    // EKWIPUNEK
+    // ================= EKWIPUNEK =================
     sekcjaEkw.innerHTML = '';
-    var nagZal = document.createElement('div');
-    nagZal.className = 'naglowek-sekcji'; nagZal.textContent = 'Założone';
-    sekcjaEkw.appendChild(nagZal);
-    [['bron','Broń'],['helm','Hełm'],['zbroja','Zbroja'],['buty','Buty'],['amulet','Amulet']].forEach(function (para) {
-      var p = gracz.zalozone[para[0]];
+
+    function gwiazdkiTieru(p) {
+      // Gwiazdki w KOLORZE rzadkosci - od razu widac klase przedmiotu
+      var kol = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
+      var ile = p.mityczna ? 5 : p.tier + 1;
+      return '<span style="color:' + kol + ';letter-spacing:1px;font-size:11px">'
+           + '★'.repeat(ile) + '</span>';
+    }
+    function nazwaTieru(p) {
+      return p.mityczna ? 'Mityczny' : TIERY[p.tier].nazwa;
+    }
+    // Porownanie z aktualnie zalozonym - od razu widac, czy warto zmienic
+    function porownanie(p) {
+      var slot = p.kategoria === 'bron' ? 'bron' : p.slot;
+      var obecny = gracz.zalozone[slot];
+      if (!obecny) return '<span style="color:#7ec98a;font-weight:700">NOWE</span>';
+      var a = p.kategoria === 'bron' ? p.obr / p.tempo : p.obrona;
+      var c = obecny.kategoria === 'bron' ? obecny.obr / obecny.tempo : obecny.obrona;
+      var r = a - c;
+      if (Math.abs(r) < 0.01) return '<span style="color:#a89878">= tyle samo</span>';
+      return r > 0
+        ? '<span style="color:#7ec98a;font-weight:700">▲ lepsze</span>'
+        : '<span style="color:#e6543c">▼ gorsze</span>';
+    }
+
+    function wierszPrzedmiotu(p, indeks, zalozony, etykietaSlotu) {
       var w = document.createElement('div');
       w.className = 'zalozone-wiersz';
-      if (p) {
-        var kolNaz = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
-        w.innerHTML = '<span class="ikona">' + p.ikona + '</span><span class="opis"><span class="tytul" style="color:' + kolNaz + '">' + p.nazwa + '</span><br><span class="staty">' + opisPrzedmiotu(p) + '</span></span>';
-      } else {
-        w.innerHTML = '<span class="ikona" style="opacity:0.3">➖</span><span class="opis"><span class="tytul" style="opacity:0.4">Brak: ' + para[1] + '</span></span>';
+      var kol = p ? (p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor) : '#555';
+      if (!p) {
+        w.innerHTML = '<span class="ikona" style="opacity:0.28">➖</span>'
+          + '<span class="opis"><span class="tytul" style="opacity:0.4">Puste: ' + etykietaSlotu + '</span></span>';
+        return w;
       }
-      sekcjaEkw.appendChild(w);
+      w.style.borderLeft = '3px solid ' + kol;
+      var liczby = p.kategoria === 'bron'
+        ? ('<b style="color:#f0dfa8">' + p.obr + ' obr.</b> · ' + p.tempo.toFixed(2) + 's'
+           + ' · <b>' + Math.round(p.obr / p.tempo) + ' obr./s</b>')
+        : ('<b style="color:#f0dfa8">' + p.obrona + ' obrony</b>');
+      w.innerHTML =
+        '<span class="ikona">' + p.ikona + '</span>'
+        + '<span class="opis">'
+        +   '<span class="tytul" style="color:' + kol + '">' + p.nazwa + '</span> ' + gwiazdkiTieru(p)
+        +   '<br><span class="staty">' + liczby + '</span>'
+        +   '<br><span class="staty" style="opacity:0.85">' + opisPrzedmiotu(p) + '</span>'
+        +   (zalozony ? '' : '<br><span class="staty">' + porownanie(p) + '</span>')
+        + '</span>';
+      if (!zalozony) {
+        var akcje = document.createElement('div');
+        akcje.style.cssText = 'display:flex;flex-direction:column;gap:3px;';
+        var bZal = document.createElement('button');
+        bZal.textContent = 'Załóż';
+        bZal.style.cssText = 'background:linear-gradient(135deg,#7ec98a,#3f8a52);color:#0d1a0d;'
+          + 'border:none;border-radius:7px;font-size:10px;font-weight:800;padding:4px 8px;';
+        bZal.addEventListener('click', function () { zaloz(p, indeks); });
+        var bWyr = document.createElement('button');
+        bWyr.textContent = '✕';
+        bWyr.style.cssText = 'background:rgba(192,57,43,0.25);color:#e6543c;border:1px solid #8a2f26;'
+          + 'border-radius:7px;font-size:10px;font-weight:800;padding:3px 8px;';
+        bWyr.addEventListener('click', function () { wyrzucPrzedmiot(indeks); });
+        akcje.appendChild(bZal); akcje.appendChild(bWyr);
+        w.appendChild(akcje);
+      }
+      return w;
+    }
+
+    // Nazwa MUSI byc inna niz zmienna 'naglowek' uzywana w sekcji
+    // statystyk - w tym samym zakresie var nadpisywal te funkcje.
+    function naglowekSekcji(tekst, kolor) {
+      var h = document.createElement('div');
+      h.className = 'naglowek-sekcji';
+      if (kolor) h.style.color = kolor;
+      h.textContent = tekst;
+      return h;
+    }
+
+    // ---- ZALOZONE ----
+    sekcjaEkw.appendChild(naglowekSekcji('⚔️ Założone', '#e6c15c'));
+    [['bron','Broń'],['helm','Hełm'],['zbroja','Zbroja'],['buty','Buty'],['amulet','Amulet']].forEach(function (para) {
+      sekcjaEkw.appendChild(wierszPrzedmiotu(gracz.zalozone[para[0]], -1, true, para[1]));
     });
 
-    var nagPlecak = document.createElement('div');
-    nagPlecak.className = 'naglowek-sekcji';
-    nagPlecak.textContent = 'Plecak (' + gracz.ekwipunek.length + '/30) — dotknij, żeby założyć · ✕ wyrzuca';
-    sekcjaEkw.appendChild(nagPlecak);
-
     var btnPolacz = document.createElement('button');
-    btnPolacz.className = 'btn-panel';
-    btnPolacz.style.width = '100%';
-    btnPolacz.style.marginBottom = '5px';
+    btnPolacz.style.cssText = 'width:100%;margin:8px 0 4px;background:linear-gradient(135deg,#3a3550,#262038);'
+      + 'border:1px solid #5a4a2e;border-radius:9px;color:#f0e8d0;font-size:12px;font-weight:700;padding:9px 2px;';
     btnPolacz.innerHTML = '🔗 Połącz pary w lepsze przedmioty';
     btnPolacz.addEventListener('click', polaczPrzedmioty);
     sekcjaEkw.appendChild(btnPolacz);
 
-    var siatka = document.createElement('div');
-    siatka.className = 'siatka-ekw';
-    for (var i = 0; i < 30; i++) {
-      var slot = document.createElement('div');
-      var p = gracz.ekwipunek[i];
-      if (p) {
-        slot.className = 'slot-ekw';
-        slot.textContent = p.ikona;
-        slot.title = p.nazwa + ' — ' + opisPrzedmiotu(p);
-        var kropka = document.createElement('div');
-        kropka.className = 'tier-kropka';
-        kropka.style.background = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
-        slot.appendChild(kropka);
-        slot.style.borderColor = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
-        (function (przedmiot, indeks) {
-          slot.addEventListener('click', function () { zaloz(przedmiot, indeks); });
-        })(p, i);
-        var btnX = document.createElement('div');
-        btnX.textContent = '✕';
-        btnX.style.cssText = 'position:absolute;bottom:1px;left:2px;font-size:10px;color:#e6543c;'
-          + 'background:rgba(0,0,0,0.55);border-radius:4px;padding:0 3px;font-weight:700;';
-        (function (indeks) {
-          btnX.addEventListener('click', function (ev) { ev.stopPropagation(); wyrzucPrzedmiot(indeks); });
-        })(i);
-        slot.appendChild(btnX);
-      } else {
-        slot.className = 'slot-ekw pusty';
-        slot.textContent = '·';
-      }
-      siatka.appendChild(slot);
+    // ---- PLECAK, podzielony na sekcje ----
+    var bronie = [], pancerze = [], mikstury = [];
+    gracz.ekwipunek.forEach(function (p, idx) {
+      var wpis = { p: p, i: idx };
+      if (p.kategoria === 'bron') bronie.push(wpis);
+      else if (p.kategoria === 'mikstura') mikstury.push(wpis);
+      else pancerze.push(wpis);
+    });
+    // Najlepsze na gorze - nie trzeba przewijac w poszukiwaniu perelki
+    function sortuj(lista) {
+      lista.sort(function (a, c) {
+        var ta = a.p.mityczna ? 9 : a.p.tier, tc = c.p.mityczna ? 9 : c.p.tier;
+        if (tc !== ta) return tc - ta;
+        var wa = a.p.kategoria === 'bron' ? a.p.obr / a.p.tempo : a.p.obrona;
+        var wc = c.p.kategoria === 'bron' ? c.p.obr / c.p.tempo : c.p.obrona;
+        return wc - wa;
+      });
+      return lista;
     }
-    sekcjaEkw.appendChild(siatka);
+
+    sekcjaEkw.appendChild(naglowekSekcji('🗡️ Bronie (' + bronie.length + ')', '#e88a7c'));
+    if (bronie.length === 0) {
+      var pustoB = document.createElement('div');
+      pustoB.className = 'naglowek-sekcji';
+      pustoB.style.cssText = 'opacity:0.4;text-transform:none;letter-spacing:0';
+      pustoB.textContent = 'Brak broni w plecaku';
+      sekcjaEkw.appendChild(pustoB);
+    }
+    sortuj(bronie).forEach(function (wp) {
+      sekcjaEkw.appendChild(wierszPrzedmiotu(wp.p, wp.i, false));
+    });
+
+    sekcjaEkw.appendChild(naglowekSekcji('🛡️ Pancerz (' + pancerze.length + ')', '#7ec4e8'));
+    if (pancerze.length === 0) {
+      var pustoP = document.createElement('div');
+      pustoP.className = 'naglowek-sekcji';
+      pustoP.style.cssText = 'opacity:0.4;text-transform:none;letter-spacing:0';
+      pustoP.textContent = 'Brak pancerza w plecaku';
+      sekcjaEkw.appendChild(pustoP);
+    }
+    sortuj(pancerze).forEach(function (wp) {
+      sekcjaEkw.appendChild(wierszPrzedmiotu(wp.p, wp.i, false));
+    });
+
+    if (mikstury.length) {
+      sekcjaEkw.appendChild(naglowekSekcji('🧪 Mikstury (' + mikstury.length + ')', '#7ec98a'));
+      mikstury.forEach(function (wp) {
+        sekcjaEkw.appendChild(wierszPrzedmiotu(wp.p, wp.i, false));
+      });
+    }
+
+    var stopka = document.createElement('div');
+    stopka.className = 'naglowek-sekcji';
+    stopka.style.cssText = 'opacity:0.5;text-transform:none;letter-spacing:0;margin-top:10px';
+    stopka.textContent = 'Plecak: ' + gracz.ekwipunek.length + ' / 30';
+    sekcjaEkw.appendChild(stopka);
   }
 
   // Laczy KAZDA pare identycznych przedmiotow (ten sam rodzaj i tier)
@@ -14101,13 +15788,20 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (sk) { otworzSkrzynie(sk); btnSkrzynia.style.display = 'none'; }
   });
 
+  var nakladkaStatow = document.getElementById('nakladkaStatow');
+  var nakladkaEkw = document.getElementById('nakladkaEkw');
+
   btnStaty.addEventListener('click', function () {
-    btnStaty.classList.add('aktywny'); btnEkw.classList.remove('aktywny');
-    sekcjaStaty.classList.add('widoczna'); sekcjaEkw.classList.remove('widoczna');
+    var pokaz = !nakladkaStatow.classList.contains('widoczna');
+    nakladkaStatow.classList.toggle('widoczna', pokaz);
+    btnStaty.classList.toggle('aktywny', pokaz);
+    if (pokaz) { nakladkaEkw.classList.remove('widoczna'); btnEkw.classList.remove('aktywny'); }
   });
   btnEkw.addEventListener('click', function () {
-    btnEkw.classList.add('aktywny'); btnStaty.classList.remove('aktywny');
-    sekcjaEkw.classList.add('widoczna'); sekcjaStaty.classList.remove('widoczna');
+    var pokaz = !nakladkaEkw.classList.contains('widoczna');
+    nakladkaEkw.classList.toggle('widoczna', pokaz);
+    btnEkw.classList.toggle('aktywny', pokaz);
+    if (pokaz) { nakladkaStatow.classList.remove('widoczna'); btnStaty.classList.remove('aktywny'); }
   });
   btnMikstura.addEventListener('click', function () {
     if (gracz.mikstury <= 0) { dziennik('🧪 Nie masz mikstur!'); return; }
@@ -14122,25 +15816,46 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   });
 
   // ---------- DRAZEK ----------
-  widok.addEventListener('pointerdown', function (e) {
-    if (!trwa) return;
+  // Drazek jest teraz OSOBNYM elementem pod plansza - nie zaslania gry
+  // i nie miesza sie z dotykaniem planszy.
+  var strefaDrazka = document.getElementById('strefaDrazka');
+  var drazekGalka = document.getElementById('drazekGalka');
+  var PROMIEN_DRAZKA = 52;
+  var idPalcaDrazka = null;
+
+  function ustawGalke(dx, dy) {
+    var dl = Math.hypot(dx, dy);
+    var ogr = Math.min(dl, PROMIEN_DRAZKA);
+    var jx = dl ? dx / dl * ogr : 0, jy = dl ? dy / dl * ogr : 0;
+    drazekGalka.style.transform = 'translate(calc(-50% + ' + jx.toFixed(1) + 'px), calc(-50% + ' + jy.toFixed(1) + 'px))';
+  }
+  function pozycjaWStrefie(e) {
+    var r = strefaDrazka.getBoundingClientRect();
+    return { x: e.clientX - r.left - r.width / 2, y: e.clientY - r.top - r.height / 2 };
+  }
+  strefaDrazka.addEventListener('pointerdown', function (e) {
+    e.preventDefault();
     inicjujDzwiek();
-    var r = widok.getBoundingClientRect();
-    joyBazaX = (e.clientX - r.left) * (WID / r.width);
-    joyBazaY = (e.clientY - r.top) * (WYS / r.height);
-    joyX = joyBazaX; joyY = joyBazaY;
-    joyAktywny = true;
+    idPalcaDrazka = e.pointerId;
+    var p = pozycjaWStrefie(e);
+    joyAktywny = true; joyBazaX = 0; joyBazaY = 0; joyX = p.x; joyY = p.y;
+    ustawGalke(p.x, p.y);
   });
-  widok.addEventListener('pointermove', function (e) {
-    if (!joyAktywny) return;
-    var r = widok.getBoundingClientRect();
-    joyX = (e.clientX - r.left) * (WID / r.width);
-    joyY = (e.clientY - r.top) * (WYS / r.height);
+  strefaDrazka.addEventListener('pointermove', function (e) {
+    if (idPalcaDrazka !== e.pointerId) return;
+    var p = pozycjaWStrefie(e);
+    joyX = p.x; joyY = p.y;
+    ustawGalke(p.x, p.y);
   });
-  function puscDrazek() { joyAktywny = false; }
-  widok.addEventListener('pointerup', puscDrazek);
-  widok.addEventListener('pointercancel', puscDrazek);
-  widok.addEventListener('pointerleave', puscDrazek);
+  function puscDrazek(e) {
+    if (e && idPalcaDrazka !== e.pointerId) return;
+    idPalcaDrazka = null; joyAktywny = false;
+    joyX = 0; joyY = 0; joyBazaX = 0; joyBazaY = 0;
+    ustawGalke(0, 0);
+  }
+  ['pointerup','pointercancel','pointerleave'].forEach(function (ev) {
+    strefaDrazka.addEventListener(ev, puscDrazek);
+  });
 
   // ---------- PETLA GLOWNA ----------
   function petla(czas) {
@@ -14154,7 +15869,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function zaludnijMape() {
-    wrogowie = []; lupyNaZiemi = []; skrzynie = [];
+    wrogowie = []; lupyNaZiemi = []; skrzynie = []; gazy = [];
     var start = komnaty[0];
 
     // Trudnosc rosnie z ODLEGLOSCIA od komnaty startowej, a NIE z losowym
@@ -14172,14 +15887,24 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
       var glebokosc = dystanse[idx] / maxDyst;              // 0 = przy starcie, 1 = najdalej
       var poziomKomnaty = 1 + Math.round(glebokosc * 5) + poziomLabiryntu * 3;
-      var ile = losCalk(2 + Math.round(glebokosc * 2), 4 + Math.round(glebokosc * 4) + poziomLabiryntu);
+      // Troche wiecej wrogow niz dotad (za to kazdy daje mniej doswiadczenia),
+      // ale bez przesady - mapy maja teraz duzo komnat.
+      var ile = losCalk(2 + Math.round(glebokosc * 2), 4 + Math.round(glebokosc * 3) + poziomLabiryntu);
 
       // Blisko startu tylko slabe typy; silniejsze dochodza z glebokoscia
       var maxTyp = Math.min(KLUCZE_WROGOW.length - 1, Math.floor(glebokosc * 4.4) + poziomLabiryntu);
       var minTyp = glebokosc > 0.55 ? 1 : 0;
+      // Co trzeci wrog to STRZELAJACY albo o specjalnym zachowaniu -
+      // trzeba unikac pociskow, a nie tylko klikac w tlum.
+      var SPECJALNE = ['mag', 'kusznik', 'lucznik', 'okrazacz', 'trujacy', 'jezdziec'];
 
       for (var i = 0; i < ile; i++) {
-        var typ = KLUCZE_WROGOW[losCalk(minTyp, Math.max(minTyp, maxTyp))];
+        var typ;
+        if (Math.random() < 0.36 && glebokosc > 0.12) {
+          typ = SPECJALNE[losCalk(0, Math.min(SPECJALNE.length - 1, 2 + Math.floor(glebokosc * 5)))];
+        } else {
+          typ = KLUCZE_WROGOW[losCalk(minTyp, Math.max(minTyp, maxTyp))];
+        }
         var wx = (k.x + losowo(1, k.w-1)) * KAFEL;
         var wy = (k.y + losowo(1, k.h-1)) * KAFEL;
         wrogowie.push(stworzWroga(wx, wy, typ, poziomKomnaty));
@@ -14201,7 +15926,38 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         });
       }
     });
+    zaludnijKorytarze();
     ograniczRzadkoscSkrzyn();
+  }
+
+  // Wrogowie NIE tylko w komnatach - korytarze tez bywaja zajete, wiec
+  // przejscie miedzy pokojami przestaje byc bezpiecznym spacerem.
+  function zaludnijKorytarze() {
+    var wKomnacie = function (tx, ty) {
+      return komnaty.some(function (k) {
+        return tx >= k.x && tx < k.x + k.w && ty >= k.y && ty < k.y + k.h;
+      });
+    };
+    var start = komnaty[0];
+    if (!start) return;
+    var polaKorytarzy = [];
+    for (var y = 1; y < SIATKA - 1; y++) {
+      for (var x = 1; x < SIATKA - 1; x++) {
+        if (mapa[y][x] !== 1) continue;
+        if (wKomnacie(x, y)) continue;
+        if (Math.abs(x - start.cx) + Math.abs(y - start.cy) < 12) continue;
+        polaKorytarzy.push([x, y]);
+      }
+    }
+    var ile = Math.round(polaKorytarzy.length * (0.007 + poziomLabiryntu * 0.002));
+    var lekkie = ['szczur', 'goblin', 'okrazacz', 'kusznik', 'trujacy'];
+    for (var i = 0; i < ile && polaKorytarzy.length; i++) {
+      var idx = losCalk(0, polaKorytarzy.length - 1);
+      var pole = polaKorytarzy.splice(idx, 1)[0];
+      var typ = lekkie[losCalk(0, lekkie.length - 1)];
+      wrogowie.push(stworzWroga((pole[0] + 0.5) * KAFEL, (pole[1] + 0.5) * KAFEL,
+                                typ, 2 + poziomLabiryntu * 2));
+    }
   }
 
   // Na 1. i 2. pietrze pilnujemy puli skrzyn: najwyzej 1 niebieska,
@@ -14558,6 +16314,73 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     document.body.style.background = '#0d0d0d';
   }
 
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
   function wlacz() {
     var r = korzen.getBoundingClientRect();
     natW = r.width || 380;
@@ -14567,30 +16390,47 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     if (ramka) {
       styleRamki = ramka.getAttribute('style') || '';
-      ramka.style.cssText =
-        'position:fixed !important;top:0 !important;left:0 !important;' +
-        'width:100vw !important;height:100vh !important;max-width:none !important;' +
-        'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
       try {
-        var d = ramka.ownerDocument;
-        styleRodzica = d.body.getAttribute('style') || '';
-        d.body.style.overflow = 'hidden';
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
       } catch (e) {}
     } else {
       var el = document.documentElement;
-      var f = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f) { try { f.call(el); } catch (err) {} }
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
     }
     setTimeout(przelicz, 60);
     setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
   }
 
   function wylacz() {
     wlaczony = false;
     przycisk.textContent = '⛶';
     if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
       ramka.setAttribute('style', styleRamki);
-      try { ramka.ownerDocument.body.setAttribute('style', styleRodzica); } catch (e) {}
     } else {
       var g = document.exitFullscreen || document.webkitExitFullscreen;
       if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
