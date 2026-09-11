@@ -488,6 +488,12 @@ ETAPY = [
         "tytul": {"pl": "🕶️ Chwila Zawahania", "en": "🕶️ Moment of Hesitation"},
         "typ": "fps",
     },
+    {
+        "klucz": "poziom_diabla",
+        "emoji": "😈",
+        "tytul": {"pl": "😈 Poziom Diabła", "en": "😈 Level Devil"},
+        "typ": "poziom_diabla",
+    },
 ]
 
 # ======================================================================
@@ -528,7 +534,7 @@ KATEGORIE = [
         "nazwa": {"pl": "Wielkie przygody", "en": "Big adventures"},
         "opis": {"pl": "Na dłużej — całe światy", "en": "Whole worlds to explore"},
         "kolor": "#b98ae6",
-        "etapy": ["minecraft", "labirynt", "fps"],
+        "etapy": ["minecraft", "labirynt", "fps", "poziom_diabla"],
     },
 ]
 
@@ -587,6 +593,7 @@ TEKST = {
         "bledy_etykieta_parkour": "Ile razy spadłaś do punktu kontrolnego?",
         "bledy_etykieta_labirynt": "Ile razy poległaś w labiryncie?",
         "bledy_etykieta_fps": "Ile razy zginęłaś?",
+        "bledy_etykieta_diabel": "Ile razy diabeł Cię pokonał?",
         "bledy_etykieta_zaba": "Ile razy żabka wpadła na przeszkodę?",
         "bledy_etykieta_memory": "Ile było pomyłek przy dopasowywaniu par?",
         "bledy_etykieta_simon": "Ile razy pomyliłaś kolejność?",
@@ -605,6 +612,7 @@ TEKST = {
         "napewno_parkour": "Na pewno dotarłaś na szczyt wieży?",
         "napewno_labirynt": "Na pewno pokonałaś Władcę Labiryntu?",
         "napewno_fps": "Na pewno wyeliminowałaś wszystkich wrogów?",
+        "napewno_diabel": "Na pewno przeszłaś wszystkie 10 poziomów?",
         "napewno_zaba": "Na pewno żabka doskoczyła do końca?",
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
         "napewno_simon": "Na pewno powtórzyłaś całą sekwencję?",
@@ -656,6 +664,7 @@ TEKST = {
         "bledy_etykieta_parkour": "How many times did you fall back to the checkpoint?",
         "bledy_etykieta_labirynt": "How many times did you die in the labyrinth?",
         "bledy_etykieta_fps": "How many times did you die?",
+        "bledy_etykieta_diabel": "How many times did the devil beat you?",
         "bledy_etykieta_zaba": "How many times did the frog hit an obstacle?",
         "bledy_etykieta_memory": "How many mismatched pairs did you have?",
         "bledy_etykieta_simon": "How many times did you get the sequence wrong?",
@@ -674,6 +683,7 @@ TEKST = {
         "napewno_parkour": "Are you sure you reached the top of the tower?",
         "napewno_labirynt": "Are you sure you defeated the Lord of the Labyrinth?",
         "napewno_fps": "Are you sure you eliminated every enemy?",
+        "napewno_diabel": "Are you sure you finished all 10 levels?",
         "napewno_zaba": "Are you sure the frog made it all the way?",
         "napewno_memory": "Are you sure you matched all pairs in time?",
         "napewno_simon": "Are you sure you repeated the whole sequence?",
@@ -13679,6 +13689,850 @@ SZABLON_FPS = """<!DOCTYPE html>
 </html>
 """
 
+SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
+  html, body { width:100%; overflow:hidden; background:#0c0a12; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:520px; background:#0c0a12; overflow:hidden; }
+  #plansza { display:block; width:100%; background:#15121d; }
+
+  #hud { position:absolute; top:0; left:0; right:0; padding:7px 11px; z-index:5; pointer-events:none;
+         display:flex; justify-content:space-between; align-items:center; }
+  .hud-tekst { color:#f0e8d0; font-size:12px; font-weight:800; letter-spacing:0.04em;
+               text-shadow:0 1px 4px rgba(0,0,0,0.95); }
+  #zgony { color:#e6543c; }
+
+  #szyderstwo { position:absolute; top:44%; left:0; right:0; text-align:center; z-index:6;
+                color:#ff6b5a; font-size:19px; font-weight:900; letter-spacing:0.03em; opacity:0;
+                pointer-events:none; text-shadow:0 2px 12px rgba(0,0,0,0.95); padding:0 20px; }
+  #szyderstwo.pokaz { animation:migTekst 1.9s ease forwards; }
+  @keyframes migTekst {
+    0% { opacity:0; transform:scale(0.8); }
+    15% { opacity:1; transform:scale(1.06); }
+    70% { opacity:1; }
+    100% { opacity:0; }
+  }
+
+  #sterowanie { position:absolute; left:0; right:0; bottom:0; height:150px;
+                background:linear-gradient(180deg,#1a1520,#0f0d14); border-top:2px solid #3a3550;
+                display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
+  .strzalki { display:flex; gap:10px; }
+  .btn-ld { width:76px; height:76px; border-radius:18px; border:1.5px solid #5a4a2e;
+            background:linear-gradient(135deg,#3a3550,#262038); color:#f0e8d0; font-size:30px; padding:0; }
+  .btn-ld.wcisniety { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
+  #btnSkok { width:96px; height:96px; border-radius:50%; border:3px solid #3f8a52;
+             background:radial-gradient(circle at 35% 30%,#7ec98a,#3f8a52); color:#0d1a0d;
+             font-size:34px; box-shadow:0 4px 14px rgba(0,0,0,0.5); }
+  #btnSkok.wcisniety { transform:scale(0.94); }
+
+  #nakladka { position:absolute; inset:0; background:rgba(10,8,14,0.96); display:flex; flex-direction:column;
+              align-items:center; justify-content:center; text-align:center; padding:24px; z-index:20; }
+  #nakladkaTytul { color:#f5f5f0; font-size:21px; font-weight:900; margin-bottom:10px; }
+  #nakladkaOpis { color:#c8bda8; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
+  .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px;
+             padding:11px 28px; font-weight:800; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  .gra-btn:active { transform:scale(0.96); }
+</style>
+</head>
+<body>
+
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="plansza" width="380" height="300"></canvas>
+  <div id="hud">
+    <div class="hud-tekst" id="poziomNapis">POZIOM 1 / 10</div>
+    <div class="hud-tekst" id="zgony">💀 0</div>
+  </div>
+  <div id="szyderstwo"></div>
+
+  <div id="sterowanie">
+    <div class="strzalki">
+      <button class="btn-ld" id="btnLewo">◀</button>
+      <button class="btn-ld" id="btnPrawo">▶</button>
+    </div>
+    <button id="btnSkok">⤴</button>
+  </div>
+
+  <div id="nakladka">
+    <div id="nakladkaTytul">😈 Poziom Diabła</div>
+    <div id="nakladkaOpis">
+      Dojdź do <b>drzwi</b>. To wszystko.<br><br>
+      Sterowanie: <b>◀ ▶</b> i <b>⤴</b> skok.<br><br>
+      <span style="color:#ff6b5a">Uprzedzam lojalnie: ta plansza Cię nie lubi.</span><br><br>
+      <span style="font-size:11px;opacity:0.75">Po pierwszej śmierci na danym poziomie
+      odkryte pułapki dostają czerwony obrys — żeby było trudno, ale uczciwie.</span>
+    </div>
+    <button class="gra-btn" id="nakladkaBtn">Niech będzie ▶</button>
+  </div>
+</div>
+
+<script>
+  var plansza = document.getElementById('plansza'), ctx = plansza.getContext('2d');
+  var poziomNapis = document.getElementById('poziomNapis'), zgonyNapis = document.getElementById('zgony');
+  var szyderstwo = document.getElementById('szyderstwo');
+  var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul');
+  var nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
+
+  var KAFEL = 20, KOL = 19, WIERSZ = 15;
+  var SZER = KOL * KAFEL, WYS = WIERSZ * KAFEL;
+  var GRAWITACJA = 1800, SILA_SKOKU = -470, PREDKOSC_BIEGU = 175;
+  var SZER_GRACZA = 13, WYS_GRACZA = 17;
+
+  // ---------- DZWIEK ----------
+  var audioCtx = null;
+  function inicjujDzwiek() {
+    try {
+      var o; try { o = window.top; } catch (e) { o = window; }
+      if (o.__wspolnyKontekstAudio && o.__wspolnyKontekstAudio.state !== 'closed') audioCtx = o.__wspolnyKontekstAudio;
+      else if (!audioCtx || audioCtx.state === 'closed') {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        try { o.__wspolnyKontekstAudio = audioCtx; } catch (e2) {}
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var el = document.getElementById('odblokowanieDzwiekuIOS');
+      if (el && !el.src) { el.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='; el.play().catch(function () {}); }
+    } catch (e) {}
+  }
+  ['pointerdown','touchstart','click'].forEach(function (ev) {
+    document.addEventListener(ev, inicjujDzwiek, { passive: true });
+  });
+  function ton(f, dl, typ, gl) {
+    if (!audioCtx) return;
+    try {
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = typ || 'square'; o.frequency.value = f;
+      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gl || 0.14, audioCtx.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dl);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dl + 0.02);
+    } catch (e) {}
+  }
+  function dzwiekSkoku() { ton(420, 0.09, 'square', 0.10); }
+  function dzwiekPulapki() { ton(130, 0.18, 'sawtooth', 0.17); }
+  function dzwiekSmierci() { [300, 230, 170, 110].forEach(function (f, i) { setTimeout(function () { ton(f, 0.16, 'sawtooth', 0.15); }, i * 90); }); }
+  function dzwiekDrzwi() { [523, 659, 784, 1046].forEach(function (f, i) { setTimeout(function () { ton(f, 0.16, 'triangle', 0.15); }, i * 95); }); }
+  function dzwiekKoncowy() { [523, 659, 784, 1046, 1318, 1568].forEach(function (f, i) { setTimeout(function () { ton(f, 0.22, 'triangle', 0.16); }, i * 130); }); }
+
+  // ---------- POZIOMY ----------
+  // '#' - blok, '.' - pustka, 'S' - start, 'D' - drzwi, '^' - kolce
+  // Kazda pulapka ma strefe wyzwalania (w kaflach) i odpala sie RAZ.
+  var POZIOMY = [
+    { // 1 - usypianie czujnosci: nic sie nie dzieje
+      nazwa: 'Rozgrzewka',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [],
+      tekstPoWejsciu: 'No i co, łatwe? 🙂',
+    },
+    { // 2 - podloga znika pod nogami
+      nazwa: 'Podłoga to sugestia',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'zapadnia', strefa:[6,8,2,4], kafle:[[9,12],[10,12],[11,12]], tekst:'Ups.' },
+      ],
+    },
+    { // 3 - kolce z sufitu
+      nazwa: 'Uwaga na sufit',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'spadajaceKolce', strefa:[5,8,2,4], kolumny:[8,9], tekst:'Patrz w górę.' },
+      ],
+    },
+    { // 4 - drzwi uciekaja
+      nazwa: 'Drzwi mają nogi',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'przesunDrzwi', strefa:[13,9,3,3], nowe:[9,11], tekst:'Nie tak szybko.' },
+        { typ:'przesunDrzwi', strefa:[6,9,3,3], nowe:[3,11], tekst:'A teraz w drugą stronę.' },
+      ],
+    },
+    { // 5 - sciana wyrasta z podlogi, a za plecami dziura
+      nazwa: 'Ściana znikąd',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'bloki', strefa:[7,8,2,4], kafle:[[11,11],[11,10]], tekst:'Przeskocz. Albo nie.' },
+        { typ:'zapadnia', strefa:[9,8,2,4], kafle:[[6,12],[7,12]], tekst:'Odwrotu nie ma.' },
+      ],
+    },
+    { // 6 - platforma znika pod stopami
+      nazwa: 'Platforma na chwilę',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','..........#........','..S.............D..',
+        '########....#######','...................','...................'],
+      pulapki: [
+        // Przepasc ma 4 kafle - wprost jej nie przeskoczysz, wiec platforma
+        // jest OBOWIAZKOWA. I wlasnie dlatego znika pod stopami.
+        { typ:'zapadnia', strefa:[9,9,3,3], kafle:[[10,10]], opoznienie:0.42, tekst:'Rusz się!' },
+      ],
+    },
+    { // 7 - sufit opada i zgniata
+      nazwa: 'Coraz ciaśniej',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'prasa', strefa:[4,8,2,4], odKol:5, doKol:13, tekst:'Biegnij.' },
+      ],
+    },
+    { // 8 - falszywe drzwi
+      nazwa: 'Fałszywe drzwi',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        { typ:'falszyweDrzwi', strefa:[13,9,3,3], nowe:[2,11], tekst:'To nie te drzwi. 😈' },
+        { typ:'spadajaceKolce', strefa:[7,8,2,4], kolumny:[6], tekst:'' },
+      ],
+    },
+    { // 9 - wszystko naraz
+      nazwa: 'Wszystko naraz',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','......#.....#......','..S.............D..',
+        '######..####..#####','...................','...................'],
+      pulapki: [
+        // Przepascie po 2 kafle (do przeskoczenia z zapasem), a platformy
+        // nad nimi to kuszaca pulapka - znikaja tuz po wskoczeniu.
+        { typ:'zapadnia', strefa:[5,9,3,3], kafle:[[6,10]], opoznienie:0.38, tekst:'Nie stój.' },
+        { typ:'zapadnia', strefa:[11,9,3,3], kafle:[[12,10]], opoznienie:0.34, tekst:'' },
+        { typ:'spadajaceKolce', strefa:[14,10,2,2], kolumny:[16], tekst:'' },
+        { typ:'przesunDrzwi', strefa:[15,10,2,2], nowe:[18,11], tekst:'Jeszcze kawałek.' },
+      ],
+    },
+    { // 10 - ostatni zart: wyglada jak poziom 1
+      nazwa: 'Ostatni żart',
+      siatka: [
+        '...................','...................','...................','...................',
+        '...................','...................','...................','...................',
+        '...................','...................','...................','..S.............D..',
+        '###################','...................','...................'],
+      pulapki: [
+        // Wyzwalacz DUZO wczesniej (kol. 9-10), zeby zostaly dwa kafle
+        // rozbiegu. Przy strefie na kol. 12 gracz mial 7 pikseli na reakcje,
+        // czyli nie mial szans - a ma byc zaskakujaco, nie niemozliwie.
+        { typ:'zapadnia', strefa:[9,8,2,4],
+          kafle:[[13,12],[14,12],[15,12],[16,12],[17,12],[18,12]], tekst:'Serio myślałaś, że tak łatwo?' },
+        // Blok na wierszu 10 (nie 9) - skok wymaga 40px zamiast 60px,
+        // czyli miesci sie w mozliwosciach postaci z zapasem.
+        // Ladowisko szerokie na DWA kafle - skok ma byc zaskakujacy,
+        // a nie pikselowo precyzyjny.
+        { typ:'bloki', strefa:[9,8,2,4], kafle:[[15,10],[16,10]], tekst:'' },
+        { typ:'przesunDrzwi', strefa:[9,8,2,4], nowe:[16,9], tekst:'' },
+      ],
+    },
+  ];
+
+  // ---------- STAN ----------
+  var poziomIdx = 0, zgony = 0, trwa = false, czasOstatni = null;
+  var mapa = [], gracz = null, drzwi = { x:0, y:0 }, pulapki = [];
+  var spadajace = [], prasa = null, czastki = [];
+  var odkryte = {};     // pulapki juz raz uruchomione na danym poziomie
+  var wcisniete = { lewo:false, prawo:false };
+  var chceSkok = false;
+
+  function kafelStaly(kx, ky) {
+    if (kx < 0 || kx >= KOL || ky < 0 || ky >= WIERSZ) return kx < 0 || kx >= KOL;
+    return mapa[ky][kx] === '#';
+  }
+  function kafelKolce(kx, ky) {
+    if (kx < 0 || kx >= KOL || ky < 0 || ky >= WIERSZ) return false;
+    return mapa[ky][kx] === '^';
+  }
+
+  function wczytajPoziom(idx) {
+    var p = POZIOMY[idx];
+    mapa = p.siatka.map(function (w) { return w.split(''); });
+    pulapki = p.pulapki.map(function (pu, i) {
+      return { dane: pu, indeks: i, odpalona: false, opoznienieDo: 0 };
+    });
+    spadajace = []; prasa = null; czastki = [];
+    for (var y = 0; y < WIERSZ; y++) {
+      for (var x = 0; x < KOL; x++) {
+        if (mapa[y][x] === 'S') {
+          gracz = { x:x*KAFEL + 3, y:y*KAFEL + (KAFEL - WYS_GRACZA), vx:0, vy:0, naZiemi:false, patrzy:1 };
+          mapa[y][x] = '.';
+        } else if (mapa[y][x] === 'D') {
+          drzwi = { x:x, y:y };
+          mapa[y][x] = '.';
+        }
+      }
+    }
+    poziomNapis.textContent = 'POZIOM ' + (idx+1) + ' / ' + POZIOMY.length;
+    zgonyNapis.textContent = '💀 ' + zgony;
+  }
+
+  function pokazTekst(t) {
+    if (!t) return;
+    szyderstwo.textContent = t;
+    szyderstwo.classList.remove('pokaz');
+    void szyderstwo.offsetWidth;
+    szyderstwo.classList.add('pokaz');
+  }
+
+  // ---------- PULAPKI ----------
+  function sprawdzPulapki(dt) {
+    var gk = { x: gracz.x, y: gracz.y, w: SZER_GRACZA, h: WYS_GRACZA };
+    pulapki.forEach(function (pu) {
+      if (pu.odpalona) return;
+      var s = pu.dane.strefa;   // [kolumna, wiersz, szerokosc, wysokosc] w kaflach
+      var sx = s[0]*KAFEL, sy = s[1]*KAFEL, sw = s[2]*KAFEL, sh = s[3]*KAFEL;
+      if (gk.x + gk.w < sx || gk.x > sx + sw || gk.y + gk.h < sy || gk.y > sy + sh) return;
+      pu.odpalona = true;
+      odkryte[poziomIdx + ':' + pu.indeks] = true;
+      if (pu.dane.opoznienie) { pu.opoznienieDo = pu.dane.opoznienie; return; }
+      uruchomPulapke(pu);
+    });
+    pulapki.forEach(function (pu) {
+      if (pu.opoznienieDo > 0) {
+        pu.opoznienieDo -= dt;
+        if (pu.opoznienieDo <= 0) uruchomPulapke(pu);
+      }
+    });
+  }
+
+  function uruchomPulapke(pu) {
+    var d = pu.dane;
+    if (d.typ === 'zapadnia') {
+      d.kafle.forEach(function (k) {
+        mapa[k[1]][k[0]] = '.';
+        for (var i = 0; i < 5; i++) {
+          czastki.push({ x:k[0]*KAFEL + 10, y:k[1]*KAFEL + 10,
+                         vx:(Math.random()-0.5)*120, vy:-Math.random()*90, zycie:0.6, kolor:'#6a5a4a' });
+        }
+      });
+    } else if (d.typ === 'bloki') {
+      d.kafle.forEach(function (k) { mapa[k[1]][k[0]] = '#'; });
+    } else if (d.typ === 'kolce') {
+      d.kafle.forEach(function (k) { mapa[k[1]][k[0]] = '^'; });
+    } else if (d.typ === 'spadajaceKolce') {
+      d.kolumny.forEach(function (kx) {
+        spadajace.push({ kx:kx, y:-KAFEL, vy:0 });
+      });
+    } else if (d.typ === 'przesunDrzwi') {
+      drzwi = { x:d.nowe[0], y:d.nowe[1] };
+    } else if (d.typ === 'falszyweDrzwi') {
+      mapa[drzwi.y][drzwi.x] = '^';
+      drzwi = { x:d.nowe[0], y:d.nowe[1] };
+    } else if (d.typ === 'prasa') {
+      prasa = { odKol:d.odKol, doKol:d.doKol, y:-KAFEL, v:52 };
+    }
+    dzwiekPulapki();
+    pokazTekst(d.tekst);
+  }
+
+  // ---------- AKTUALIZACJA ----------
+  function aktualizuj(dt) {
+    // Ruch poziomy
+    gracz.vx = 0;
+    if (wcisniete.lewo)  { gracz.vx = -PREDKOSC_BIEGU; gracz.patrzy = -1; }
+    if (wcisniete.prawo) { gracz.vx =  PREDKOSC_BIEGU; gracz.patrzy =  1; }
+
+    if (chceSkok && gracz.naZiemi) {
+      gracz.vy = SILA_SKOKU;
+      gracz.naZiemi = false;
+      dzwiekSkoku();
+    }
+    chceSkok = false;
+
+    gracz.vy += GRAWITACJA * dt;
+    if (gracz.vy > 900) gracz.vy = 900;
+
+    przesunZKolizja(gracz.vx * dt, 0);
+    gracz.naZiemi = false;
+    przesunZKolizja(0, gracz.vy * dt);
+
+    sprawdzPulapki(dt);
+
+    // Spadajace kolce
+    for (var i = spadajace.length - 1; i >= 0; i--) {
+      var sk = spadajace[i];
+      sk.vy += GRAWITACJA * 0.6 * dt;
+      sk.y += sk.vy * dt;
+      var kyDocelowy = -1;
+      for (var y = 0; y < WIERSZ; y++) {
+        if (kafelStaly(sk.kx, y)) { kyDocelowy = y - 1; break; }
+      }
+      if (kyDocelowy >= 0 && sk.y >= kyDocelowy * KAFEL) {
+        mapa[kyDocelowy][sk.kx] = '^';
+        spadajace.splice(i, 1);
+        ton(90, 0.12, 'square', 0.14);
+        continue;
+      }
+      if (sk.y > WYS) spadajace.splice(i, 1);
+    }
+
+    // Prasa sufitowa
+    if (prasa) {
+      prasa.y += prasa.v * dt;
+      var lewo = prasa.odKol * KAFEL, prawo = (prasa.doKol + 1) * KAFEL;
+      if (gracz.x + SZER_GRACZA > lewo && gracz.x < prawo
+          && gracz.y < prasa.y + KAFEL && gracz.y + WYS_GRACZA > prasa.y) {
+        zgin('Zgnieciona.');
+        return;
+      }
+      if (prasa.y > WYS) prasa = null;
+    }
+
+    // Kolce i wypadniecie poza plansze
+    if (dotykaKolcow()) { zgin('Auć.'); return; }
+    if (gracz.y > WYS + 40) { zgin('Spadłaś.'); return; }
+
+    // Drzwi
+    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
+    if (gracz.x + SZER_GRACZA > dx + 2 && gracz.x < dx + KAFEL - 2
+        && gracz.y + WYS_GRACZA > dy + 2 && gracz.y < dy + KAFEL) {
+      nastepnyPoziom();
+      return;
+    }
+
+    for (var c = czastki.length - 1; c >= 0; c--) {
+      var cz = czastki[c];
+      cz.vy += 500 * dt; cz.x += cz.vx * dt; cz.y += cz.vy * dt; cz.zycie -= dt;
+      if (cz.zycie <= 0) czastki.splice(c, 1);
+    }
+  }
+
+  function przesunZKolizja(dx, dy) {
+    gracz.x += dx;
+    gracz.y += dy;
+    var lewo = Math.floor(gracz.x / KAFEL), prawo = Math.floor((gracz.x + SZER_GRACZA) / KAFEL);
+    var gora = Math.floor(gracz.y / KAFEL), dol = Math.floor((gracz.y + WYS_GRACZA) / KAFEL);
+    for (var ky = gora; ky <= dol; ky++) {
+      for (var kx = lewo; kx <= prawo; kx++) {
+        if (!kafelStaly(kx, ky)) continue;
+        var bx = kx * KAFEL, by = ky * KAFEL;
+        if (gracz.x + SZER_GRACZA <= bx || gracz.x >= bx + KAFEL) continue;
+        if (gracz.y + WYS_GRACZA <= by || gracz.y >= by + KAFEL) continue;
+        if (dx > 0) gracz.x = bx - SZER_GRACZA;
+        else if (dx < 0) gracz.x = bx + KAFEL;
+        else if (dy > 0) { gracz.y = by - WYS_GRACZA; gracz.vy = 0; gracz.naZiemi = true; }
+        else if (dy < 0) { gracz.y = by + KAFEL; gracz.vy = 0; }
+      }
+    }
+  }
+
+  function dotykaKolcow() {
+    var lewo = Math.floor((gracz.x + 2) / KAFEL), prawo = Math.floor((gracz.x + SZER_GRACZA - 2) / KAFEL);
+    var gora = Math.floor((gracz.y + 2) / KAFEL), dol = Math.floor((gracz.y + WYS_GRACZA - 1) / KAFEL);
+    for (var ky = gora; ky <= dol; ky++)
+      for (var kx = lewo; kx <= prawo; kx++)
+        if (kafelKolce(kx, ky)) return true;
+    return false;
+  }
+
+  function zgin(tekst) {
+    zgony++;
+    zgonyNapis.textContent = '💀 ' + zgony;
+    dzwiekSmierci();
+    pokazTekst(tekst);
+    trwa = false;
+    setTimeout(function () {
+      wczytajPoziom(poziomIdx);
+      trwa = true; czasOstatni = null;
+      requestAnimationFrame(petla);
+    }, 620);
+  }
+
+  function nastepnyPoziom() {
+    dzwiekDrzwi();
+    var opis = POZIOMY[poziomIdx].tekstPoWejsciu;
+    if (poziomIdx >= POZIOMY.length - 1) { wygrana(); return; }
+    poziomIdx++;
+    wczytajPoziom(poziomIdx);
+    pokazTekst(opis || POZIOMY[poziomIdx].nazwa);
+  }
+
+  function wygrana() {
+    trwa = false;
+    dzwiekKoncowy();
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '😇 Pokonałaś diabła!';
+    nakladkaOpis.innerHTML = 'Wszystkie ' + POZIOMY.length + ' poziomów zaliczone.<br>'
+      + 'Zgonów po drodze: <b>' + zgony + '</b>.<br><br>Etap zaliczony automatycznie!';
+    nakladkaBtn.style.display = 'none';
+    var w = { type:'streamlit-child:zaliczono', wartosc:true };
+    window.postMessage(w, '*');
+    if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
+  }
+
+  // ---------- RYSOWANIE ----------
+  function rysuj() {
+    var g = ctx.createLinearGradient(0, 0, 0, WYS);
+    g.addColorStop(0, '#1c1728'); g.addColorStop(1, '#12101a');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, SZER, WYS);
+
+    // Siatka tla
+    ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
+    for (var i = 0; i <= KOL; i++) {
+      ctx.beginPath(); ctx.moveTo(i*KAFEL + 0.5, 0); ctx.lineTo(i*KAFEL + 0.5, WYS); ctx.stroke();
+    }
+
+    // Podpowiedzi: juz odkryte pulapki dostaja czerwony obrys
+    pulapki.forEach(function (pu) {
+      if (!odkryte[poziomIdx + ':' + pu.indeks] || pu.odpalona) return;
+      var s = pu.dane.strefa;
+      ctx.save();
+      ctx.strokeStyle = 'rgba(230,84,60,0.55)';
+      ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
+      ctx.strokeRect(s[0]*KAFEL + 1, s[1]*KAFEL + 1, s[2]*KAFEL - 2, s[3]*KAFEL - 2);
+      ctx.restore();
+    });
+
+    // Kafle
+    for (var y = 0; y < WIERSZ; y++) {
+      for (var x = 0; x < KOL; x++) {
+        var t = mapa[y][x];
+        if (t === '#') {
+          ctx.fillStyle = '#3a3550';
+          ctx.fillRect(x*KAFEL, y*KAFEL, KAFEL, KAFEL);
+          ctx.fillStyle = '#4a4468';
+          ctx.fillRect(x*KAFEL, y*KAFEL, KAFEL, 3);
+          ctx.fillStyle = '#241f36';
+          ctx.fillRect(x*KAFEL, y*KAFEL + KAFEL - 3, KAFEL, 3);
+        } else if (t === '^') {
+          ctx.fillStyle = '#c9ccd8';
+          for (var k = 0; k < 3; k++) {
+            var px = x*KAFEL + k*6.6;
+            ctx.beginPath();
+            ctx.moveTo(px, y*KAFEL + KAFEL);
+            ctx.lineTo(px + 3.3, y*KAFEL + 4);
+            ctx.lineTo(px + 6.6, y*KAFEL + KAFEL);
+            ctx.closePath(); ctx.fill();
+          }
+        }
+      }
+    }
+
+    // Drzwi
+    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
+    ctx.fillStyle = '#6b4a2a'; ctx.fillRect(dx + 1, dy, KAFEL - 2, KAFEL);
+    ctx.fillStyle = '#8a6338'; ctx.fillRect(dx + 3, dy + 2, KAFEL - 6, KAFEL - 2);
+    ctx.fillStyle = '#e6c15c'; ctx.beginPath();
+    ctx.arc(dx + KAFEL - 6, dy + KAFEL/2, 1.8, 0, Math.PI*2); ctx.fill();
+
+    // Spadajace kolce
+    spadajace.forEach(function (sk) {
+      ctx.fillStyle = '#c9ccd8';
+      for (var k = 0; k < 3; k++) {
+        var px = sk.kx*KAFEL + k*6.6;
+        ctx.beginPath();
+        ctx.moveTo(px, sk.y);
+        ctx.lineTo(px + 3.3, sk.y + KAFEL - 4);
+        ctx.lineTo(px + 6.6, sk.y);
+        ctx.closePath(); ctx.fill();
+      }
+    });
+
+    // Prasa
+    if (prasa) {
+      var lewo = prasa.odKol * KAFEL, szer = (prasa.doKol - prasa.odKol + 1) * KAFEL;
+      ctx.fillStyle = '#5a3550'; ctx.fillRect(lewo, prasa.y, szer, KAFEL);
+      ctx.fillStyle = '#c9ccd8';
+      for (var s2 = 0; s2 < szer; s2 += 6.6) {
+        ctx.beginPath();
+        ctx.moveTo(lewo + s2, prasa.y + KAFEL);
+        ctx.lineTo(lewo + s2 + 3.3, prasa.y + KAFEL + 5);
+        ctx.lineTo(lewo + s2 + 6.6, prasa.y + KAFEL);
+        ctx.closePath(); ctx.fill();
+      }
+    }
+
+    // Czastki
+    czastki.forEach(function (cz) {
+      ctx.save(); ctx.globalAlpha = Math.max(0, cz.zycie / 0.6);
+      ctx.fillStyle = cz.kolor; ctx.fillRect(cz.x, cz.y, 3, 3); ctx.restore();
+    });
+
+    // Gracz
+    if (gracz) {
+      ctx.fillStyle = '#e6c15c';
+      ctx.fillRect(gracz.x, gracz.y + 5, SZER_GRACZA, WYS_GRACZA - 5);
+      ctx.fillStyle = '#f4dfa8';
+      ctx.fillRect(gracz.x + 1, gracz.y, SZER_GRACZA - 2, 7);
+      ctx.fillStyle = '#16130a';
+      var ox = gracz.patrzy > 0 ? 6 : 2;
+      ctx.fillRect(gracz.x + ox, gracz.y + 2, 2, 2);
+      ctx.fillRect(gracz.x + ox + 3, gracz.y + 2, 2, 2);
+    }
+  }
+
+  // ---------- PETLA ----------
+  function petla(czas) {
+    if (!trwa) { czasOstatni = null; return; }
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.033);
+    czasOstatni = czas;
+    aktualizuj(dt);
+    rysuj();
+    if (trwa) requestAnimationFrame(petla);
+  }
+
+  // ---------- STEROWANIE ----------
+  function podepnij(id, akcja) {
+    var el = document.getElementById(id);
+    function wl(e) { e.preventDefault(); inicjujDzwiek(); el.classList.add('wcisniety'); akcja(true); }
+    function wyl() { el.classList.remove('wcisniety'); akcja(false); }
+    el.addEventListener('pointerdown', wl);
+    ['pointerup','pointerleave','pointercancel'].forEach(function (ev) { el.addEventListener(ev, wyl); });
+  }
+  podepnij('btnLewo', function (w) { wcisniete.lewo = w; });
+  podepnij('btnPrawo', function (w) { wcisniete.prawo = w; });
+  podepnij('btnSkok', function (w) { if (w) chceSkok = true; });
+
+  function rozpocznijGre() {
+    poziomIdx = 0; zgony = 0; odkryte = {};
+    wcisniete.lewo = false; wcisniete.prawo = false; chceSkok = false;
+    wczytajPoziom(0);
+    nakladka.style.display = 'none';
+    trwa = true; czasOstatni = null;
+    requestAnimationFrame(petla);
+  }
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+
+  wczytajPoziom(0);
+  rysuj();
+</script>
+
+<script>
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
+  var natW = 0, natH = 0;
+
+  function przelicz() {
+    if (!wlaczony) {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
+      korzen.style.transformOrigin = '';
+      document.body.style.overflow = '';
+      return;
+    }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
+  }
+
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
+      } catch (e) {}
+    } else {
+      var el = document.documentElement;
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
+      ramka.setAttribute('style', styleRamki);
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
+    }
+    przelicz();
+  }
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
+  });
+
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+})();
+</script>
+</body>
+</html>
+"""
+
 SZABLON_LABIRYNT = """<!DOCTYPE html>
 <html>
 <head>
@@ -13742,29 +14596,52 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     box-shadow:0 3px 10px rgba(0,0,0,0.5);
   }
 
-  #btnStaty {
-    position:absolute; top:64px; left:8px; z-index:6;
-    width:38px; height:38px; border-radius:11px;
-    background:rgba(20,17,28,0.72); border:1.5px solid rgba(230,193,92,0.5);
-    color:#f0e8d0; font-size:17px; padding:0;
-  }
-  #btnStaty.aktywny { background:rgba(230,193,92,0.9); color:#16130a; }
-  #btnStaty .odznaka {
-    position:absolute; top:-5px; right:-5px; background:#c0392b; color:#fff;
-    border-radius:9px; padding:0 5px; font-size:10px; font-weight:800;
-  }
-  #nakladkaStatow {
-    position:absolute; top:0; left:0; right:0; height:470px; z-index:7;
-    background:rgba(12,10,18,0.82);
-    padding:10px 12px; overflow-y:auto; display:none;
-  }
-  #nakladkaStatow.widoczna { display:block; }
+  /* Ekwipunek i statystyki w JEDNEJ nakladce, z zakladkami na DOLE -
+     tam, gdzie kciuk siega bez przekladania telefonu. */
   #nakladkaEkw {
     position:absolute; top:0; left:0; right:0; height:470px; z-index:8;
     background:linear-gradient(180deg, rgba(16,13,22,0.97), rgba(10,8,14,0.99));
-    padding:8px 10px; overflow-y:auto; display:none;
+    display:none; flex-direction:column;
   }
-  #nakladkaEkw.widoczna { display:block; }
+  #nakladkaEkw.widoczna { display:flex; }
+  #trescNakladki { flex:1; overflow-y:auto; padding:10px 10px 4px; }
+  #sekcjaStaty { display:none; }
+  #sekcjaStaty.widoczna { display:block; }
+  #sekcjaEkw { display:none; }
+  #sekcjaEkw.widoczna { display:block; }
+
+  #zakladki {
+    display:flex; gap:6px; padding:8px 10px 10px;
+    border-top:1.5px solid rgba(212,175,55,0.28);
+    background:rgba(8,6,12,0.96);
+  }
+  .zakladka {
+    position:relative; flex:1; padding:13px 4px; border-radius:11px;
+    background:linear-gradient(135deg,#3a3550,#262038);
+    border:1px solid #5a4a2e; color:#f0e8d0; font-size:13px; font-weight:800;
+  }
+  .zakladka.aktywna { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
+  .zakladka.zamknij { flex:0 0 54px; font-size:18px; background:linear-gradient(135deg,#5a3a3a,#3a2424); }
+  .zakladka .odznaka {
+    position:absolute; top:-5px; right:-5px; background:#c0392b; color:#fff;
+    border-radius:9px; padding:1px 6px; font-size:11px; font-weight:800;
+  }
+
+  /* Wieksze, wygodniejsze wiersze statystyk */
+  .staty-wiersz {
+    display:flex; align-items:center; gap:10px;
+    background:rgba(255,255,255,0.045); border-radius:11px;
+    padding:11px 12px; margin-bottom:7px;
+  }
+  .staty-ikona { font-size:22px; width:28px; text-align:center; }
+  .staty-nazwa { flex:1; color:#f0e8d0; font-size:14px; font-weight:700; }
+  .staty-wartosc { color:#e6c15c; font-size:17px; font-weight:900; min-width:46px; text-align:right; }
+  .staty-przyrost { color:#7ec98a; font-size:11px; font-weight:700; min-width:38px; text-align:right; }
+  .staty-plus {
+    width:46px; height:46px; border-radius:12px; font-size:24px; font-weight:900;
+    background:linear-gradient(135deg,#7ec98a,#3f8a52); color:#0d1a0d; border:none; padding:0;
+  }
+  .staty-plus:disabled { opacity:0.25; }
 
   .wiersz-statu { display:flex; align-items:center; gap:6px; padding:3px 5px; background:rgba(255,255,255,0.04); border-radius:6px; margin-bottom:3px; }
   .wiersz-statu .nazwa { flex:1; color:#d8cdb0; font-size:11px; font-weight:600; }
@@ -13808,10 +14685,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   <div id="dziennik"></div>
   <button id="btnSkrzynia">📦 Otwórz skrzynkę</button>
 
-  <div id="nakladkaStatow"><div id="sekcjaStaty"></div></div>
-  <div id="nakladkaEkw"><div id="sekcjaEkw"></div></div>
-
-  <button id="btnStaty">📊<span class="odznaka" id="odznakaPkt" style="display:none">0</span></button>
+  <div id="nakladkaEkw">
+    <div id="trescNakladki">
+      <div id="sekcjaEkw"></div>
+      <div id="sekcjaStaty"></div>
+    </div>
+    <div id="zakladki">
+      <button class="zakladka aktywna" id="zakEkw">🎒 Plecak</button>
+      <button class="zakladka" id="zakStaty">📊 Statystyki<span class="odznaka" id="odznakaPkt" style="display:none">0</span></button>
+      <button class="zakladka zamknij" id="zakZamknij">✕</button>
+    </div>
+  </div>
 
   <div id="pasSterowania">
     <button class="btn-boczny" id="btnEkw">🎒<span class="odznaka" id="odznakaEkw" style="display:none">0</span></button>
@@ -13908,8 +14792,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                   efektBroni:'krwawienieLecznicze' },
     mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false,
                   opis:'Miażdżący, szeroki zamach' },
-    sztylety:   { nazwa:'Sztylety',         ikona:'⚔️', zasieg:50,  tempo:0.20, obr:14, magiczna:false,
-                  efektBroni:'krwawienie' },
+    sztylety:   { nazwa:'Sztylety',         ikona:'⚔️', zasieg:50,  tempo:0.30, obr:14, magiczna:false,
+                  efektBroni:'rozpedzanie' },
     wlocznia:   { nazwa:'Włócznia',         ikona:'🔱', zasieg:96,  tempo:0.52, obr:26, magiczna:false,
                   efektBroni:'rzut' },
     kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:70, magiczna:false,
@@ -13944,6 +14828,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     { rodzaj:'amMocy',    slot:'amulet', nazwa:'Amulet Mocy',      ikona:'📿', obrazenia:7 },
     { rodzaj:'amZycia',   slot:'amulet', nazwa:'Amulet Życia',     ikona:'💠', zdrowie:30 },
     { rodzaj:'amLowcy',   slot:'amulet', nazwa:'Amulet Łowcy',     ikona:'🔮', obrazenia:3, doswiadczenie:0.10 },
+    { rodzaj:'amWiedzy',  slot:'amulet', nazwa:'Amulet Wiedzy',    ikona:'📖', doswiadczenie:0.28 },
+    { rodzaj:'amZrodla',  slot:'amulet', nazwa:'Amulet Źródła',    ikona:'💧', regeneracja:2 },
+    { rodzaj:'amKrwi',    slot:'amulet', nazwa:'Amulet Krwi',      ikona:'🩸', omnivamp:0.04 },
   ];
   var WARIANT_PO_RODZAJU = {};
   WARIANTY_PANCERZA.forEach(function (w) { WARIANT_PO_RODZAJU[w.rodzaj] = w; });
@@ -13967,12 +14854,23 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
   var bossPrzywolany = false, wygrana = false;
   var portal = null;               // pojawia sie po pokonaniu bossa
-  var czasGry = 0;                 // sekundy gry - napedza skalowanie trudnosci
+  var czasGry = 0;                 // sekundy gry (juz NIE skaluje trudnosci)
+  // Trudnosc rosnie z LICZBA ZWIEDZONYCH KOMNAT, a nie z czasem. Dzieki temu
+  // spokojne granie i czytanie opisow niczego nie kosztuje - liczy sie to,
+  // jak daleko zaszlas, a nie jak szybko.
+  var zwiedzoneKomnaty = 0;
+  var odwiedzone = {};
   // SEKRETNA KOMNATA (easter egg, tylko 1. pietro): wejscie w rogu komnaty
   // startowej, dostepne WYLACZNIE zanim po raz pierwszy z niej wyjdziesz.
   var sekretnaKomnata = null, drzwiSekretne = null;
   var opuscilStartowa = false, wSekretnej = false, sekretnyBossZyje = false;
   var pytanieOSekretnej = false, wyjscieSekretne = null, sekretnyPokonany = false;
+  // Ukryta komnata to ALTERNATYWNA sciezka, odblokowywana dopiero po
+  // pierwszym przejsciu labiryntu. Ta zmienna NIE jest zerowana przy
+  // restarcie gry, wiec odblokowanie zostaje na cala sesje.
+  var labiryntPrzeszly = false;
+  try { if (window.localStorage && localStorage.getItem('labiryntPrzeszly') === '1') labiryntPrzeszly = true; } catch (e) {}
+  var sciezkaWiedzmy = false;   // czy gramy wersja z Rozdzka Wiedzmy
   var arenaZamknieta = false;      // podczas walki z bossem nie mozna wyjsc
   var pytanieOBossa = false;
   var cooldownSlug = 0;
@@ -14055,7 +14953,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // polaczona jednym przejsciem. Tylko na pierwszym pietrze.
     sekretnaKomnata = null; drzwiSekretne = null;
     wSekretnej = false; opuscilStartowa = false; sekretnyBossZyje = false;
-    if (poziomLabiryntu === 0 && komnaty.length > 0) {
+    if (poziomLabiryntu === 0 && komnaty.length > 0 && labiryntPrzeszly) {
       var st0 = komnaty[0];
       // Szukamy WOLNEGO miejsca w calej mapie, wybierajac najblizsze
       // komnacie startowej. Ograniczenie do czterech rogow powodowalo, ze
@@ -14121,8 +15019,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var ile = 1 + (sk.tier >= 3 ? 2 : sk.tier >= 1 ? 1 : 0);
     for (var i = 0; i < ile; i++) {
       var r = Math.random(), przedmiot;
+      // Na sciezce Wiedzmy skrzynie nie daja broni - rozdzki i tak nie zmienisz
       if (r < 0.14) przedmiot = { kategoria:'mikstura', nazwa:'Mikstura zdrowia', ikona:'🧪', tier:1 };
-      else if (r < 0.57) przedmiot = stworzBron(sk.tier);
+      else if (r < 0.57 && !sciezkaWiedzmy) przedmiot = stworzBron(sk.tier);
       else przedmiot = stworzPancerz(sk.tier);
       lupyNaZiemi.push({ x: sk.x + losowo(-26, 26), y: sk.y + losowo(-20, 20), przedmiot: przedmiot });
     }
@@ -14144,12 +15043,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function coIleRzut(tier)        { return Math.max(2, 6 - tier); }      // co 6 .. co 2 ataki
   function mnoznikKrwawienia(tier){ return 0.30 + tier * 0.09; }         // 30% .. 66% obr. bazowych
 
+  // Sztylety ROZPEDZAJA SIE: kazdy kolejny cios jest szybszy, a po
+  // przerwie w atakowaniu tempo wraca do wyjsciowego.
+  function maksRozpedzenie(tier) { return 0.42 + tier * 0.07; }   // 42% .. 70% szybciej
+  var PRZERWA_ROZPEDU = 5.0;
+
   function opisEfektuBroni(bron) {
     if (bron.opis) return bron.opis;
     var t = bron.tier || 0;
     if (bron.efektBroni === 'wampiryzm') return 'Leczy ' + Math.round(procentWampiryzmu(t)*100) + '% zadanych obrażeń';
     if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 50% obrażeń od krwawienia';
-    if (bron.efektBroni === 'krwawienie') return 'Szybkie ciosy · nakładają krwawienie';
+    if (bron.efektBroni === 'rozpedzanie') return 'Rozpędza się: do ' + Math.round(maksRozpedzenie(t)*100)
+      + '% szybciej po serii ciosów (reset po ' + PRZERWA_ROZPEDU + 's)';
     if (bron.efektBroni === 'rzut') return 'Długi zasięg · rzut co ' + coIleRzut(t) + '. atak';
     return '';
   }
@@ -14157,9 +15062,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function stworzBron(tier, rodzajKlucz) {
     var rodzaj = rodzajKlucz;
     if (!rodzaj) {
+      // Rozdzka Wiedzmy NIE wypada z losowego lupu - jedyny sposob na nia
+      // to pokonanie Straznika Progu w ukrytej komnacie.
       var pula = KLUCZE_BRONI.filter(function (k) { return !RODZAJE_BRONI[k].mityczna; });
-      if (Math.random() < (tier >= 3 ? 0.10 : 0.025)) rodzaj = 'rozdzkaWiedzmy';
-      else rodzaj = pula[losCalk(0, pula.length-1)];
+      rodzaj = pula[losCalk(0, pula.length-1)];
     }
     var d = RODZAJE_BRONI[rodzaj];
     if (d.mityczna) {
@@ -14190,6 +15096,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       // Efekty procentowe rosna wolniej - inaczej bylyby zbyt mocne
       doswiadczenie: d.doswiadczenie ? Math.round(d.doswiadczenie * (1 + tier * 0.55) * 100) / 100 : 0,
       egzekucja: d.egzekucja ? Math.round(d.egzekucja * (1 + tier * 0.5) * 100) / 100 : 0,
+      regeneracja: d.regeneracja ? Math.round(d.regeneracja * (1 + tier * 0.6) * 10) / 10 : 0,
+      omnivamp: d.omnivamp ? Math.round(d.omnivamp * (1 + tier * 0.5) * 1000) / 1000 : 0,
     };
   }
   function tierZPoziomu(poziom) {
@@ -14213,6 +15121,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (p.zdrowie)   czesci.push('+' + p.zdrowie + ' zdrowia');
     if (p.doswiadczenie) czesci.push('+' + Math.round(p.doswiadczenie*100) + '% doświadczenia');
     if (p.egzekucja) czesci.push('☠️ dobija wrogów poniżej ' + Math.round(p.egzekucja*100) + '% życia');
+    if (p.regeneracja) czesci.push('💧 +' + p.regeneracja + ' zdrowia co 3s');
+    if (p.omnivamp) czesci.push('🩸 leczy ' + Math.round(p.omnivamp*100) + '% KAŻDYCH zadanych obrażeń');
     return czesci.length ? czesci.join(' · ') : 'brak bonusów';
   }
 
@@ -14266,6 +15176,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
   // Prog EGZEKUCJI: wrog ponizej tego procentu zycia ginie od razu
   // (nie dziala na bossow - inaczej byloby zbyt tanie)
+  function sumaZeSlotow(pole) {
+    var suma = 0;
+    ['helm','zbroja','buty','amulet'].forEach(function (s2) {
+      var p = gracz.zalozone[s2];
+      if (p) suma += (p[pole] || 0);
+    });
+    return suma;
+  }
   function progEgzekucji() {
     var suma = 0;
     ['helm','zbroja','buty','amulet'].forEach(function (s) {
@@ -14294,7 +15212,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     while (gracz.xp >= gracz.xpDoNastepnego) {
       gracz.xp -= gracz.xpDoNastepnego;
       gracz.poziom++;
-      gracz.punkty += 3;
+      if (sciezkaWiedzmy) {
+        // Bez rozdawania punktow - staly, pewny przyrost co poziom
+        gracz.staty.zdrowie += 5 / 30;
+        gracz.staty.predkosc += 5 / 13;
+        gracz.staty.obrona += 5 / 11;
+        przeliczHpMax();
+      } else {
+        gracz.punkty += 3;
+      }
       gracz.xpDoNastepnego = Math.floor(26 + gracz.poziom * gracz.poziom * 7);
       // Awans NIE leczy - jedynie mikstury przywracaja zdrowie.
       dziennik('⭐ Poziom ' + gracz.poziom + '! Masz ' + gracz.punkty + ' pkt. do rozdania.');
@@ -14334,8 +15260,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var skalaAtaku = skala * (1 + poziomLabiryntu * 0.55);
     // Trudnosc rosnie takze Z CZASEM gry - pod koniec nie da sie juz isc
     // na rozped ze statystykami z poczatku.
-    var skalaCzasowa = 1 + Math.min(1.4, (czasGry / 60) * 0.17);
-    skala *= skalaCzasowa; skalaAtaku *= skalaCzasowa;
+    // Mnoznik z POSTEPU (zwiedzonych komnat), nie z zegara
+    var skalaPostepu = 1 + Math.min(1.4, zwiedzoneKomnaty * 0.075);
+    skala *= skalaPostepu; skalaAtaku *= skalaPostepu;
     var elita = Math.random() < 0.11;   // rzadki, mocno wzmocniony wrog
     return {
       x:x, y:y, typ:typKlucz, r:t.r, ikona:t.ikona, kolor:t.kolor,
@@ -14429,6 +15356,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     tekstNaSwiecie(w.x, w.y - w.r, '' + finalne, '#f0e8d0');
     rozbryzg(w.x, w.y, '#c0392b', 5);
     dzwiekTrafienia();
+    // Omnivamp z Amuletu Krwi - dziala od KAZDEGO zrodla obrazen
+    var ov = sumaZeSlotow('omnivamp');
+    if (ov > 0 && finalne > 0 && gracz.hp > 0 && gracz.hp < gracz.hpMax) {
+      var oddaneOv = Math.max(1, Math.round(finalne * ov));
+      gracz.hp = Math.min(gracz.hpMax, gracz.hp + oddaneOv);
+      odswiezHud();
+    }
     // EGZEKUCJA - dobicie mocno rannego wroga (nie dotyczy bossow)
     var prog = progEgzekucji();
     if (w.hp > 0 && !w.boss && prog > 0 && w.hp / w.hpMax <= prog) {
@@ -14456,8 +15390,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     dodajXp(w.xp);
 
     if (w.sekretny) {
-      lupyNaZiemi.push({ x:w.x, y:w.y, przedmiot:stworzBron(4, 'rozdzkaWiedzmy') });
-      dziennik('🌈 Strażnik upuścił Różdżkę Wiedźmy! Podnieś ją i wejdź w portal.');
+      // Rozdzka trafia PROSTO do rak - od tej chwili obowiazuja zasady
+      // sciezki Wiedzmy: bez zmiany broni, bez lupow z wrogow, bez punktow.
+      sciezkaWiedzmy = true;
+      gracz.zalozone.bron = stworzBron(4, 'rozdzkaWiedzmy');
+      gracz.punkty = 0;
+      odswiezPanele();
+      dziennik('🌈 Różdżka Wiedźmy jest twoja! Od teraz liczy się unikanie ciosów.');
       dzwiekZwyciestwo();
       sekretnyBossZyje = false; sekretnyPokonany = true;
       wyjscieSekretne = { x:(sekretnaKomnata.cx+0.5)*KAFEL,
@@ -14477,6 +15416,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
 
     if (trybNieskonczony) return;   // w arenie nie wypadaja lupy
+    if (sciezkaWiedzmy) return;     // na sciezce Wiedzmy lupy sa TYLKO ze skrzyn
     // Zwykle potworki upuszczaja rzeczy TRZY RAZY rzadziej - przedmioty
     // maja pochodzic glownie ze skrzyn. Elity nadrabiaja z nawiazka.
     // Jeszcze rzadziej niz dotad: przedmioty maja byc wydarzeniem,
@@ -14517,13 +15457,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   function atakujAutomatycznie(dt) {
     gracz.cooldown -= dt;
+    // Rozpedzenie sztyletow stygnie, gdy przez chwile nie atakujesz
+    gracz.odOstatniegoCiosu = (gracz.odOstatniegoCiosu || 0) + dt;
+    if (gracz.odOstatniegoCiosu > PRZERWA_ROZPEDU) gracz.rozpedzenie = 0;
     if (gracz.cooldown > 0) return;
     var bron = gracz.zalozone.bron;
     var zasiegTeraz = bron.zasieg;
     if (bron.efektBroni === 'rzut' && (bron._doRzutu || 0) <= 1) zasiegTeraz = bron.zasieg * 2.6;
     var cel = znajdzNajblizszegoWroga(zasiegTeraz);
     if (!cel) return;
-    gracz.cooldown = bron.tempo;
+
+    if (bron.efektBroni === 'rozpedzanie') {
+      var maks = maksRozpedzenie(bron.tier || 0);
+      gracz.rozpedzenie = Math.min(maks, (gracz.rozpedzenie || 0) + maks / 8);
+      gracz.odOstatniegoCiosu = 0;
+      gracz.cooldown = bron.tempo * (1 - gracz.rozpedzenie);
+    } else {
+      gracz.rozpedzenie = 0;
+      gracz.cooldown = bron.tempo;
+    }
 
     var kat = Math.atan2(cel.y - gracz.y, cel.x - gracz.x);
     gracz.kierunekX = Math.cos(kat); gracz.kierunekY = Math.sin(kat);
@@ -14574,12 +15526,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + lecz, '#7ec98a');
           odswiezHud();
         }
-        if ((bron.efektBroni === 'krwawienie' || bron.efektBroni === 'krwawienieLecznicze') && w.hp > 0) {
+        if (bron.efektBroni === 'krwawienieLecznicze' && w.hp > 0) {
           w.krwawienie = 3.2;
           w.krwawienieObr = Math.max(2, Math.round(bron.obr * mnoznikKrwawienia(bron.tier || 0)));
           // Topor: krwawienie ODDAJE graczowi polowe zadanych obrazen
           // (poza bossami - inaczej walki z nimi bylyby trywialne)
-          w.krwawienieLeczy = (bron.efektBroni === 'krwawienieLecznicze') && !w.boss;
+          w.krwawienieLeczy = !w.boss;   // topor oddaje polowe obrazen od krwawienia
         }
       });
       gracz.animCios = 0.16;
@@ -14607,10 +15559,33 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (gracz.animCios > 0) gracz.animCios -= dt;
     if (gracz.migotanie > 0) gracz.migotanie -= dt;
 
-    czasGry += dt;
+    // Regeneracja z Amuletu Zrodla - co 3 sekundy
+    var reg = sumaZeSlotow('regeneracja');
+    if (reg > 0 && gracz.hp > 0 && gracz.hp < gracz.hpMax) {
+      gracz.tykRegeneracji = (gracz.tykRegeneracji || 0) + dt;
+      if (gracz.tykRegeneracji >= 3) {
+        gracz.tykRegeneracji = 0;
+        gracz.hp = Math.min(gracz.hpMax, gracz.hp + reg);
+        tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + reg, '#7ec4e8');
+        odswiezHud();
+      }
+    }
+
     if (trybNieskonczony) {
       aktualizujArene(dt);
       hudPoziom.textContent = '♾️ ' + czasAreny.toFixed(1) + 's · fala ' + (1 + Math.floor(czasAreny/12));
+    }
+
+    // Zliczamy KAZDA nowa komnate, do ktorej wejdziesz - to napedza
+    // trudnosc zamiast zegara.
+    for (var ki2 = 0; ki2 < komnaty.length; ki2++) {
+      var kk2 = komnaty[ki2];
+      if (odwiedzone[poziomLabiryntu + ':' + ki2]) continue;
+      if (gracz.x > kk2.x*KAFEL && gracz.x < (kk2.x+kk2.w)*KAFEL
+       && gracz.y > kk2.y*KAFEL && gracz.y < (kk2.y+kk2.h)*KAFEL) {
+        odwiedzone[poziomLabiryntu + ':' + ki2] = true;
+        zwiedzoneKomnaty++;
+      }
     }
 
     // ---- SEKRETNA KOMNATA ----
@@ -15046,21 +16021,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // ---------- RYSOWANIE ----------
   // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
-  var MINI_BOK = 88, MINI_MARGINES = 6;
+  // Wieksza i odsunieta od gornej krawedzi - przycisk pelnego ekranu
+  // siedzi w prawym gornym rogu i wczesniej ladowal na minimapie.
+  var MINI_BOK = 108, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 48;
   function rysujMinimape() {
     var skala = MINI_BOK / (SIATKA * KAFEL);
-    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_MARGINES;
+    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_ODSTEP_GORA;
 
     ctx.save();
-    ctx.globalAlpha = 0.55;   // polprzezroczysta, zeby nie zaslaniala
-    ctx.fillStyle = '#0a0810';
-    ctx.fillRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
-    ctx.strokeStyle = 'rgba(230,193,92,0.55)'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(mx - 3, my - 3, MINI_BOK + 6, MINI_BOK + 6);
+    // Wyrazniejsza niz wczesniej: ciemniejsze, gestsze tlo i mocniejsza ramka,
+    // zeby kontur korytarzy odcinal sie od jasnej podlogi gry.
+    ctx.globalAlpha = 0.92;
+    ctx.fillStyle = '#07060c';
+    ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
+    ctx.strokeStyle = 'rgba(230,193,92,0.85)'; ctx.lineWidth = 2;
+    ctx.strokeRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
 
     // CALA przechodnia mapa, wiec widac takze KORYTARZE, nie tylko komnaty
-    var kaflik = Math.max(1, KAFEL * skala);
-    ctx.fillStyle = 'rgba(150,140,120,0.45)';
+    var kaflik = Math.max(1.5, KAFEL * skala);
+    ctx.fillStyle = 'rgba(196,186,162,0.92)';
     for (var my2 = 0; my2 < SIATKA; my2++) {
       for (var mx2 = 0; mx2 < SIATKA; mx2++) {
         if (mapa[my2][mx2] !== 1) continue;
@@ -15076,17 +16055,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     // Komnata bossa na czerwono
     if (komnataBossa) {
-      ctx.fillStyle = 'rgba(192,57,43,0.65)';
+      ctx.fillStyle = 'rgba(214,54,40,0.95)';
       ctx.fillRect(mx + komnataBossa.x*KAFEL*skala, my + komnataBossa.y*KAFEL*skala,
                    Math.max(2, komnataBossa.w*KAFEL*skala), Math.max(2, komnataBossa.h*KAFEL*skala));
     }
 
     // Nieotwarte skrzynie jako "?" - nie zdradzamy, co jest w srodku
-    ctx.font = 'bold 9px sans-serif';
+    ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     skrzynie.forEach(function (sk) {
       if (sk.otwarta) return;
-      ctx.fillStyle = '#f0e8d0';
+      ctx.fillStyle = 'rgba(0,0,0,0.75)';
+      ctx.fillText('?', mx + sk.x*skala + 0.8, my + sk.y*skala + 0.8);
+      ctx.fillStyle = '#ffe89a';
       ctx.fillText('?', mx + sk.x*skala, my + sk.y*skala);
     });
     ctx.fillStyle = 'rgba(230,193,92,0.9)';
@@ -15533,27 +16514,42 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     naglowek.textContent = gracz.punkty > 0 ? ('Punkty do rozdania: ' + gracz.punkty) : 'Statystyki postaci';
     sekcjaStaty.appendChild(naglowek);
 
+    if (sciezkaWiedzmy) {
+      // Na sciezce Wiedzmy nie rozdaje sie punktow - kazdy poziom daje
+      // z gory ustalony przyrost, a cala uwaga idzie w unikanie ciosow.
+      var info = document.createElement('div');
+      info.style.cssText = 'background:rgba(255,122,224,0.10);border:1px solid rgba(255,122,224,0.4);'
+        + 'border-radius:11px;padding:12px;color:#f0d8f0;font-size:12px;line-height:1.6;margin-bottom:8px;';
+      info.innerHTML = '🌈 <b>Ścieżka Wiedźmy</b><br>Nie rozdajesz punktów. Każdy poziom daje automatycznie'
+        + ' <b>+5 zdrowia</b>, <b>+5 prędkości</b> i <b>+5 pancerza</b>.<br>'
+        + 'Twoja siła rośnie z <b>każdym zabitym wrogiem</b> — różdżka staje się coraz mocniejsza.';
+      sekcjaStaty.appendChild(info);
+    }
+
     DEF_STATOW.forEach(function (d) {
       var w = document.createElement('div');
-      w.className = 'wiersz-statu';
+      w.className = 'staty-wiersz';
       var tekstWart = Math.round(wartoscStatu(d.klucz));
       var zysk = zyskZNastepnego(d.klucz);
-      var tekstZysku = '+' + (zysk >= 4 ? Math.round(zysk) : zysk.toFixed(1));
-      w.innerHTML = '<span>' + d.ikona + '</span><span class="nazwa">' + d.nazwa + '</span>'
-                  + '<span class="wartosc">' + tekstWart + '</span>'
-                  + '<span style="font-size:10px;color:#7ec98a;min-width:38px;text-align:right;font-weight:700;">' + tekstZysku + '</span>';
-      var btn = document.createElement('button');
-      btn.className = 'btn-plus'; btn.textContent = '+';
-      btn.disabled = gracz.punkty <= 0;
-      btn.addEventListener('click', function () {
-        if (gracz.punkty <= 0) return;
-        gracz.punkty--;
-        gracz.staty[d.klucz]++;
-        if (d.klucz === 'zdrowie') przeliczHpMax();
-        ton(620, 0.05, 'triangle', 0.12);
-        odswiezPanele(); odswiezHud();
-      });
-      w.appendChild(btn);
+      var tekstZysku = sciezkaWiedzmy ? '' : ('+' + (zysk >= 4 ? Math.round(zysk) : zysk.toFixed(1)));
+      w.innerHTML = '<span class="staty-ikona">' + d.ikona + '</span>'
+                  + '<span class="staty-nazwa">' + d.nazwa + '</span>'
+                  + '<span class="staty-wartosc">' + tekstWart + '</span>'
+                  + '<span class="staty-przyrost">' + tekstZysku + '</span>';
+      if (!sciezkaWiedzmy) {
+        var btn = document.createElement('button');
+        btn.className = 'staty-plus'; btn.textContent = '+';
+        btn.disabled = gracz.punkty <= 0;
+        btn.addEventListener('click', function () {
+          if (gracz.punkty <= 0) return;
+          gracz.punkty--;
+          gracz.staty[d.klucz]++;
+          if (d.klucz === 'zdrowie') przeliczHpMax();
+          ton(620, 0.05, 'triangle', 0.12);
+          odswiezPanele(); odswiezHud();
+        });
+        w.appendChild(btn);
+      }
       sekcjaStaty.appendChild(w);
     });
 
@@ -15575,6 +16571,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var slot = p.kategoria === 'bron' ? 'bron' : p.slot;
       var obecny = gracz.zalozone[slot];
       if (!obecny) return '<span style="color:#7ec98a;font-weight:700">NOWE</span>';
+      // Bronie tej samej KLASY roznia sie stylem gry, a nie sila - etykieta
+      // "lepsze/gorsze" mylila przy szarym toporze obok szarego miecza.
+      var tierA = p.mityczna ? 5 : p.tier, tierB = obecny.mityczna ? 5 : obecny.tier;
+      if (p.kategoria === 'bron' && obecny.kategoria === 'bron'
+          && tierA === tierB && p.rodzaj !== obecny.rodzaj) {
+        return '<span style="color:#a89878">◆ ta sama klasa, inny styl</span>';
+      }
       var a = p.kategoria === 'bron' ? p.obr / p.tempo : p.obrona;
       var c = obecny.kategoria === 'bron' ? obecny.obr / obecny.tempo : obecny.obrona;
       var r = a - c;
@@ -15771,6 +16774,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function zaloz(przedmiot, indeks) {
+    if (sciezkaWiedzmy && przedmiot.kategoria === 'bron') {
+      dziennik('🌈 Różdżki Wiedźmy nie da się zamienić na inną broń.');
+      ton(180, 0.12, 'square', 0.12);
+      return;
+    }
     var slot = przedmiot.kategoria === 'bron' ? 'bron' : przedmiot.slot;
     var stary = gracz.zalozone[slot];
     gracz.zalozone[slot] = przedmiot;
@@ -15788,21 +16796,33 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (sk) { otworzSkrzynie(sk); btnSkrzynia.style.display = 'none'; }
   });
 
-  var nakladkaStatow = document.getElementById('nakladkaStatow');
   var nakladkaEkw = document.getElementById('nakladkaEkw');
+  var zakEkw = document.getElementById('zakEkw');
+  var zakStaty = document.getElementById('zakStaty');
+  var zakZamknij = document.getElementById('zakZamknij');
 
-  btnStaty.addEventListener('click', function () {
-    var pokaz = !nakladkaStatow.classList.contains('widoczna');
-    nakladkaStatow.classList.toggle('widoczna', pokaz);
-    btnStaty.classList.toggle('aktywny', pokaz);
-    if (pokaz) { nakladkaEkw.classList.remove('widoczna'); btnEkw.classList.remove('aktywny'); }
-  });
+  function pokazZakladke(ktora) {
+    var ekw = (ktora === 'ekw');
+    sekcjaEkw.classList.toggle('widoczna', ekw);
+    sekcjaStaty.classList.toggle('widoczna', !ekw);
+    zakEkw.classList.toggle('aktywna', ekw);
+    zakStaty.classList.toggle('aktywna', !ekw);
+    document.getElementById('trescNakladki').scrollTop = 0;
+  }
+  function zamknijPlecak() {
+    nakladkaEkw.classList.remove('widoczna');
+    btnEkw.classList.remove('aktywny');
+  }
   btnEkw.addEventListener('click', function () {
-    var pokaz = !nakladkaEkw.classList.contains('widoczna');
-    nakladkaEkw.classList.toggle('widoczna', pokaz);
-    btnEkw.classList.toggle('aktywny', pokaz);
-    if (pokaz) { nakladkaStatow.classList.remove('widoczna'); btnStaty.classList.remove('aktywny'); }
+    if (nakladkaEkw.classList.contains('widoczna')) { zamknijPlecak(); return; }
+    nakladkaEkw.classList.add('widoczna');
+    btnEkw.classList.add('aktywny');
+    pokazZakladke('ekw');
   });
+  zakEkw.addEventListener('click', function () { pokazZakladke('ekw'); });
+  zakStaty.addEventListener('click', function () { pokazZakladke('staty'); });
+  zakZamknij.addEventListener('click', zamknijPlecak);
+  pokazZakladke('ekw');
   btnMikstura.addEventListener('click', function () {
     if (gracz.mikstury <= 0) { dziennik('🧪 Nie masz mikstur!'); return; }
     if (gracz.hp >= gracz.hpMax) { dziennik('❤️ Masz pełne zdrowie'); return; }
@@ -15863,9 +16883,24 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (czasOstatni === null) czasOstatni = czas;
     var dt = Math.min((czas - czasOstatni) / 1000, 0.04);
     czasOstatni = czas;
+    // PAUZA: gdy plecak jest otwarty, swiat stoi. Mozna spokojnie
+    // porownac przedmioty bez obrywania po plecach.
+    if (nakladkaEkw.classList.contains('widoczna')) {
+      rysuj();
+      rysujNapisPauzy();
+      requestAnimationFrame(petla);
+      return;
+    }
     aktualizuj(dt);
     rysuj();
     requestAnimationFrame(petla);
+  }
+
+  function rysujNapisPauzy() {
+    ctx.save();
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillRect(0, 0, WID, WYS);
+    ctx.restore();
   }
 
   function zaludnijMape() {
@@ -16000,12 +17035,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     nakladka.style.display = 'flex';
     nakladkaTytul.textContent = '🚪 Ukryte przejście';
     nakladkaOpis.innerHTML =
-      'Za drzwiami czeka <b>Strażnik Progu</b> — trudny przeciwnik jak na sam początek.'
-      + '<br><br>Nie musisz tam wchodzić: to <b>dodatkowe wyzwanie</b>, a nie część labiryntu.'
-      + ' Za pokonanie Strażnika dostaniesz <b style="color:#ff7ae0">🌈 Różdżkę Wiedźmy</b> —'
-      + ' mityczną broń, która rośnie w siłę z każdym zabitym wrogiem.'
-      + '<br><br>⚠️ Wejść można <b>tylko teraz</b> — gdy opuścisz tę komnatę, przejście zniknie'
-      + ' na dobre. Z komnaty Strażnika nie wyjdziesz przed jego pokonaniem.'
+      'To <b>alternatywny sposób przejścia labiryntu</b>, a nie zwykła nagroda.'
+      + '<br><br>Za drzwiami czeka <b>Strażnik Progu</b>. Gdy go pokonasz, dostaniesz'
+      + ' <b style="color:#ff7ae0">🌈 Różdżkę Wiedźmy</b> i dalej grasz na innych zasadach:'
+      + '<br><br>• Różdżki <b>nie da się zdjąć</b> ani zmienić na inną broń'
+      + '<br>• Z wrogów <b>nie wypadają żadne przedmioty</b> — tylko skrzynie coś dają'
+      + '<br>• <b>Nie rozdajesz punktów</b>: każdy poziom to +5 zdrowia, +5 prędkości i +5 pancerza'
+      + '<br>• Różdżka <b>rośnie w siłę z każdym zabitym wrogiem</b>'
+      + '<br><br>Efekt: dużo mocniej liczy się <b>unikanie wrogów</b> niż szukanie lepszego sprzętu,'
+      + ' ale im dłużej przetrwasz, tym silniejsza się stajesz.'
+      + '<br><br>⚠️ Wejść można <b>tylko teraz</b> — gdy opuścisz tę komnatę, przejście zniknie na dobre.'
       + '<br><br>Zdrowie: <b>' + Math.round(gracz.hp) + ' / ' + gracz.hpMax + '</b>'
       + ' · mikstury: <b>' + gracz.mikstury + '</b>';
     nakladkaBtn.style.display = 'inline-block';
@@ -16094,10 +17133,50 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     document.getElementById('btnJeszczeNie').style.display='inline-block';
   }
 
+  function oznaczPrzejscie() {
+    labiryntPrzeszly = true;
+    try { if (window.localStorage) localStorage.setItem('labiryntPrzeszly', '1'); } catch (e) {}
+  }
+
   function zglosZaliczenie() {
     var wiad = { type:'streamlit-child:zaliczono', wartosc:true };
     window.postMessage(wiad, '*');
     if (window.parent && window.parent !== window) window.parent.postMessage(wiad, '*');
+  }
+
+  // Po smierci wraca SAMO PIETRO, a nie cala postac: poziom, statystyki
+  // i ekwipunek zostaja. Inaczej kazda porazka kasowala godzine gry.
+  function powtorzPietro() {
+    nakladka.style.display = 'none';
+    var bs = document.getElementById('btnNieWchodze'); if (bs) bs.style.display = 'none';
+    var bz2 = document.getElementById('btnZakoncz'); if (bz2) bz2.style.display = 'none';
+
+    generujMape();
+    var st = komnaty[0];
+    gracz.x = (st.cx + 0.5) * KAFEL;
+    gracz.y = (st.cy + 0.5) * KAFEL;
+    przeliczHpMax();
+    gracz.hp = gracz.hpMax;                 // pelne zdrowie na start proby
+    gracz.mikstury = Math.max(gracz.mikstury, 1);
+    gracz.cooldown = 0; gracz.rozpedzenie = 0; gracz.odOstatniegoCiosu = 0;
+    gracz.niewrazliwosc = 0;
+    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+
+    pociski = []; pociskiBossa = []; czastki = []; teksty = []; gazy = [];
+    bossPrzywolany = false; pytanieOBossa = false; arenaZamknieta = false;
+    portal = null; cooldownSlug = 0;
+    wyjscieSekretne = null; pytanieOSekretnej = false;
+    wSekretnej = false; sekretnyBossZyje = false; sekretnyPokonany = false;
+
+    // Piętro liczy sie od nowa takze dla skalowania trudnosci
+    for (var kk3 = 0; kk3 < komnaty.length; kk3++) delete odwiedzone[poziomLabiryntu + ':' + kk3];
+
+    zaludnijMape();
+    odswiezHud(); odswiezPanele();
+    dziennik('↺ Piętro ' + (poziomLabiryntu + 1) + ' od nowa. Ekwipunek zostaje przy tobie.');
+    ton(420, 0.16, 'triangle', 0.15);
+    trwa = true; czasOstatni = null;
+    requestAnimationFrame(petla);
   }
 
   function zakonczGre(zwyciestwo) {
@@ -16117,6 +17196,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = '♾️ Tryb nieskończony';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
+      oznaczPrzejscie();   // labirynt przeszly - ukryte przejscie odblokowane
       if (!document.getElementById('btnZakoncz')) {
         var bz = document.createElement('button');
         bz.id = 'btnZakoncz'; bz.className = 'gra-btn';
@@ -16125,7 +17205,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         bz.style.color = '#f0e8d0';
         bz.textContent = '✔ Zakończ';
         bz.onclick = function () {
-          nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
+          nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.'
+            + '<br><br>🚪 Odblokowano <b>ukryte przejście</b> w pierwszej komnacie — '
+            + 'przy następnym podejściu znajdziesz tam alternatywną ścieżkę.';
           nakladkaBtn.style.display = 'none';
           document.getElementById('btnZakoncz').style.display = 'none';
           zglosZaliczenie();
@@ -16140,17 +17222,37 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         nakladkaOpis.innerHTML = 'Fala <b>' + (1 + Math.floor(czasAreny/12)) + '</b>, poziom postaci <b>' + gracz.poziom + '</b>.'
           + '<br><br>Etap i tak jest już zaliczony.';
         nakladkaBtn.style.display = 'inline-block';
-        nakladkaBtn.textContent = '♾️ Jeszcze raz';
+        nakladkaBtn.textContent = '♾️ Spróbuj jeszcze raz';
         nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
-        // Po smierci w arenie etap i tak sie nalezy - zgłaszamy teraz
+        // Drugi przycisk: zakoncz i wroc do menu
+        var bk = document.getElementById('btnZakonczArena');
+        if (!bk) {
+          bk = document.createElement('button');
+          bk.id = 'btnZakonczArena'; bk.className = 'gra-btn';
+          bk.style.marginTop = '10px';
+          bk.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
+          bk.style.color = '#f0e8d0';
+          bk.textContent = '✔ Zakończ';
+          bk.onclick = function () {
+            inicjujDzwiek();
+            nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
+            nakladkaBtn.style.display = 'none';
+            bk.style.display = 'none';
+          };
+          nakladkaBtn.parentNode.appendChild(bk);
+        }
+        bk.style.display = 'inline-block';
+        oznaczPrzejscie();
         if (!zaliczoneZglosozone) { zaliczoneZglosozone = true; zglosZaliczenie(); }
         return;
       }
       nakladkaTytul.textContent = '💀 Poległaś...';
-      nakladkaOpis.innerHTML = 'Dotarłaś do poziomu ' + gracz.poziom + '.<br>Labirynt czeka na kolejną próbę.';
+      nakladkaOpis.innerHTML = 'Wracasz na początek <b>' + (poziomLabiryntu + 1) + '. piętra</b>.'
+        + '<br><br>Zachowujesz poziom postaci (<b>' + gracz.poziom + '</b>), statystyki i cały ekwipunek —'
+        + ' od nowa jest tylko samo piętro.';
       nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = 'Spróbuj ponownie';
-      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+      nakladkaBtn.textContent = '↺ Powtórz piętro';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); powtorzPietro(); };
     }
   }
 
@@ -16209,6 +17311,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function rozpocznijGre() {
     trybNieskonczony = false;
     poziomLabiryntu = 0; czasGry = 0; zaliczoneZglosozone = false;
+    zwiedzoneKomnaty = 0; odwiedzone = {};
+    sciezkaWiedzmy = false;   // odblokowanie zostaje, ale sciezka startuje od nowa
     wyjscieSekretne = null; pytanieOSekretnej = false; sekretnyPokonany = false;
     portal = null; arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
     var bjn2 = document.getElementById('btnJeszczeNie');
@@ -17270,6 +18374,15 @@ def renderuj_parkour(etap_dane):
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_parkour"), etykieta_bledow=t("bledy_etykieta_parkour"))
 
 
+def renderuj_poziom_diabla(etap_dane):
+    klucz = etap_dane["klucz"]
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_POZIOM_DIABLA, 520, key=f"kmp_{klucz}")
+        return True if wynik else None
+    components.html(SZABLON_POZIOM_DIABLA, height=580, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_diabel"), etykieta_bledow=t("bledy_etykieta_diabel"))
+
+
 def renderuj_fps(etap_dane):
     klucz = etap_dane["klucz"]
 
@@ -17660,6 +18773,8 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_labirynt(etap_dane)
     elif typ == "fps":
         wynik = renderuj_fps(etap_dane)
+    elif typ == "poziom_diabla":
+        wynik = renderuj_poziom_diabla(etap_dane)
     else:
         wynik = None
 
