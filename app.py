@@ -13695,45 +13695,68 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
-  html, body { width:100%; overflow:hidden; background:#0c0a12; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
-  #gra { position:relative; width:100%; height:520px; background:#0c0a12; overflow:hidden; }
-  #plansza { display:block; width:100%; background:#15121d; }
+  html, body { width:100%; overflow:hidden; background:#07060b; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:520px; background:#07060b; overflow:hidden; }
+  #plansza { display:block; width:100%; background:#0d0b14; }
 
-  #hud { position:absolute; top:0; left:0; right:0; padding:7px 11px; z-index:5; pointer-events:none;
+  #hud { position:absolute; top:0; left:0; right:0; padding:8px 12px; z-index:5; pointer-events:none;
          display:flex; justify-content:space-between; align-items:center; }
-  .hud-tekst { color:#f0e8d0; font-size:12px; font-weight:800; letter-spacing:0.04em;
-               text-shadow:0 1px 4px rgba(0,0,0,0.95); }
-  #zgony { color:#e6543c; }
+  .hud-kafel { background:rgba(8,6,14,0.72); border:1px solid rgba(230,193,92,0.32);
+               border-radius:9px; padding:4px 10px; color:#f0e8d0; font-size:11.5px; font-weight:800;
+               letter-spacing:0.05em; text-shadow:0 1px 3px rgba(0,0,0,0.9); }
+  #zgony { color:#ff7a68; border-color:rgba(230,84,60,0.45); }
 
-  #szyderstwo { position:absolute; top:44%; left:0; right:0; text-align:center; z-index:6;
-                color:#ff6b5a; font-size:19px; font-weight:900; letter-spacing:0.03em; opacity:0;
-                pointer-events:none; text-shadow:0 2px 12px rgba(0,0,0,0.95); padding:0 20px; }
-  #szyderstwo.pokaz { animation:migTekst 1.9s ease forwards; }
+  #szyderstwo { position:absolute; top:42%; left:0; right:0; text-align:center; z-index:6;
+                color:#ff7a68; font-size:19px; font-weight:900; letter-spacing:0.02em; opacity:0;
+                pointer-events:none; text-shadow:0 3px 14px rgba(0,0,0,0.95); padding:0 22px; }
+  #szyderstwo.pokaz { animation:migTekst 2s cubic-bezier(.2,.9,.3,1) forwards; }
   @keyframes migTekst {
-    0% { opacity:0; transform:scale(0.8); }
-    15% { opacity:1; transform:scale(1.06); }
-    70% { opacity:1; }
-    100% { opacity:0; }
+    0% { opacity:0; transform:translateY(10px) scale(0.86); }
+    14% { opacity:1; transform:translateY(0) scale(1.05); }
+    22% { transform:scale(1); }
+    72% { opacity:1; }
+    100% { opacity:0; transform:translateY(-8px); }
+  }
+
+  #tytulPoziomu { position:absolute; top:36%; left:0; right:0; text-align:center; z-index:6;
+                  pointer-events:none; opacity:0; }
+  #tytulPoziomu.pokaz { animation:wjazdTytulu 2.1s ease forwards; }
+  #tytulPoziomu .numer { color:#e6c15c; font-size:12px; font-weight:900; letter-spacing:0.3em; }
+  #tytulPoziomu .nazwa { color:#f5f0e4; font-size:23px; font-weight:900; letter-spacing:0.02em;
+                         text-shadow:0 3px 16px rgba(0,0,0,0.95); margin-top:3px; }
+  @keyframes wjazdTytulu {
+    0% { opacity:0; transform:translateY(14px); }
+    16% { opacity:1; transform:translateY(0); }
+    74% { opacity:1; }
+    100% { opacity:0; transform:translateY(-10px); }
   }
 
   #sterowanie { position:absolute; left:0; right:0; bottom:0; height:150px;
-                background:linear-gradient(180deg,#1a1520,#0f0d14); border-top:2px solid #3a3550;
+                background:linear-gradient(180deg,#171322,#0b0912); border-top:1px solid rgba(230,193,92,0.22);
                 display:flex; align-items:center; justify-content:space-between; padding:0 16px; }
-  .strzalki { display:flex; gap:10px; }
-  .btn-ld { width:76px; height:76px; border-radius:18px; border:1.5px solid #5a4a2e;
-            background:linear-gradient(135deg,#3a3550,#262038); color:#f0e8d0; font-size:30px; padding:0; }
-  .btn-ld.wcisniety { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; }
-  #btnSkok { width:96px; height:96px; border-radius:50%; border:3px solid #3f8a52;
-             background:radial-gradient(circle at 35% 30%,#7ec98a,#3f8a52); color:#0d1a0d;
-             font-size:34px; box-shadow:0 4px 14px rgba(0,0,0,0.5); }
-  #btnSkok.wcisniety { transform:scale(0.94); }
+  .strzalki { display:flex; gap:11px; }
+  .btn-ld { width:78px; height:78px; border-radius:20px;
+            border:1px solid rgba(230,193,92,0.3);
+            background:linear-gradient(160deg,#332c4a,#1d1830);
+            color:#e8dfc4; font-size:28px; padding:0;
+            box-shadow:0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.08);
+            transition:transform 0.06s, background 0.06s; }
+  .btn-ld.wcisniety { background:linear-gradient(160deg,#e6c15c,#c9a134); color:#1a1508; transform:scale(0.95); }
+  #btnSkok { width:98px; height:98px; border-radius:50%;
+             border:1px solid rgba(126,201,138,0.45);
+             background:radial-gradient(circle at 36% 30%,#8fd99b,#3f8a52 68%,#2c6a3c);
+             color:#0c1a0f; font-size:32px; font-weight:900;
+             box-shadow:0 5px 16px rgba(0,0,0,0.55), inset 0 2px 0 rgba(255,255,255,0.22);
+             transition:transform 0.06s; }
+  #btnSkok.wcisniety { transform:scale(0.93); }
 
-  #nakladka { position:absolute; inset:0; background:rgba(10,8,14,0.96); display:flex; flex-direction:column;
-              align-items:center; justify-content:center; text-align:center; padding:24px; z-index:20; }
-  #nakladkaTytul { color:#f5f5f0; font-size:21px; font-weight:900; margin-bottom:10px; }
-  #nakladkaOpis { color:#c8bda8; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.6; }
-  .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px;
-             padding:11px 28px; font-weight:800; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
+  #nakladka { position:absolute; inset:0; background:rgba(7,6,11,0.97); display:flex; flex-direction:column;
+              align-items:center; justify-content:center; text-align:center; padding:26px; z-index:20; }
+  #nakladkaTytul { color:#f5f0e4; font-size:22px; font-weight:900; margin-bottom:12px; letter-spacing:0.02em; }
+  #nakladkaOpis { color:#b8ad98; font-size:13px; margin-bottom:18px; max-width:300px; line-height:1.65; }
+  .gra-btn { background:linear-gradient(135deg,#e6c15c,#c9a134); color:#1a1508; border:none; border-radius:30px;
+             padding:12px 30px; font-weight:900; font-size:15px; letter-spacing:0.03em;
+             box-shadow:0 4px 14px rgba(0,0,0,0.5); }
   .gra-btn:active { transform:scale(0.96); }
 </style>
 </head>
@@ -13743,9 +13766,10 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
 <div id="gra">
   <canvas id="plansza" width="380" height="300"></canvas>
   <div id="hud">
-    <div class="hud-tekst" id="poziomNapis">POZIOM 1 / 10</div>
-    <div class="hud-tekst" id="zgony">💀 0</div>
+    <div class="hud-kafel" id="poziomNapis">POZIOM 1 / 15</div>
+    <div class="hud-kafel" id="zgony">💀 0</div>
   </div>
+  <div id="tytulPoziomu"><div class="numer"></div><div class="nazwa"></div></div>
   <div id="szyderstwo"></div>
 
   <div id="sterowanie">
@@ -13760,10 +13784,12 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     <div id="nakladkaTytul">😈 Poziom Diabła</div>
     <div id="nakladkaOpis">
       Dojdź do <b>drzwi</b>. To wszystko.<br><br>
-      Sterowanie: <b>◀ ▶</b> i <b>⤴</b> skok.<br><br>
-      <span style="color:#ff6b5a">Uprzedzam lojalnie: ta plansza Cię nie lubi.</span><br><br>
-      <span style="font-size:11px;opacity:0.75">Po pierwszej śmierci na danym poziomie
-      odkryte pułapki dostają czerwony obrys — żeby było trudno, ale uczciwie.</span>
+      <b>◀ ▶</b> ruch · <b>⤴</b> skok<br>
+      <span style="font-size:11.5px;opacity:0.8">Krótkie tapnięcie to niski skok, przytrzymanie — wysoki.</span>
+      <br><br>
+      <span style="color:#ff7a68">15 poziomów. Każdy chce Cię oszukać.</span><br><br>
+      <span style="font-size:11px;opacity:0.7">Raz odkryte pułapki dostają czerwony obrys —
+      trudno, ale uczciwie.</span>
     </div>
     <button class="gra-btn" id="nakladkaBtn">Niech będzie ▶</button>
   </div>
@@ -13773,12 +13799,19 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   var plansza = document.getElementById('plansza'), ctx = plansza.getContext('2d');
   var poziomNapis = document.getElementById('poziomNapis'), zgonyNapis = document.getElementById('zgony');
   var szyderstwo = document.getElementById('szyderstwo');
+  var tytulPoziomu = document.getElementById('tytulPoziomu');
   var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
 
   var KAFEL = 20, KOL = 19, WIERSZ = 15;
   var SZER = KOL * KAFEL, WYS = WIERSZ * KAFEL;
+
+  // ---- FIZYKA "przyjemnego sterowania" ----
   var GRAWITACJA = 1800, SILA_SKOKU = -470, PREDKOSC_BIEGU = 175;
+  var PRZYSPIESZENIE = 1500, TARCIE = 2000;
+  var COYOTE = 0.10;          // skok tuz po zejsciu z krawedzi
+  var BUFOR_SKOKU = 0.12;     // wcisniecie tuz przed ladowaniem
+  var SCIECIE_SKOKU = 0.45;   // puszczenie przycisku = nizszy skok
   var SZER_GRACZA = 13, WYS_GRACZA = 17;
 
   // ---------- DZWIEK ----------
@@ -13811,154 +13844,180 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dl + 0.02);
     } catch (e) {}
   }
-  function dzwiekSkoku() { ton(420, 0.09, 'square', 0.10); }
-  function dzwiekPulapki() { ton(130, 0.18, 'sawtooth', 0.17); }
-  function dzwiekSmierci() { [300, 230, 170, 110].forEach(function (f, i) { setTimeout(function () { ton(f, 0.16, 'sawtooth', 0.15); }, i * 90); }); }
-  function dzwiekDrzwi() { [523, 659, 784, 1046].forEach(function (f, i) { setTimeout(function () { ton(f, 0.16, 'triangle', 0.15); }, i * 95); }); }
-  function dzwiekKoncowy() { [523, 659, 784, 1046, 1318, 1568].forEach(function (f, i) { setTimeout(function () { ton(f, 0.22, 'triangle', 0.16); }, i * 130); }); }
+  function dzwiekSkoku() { ton(430, 0.08, 'square', 0.09); }
+  function dzwiekLadowania() { ton(190, 0.05, 'square', 0.06); }
+  function dzwiekPulapki() { ton(120, 0.2, 'sawtooth', 0.17); }
+  function dzwiekSmierci() { [320,240,175,115].forEach(function (f, i) { setTimeout(function () { ton(f, 0.15, 'sawtooth', 0.15); }, i * 85); }); }
+  function dzwiekDrzwi() { [523,659,784,1046].forEach(function (f, i) { setTimeout(function () { ton(f, 0.15, 'triangle', 0.15); }, i * 90); }); }
+  function dzwiekKoncowy() { [523,659,784,1046,1318,1568].forEach(function (f, i) { setTimeout(function () { ton(f, 0.22, 'triangle', 0.16); }, i * 125); }); }
 
   // ---------- POZIOMY ----------
-  // '#' - blok, '.' - pustka, 'S' - start, 'D' - drzwi, '^' - kolce
-  // Kazda pulapka ma strefe wyzwalania (w kaflach) i odpala sie RAZ.
   var POZIOMY = [
-    { // 1 - usypianie czujnosci: nic sie nie dzieje
-      nazwa: 'Rozgrzewka',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [],
-      tekstPoWejsciu: 'No i co, łatwe? 🙂',
-    },
-    { // 2 - podloga znika pod nogami
-      nazwa: 'Podłoga to sugestia',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
-        { typ:'zapadnia', strefa:[6,8,2,4], kafle:[[9,12],[10,12],[11,12]], tekst:'Ups.' },
-      ],
-    },
-    { // 3 - kolce z sufitu
-      nazwa: 'Uwaga na sufit',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
-        { typ:'spadajaceKolce', strefa:[5,8,2,4], kolumny:[8,9], tekst:'Patrz w górę.' },
-      ],
-    },
-    { // 4 - drzwi uciekaja
-      nazwa: 'Drzwi mają nogi',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
+    { nazwa:'Rozgrzewka',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[], tekstPoWejsciu:'No i co, łatwe? 🙂' },
+
+    { nazwa:'Podłoga to sugestia',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'zapadnia', strefa:[5,8,2,4], kafle:[[8,12],[9,12],[10,12]], tekst:'Ups.' },
+        { typ:'zapadnia', strefa:[11,8,2,4], kafle:[[13,12],[14,12]], tekst:'I jeszcze raz.' },
+      ] },
+
+    { nazwa:'Uwaga na sufit',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'spadajaceKolce', strefa:[4,8,2,4], kolumny:[7,8], tekst:'Patrz w górę.' },
+        { typ:'spadajaceKolce', strefa:[10,8,2,4], kolumny:[13], tekst:'' },
+      ] },
+
+    { nazwa:'Drzwi mają nogi',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
         { typ:'przesunDrzwi', strefa:[13,9,3,3], nowe:[9,11], tekst:'Nie tak szybko.' },
         { typ:'przesunDrzwi', strefa:[6,9,3,3], nowe:[3,11], tekst:'A teraz w drugą stronę.' },
-      ],
-    },
-    { // 5 - sciana wyrasta z podlogi, a za plecami dziura
-      nazwa: 'Ściana znikąd',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
-        { typ:'bloki', strefa:[7,8,2,4], kafle:[[11,11],[11,10]], tekst:'Przeskocz. Albo nie.' },
-        { typ:'zapadnia', strefa:[9,8,2,4], kafle:[[6,12],[7,12]], tekst:'Odwrotu nie ma.' },
-      ],
-    },
-    { // 6 - platforma znika pod stopami
-      nazwa: 'Platforma na chwilę',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','..........#........','..S.............D..',
-        '########....#######','...................','...................'],
-      pulapki: [
-        // Przepasc ma 4 kafle - wprost jej nie przeskoczysz, wiec platforma
-        // jest OBOWIAZKOWA. I wlasnie dlatego znika pod stopami.
+        { typ:'kolce', strefa:[6,9,3,3], kafle:[[6,11],[7,11]], tekst:'' },
+      ] },
+
+    { nazwa:'Ściana znikąd',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'bloki', strefa:[6,8,2,4], kafle:[[10,11],[10,10]], tekst:'Przeskocz. Albo nie.' },
+        { typ:'zapadnia', strefa:[8,8,2,4], kafle:[[6,12],[7,12]], tekst:'Odwrotu nie ma.' },
+        { typ:'spadajaceKolce', strefa:[11,8,2,4], kolumny:[14], tekst:'' },
+      ] },
+
+    { nazwa:'Platforma na chwilę',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','..........#........','..S.............D..',
+              '########....#######','...................','...................'],
+      pulapki:[
         { typ:'zapadnia', strefa:[9,9,3,3], kafle:[[10,10]], opoznienie:0.42, tekst:'Rusz się!' },
-      ],
-    },
-    { // 7 - sufit opada i zgniata
-      nazwa: 'Coraz ciaśniej',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
+        { typ:'spadajaceKolce', strefa:[12,9,2,3], kolumny:[15], tekst:'' },
+      ] },
+
+    { nazwa:'Coraz ciaśniej',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
         { typ:'prasa', strefa:[4,8,2,4], odKol:5, doKol:13, tekst:'Biegnij.' },
-      ],
-    },
-    { // 8 - falszywe drzwi
-      nazwa: 'Fałszywe drzwi',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
+      ] },
+
+    { nazwa:'Fałszywe drzwi',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
         { typ:'falszyweDrzwi', strefa:[13,9,3,3], nowe:[2,11], tekst:'To nie te drzwi. 😈' },
         { typ:'spadajaceKolce', strefa:[7,8,2,4], kolumny:[6], tekst:'' },
-      ],
-    },
-    { // 9 - wszystko naraz
-      nazwa: 'Wszystko naraz',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','......#.....#......','..S.............D..',
-        '######..####..#####','...................','...................'],
-      pulapki: [
-        // Przepascie po 2 kafle (do przeskoczenia z zapasem), a platformy
-        // nad nimi to kuszaca pulapka - znikaja tuz po wskoczeniu.
+        { typ:'zapadnia', strefa:[5,8,2,4], kafle:[[9,12],[10,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Laser',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'laser', strefa:[4,9,2,3], wiersz:11, odKol:7, doKol:8, cykl:1.5, aktywny:0.65, tekst:'Poczekaj na przerwę.' },
+        { typ:'laser', strefa:[9,9,2,3], wiersz:11, odKol:12, doKol:13, cykl:1.3, aktywny:0.6, tekst:'' },
+      ] },
+
+    { nazwa:'Ostrzał',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','.........#.........','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'pociskBoczny', strefa:[4,9,2,3], zPrawej:true, wiersz:11, tempo:1.1, ile:6, tekst:'Uwaga z prawej!' },
+        { typ:'zapadnia', strefa:[11,9,2,3], kafle:[[13,12],[14,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Grunt się sypie',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'zapadnia', strefa:[4,8,2,4], kafle:[[6,12],[7,12]], tekst:'Nie zatrzymuj się.' },
+        { typ:'zapadnia', strefa:[8,8,2,4], kafle:[[10,12],[11,12]], tekst:'' },
+        { typ:'zapadnia', strefa:[12,8,2,4], kafle:[[14,12],[15,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Sufit i podłoga',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'spadajaceKolce', strefa:[4,8,2,4], kolumny:[7], tekst:'Z góry i z dołu.' },
+        { typ:'zapadnia', strefa:[8,8,2,4], kafle:[[10,12],[11,12]], tekst:'' },
+        { typ:'spadajaceKolce', strefa:[11,8,2,4], kolumny:[14], tekst:'' },
+        { typ:'przesunDrzwi', strefa:[14,9,3,3], nowe:[17,11], tekst:'' },
+      ] },
+
+    { nazwa:'Blok z nieba',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'blokSpadajacy', strefa:[5,8,2,4], kolumna:8, tekst:'Uwaga!' },
+        { typ:'blokSpadajacy', strefa:[9,8,2,4], kolumna:12, tekst:'' },
+        { typ:'zapadnia', strefa:[13,8,2,4], kafle:[[15,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Wszystko naraz',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','......#.....#......','..S.............D..',
+              '######..####..#####','...................','...................'],
+      pulapki:[
         { typ:'zapadnia', strefa:[5,9,3,3], kafle:[[6,10]], opoznienie:0.38, tekst:'Nie stój.' },
         { typ:'zapadnia', strefa:[11,9,3,3], kafle:[[12,10]], opoznienie:0.34, tekst:'' },
         { typ:'spadajaceKolce', strefa:[14,10,2,2], kolumny:[16], tekst:'' },
         { typ:'przesunDrzwi', strefa:[15,10,2,2], nowe:[18,11], tekst:'Jeszcze kawałek.' },
-      ],
-    },
-    { // 10 - ostatni zart: wyglada jak poziom 1
-      nazwa: 'Ostatni żart',
-      siatka: [
-        '...................','...................','...................','...................',
-        '...................','...................','...................','...................',
-        '...................','...................','...................','..S.............D..',
-        '###################','...................','...................'],
-      pulapki: [
-        // Wyzwalacz DUZO wczesniej (kol. 9-10), zeby zostaly dwa kafle
-        // rozbiegu. Przy strefie na kol. 12 gracz mial 7 pikseli na reakcje,
-        // czyli nie mial szans - a ma byc zaskakujaco, nie niemozliwie.
+      ] },
+
+    { nazwa:'Ostatni żart',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
         { typ:'zapadnia', strefa:[9,8,2,4],
           kafle:[[13,12],[14,12],[15,12],[16,12],[17,12],[18,12]], tekst:'Serio myślałaś, że tak łatwo?' },
-        // Blok na wierszu 10 (nie 9) - skok wymaga 40px zamiast 60px,
-        // czyli miesci sie w mozliwosciach postaci z zapasem.
-        // Ladowisko szerokie na DWA kafle - skok ma byc zaskakujacy,
-        // a nie pikselowo precyzyjny.
         { typ:'bloki', strefa:[9,8,2,4], kafle:[[15,10],[16,10]], tekst:'' },
         { typ:'przesunDrzwi', strefa:[9,8,2,4], nowe:[16,9], tekst:'' },
-      ],
-    },
+      ] },
   ];
 
   // ---------- STAN ----------
-  var poziomIdx = 0, zgony = 0, trwa = false, czasOstatni = null;
+  var poziomIdx = 0, zgony = 0, trwa = false, czasOstatni = null, czasGlobalny = 0;
   var mapa = [], gracz = null, drzwi = { x:0, y:0 }, pulapki = [];
-  var spadajace = [], prasa = null, czastki = [];
-  var odkryte = {};     // pulapki juz raz uruchomione na danym poziomie
-  var wcisniete = { lewo:false, prawo:false };
-  var chceSkok = false;
+  var spadajace = [], prasa = null, czastki = [], lasery = [], pociski = [], spadajaceBloki = [];
+  var odkryte = {}, trzesienie = 0;
+  var wcisniete = { lewo:false, prawo:false, skok:false };
+  var buforSkoku = 0, coyote = 0;
 
   function kafelStaly(kx, ky) {
     if (kx < 0 || kx >= KOL || ky < 0 || ky >= WIERSZ) return kx < 0 || kx >= KOL;
@@ -13975,15 +14034,16 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     pulapki = p.pulapki.map(function (pu, i) {
       return { dane: pu, indeks: i, odpalona: false, opoznienieDo: 0 };
     });
-    spadajace = []; prasa = null; czastki = [];
+    spadajace = []; prasa = null; czastki = []; lasery = []; pociski = []; spadajaceBloki = [];
+    trzesienie = 0; buforSkoku = 0; coyote = 0;
     for (var y = 0; y < WIERSZ; y++) {
       for (var x = 0; x < KOL; x++) {
         if (mapa[y][x] === 'S') {
-          gracz = { x:x*KAFEL + 3, y:y*KAFEL + (KAFEL - WYS_GRACZA), vx:0, vy:0, naZiemi:false, patrzy:1 };
+          gracz = { x:x*KAFEL + 3, y:y*KAFEL + (KAFEL - WYS_GRACZA), vx:0, vy:0,
+                    naZiemi:false, patrzy:1, rozciag:1, pyl:0 };
           mapa[y][x] = '.';
         } else if (mapa[y][x] === 'D') {
-          drzwi = { x:x, y:y };
-          mapa[y][x] = '.';
+          drzwi = { x:x, y:y }; mapa[y][x] = '.';
         }
       }
     }
@@ -13998,13 +14058,20 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     void szyderstwo.offsetWidth;
     szyderstwo.classList.add('pokaz');
   }
+  function pokazTytul(idx) {
+    tytulPoziomu.querySelector('.numer').textContent = 'POZIOM ' + (idx+1);
+    tytulPoziomu.querySelector('.nazwa').textContent = POZIOMY[idx].nazwa;
+    tytulPoziomu.classList.remove('pokaz');
+    void tytulPoziomu.offsetWidth;
+    tytulPoziomu.classList.add('pokaz');
+  }
 
   // ---------- PULAPKI ----------
   function sprawdzPulapki(dt) {
-    var gk = { x: gracz.x, y: gracz.y, w: SZER_GRACZA, h: WYS_GRACZA };
+    var gk = { x:gracz.x, y:gracz.y, w:SZER_GRACZA, h:WYS_GRACZA };
     pulapki.forEach(function (pu) {
       if (pu.odpalona) return;
-      var s = pu.dane.strefa;   // [kolumna, wiersz, szerokosc, wysokosc] w kaflach
+      var s = pu.dane.strefa;
       var sx = s[0]*KAFEL, sy = s[1]*KAFEL, sw = s[2]*KAFEL, sh = s[3]*KAFEL;
       if (gk.x + gk.w < sx || gk.x > sx + sw || gk.y + gk.h < sy || gk.y > sy + sh) return;
       pu.odpalona = true;
@@ -14025,9 +14092,9 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     if (d.typ === 'zapadnia') {
       d.kafle.forEach(function (k) {
         mapa[k[1]][k[0]] = '.';
-        for (var i = 0; i < 5; i++) {
-          czastki.push({ x:k[0]*KAFEL + 10, y:k[1]*KAFEL + 10,
-                         vx:(Math.random()-0.5)*120, vy:-Math.random()*90, zycie:0.6, kolor:'#6a5a4a' });
+        for (var i = 0; i < 6; i++) {
+          czastki.push({ x:k[0]*KAFEL + 10, y:k[1]*KAFEL + 8,
+                         vx:(Math.random()-0.5)*140, vy:-Math.random()*110, zycie:0.7, max:0.7, kolor:'#6a5f4a' });
         }
       });
     } else if (d.typ === 'bloki') {
@@ -14035,96 +14102,175 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     } else if (d.typ === 'kolce') {
       d.kafle.forEach(function (k) { mapa[k[1]][k[0]] = '^'; });
     } else if (d.typ === 'spadajaceKolce') {
-      d.kolumny.forEach(function (kx) {
-        spadajace.push({ kx:kx, y:-KAFEL, vy:0 });
-      });
+      d.kolumny.forEach(function (kx) { spadajace.push({ kx:kx, y:-KAFEL, vy:0 }); });
     } else if (d.typ === 'przesunDrzwi') {
       drzwi = { x:d.nowe[0], y:d.nowe[1] };
     } else if (d.typ === 'falszyweDrzwi') {
       mapa[drzwi.y][drzwi.x] = '^';
       drzwi = { x:d.nowe[0], y:d.nowe[1] };
     } else if (d.typ === 'prasa') {
-      prasa = { odKol:d.odKol, doKol:d.doKol, y:-KAFEL, v:52 };
+      prasa = { odKol:d.odKol, doKol:d.doKol, y:-KAFEL, v:54 };
+    } else if (d.typ === 'laser') {
+      lasery.push({ wiersz:d.wiersz, odKol:d.odKol, doKol:d.doKol,
+                    cykl:d.cykl, aktywny:d.aktywny, faza:0 });
+    } else if (d.typ === 'pociskBoczny') {
+      var p2 = { zPrawej:d.zPrawej, wiersz:d.wiersz, tempo:d.tempo, doWystrzelenia:d.ile, licznik:0 };
+      pociski.push(p2);
+    } else if (d.typ === 'blokSpadajacy') {
+      spadajaceBloki.push({ kx:d.kolumna, y:-KAFEL, vy:0 });
     }
     dzwiekPulapki();
+    trzesienie = 0.28;
     pokazTekst(d.tekst);
   }
 
   // ---------- AKTUALIZACJA ----------
   function aktualizuj(dt) {
-    // Ruch poziomy
-    gracz.vx = 0;
-    if (wcisniete.lewo)  { gracz.vx = -PREDKOSC_BIEGU; gracz.patrzy = -1; }
-    if (wcisniete.prawo) { gracz.vx =  PREDKOSC_BIEGU; gracz.patrzy =  1; }
+    czasGlobalny += dt;
 
-    if (chceSkok && gracz.naZiemi) {
+    // --- Ruch poziomy z przyspieszeniem (zwinny, ale nie slizgowy) ---
+    var cel = 0;
+    if (wcisniete.lewo) { cel = -PREDKOSC_BIEGU; gracz.patrzy = -1; }
+    if (wcisniete.prawo) { cel = PREDKOSC_BIEGU; gracz.patrzy = 1; }
+    if (cel !== 0) {
+      gracz.vx += Math.sign(cel - gracz.vx) * PRZYSPIESZENIE * dt;
+      if (Math.abs(gracz.vx) > PREDKOSC_BIEGU) gracz.vx = Math.sign(gracz.vx) * PREDKOSC_BIEGU;
+    } else {
+      var hamowanie = TARCIE * dt;
+      gracz.vx = Math.abs(gracz.vx) <= hamowanie ? 0 : gracz.vx - Math.sign(gracz.vx) * hamowanie;
+    }
+
+    // --- Skok: coyote time + bufor + zmienna wysokosc ---
+    if (buforSkoku > 0) buforSkoku -= dt;
+    if (coyote > 0) coyote -= dt;
+    if (buforSkoku > 0 && coyote > 0) {
       gracz.vy = SILA_SKOKU;
       gracz.naZiemi = false;
+      buforSkoku = 0; coyote = 0;
+      gracz.rozciag = 1.35;
       dzwiekSkoku();
     }
-    chceSkok = false;
+    if (!wcisniete.skok && gracz.vy < SILA_SKOKU * SCIECIE_SKOKU) {
+      gracz.vy = SILA_SKOKU * SCIECIE_SKOKU;     // puszczone wczesnie = nizszy skok
+    }
 
     gracz.vy += GRAWITACJA * dt;
     if (gracz.vy > 900) gracz.vy = 900;
 
+    var byloNaZiemi = gracz.naZiemi;
     przesunZKolizja(gracz.vx * dt, 0);
     gracz.naZiemi = false;
     przesunZKolizja(0, gracz.vy * dt);
+    if (gracz.naZiemi) {
+      coyote = COYOTE;
+      if (!byloNaZiemi) { gracz.rozciag = 0.7; dzwiekLadowania(); pylPodNogami(4); }
+    }
+
+    // Pyl przy biegu
+    if (gracz.naZiemi && Math.abs(gracz.vx) > 100) {
+      gracz.pyl -= dt;
+      if (gracz.pyl <= 0) { gracz.pyl = 0.09; pylPodNogami(1); }
+    }
+    gracz.rozciag += (1 - gracz.rozciag) * Math.min(1, dt * 12);
 
     sprawdzPulapki(dt);
 
-    // Spadajace kolce
+    // --- Spadajace kolce ---
     for (var i = spadajace.length - 1; i >= 0; i--) {
       var sk = spadajace[i];
-      sk.vy += GRAWITACJA * 0.6 * dt;
-      sk.y += sk.vy * dt;
-      var kyDocelowy = -1;
-      for (var y = 0; y < WIERSZ; y++) {
-        if (kafelStaly(sk.kx, y)) { kyDocelowy = y - 1; break; }
-      }
-      if (kyDocelowy >= 0 && sk.y >= kyDocelowy * KAFEL) {
-        mapa[kyDocelowy][sk.kx] = '^';
-        spadajace.splice(i, 1);
-        ton(90, 0.12, 'square', 0.14);
+      sk.vy += GRAWITACJA * 0.6 * dt; sk.y += sk.vy * dt;
+      var ky = -1;
+      for (var y = 0; y < WIERSZ; y++) { if (kafelStaly(sk.kx, y)) { ky = y - 1; break; } }
+      if (ky >= 0 && sk.y >= ky * KAFEL) {
+        mapa[ky][sk.kx] = '^'; spadajace.splice(i, 1);
+        ton(95, 0.1, 'square', 0.13); trzesienie = 0.2;
         continue;
       }
       if (sk.y > WYS) spadajace.splice(i, 1);
     }
 
-    // Prasa sufitowa
+    // --- Spadajace bloki ---
+    for (var b = spadajaceBloki.length - 1; b >= 0; b--) {
+      var sb = spadajaceBloki[b];
+      sb.vy += GRAWITACJA * 0.75 * dt; sb.y += sb.vy * dt;
+      if (gracz.x + SZER_GRACZA > sb.kx*KAFEL + 2 && gracz.x < sb.kx*KAFEL + KAFEL - 2
+          && gracz.y < sb.y + KAFEL && gracz.y + WYS_GRACZA > sb.y) { zgin('Przygnieciona.'); return; }
+      var kyB = -1;
+      for (var y2 = 0; y2 < WIERSZ; y2++) { if (kafelStaly(sb.kx, y2)) { kyB = y2 - 1; break; } }
+      if (kyB >= 0 && sb.y >= kyB * KAFEL) {
+        mapa[kyB][sb.kx] = '#'; spadajaceBloki.splice(b, 1);
+        ton(80, 0.14, 'square', 0.16); trzesienie = 0.35; pylWPunkcie(sb.kx*KAFEL + 10, kyB*KAFEL + KAFEL, 8);
+        continue;
+      }
+      if (sb.y > WYS) spadajaceBloki.splice(b, 1);
+    }
+
+    // --- Lasery ---
+    lasery.forEach(function (l) {
+      l.faza = (l.faza + dt) % l.cykl;
+      if (l.faza < l.aktywny) {
+        if (gracz.y + WYS_GRACZA > l.wiersz*KAFEL + 3 && gracz.y < l.wiersz*KAFEL + KAFEL - 3
+            && gracz.x + SZER_GRACZA > l.odKol*KAFEL && gracz.x < (l.doKol+1)*KAFEL) {
+          zgin('Spalona.');
+        }
+      }
+    });
+    if (!trwa) return;
+
+    // --- Pociski z boku ---
+    pociski.forEach(function (p) {
+      p.licznik -= dt;
+      if (p.licznik <= 0 && p.doWystrzelenia > 0) {
+        p.licznik = p.tempo; p.doWystrzelenia--;
+        czastki.push({ pocisk:true, x: p.zPrawej ? SZER + 6 : -6, y: p.wiersz*KAFEL + KAFEL/2,
+                       vx: p.zPrawej ? -230 : 230, vy:0, zycie:4, max:4, kolor:'#ff8a5a' });
+        ton(340, 0.06, 'square', 0.09);
+      }
+    });
+
+    // --- Prasa ---
     if (prasa) {
       prasa.y += prasa.v * dt;
       var lewo = prasa.odKol * KAFEL, prawo = (prasa.doKol + 1) * KAFEL;
       if (gracz.x + SZER_GRACZA > lewo && gracz.x < prawo
-          && gracz.y < prasa.y + KAFEL && gracz.y + WYS_GRACZA > prasa.y) {
-        zgin('Zgnieciona.');
-        return;
-      }
+          && gracz.y < prasa.y + KAFEL && gracz.y + WYS_GRACZA > prasa.y) { zgin('Zgnieciona.'); return; }
       if (prasa.y > WYS) prasa = null;
     }
 
-    // Kolce i wypadniecie poza plansze
     if (dotykaKolcow()) { zgin('Auć.'); return; }
     if (gracz.y > WYS + 40) { zgin('Spadłaś.'); return; }
 
-    // Drzwi
+    // --- Drzwi ---
     var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
     if (gracz.x + SZER_GRACZA > dx + 2 && gracz.x < dx + KAFEL - 2
-        && gracz.y + WYS_GRACZA > dy + 2 && gracz.y < dy + KAFEL) {
-      nastepnyPoziom();
-      return;
-    }
+        && gracz.y + WYS_GRACZA > dy + 2 && gracz.y < dy + KAFEL) { nastepnyPoziom(); return; }
 
+    // --- Czastki (w tym pociski) ---
     for (var c = czastki.length - 1; c >= 0; c--) {
       var cz = czastki[c];
-      cz.vy += 500 * dt; cz.x += cz.vx * dt; cz.y += cz.vy * dt; cz.zycie -= dt;
-      if (cz.zycie <= 0) czastki.splice(c, 1);
+      if (cz.pocisk) {
+        cz.x += cz.vx * dt; cz.zycie -= dt;
+        if (gracz.x + SZER_GRACZA > cz.x - 4 && gracz.x < cz.x + 4
+            && gracz.y + WYS_GRACZA > cz.y - 4 && gracz.y < cz.y + 4) { zgin('Trafiona.'); return; }
+        if (cz.x < -20 || cz.x > SZER + 20 || cz.zycie <= 0) czastki.splice(c, 1);
+      } else {
+        cz.vy += 620 * dt; cz.x += cz.vx * dt; cz.y += cz.vy * dt; cz.zycie -= dt;
+        if (cz.zycie <= 0) czastki.splice(c, 1);
+      }
+    }
+    if (trzesienie > 0) trzesienie -= dt;
+  }
+
+  function pylPodNogami(ile) { pylWPunkcie(gracz.x + SZER_GRACZA/2, gracz.y + WYS_GRACZA, ile); }
+  function pylWPunkcie(x, y, ile) {
+    for (var i = 0; i < ile; i++) {
+      czastki.push({ x:x, y:y, vx:(Math.random()-0.5)*70, vy:-Math.random()*50,
+                     zycie:0.35, max:0.35, kolor:'#8a7f6a' });
     }
   }
 
   function przesunZKolizja(dx, dy) {
-    gracz.x += dx;
-    gracz.y += dy;
+    gracz.x += dx; gracz.y += dy;
     var lewo = Math.floor(gracz.x / KAFEL), prawo = Math.floor((gracz.x + SZER_GRACZA) / KAFEL);
     var gora = Math.floor(gracz.y / KAFEL), dol = Math.floor((gracz.y + WYS_GRACZA) / KAFEL);
     for (var ky = gora; ky <= dol; ky++) {
@@ -14133,8 +14279,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         var bx = kx * KAFEL, by = ky * KAFEL;
         if (gracz.x + SZER_GRACZA <= bx || gracz.x >= bx + KAFEL) continue;
         if (gracz.y + WYS_GRACZA <= by || gracz.y >= by + KAFEL) continue;
-        if (dx > 0) gracz.x = bx - SZER_GRACZA;
-        else if (dx < 0) gracz.x = bx + KAFEL;
+        if (dx > 0) { gracz.x = bx - SZER_GRACZA; gracz.vx = 0; }
+        else if (dx < 0) { gracz.x = bx + KAFEL; gracz.vx = 0; }
         else if (dy > 0) { gracz.y = by - WYS_GRACZA; gracz.vy = 0; gracz.naZiemi = true; }
         else if (dy < 0) { gracz.y = by + KAFEL; gracz.vy = 0; }
       }
@@ -14155,12 +14301,18 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     zgonyNapis.textContent = '💀 ' + zgony;
     dzwiekSmierci();
     pokazTekst(tekst);
+    trzesienie = 0.45;
+    for (var i = 0; i < 16; i++) {
+      czastki.push({ x:gracz.x + 6, y:gracz.y + 8, vx:(Math.random()-0.5)*260,
+                     vy:-Math.random()*220, zycie:0.8, max:0.8, kolor:'#e6c15c' });
+    }
     trwa = false;
+    rysuj();
     setTimeout(function () {
       wczytajPoziom(poziomIdx);
       trwa = true; czasOstatni = null;
       requestAnimationFrame(petla);
-    }, 620);
+    }, 640);
   }
 
   function nastepnyPoziom() {
@@ -14169,7 +14321,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     if (poziomIdx >= POZIOMY.length - 1) { wygrana(); return; }
     poziomIdx++;
     wczytajPoziom(poziomIdx);
-    pokazTekst(opis || POZIOMY[poziomIdx].nazwa);
+    pokazTytul(poziomIdx);
+    if (opis) pokazTekst(opis);
   }
 
   function wygrana() {
@@ -14186,23 +14339,58 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   }
 
   // ---------- RYSOWANIE ----------
-  function rysuj() {
-    var g = ctx.createLinearGradient(0, 0, 0, WYS);
-    g.addColorStop(0, '#1c1728'); g.addColorStop(1, '#12101a');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, SZER, WYS);
+  function rysujBlok(x, y) {
+    ctx.fillStyle = '#443c62'; ctx.fillRect(x, y, KAFEL, KAFEL);
+    ctx.fillStyle = '#564d78'; ctx.fillRect(x, y, KAFEL, 4);
+    ctx.fillStyle = '#2c2645'; ctx.fillRect(x, y + KAFEL - 4, KAFEL, 4);
+    ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(x + 2, y + 5, KAFEL - 4, 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.32)'; ctx.lineWidth = 1;
+    ctx.strokeRect(x + 0.5, y + 0.5, KAFEL - 1, KAFEL - 1);
+  }
+  function rysujKolce(x, y, doGory) {
+    var g = ctx.createLinearGradient(x, y, x, y + KAFEL);
+    g.addColorStop(0, doGory ? '#eef0f6' : '#9aa0b4');
+    g.addColorStop(1, doGory ? '#9aa0b4' : '#eef0f6');
+    ctx.fillStyle = g;
+    for (var k = 0; k < 3; k++) {
+      var px = x + k * 6.6;
+      ctx.beginPath();
+      if (doGory) { ctx.moveTo(px, y + KAFEL); ctx.lineTo(px + 3.3, y + 3); ctx.lineTo(px + 6.6, y + KAFEL); }
+      else { ctx.moveTo(px, y); ctx.lineTo(px + 3.3, y + KAFEL - 3); ctx.lineTo(px + 6.6, y); }
+      ctx.closePath(); ctx.fill();
+    }
+  }
 
-    // Siatka tla
-    ctx.strokeStyle = 'rgba(255,255,255,0.03)'; ctx.lineWidth = 1;
-    for (var i = 0; i <= KOL; i++) {
-      ctx.beginPath(); ctx.moveTo(i*KAFEL + 0.5, 0); ctx.lineTo(i*KAFEL + 0.5, WYS); ctx.stroke();
+  function rysuj() {
+    ctx.save();
+    if (trzesienie > 0) {
+      ctx.translate((Math.random()-0.5) * trzesienie * 14, (Math.random()-0.5) * trzesienie * 14);
     }
 
-    // Podpowiedzi: juz odkryte pulapki dostaja czerwony obrys
+    // Tlo z glebia
+    var g = ctx.createLinearGradient(0, 0, 0, WYS);
+    g.addColorStop(0, '#221b33'); g.addColorStop(0.55, '#161226'); g.addColorStop(1, '#0d0b16');
+    ctx.fillStyle = g; ctx.fillRect(-20, -20, SZER + 40, WYS + 40);
+
+    // Delikatne, powoli plynace pasy w tle
+    ctx.save(); ctx.globalAlpha = 0.05;
+    for (var i = 0; i < 7; i++) {
+      var yy = ((i * 46 + czasGlobalny * 7) % (WYS + 60)) - 30;
+      ctx.fillStyle = '#8a7ad8'; ctx.fillRect(-20, yy, SZER + 40, 14);
+    }
+    ctx.restore();
+
+    // Siatka
+    ctx.strokeStyle = 'rgba(255,255,255,0.028)'; ctx.lineWidth = 1;
+    for (var c = 0; c <= KOL; c++) { ctx.beginPath(); ctx.moveTo(c*KAFEL+0.5, 0); ctx.lineTo(c*KAFEL+0.5, WYS); ctx.stroke(); }
+    for (var r = 0; r <= WIERSZ; r++) { ctx.beginPath(); ctx.moveTo(0, r*KAFEL+0.5); ctx.lineTo(SZER, r*KAFEL+0.5); ctx.stroke(); }
+
+    // Obrys odkrytych pulapek
     pulapki.forEach(function (pu) {
       if (!odkryte[poziomIdx + ':' + pu.indeks] || pu.odpalona) return;
       var s = pu.dane.strefa;
       ctx.save();
-      ctx.strokeStyle = 'rgba(230,84,60,0.55)';
+      ctx.strokeStyle = 'rgba(255,90,70,0.5)';
       ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
       ctx.strokeRect(s[0]*KAFEL + 1, s[1]*KAFEL + 1, s[2]*KAFEL - 2, s[3]*KAFEL - 2);
       ctx.restore();
@@ -14212,78 +14400,113 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     for (var y = 0; y < WIERSZ; y++) {
       for (var x = 0; x < KOL; x++) {
         var t = mapa[y][x];
-        if (t === '#') {
-          ctx.fillStyle = '#3a3550';
-          ctx.fillRect(x*KAFEL, y*KAFEL, KAFEL, KAFEL);
-          ctx.fillStyle = '#4a4468';
-          ctx.fillRect(x*KAFEL, y*KAFEL, KAFEL, 3);
-          ctx.fillStyle = '#241f36';
-          ctx.fillRect(x*KAFEL, y*KAFEL + KAFEL - 3, KAFEL, 3);
-        } else if (t === '^') {
-          ctx.fillStyle = '#c9ccd8';
-          for (var k = 0; k < 3; k++) {
-            var px = x*KAFEL + k*6.6;
-            ctx.beginPath();
-            ctx.moveTo(px, y*KAFEL + KAFEL);
-            ctx.lineTo(px + 3.3, y*KAFEL + 4);
-            ctx.lineTo(px + 6.6, y*KAFEL + KAFEL);
-            ctx.closePath(); ctx.fill();
-          }
-        }
+        if (t === '#') rysujBlok(x*KAFEL, y*KAFEL);
+        else if (t === '^') rysujKolce(x*KAFEL, y*KAFEL, true);
       }
     }
 
-    // Drzwi
-    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
-    ctx.fillStyle = '#6b4a2a'; ctx.fillRect(dx + 1, dy, KAFEL - 2, KAFEL);
-    ctx.fillStyle = '#8a6338'; ctx.fillRect(dx + 3, dy + 2, KAFEL - 6, KAFEL - 2);
-    ctx.fillStyle = '#e6c15c'; ctx.beginPath();
-    ctx.arc(dx + KAFEL - 6, dy + KAFEL/2, 1.8, 0, Math.PI*2); ctx.fill();
-
-    // Spadajace kolce
-    spadajace.forEach(function (sk) {
-      ctx.fillStyle = '#c9ccd8';
-      for (var k = 0; k < 3; k++) {
-        var px = sk.kx*KAFEL + k*6.6;
-        ctx.beginPath();
-        ctx.moveTo(px, sk.y);
-        ctx.lineTo(px + 3.3, sk.y + KAFEL - 4);
-        ctx.lineTo(px + 6.6, sk.y);
-        ctx.closePath(); ctx.fill();
+    // Lasery
+    lasery.forEach(function (l) {
+      var wl = l.faza < l.aktywny;
+      var x0 = l.odKol*KAFEL, x1 = (l.doKol+1)*KAFEL, yc = l.wiersz*KAFEL + KAFEL/2;
+      ctx.save();
+      if (wl) {
+        ctx.shadowColor = '#ff4a3a'; ctx.shadowBlur = 12;
+        ctx.fillStyle = '#ff6a52'; ctx.fillRect(x0, yc - 3, x1 - x0, 6);
+        ctx.fillStyle = '#ffd9c8'; ctx.fillRect(x0, yc - 1, x1 - x0, 2);
+      } else {
+        ctx.globalAlpha = 0.30;
+        ctx.strokeStyle = '#ff6a52'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
+        ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc); ctx.stroke();
       }
+      ctx.restore();
+      ctx.fillStyle = '#6a3030';
+      ctx.fillRect(x0 - 3, yc - 7, 3, 14); ctx.fillRect(x1, yc - 7, 3, 14);
+    });
+
+    // Drzwi z pulsujaca poswiata
+    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
+    var puls = 0.6 + Math.sin(czasGlobalny * 3) * 0.4;
+    ctx.save();
+    ctx.globalAlpha = 0.20 * puls;
+    var gg = ctx.createRadialGradient(dx + 10, dy + 10, 2, dx + 10, dy + 10, 30);
+    gg.addColorStop(0, '#ffd98a'); gg.addColorStop(1, 'rgba(255,200,90,0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(dx + 10, dy + 10, 30, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle = '#4a3220'; ctx.fillRect(dx, dy, KAFEL, KAFEL);
+    ctx.fillStyle = '#7d5730'; ctx.fillRect(dx + 2, dy + 1, KAFEL - 4, KAFEL - 1);
+    ctx.fillStyle = '#94693a'; ctx.fillRect(dx + 3, dy + 2, KAFEL - 6, 5);
+    ctx.fillStyle = '#e6c15c'; ctx.beginPath(); ctx.arc(dx + KAFEL - 5.5, dy + KAFEL/2, 1.9, 0, Math.PI*2); ctx.fill();
+
+    // Spadajace kolce i bloki
+    spadajace.forEach(function (sk) { rysujKolce(sk.kx*KAFEL, sk.y, false); });
+    spadajaceBloki.forEach(function (sb) {
+      ctx.save(); ctx.globalAlpha = 0.25; ctx.fillStyle = '#000';
+      ctx.fillRect(sb.kx*KAFEL + 2, WYS - 46, KAFEL - 4, 4); ctx.restore();
+      rysujBlok(sb.kx*KAFEL, sb.y);
     });
 
     // Prasa
     if (prasa) {
-      var lewo = prasa.odKol * KAFEL, szer = (prasa.doKol - prasa.odKol + 1) * KAFEL;
-      ctx.fillStyle = '#5a3550'; ctx.fillRect(lewo, prasa.y, szer, KAFEL);
-      ctx.fillStyle = '#c9ccd8';
+      var lewo = prasa.odKol*KAFEL, szer = (prasa.doKol - prasa.odKol + 1)*KAFEL;
+      ctx.fillStyle = '#5a2f4a'; ctx.fillRect(lewo, prasa.y - 6, szer, KAFEL + 6);
+      ctx.fillStyle = '#7a4062'; ctx.fillRect(lewo, prasa.y - 6, szer, 4);
+      ctx.fillStyle = '#dfe2ec';
       for (var s2 = 0; s2 < szer; s2 += 6.6) {
         ctx.beginPath();
         ctx.moveTo(lewo + s2, prasa.y + KAFEL);
-        ctx.lineTo(lewo + s2 + 3.3, prasa.y + KAFEL + 5);
+        ctx.lineTo(lewo + s2 + 3.3, prasa.y + KAFEL + 6);
         ctx.lineTo(lewo + s2 + 6.6, prasa.y + KAFEL);
         ctx.closePath(); ctx.fill();
       }
     }
 
-    // Czastki
+    // Czastki i pociski
     czastki.forEach(function (cz) {
-      ctx.save(); ctx.globalAlpha = Math.max(0, cz.zycie / 0.6);
-      ctx.fillStyle = cz.kolor; ctx.fillRect(cz.x, cz.y, 3, 3); ctx.restore();
+      ctx.save();
+      if (cz.pocisk) {
+        ctx.shadowColor = '#ff8a5a'; ctx.shadowBlur = 9;
+        ctx.fillStyle = '#ffb98a';
+        ctx.beginPath(); ctx.arc(cz.x, cz.y, 3.4, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.35;
+        ctx.fillRect(cz.x + (cz.vx > 0 ? -14 : 3), cz.y - 1, 11, 2);
+      } else {
+        ctx.globalAlpha = Math.max(0, cz.zycie / cz.max);
+        ctx.fillStyle = cz.kolor;
+        ctx.fillRect(cz.x, cz.y, 3, 3);
+      }
+      ctx.restore();
     });
 
-    // Gracz
+    // Gracz ze sciskaniem i rozciaganiem
     if (gracz) {
-      ctx.fillStyle = '#e6c15c';
-      ctx.fillRect(gracz.x, gracz.y + 5, SZER_GRACZA, WYS_GRACZA - 5);
-      ctx.fillStyle = '#f4dfa8';
-      ctx.fillRect(gracz.x + 1, gracz.y, SZER_GRACZA - 2, 7);
+      var sw = SZER_GRACZA / gracz.rozciag, sh = WYS_GRACZA * gracz.rozciag;
+      var px = gracz.x + (SZER_GRACZA - sw)/2, py = gracz.y + (WYS_GRACZA - sh);
+      ctx.save();
+      ctx.globalAlpha = 0.28; ctx.fillStyle = '#000';
+      ctx.beginPath();
+      ctx.ellipse(gracz.x + SZER_GRACZA/2, gracz.y + WYS_GRACZA + 1, 7, 2.4, 0, 0, Math.PI*2);
+      ctx.fill(); ctx.restore();
+
+      var gp = ctx.createLinearGradient(px, py, px, py + sh);
+      gp.addColorStop(0, '#f6e2a8'); gp.addColorStop(1, '#d9ac3c');
+      ctx.fillStyle = gp;
+      ctx.beginPath();
+      if (ctx.roundRect) { ctx.roundRect(px, py, sw, sh, 3); ctx.fill(); }
+      else ctx.fillRect(px, py, sw, sh);
       ctx.fillStyle = '#16130a';
-      var ox = gracz.patrzy > 0 ? 6 : 2;
-      ctx.fillRect(gracz.x + ox, gracz.y + 2, 2, 2);
-      ctx.fillRect(gracz.x + ox + 3, gracz.y + 2, 2, 2);
+      var ox = gracz.patrzy > 0 ? sw - 6 : 2;
+      ctx.fillRect(px + ox, py + 4, 2, 2.6);
+      ctx.fillRect(px + ox + (gracz.patrzy > 0 ? -3.4 : 3.4), py + 4, 2, 2.6);
     }
+
+    // Winieta
+    ctx.save();
+    var v = ctx.createRadialGradient(SZER/2, WYS/2, WYS*0.34, SZER/2, WYS/2, WYS*0.82);
+    v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,0.5)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, SZER, WYS);
+    ctx.restore();
+    ctx.restore();
   }
 
   // ---------- PETLA ----------
@@ -14293,26 +14516,27 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     var dt = Math.min((czas - czasOstatni) / 1000, 0.033);
     czasOstatni = czas;
     aktualizuj(dt);
-    rysuj();
-    if (trwa) requestAnimationFrame(petla);
+    if (trwa) { rysuj(); requestAnimationFrame(petla); }
   }
 
   // ---------- STEROWANIE ----------
-  function podepnij(id, akcja) {
+  function podepnij(id, wl, wyl) {
     var el = document.getElementById(id);
-    function wl(e) { e.preventDefault(); inicjujDzwiek(); el.classList.add('wcisniety'); akcja(true); }
-    function wyl() { el.classList.remove('wcisniety'); akcja(false); }
-    el.addEventListener('pointerdown', wl);
-    ['pointerup','pointerleave','pointercancel'].forEach(function (ev) { el.addEventListener(ev, wyl); });
+    function a(e) { e.preventDefault(); inicjujDzwiek(); el.classList.add('wcisniety'); wl(); }
+    function b2() { el.classList.remove('wcisniety'); wyl(); }
+    el.addEventListener('pointerdown', a);
+    ['pointerup','pointerleave','pointercancel'].forEach(function (ev) { el.addEventListener(ev, b2); });
   }
-  podepnij('btnLewo', function (w) { wcisniete.lewo = w; });
-  podepnij('btnPrawo', function (w) { wcisniete.prawo = w; });
-  podepnij('btnSkok', function (w) { if (w) chceSkok = true; });
+  podepnij('btnLewo', function () { wcisniete.lewo = true; }, function () { wcisniete.lewo = false; });
+  podepnij('btnPrawo', function () { wcisniete.prawo = true; }, function () { wcisniete.prawo = false; });
+  podepnij('btnSkok', function () { wcisniete.skok = true; buforSkoku = BUFOR_SKOKU; },
+                      function () { wcisniete.skok = false; });
 
   function rozpocznijGre() {
     poziomIdx = 0; zgony = 0; odkryte = {};
-    wcisniete.lewo = false; wcisniete.prawo = false; chceSkok = false;
+    wcisniete.lewo = false; wcisniete.prawo = false; wcisniete.skok = false;
     wczytajPoziom(0);
+    pokazTytul(0);
     nakladka.style.display = 'none';
     trwa = true; czasOstatni = null;
     requestAnimationFrame(petla);
