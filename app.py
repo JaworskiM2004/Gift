@@ -13788,8 +13788,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       <span style="font-size:11.5px;opacity:0.8">Krótkie tapnięcie to niski skok, przytrzymanie — wysoki.</span>
       <br><br>
       <span style="color:#ff7a68">15 poziomów. Każdy chce Cię oszukać.</span><br><br>
-      <span style="font-size:11px;opacity:0.7">Raz odkryte pułapki dostają czerwony obrys —
-      trudno, ale uczciwie.</span>
+      <span style="font-size:11px;opacity:0.7">Po dojściu do drzwi one uciekają za prawą krawędź —
+      trzeba za nimi wybiec.</span>
     </div>
     <button class="gra-btn" id="nakladkaBtn">Niech będzie ▶</button>
   </div>
@@ -13877,7 +13877,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
               '###################','...................','...................'],
       pulapki:[
         { typ:'spadajaceKolce', strefa:[4,8,2,4], kolumny:[7,8], tekst:'Patrz w górę.' },
-        { typ:'spadajaceKolce', strefa:[10,8,2,4], kolumny:[13], tekst:'' },
+        { typ:'spadajaceKolce', strefa:[10,8,2,4], kolumny:[12,14], tekst:'' },
+        { typ:'zapadnia', strefa:[10,8,2,4], kafle:[[16,12]], tekst:'' },
       ] },
 
     { nazwa:'Drzwi mają nogi',
@@ -13910,6 +13911,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       pulapki:[
         { typ:'zapadnia', strefa:[9,9,3,3], kafle:[[10,10]], opoznienie:0.42, tekst:'Rusz się!' },
         { typ:'spadajaceKolce', strefa:[12,9,2,3], kolumny:[15], tekst:'' },
+        { typ:'laser', strefa:[12,9,2,3], wiersz:11, odKol:17, doKol:18, cykl:1.2, aktywny:0.55, tekst:'' },
       ] },
 
     { nazwa:'Coraz ciaśniej',
@@ -13927,9 +13929,14 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
               '...................','...................','...................','..S.............D..',
               '###################','...................','...................'],
       pulapki:[
-        { typ:'falszyweDrzwi', strefa:[13,9,3,3], nowe:[2,11], tekst:'To nie te drzwi. 😈' },
-        { typ:'spadajaceKolce', strefa:[7,8,2,4], kolumny:[6], tekst:'' },
-        { typ:'zapadnia', strefa:[5,8,2,4], kafle:[[9,12],[10,12]], tekst:'' },
+        // Droga powrotna do prawdziwych drzwi, a potem jeszcze ucieczka
+        // w prawo - ten sam tor pokonuje sie TRZY razy, wiec przeszkody
+        // musza byc pojedyncze, inaczej poziom robi sie nie do przejscia.
+        // Strefy sa DALEKO przed zagrozeniem: kolce po falszywych drzwiach
+        // pojawiaja sie 5 kafli dalej, a dziura 3 kafle dalej. Inaczej
+        // gracz wbiega w nie, zanim zdazy zareagowac.
+        { typ:'falszyweDrzwi', strefa:[10,9,2,3], nowe:[2,11], tekst:'' },
+        { typ:'zapadnia', strefa:[3,8,2,4], kafle:[[9,12],[10,12]], tekst:'' },
       ] },
 
     { nazwa:'Laser',
@@ -13940,6 +13947,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       pulapki:[
         { typ:'laser', strefa:[4,9,2,3], wiersz:11, odKol:7, doKol:8, cykl:1.5, aktywny:0.65, tekst:'Poczekaj na przerwę.' },
         { typ:'laser', strefa:[9,9,2,3], wiersz:11, odKol:12, doKol:13, cykl:1.3, aktywny:0.6, tekst:'' },
+        { typ:'laser', strefa:[13,9,2,3], wiersz:11, odKol:16, doKol:17, cykl:0.95, aktywny:0.45, tekst:'' },
       ] },
 
     { nazwa:'Ostrzał',
@@ -13961,6 +13969,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         { typ:'zapadnia', strefa:[4,8,2,4], kafle:[[6,12],[7,12]], tekst:'Nie zatrzymuj się.' },
         { typ:'zapadnia', strefa:[8,8,2,4], kafle:[[10,12],[11,12]], tekst:'' },
         { typ:'zapadnia', strefa:[12,8,2,4], kafle:[[14,12],[15,12]], tekst:'' },
+        { typ:'spadajaceKolce', strefa:[6,8,2,4], kolumny:[9], tekst:'' },
       ] },
 
     { nazwa:'Sufit i podłoga',
@@ -13983,6 +13992,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       pulapki:[
         { typ:'blokSpadajacy', strefa:[5,8,2,4], kolumna:8, tekst:'Uwaga!' },
         { typ:'blokSpadajacy', strefa:[9,8,2,4], kolumna:12, tekst:'' },
+        { typ:'blokSpadajacy', strefa:[11,8,2,4], kolumna:10, tekst:'' },
         { typ:'zapadnia', strefa:[13,8,2,4], kafle:[[15,12]], tekst:'' },
       ] },
 
@@ -14015,12 +14025,18 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   var poziomIdx = 0, zgony = 0, trwa = false, czasOstatni = null, czasGlobalny = 0;
   var mapa = [], gracz = null, drzwi = { x:0, y:0 }, pulapki = [];
   var spadajace = [], prasa = null, czastki = [], lasery = [], pociski = [], spadajaceBloki = [];
-  var odkryte = {}, trzesienie = 0;
+  var trzesienie = 0;
   var wcisniete = { lewo:false, prawo:false, skok:false };
+  // Po dotknieciu drzwi nie przeskakujemy od razu do kolejnego poziomu:
+  // drzwi odjezdzaja w prawo poza mape, a trzeba za nimi wbiec.
+  var faza = 'gra';          // 'gra' | 'ucieczka'
+  var drzwiPx = 0, drzwiVX = 0, blyskWyjscia = 0;
   var buforSkoku = 0, coyote = 0;
 
   function kafelStaly(kx, ky) {
-    if (kx < 0 || kx >= KOL || ky < 0 || ky >= WIERSZ) return kx < 0 || kx >= KOL;
+    // W trakcie ucieczki prawa krawedz przestaje byc sciana - mozna wybiec
+    if (kx >= KOL) return faza !== 'ucieczka';
+    if (kx < 0 || ky < 0 || ky >= WIERSZ) return kx < 0;
     return mapa[ky][kx] === '#';
   }
   function kafelKolce(kx, ky) {
@@ -14049,6 +14065,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     }
     poziomNapis.textContent = 'POZIOM ' + (idx+1) + ' / ' + POZIOMY.length;
     zgonyNapis.textContent = '💀 ' + zgony;
+    faza = 'gra'; drzwiVX = 0; blyskWyjscia = 0;
+    drzwiPx = drzwi.x * KAFEL;
   }
 
   function pokazTekst(t) {
@@ -14075,7 +14093,6 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       var sx = s[0]*KAFEL, sy = s[1]*KAFEL, sw = s[2]*KAFEL, sh = s[3]*KAFEL;
       if (gk.x + gk.w < sx || gk.x > sx + sw || gk.y + gk.h < sy || gk.y > sy + sh) return;
       pu.odpalona = true;
-      odkryte[poziomIdx + ':' + pu.indeks] = true;
       if (pu.dane.opoznienie) { pu.opoznienieDo = pu.dane.opoznienie; return; }
       uruchomPulapke(pu);
     });
@@ -14105,9 +14122,11 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       d.kolumny.forEach(function (kx) { spadajace.push({ kx:kx, y:-KAFEL, vy:0 }); });
     } else if (d.typ === 'przesunDrzwi') {
       drzwi = { x:d.nowe[0], y:d.nowe[1] };
+      drzwiPx = drzwi.x * KAFEL;      // BEZ tego drzwi zostawaly w starym miejscu
     } else if (d.typ === 'falszyweDrzwi') {
       mapa[drzwi.y][drzwi.x] = '^';
       drzwi = { x:d.nowe[0], y:d.nowe[1] };
+      drzwiPx = drzwi.x * KAFEL;
     } else if (d.typ === 'prasa') {
       prasa = { odKol:d.odKol, doKol:d.doKol, y:-KAFEL, v:54 };
     } else if (d.typ === 'laser') {
@@ -14121,7 +14140,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     }
     dzwiekPulapki();
     trzesienie = 0.28;
-    pokazTekst(d.tekst);
+    // Zadnych komunikatow - pulapka ma zaskoczyc, a nie zapowiedziec sie
   }
 
   // ---------- AKTUALIZACJA ----------
@@ -14241,9 +14260,22 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     if (gracz.y > WYS + 40) { zgin('Spadłaś.'); return; }
 
     // --- Drzwi ---
-    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
-    if (gracz.x + SZER_GRACZA > dx + 2 && gracz.x < dx + KAFEL - 2
-        && gracz.y + WYS_GRACZA > dy + 2 && gracz.y < dy + KAFEL) { nastepnyPoziom(); return; }
+    var dy = drzwi.y * KAFEL;
+    if (faza === 'gra') {
+      if (gracz.x + SZER_GRACZA > drzwiPx + 2 && gracz.x < drzwiPx + KAFEL - 2
+          && gracz.y + WYS_GRACZA > dy + 2 && gracz.y < dy + KAFEL) {
+        if (poziomIdx >= POZIOMY.length - 1) { wygrana(); return; }
+        // Drzwi uciekaja w prawo - trzeba za nimi wybiec poza mape
+        faza = 'ucieczka';
+        drzwiVX = 210;
+        blyskWyjscia = 1;
+        dzwiekDrzwi();
+      }
+    } else {
+      drzwiPx += drzwiVX * dt;
+      if (blyskWyjscia > 0) blyskWyjscia -= dt * 1.6;
+      if (gracz.x > SZER + 4) { nastepnyPoziom(); return; }
+    }
 
     // --- Czastki (w tym pociski) ---
     for (var c = czastki.length - 1; c >= 0; c--) {
@@ -14317,12 +14349,12 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
 
   function nastepnyPoziom() {
     dzwiekDrzwi();
-    var opis = POZIOMY[poziomIdx].tekstPoWejsciu;
     if (poziomIdx >= POZIOMY.length - 1) { wygrana(); return; }
     poziomIdx++;
     wczytajPoziom(poziomIdx);
+    gracz.x = -SZER_GRACZA - 2;      // wbiega z lewej krawedzi
+    gracz.vx = PREDKOSC_BIEGU;
     pokazTytul(poziomIdx);
-    if (opis) pokazTekst(opis);
   }
 
   function wygrana() {
@@ -14385,17 +14417,6 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     for (var c = 0; c <= KOL; c++) { ctx.beginPath(); ctx.moveTo(c*KAFEL+0.5, 0); ctx.lineTo(c*KAFEL+0.5, WYS); ctx.stroke(); }
     for (var r = 0; r <= WIERSZ; r++) { ctx.beginPath(); ctx.moveTo(0, r*KAFEL+0.5); ctx.lineTo(SZER, r*KAFEL+0.5); ctx.stroke(); }
 
-    // Obrys odkrytych pulapek
-    pulapki.forEach(function (pu) {
-      if (!odkryte[poziomIdx + ':' + pu.indeks] || pu.odpalona) return;
-      var s = pu.dane.strefa;
-      ctx.save();
-      ctx.strokeStyle = 'rgba(255,90,70,0.5)';
-      ctx.lineWidth = 1.5; ctx.setLineDash([4, 3]);
-      ctx.strokeRect(s[0]*KAFEL + 1, s[1]*KAFEL + 1, s[2]*KAFEL - 2, s[3]*KAFEL - 2);
-      ctx.restore();
-    });
-
     // Kafle
     for (var y = 0; y < WIERSZ; y++) {
       for (var x = 0; x < KOL; x++) {
@@ -14425,7 +14446,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     });
 
     // Drzwi z pulsujaca poswiata
-    var dx = drzwi.x * KAFEL, dy = drzwi.y * KAFEL;
+    var dx = drzwiPx, dy = drzwi.y * KAFEL;
     var puls = 0.6 + Math.sin(czasGlobalny * 3) * 0.4;
     ctx.save();
     ctx.globalAlpha = 0.20 * puls;
@@ -14500,6 +14521,21 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       ctx.fillRect(px + ox + (gracz.patrzy > 0 ? -3.4 : 3.4), py + 4, 2, 2.6);
     }
 
+    // W trakcie ucieczki: swiecaca krawedz po prawej jako wyjscie
+    if (faza === 'ucieczka') {
+      ctx.save();
+      var pulsW = 0.55 + Math.sin(czasGlobalny * 9) * 0.45;
+      var gw = ctx.createLinearGradient(SZER - 42, 0, SZER, 0);
+      gw.addColorStop(0, 'rgba(255,210,120,0)');
+      gw.addColorStop(1, 'rgba(255,210,120,' + (0.42 * pulsW).toFixed(3) + ')');
+      ctx.fillStyle = gw; ctx.fillRect(SZER - 42, 0, 42, WYS);
+      ctx.globalAlpha = pulsW;
+      ctx.fillStyle = '#ffd98a';
+      ctx.font = 'bold 15px sans-serif'; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+      ctx.fillText('▶▶', SZER - 5, drzwi.y * KAFEL + 10);
+      ctx.restore();
+    }
+
     // Winieta
     ctx.save();
     var v = ctx.createRadialGradient(SZER/2, WYS/2, WYS*0.34, SZER/2, WYS/2, WYS*0.82);
@@ -14533,7 +14569,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
                       function () { wcisniete.skok = false; });
 
   function rozpocznijGre() {
-    poziomIdx = 0; zgony = 0; odkryte = {};
+    poziomIdx = 0; zgony = 0;
     wcisniete.lewo = false; wcisniete.prawo = false; wcisniete.skok = false;
     wczytajPoziom(0);
     pokazTytul(0);
