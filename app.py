@@ -611,7 +611,7 @@ TEKST = {
         "napewno_odyseusz": "Na pewno zaliczyłaś wszystkie 3 etapy strzelnicy?",
         "napewno_parkour": "Na pewno dotarłaś na szczyt wieży?",
         "napewno_labirynt": "Na pewno pokonałaś Władcę Labiryntu?",
-        "napewno_obrona": "Na pewno odparłaś wszystkie 20 fal?",
+        "napewno_obrona": "Na pewno odparłaś wszystkie 25 fal?",
         "napewno_diabel": "Na pewno przeszłaś wszystkie 10 poziomów?",
         "napewno_zaba": "Na pewno żabka doskoczyła do końca?",
         "napewno_memory": "Na pewno dopasowałaś wszystkie pary w czasie?",
@@ -682,7 +682,7 @@ TEKST = {
         "napewno_odyseusz": "Are you sure you cleared all 3 shooting stages?",
         "napewno_parkour": "Are you sure you reached the top of the tower?",
         "napewno_labirynt": "Are you sure you defeated the Lord of the Labyrinth?",
-        "napewno_obrona": "Are you sure you survived all 20 waves?",
+        "napewno_obrona": "Are you sure you survived all 25 waves?",
         "napewno_diabel": "Are you sure you finished all 10 levels?",
         "napewno_zaba": "Are you sure the frog made it all the way?",
         "napewno_memory": "Are you sure you matched all pairs in time?",
@@ -12110,46 +12110,70 @@ SZABLON_OBRONA = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
-  html, body { width:100%; overflow:hidden; background:#0a1408; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
-  #gra { position:relative; width:100%; height:600px; background:#0a1408; overflow:hidden; }
-  #mapa { display:block; width:100%; height:400px; background:#16301a; }
+  html, body { width:100%; overflow:hidden; background:#0b1a24; touch-action:none; font-family:system-ui,-apple-system,sans-serif; }
+  #gra { position:relative; width:100%; height:660px; background:#0b1a24; overflow:hidden; }
+  #mapa { display:block; width:100%; height:400px; }
 
-  #gorny { position:absolute; top:0; left:0; right:0; height:34px; z-index:5; pointer-events:none;
+  #gorny { position:absolute; top:0; left:0; right:0; height:32px; z-index:5; pointer-events:none;
            display:flex; align-items:center; justify-content:space-between; padding:0 10px;
-           background:linear-gradient(180deg,rgba(6,14,6,0.85),rgba(6,14,6,0)); }
-  .stat { color:#eaf5e2; font-size:12px; font-weight:900; letter-spacing:0.04em;
-          text-shadow:0 1px 4px rgba(0,0,0,0.95); }
-  #zycia { color:#ff8a7a; } #kasa { color:#ffd96a; }
+           background:linear-gradient(180deg,rgba(4,12,18,0.9),rgba(4,12,18,0)); }
+  .stat { font-size:12.5px; font-weight:900; letter-spacing:0.04em; text-shadow:0 1px 4px rgba(0,0,0,0.95); }
+  #zycia { color:#ff8a7a; } #banany { color:#ffd45a; } #falaNapis { color:#bfe4ff; }
+
+  #komunikat { position:absolute; top:36px; left:10px; right:10px; z-index:6; pointer-events:none;
+               text-align:center; font-size:11.5px; font-weight:800; color:#fff; opacity:0;
+               background:rgba(6,16,22,0.85); border-radius:9px; padding:5px 8px; }
+  #komunikat.pokaz { opacity:1; transition:opacity 0.12s; }
+
+  #karta { position:absolute; top:52px; left:14px; right:14px; z-index:8; pointer-events:none;
+           background:linear-gradient(160deg,rgba(14,34,46,0.97),rgba(8,20,28,0.97));
+           border:1.5px solid #2e7a9a; border-radius:13px; padding:11px 13px; opacity:0; }
+  #karta.pokaz { animation:kartaWjazd 3.4s ease forwards; }
+  @keyframes kartaWjazd { 0%{opacity:0;transform:translateY(-8px);} 10%{opacity:1;transform:none;}
+                          82%{opacity:1;} 100%{opacity:0;transform:translateY(-6px);} }
+  #karta .tyt { color:#7ee0ff; font-size:12px; font-weight:900; letter-spacing:0.08em; }
+  #karta .tre { color:#dcefff; font-size:11.5px; line-height:1.5; margin-top:3px; }
 
   #panel { position:absolute; top:400px; left:0; right:0; bottom:0;
-           background:linear-gradient(180deg,#14240f,#0a1408); border-top:2px solid #3a5a2e;
-           padding:8px 9px; overflow-y:auto; }
-  #sklep { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
-  .wieza-btn { background:linear-gradient(160deg,#2c4426,#1a2a16); border:1.5px solid #4a6a38;
-               border-radius:11px; padding:7px 2px 5px; color:#eaf5e2; text-align:center; }
-  .wieza-btn.wybrana { background:linear-gradient(160deg,#7ec46a,#4a8a3a); color:#0c1a08; border-color:#a8e090; }
-  .wieza-btn.drogo { opacity:0.40; }
-  .wieza-btn .ik { font-size:20px; line-height:1.1; }
-  .wieza-btn .cena { font-size:9.5px; font-weight:900; margin-top:1px; }
+           background:linear-gradient(180deg,#12303f,#0a1a24); border-top:2px solid #2e7a9a;
+           padding:7px 8px; overflow-y:auto; }
+  #sklep { display:grid; grid-template-columns:repeat(6,1fr); gap:5px; }
+  .mbtn { background:linear-gradient(160deg,#1d4557,#122c39); border:1.5px solid #2e7a9a;
+          border-radius:10px; padding:6px 1px 4px; text-align:center; color:#dcefff; }
+  .mbtn.wybrana { background:linear-gradient(160deg,#ffd45a,#d4a020); color:#1a1405; border-color:#ffe9a0; }
+  .mbtn.drogo { opacity:0.38; }
+  .mbtn .ik { font-size:18px; line-height:1.05; }
+  .mbtn .c { font-size:9px; font-weight:900; }
 
-  #info { margin-top:8px; background:rgba(0,0,0,0.34); border:1px solid #3a5a2e;
-          border-radius:11px; padding:9px 11px; color:#c8dcb8; font-size:11.5px; line-height:1.55;
-          min-height:62px; }
-  #info b { color:#eaf5e2; }
-  #akcje { display:flex; gap:6px; margin-top:7px; }
-  .akcja { flex:1; border:none; border-radius:10px; padding:11px 4px; font-size:12px; font-weight:900; }
-  #btnUlepsz { background:linear-gradient(135deg,#7ec46a,#4a8a3a); color:#0c1a08; }
-  #btnSprzedaj { flex:0 0 84px; background:linear-gradient(135deg,#6a4a4a,#3a2424); color:#f0d8d8; }
-  #btnFala { background:linear-gradient(135deg,#ffd96a,#d4a834); color:#231a05; }
-  .akcja:disabled { opacity:0.35; }
+  #info { margin-top:7px; background:rgba(0,0,0,0.30); border:1px solid #2e7a9a;
+          border-radius:11px; padding:8px 10px; color:#bcd8e8; font-size:11px; line-height:1.5; min-height:52px; }
+  #info b { color:#eaf6ff; }
+  #celowanie { display:flex; gap:4px; margin-top:6px; }
+  .cel-btn { flex:1; background:#143442; border:1px solid #2e7a9a; border-radius:8px;
+             color:#bcd8e8; font-size:10px; font-weight:800; padding:6px 1px; }
+  .cel-btn.akt { background:#2e7a9a; color:#fff; }
+  #sciezki { margin-top:6px; display:grid; gap:5px; }
+  .sc { background:rgba(0,0,0,0.26); border:1px solid #245c73; border-radius:10px; padding:6px 8px; }
+  .sc .nag { color:#7ee0ff; font-size:10px; font-weight:900; letter-spacing:0.06em; }
+  .sc .ul { display:flex; align-items:center; gap:7px; margin-top:4px; }
+  .sc .txt { flex:1; color:#bcd8e8; font-size:10.5px; line-height:1.35; }
+  .sc .txt b { color:#eaf6ff; }
+  .sc button { background:linear-gradient(135deg,#5ad19a,#2a8a5e); color:#042118; border:none;
+               border-radius:8px; font-size:10.5px; font-weight:900; padding:7px 9px; white-space:nowrap; }
+  .sc button:disabled { opacity:0.32; }
+  .kropki { color:#ffd45a; font-size:10px; letter-spacing:2px; }
+  #akcje { display:flex; gap:5px; margin-top:7px; }
+  .akcja { border:none; border-radius:10px; padding:11px 4px; font-size:12px; font-weight:900; }
+  #btnSprzedaj { flex:0 0 96px; background:linear-gradient(135deg,#6a4a4a,#3a2424); color:#f0d8d8; }
+  #btnFala { flex:1; background:linear-gradient(135deg,#ffd45a,#d4a020); color:#1a1405; }
+  .akcja:disabled { opacity:0.34; }
 
-  #nakladka { position:absolute; inset:0; background:rgba(8,16,8,0.97); display:flex; flex-direction:column;
+  #nakladka { position:absolute; inset:0; background:rgba(6,16,22,0.97); display:flex; flex-direction:column;
               align-items:center; justify-content:center; text-align:center; padding:24px; z-index:20; }
-  #nakladkaTytul { color:#eaf5e2; font-size:21px; font-weight:900; margin-bottom:10px; }
-  #nakladkaOpis { color:#a8c498; font-size:12.5px; margin-bottom:16px; max-width:310px; line-height:1.6; }
-  .gra-btn { background:linear-gradient(135deg,#7ec46a,#4a8a3a); color:#0c1a08; border:none; border-radius:30px;
+  #nakladkaTytul { color:#eaf6ff; font-size:21px; font-weight:900; margin-bottom:10px; }
+  #nakladkaOpis { color:#a8c8dc; font-size:12.5px; margin-bottom:16px; max-width:316px; line-height:1.6; }
+  .gra-btn { background:linear-gradient(135deg,#ffd45a,#d4a020); color:#1a1405; border:none; border-radius:30px;
              padding:12px 30px; font-weight:900; font-size:15px; box-shadow:0 4px 14px rgba(0,0,0,0.5); }
-  .gra-btn:active { transform:scale(0.96); }
 </style>
 </head>
 <body>
@@ -12158,547 +12182,952 @@ SZABLON_OBRONA = """<!DOCTYPE html>
 <div id="gra">
   <canvas id="mapa" width="380" height="400"></canvas>
   <div id="gorny">
-    <div class="stat" id="zycia">❤️ 25</div>
-    <div class="stat" id="falaNapis">FALA 0 / 20</div>
-    <div class="stat" id="kasa">🪙 175</div>
+    <div class="stat" id="zycia">❤️ 20</div>
+    <div class="stat" id="falaNapis">FALA 0 / 25</div>
+    <div class="stat" id="banany">🍌 340</div>
   </div>
+  <div id="komunikat"></div>
+  <div id="karta"><div class="tyt"></div><div class="tre"></div></div>
 
   <div id="panel">
     <div id="sklep"></div>
-    <div id="info">Dotknij wieży w sklepie, potem miejsca na mapie. Balony <b>pękają na słabsze</b> — część ma odporności.</div>
+    <div id="info">Przeciągnij małpkę ze sklepu na mapę. Zielony krąg = można postawić.</div>
+    <div id="celowanie" style="display:none"></div>
+    <div id="sciezki"></div>
     <div id="akcje">
-      <button class="akcja" id="btnUlepsz" disabled>Ulepsz</button>
       <button class="akcja" id="btnSprzedaj" disabled>Sprzedaj</button>
-      <button class="akcja" id="btnFala">▶ Start fali</button>
+      <button class="akcja" id="btnFala">▶ Fala 1</button>
     </div>
   </div>
 
   <div id="nakladka">
     <div id="nakladkaTytul">🐵 Małpki i Balony</div>
     <div id="nakladkaOpis">
-      Nie przepuść balonów do końca ścieżki. Masz <b>25 żyć</b> i <b>20 fal</b>.<br><br>
-      Każdy balon po przebiciu <b>rozpada się na słabsze</b>. Uwaga na odporności:<br>
-      <span style="color:#9a9a9a">⬤ ołowiane</span> — nie biorą ostrych ·
-      <span style="color:#4a4a4a">⬤ czarne</span> — nie biorą wybuchów ·
-      <span style="color:#e8e8e8">⬤ białe</span> — nie biorą lodu<br><br>
-      <span style="color:#ffd96a">Jedna wieża nie wystarczy. Trzeba mieszać.</span>
+      Broń ścieżki przez <b>25 fal</b>. Masz <b>20 żyć</b> i <b>340 bananów</b>.<br><br>
+      Każda małpka ma <b>trzy ścieżki rozwoju</b> — możesz rozwinąć jedną do końca
+      i drugą tylko o jeden poziom. Wybór ma znaczenie.<br><br>
+      <span style="color:#ffd45a">Mocniejsze obrażenia rozbijają kilka warstw balonu naraz.</span>
     </div>
     <button class="gra-btn" id="nakladkaBtn">ZACZYNAMY ▶</button>
   </div>
 </div>
 
 <script>
-  var mapa = document.getElementById('mapa'), ctx = mapa.getContext('2d');
-  var elZycia = document.getElementById('zycia'), elKasa = document.getElementById('kasa');
-  var elFala = document.getElementById('falaNapis'), elInfo = document.getElementById('info');
-  var elSklep = document.getElementById('sklep');
-  var btnUlepsz = document.getElementById('btnUlepsz'), btnSprzedaj = document.getElementById('btnSprzedaj');
-  var btnFala = document.getElementById('btnFala');
-  var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul');
-  var nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
+  var mapa=document.getElementById('mapa'), ctx=mapa.getContext('2d');
+  var elZycia=document.getElementById('zycia'), elBanany=document.getElementById('banany');
+  var elFala=document.getElementById('falaNapis'), elInfo=document.getElementById('info');
+  var elSklep=document.getElementById('sklep'), elSciezki=document.getElementById('sciezki');
+  var elCelowanie=document.getElementById('celowanie'), elKomunikat=document.getElementById('komunikat');
+  var elKarta=document.getElementById('karta');
+  var btnSprzedaj=document.getElementById('btnSprzedaj'), btnFala=document.getElementById('btnFala');
+  var nakladka=document.getElementById('nakladka'), nakladkaTytul=document.getElementById('nakladkaTytul');
+  var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
-  var SZER = 380, WYS = 400;
+  var SZER=380, WYS=400;
 
-  // ---- SCIEZKA (dlugosc ~1380 px, zgodnie z symulacja balansu) ----
-  var PUNKTY = [ [-14,58],[300,58],[300,132],[70,132],[70,208],[312,208],
-                 [312,286],[58,286],[58,356],[394,356] ];
-  var ODCINKI = [], DLUGOSC = 0;
-  for (var i = 0; i < PUNKTY.length - 1; i++) {
-    var a = PUNKTY[i], b = PUNKTY[i+1];
-    var d = Math.hypot(b[0]-a[0], b[1]-a[1]);
-    ODCINKI.push({ a:a, b:b, d:d, od:DLUGOSC });
-    DLUGOSC += d;
+  // ---------- SCIEZKA ----------
+  var PUNKTY=[[-14,54],[298,54],[298,126],[64,126],[64,200],[314,200],[314,278],[52,278],[52,350],[394,350]];
+  var ODCINKI=[], DLUGOSC=0;
+  for(var i=0;i<PUNKTY.length-1;i++){
+    var a=PUNKTY[i], b=PUNKTY[i+1], d=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    ODCINKI.push({a:a,b:b,d:d,od:DLUGOSC}); DLUGOSC+=d;
   }
-  function punktNaSciezce(s) {
-    for (var i = 0; i < ODCINKI.length; i++) {
-      var o = ODCINKI[i];
-      if (s <= o.od + o.d || i === ODCINKI.length - 1) {
-        var t = Math.max(0, Math.min(1, (s - o.od) / o.d));
-        return { x: o.a[0] + (o.b[0]-o.a[0])*t, y: o.a[1] + (o.b[1]-o.a[1])*t };
+  function punktNa(s){
+    for(var i=0;i<ODCINKI.length;i++){
+      var o=ODCINKI[i];
+      if(s<=o.od+o.d||i===ODCINKI.length-1){
+        var t=Math.max(0,Math.min(1,(s-o.od)/o.d));
+        return {x:o.a[0]+(o.b[0]-o.a[0])*t, y:o.a[1]+(o.b[1]-o.a[1])*t};
       }
     }
-    return { x: PUNKTY[PUNKTY.length-1][0], y: PUNKTY[PUNKTY.length-1][1] };
+    return {x:PUNKTY[PUNKTY.length-1][0], y:PUNKTY[PUNKTY.length-1][1]};
   }
-  function odlegloscOdSciezki(x, y) {
-    var naj = 1e9;
-    ODCINKI.forEach(function (o) {
-      var dx = o.b[0]-o.a[0], dy = o.b[1]-o.a[1];
-      var t = Math.max(0, Math.min(1, ((x-o.a[0])*dx + (y-o.a[1])*dy) / (dx*dx+dy*dy)));
-      var px = o.a[0]+dx*t, py = o.a[1]+dy*t;
-      naj = Math.min(naj, Math.hypot(x-px, y-py));
+  function odlOdSciezki(x,y){
+    var naj=1e9;
+    ODCINKI.forEach(function(o){
+      var dx=o.b[0]-o.a[0], dy=o.b[1]-o.a[1];
+      var t=Math.max(0,Math.min(1,((x-o.a[0])*dx+(y-o.a[1])*dy)/(dx*dx+dy*dy)));
+      naj=Math.min(naj, Math.hypot(x-(o.a[0]+dx*t), y-(o.a[1]+dy*t)));
     });
     return naj;
   }
 
-  // ---- BALONY ----
-  // Predkosci przemnozone x1.21, bo faktyczna sciezka (1674 px) okazala sie
-  // dluzsza niz zakladana w symulacji balansu (1380 px).
-  var BALONY = {
-    czerwony: { v:41, kasa:1, kolor:'#e04a3a', dzieci:null },
-    niebieski:{ v:56, kasa:2, kolor:'#4a7ae0', dzieci:['czerwony'] },
-    zielony:  { v:70, kasa:3, kolor:'#4ac46a', dzieci:['niebieski'] },
-    zolty:    { v:94, kasa:4, kolor:'#e8d24a', dzieci:['zielony'] },
-    rozowy:   { v:111, kasa:5, kolor:'#f07ab8', dzieci:['zolty'] },
-    czarny:   { v:70, kasa:6, kolor:'#3a3a44', dzieci:['rozowy','rozowy'], odp:['wybuch'] },
-    bialy:    { v:75, kasa:6, kolor:'#eef0f4', dzieci:['rozowy','rozowy'], odp:['lod'] },
-    olowiany: { v:41, kasa:8, kolor:'#8a8a96', dzieci:['czarny','czarny'], odp:['ostre'] },
-    teczowy:  { v:82, kasa:10, kolor:'#c06bff', dzieci:['olowiany','olowiany'], tecza:true },
-    boss:     { v:34, kasa:60, kolor:'#a01a1a', hp:120, dzieci:['teczowy','teczowy','teczowy','teczowy'], duzy:true },
+  // ---------- BALONY ----------
+  var BALONY={
+    czerwony:  {v:42, kasa:1, kol:'#e8443a', dzieci:null},
+    niebieski: {v:58, kasa:1, kol:'#3a7ae8', dzieci:['czerwony']},
+    zielony:   {v:72, kasa:1, kol:'#3ac45a', dzieci:['niebieski']},
+    zolty:     {v:96, kasa:1, kol:'#f0d43a', dzieci:['zielony']},
+    rozowy:    {v:116,kasa:1, kol:'#ff7ac0', dzieci:['zolty']},
+    czarny:    {v:74, kasa:1, kol:'#2c2c36', dzieci:['rozowy','rozowy'], odp:['wybuch']},
+    bialy:     {v:78, kasa:1, kol:'#f4f6fa', dzieci:['rozowy','rozowy'], odp:['lod']},
+    olowiany:  {v:44, kasa:1, kol:'#8d8d9c', dzieci:['czarny','czarny'], odp:['ostre']},
+    ceramiczny:{v:62, kasa:3, kol:'#c07a3a', dzieci:['olowiany','olowiany'], hp:9},
+    teczowy:   {v:88, kasa:2, kol:'#b46bff', dzieci:['ceramiczny','ceramiczny'], tecza:true},
+    moab:      {v:34, kasa:25, kol:'#9a1a1a', dzieci:['teczowy','teczowy','teczowy','teczowy'], hp:200, duzy:true},
   };
-
-  // ---- WIEZE ----
-  var WIEZE = {
-    dart:   { nazwa:'Małpka', ik:'🐵', koszt:60,  zasieg:100, tempo:0.72, dmg:1, typ:'ostre',
-              ulepsz:[70,140,260], opis:'Szybkie darty. Nie przebija ołowianych.' },
-    kolce:  { nazwa:'Kolce',  ik:'✳️', koszt:120, zasieg:68,  tempo:1.15, dmg:1, typ:'ostre', poc:8,
-              ulepsz:[120,240,420], opis:'Strzela na wszystkie strony naraz. Krótki zasięg.' },
-    armata: { nazwa:'Armata', ik:'💣', koszt:200, zasieg:118, tempo:1.35, dmg:3, typ:'wybuch', splash:55,
-              ulepsz:[180,340,600], opis:'Wybuch rani wszystko obok. Czarne są odporne.' },
-    lod:    { nazwa:'Lód',    ik:'❄️', koszt:160, zasieg:78,  tempo:2.00, dmg:1, typ:'lod', spow:true,
-              ulepsz:[150,300,520], opis:'Spowalnia balony o połowę. Białe są odporne.' },
-    snajper:{ nazwa:'Snajper',ik:'🎯', koszt:250, zasieg:999, tempo:1.80, dmg:7, typ:'uniw',
-              ulepsz:[260,480,850], opis:'Cała mapa w zasięgu. Przebija KAŻDY balon.' },
-  };
-  var KOLEJNOSC_WIEZ = ['dart','kolce','armata','lod','snajper'];
-
-  function staty(w) {
-    var d = WIEZE[w.typ];
-    return {
-      dmg: d.dmg * (1 + w.poz * 0.95),
-      tempo: d.tempo * (1 - w.poz * 0.17),
-      zasieg: d.zasieg * (1 + w.poz * 0.12),
-      typ: d.typ, poc: d.poc || 1, splash: d.splash || 0, spow: d.spow || false,
-    };
-  }
-  function odporny(typ, dmgTyp) {
-    var b = BALONY[typ];
-    return !!(b.odp && b.odp.indexOf(dmgTyp) >= 0);
+  function odporny(typ, dmgTyp){
+    var d=BALONY[typ];
+    return !!(d.odp && d.odp.indexOf(dmgTyp)>=0);
   }
 
-  function sklad(nr) {
-    var f = [], i = nr;
-    function d(t, n) { for (var j = 0; j < n; j++) f.push(t); }
-    if (i<=2) d('czerwony', 8+i*4);
-    else if (i<=4) { d('czerwony',10); d('niebieski',4+i*2); }
-    else if (i<=6) { d('niebieski',12); d('zielony',4+i); }
-    else if (i<=8) { d('zielony',12); d('zolty',3+i); }
-    else if (i<=10) { d('zolty',14); d('rozowy',8+i); }
-    else if (i<=12) { d('rozowy',16); d('czarny',5+i); d('bialy',6); }
-    else if (i<=14) { d('czarny',12); d('bialy',12); d('olowiany',3+(i-12)*2); }
-    else if (i<=16) { d('olowiany',12); d('rozowy',22); d('teczowy',3+(i-15)*3); }
-    else if (i<=18) { d('teczowy',7+(i-17)*3); d('olowiany',16); d('bialy',18); }
-    else if (i===19) { d('teczowy',14); d('czarny',26); d('olowiany',18); }
-    else { d('boss',3); d('teczowy',12); d('olowiany',20); }
-    // tasujemy, zeby fala nie byla posortowana
-    for (var k = f.length - 1; k > 0; k--) {
-      var j2 = Math.floor(Math.random()*(k+1)); var tmp = f[k]; f[k] = f[j2]; f[j2] = tmp;
-    }
+  // ---------- MALPKI ----------
+  // Kazda ma TRZY sciezki po trzy ulepszenia. Zasada: jedna sciezka do konca,
+  // druga najwyzej o jeden poziom - dzieki temu kazda malpka jest inna.
+  var MALPKI={
+    dart:{ nazwa:'Małpka z dartem', ik:'🐵', koszt:105, zasieg:105, tempo:0.80, dmg:1, przebicie:2, typ:'ostre',
+      opis:'Rzuca dartami. Darty przelatują przez 2 balony.',
+      sciezki:[
+        {nazwa:'OSTRZE', u:[
+          {n:'Ostre groty', o:'+1 obrażeń — pęka od razu warstwa głębiej', k:130, e:{dmg:1}},
+          {n:'Kolce bojowe', o:'+1 obrażeń i +2 przebicia', k:340, e:{dmg:1,przebicie:2}},
+          {n:'Rozłupywacz', o:'+3 obrażeń, +3 przebicia. Rozbija ceramiczne', k:1150, e:{dmg:3,przebicie:3}},
+        ]},
+        {nazwa:'OKO', u:[
+          {n:'Lornetka', o:'+35% zasięgu', k:110, e:{zasiegM:0.35}},
+          {n:'Detektor', o:'Widzi balony w KAMUFLAŻU', k:290, e:{kamuflaz:true}},
+          {n:'Wieża strażnicza', o:'+50% zasięgu i +1 obrażeń', k:780, e:{zasiegM:0.5,dmg:1}},
+        ]},
+        {nazwa:'TEMPO', u:[
+          {n:'Szybka ręka', o:'Rzuca o 25% szybciej', k:150, e:{tempoM:-0.25}},
+          {n:'Potrójny rzut', o:'Trzy darty naraz', k:420, e:{pociski:3}},
+          {n:'Nawałnica', o:'O 40% szybciej i +2 przebicia', k:990, e:{tempoM:-0.4,przebicie:2}},
+        ]},
+      ]},
+    kolce:{ nazwa:'Kolczatka', ik:'✳️', koszt:185, zasieg:66, tempo:1.45, dmg:1, przebicie:1, typ:'ostre', pociski:8, dookola:true,
+      opis:'Wystrzeliwuje 8 kolców we wszystkie strony. Bardzo krótki zasięg.',
+      sciezki:[
+        {nazwa:'GĄSZCZ', u:[
+          {n:'Więcej kolców', o:'12 kolców zamiast 8', k:190, e:{pociski:4}},
+          {n:'Gwiazdy', o:'16 kolców i +1 obrażeń', k:480, e:{pociski:4,dmg:1}},
+          {n:'Burza ostrzy', o:'24 kolce, +1 obrażeń, +1 przebicia', k:1400, e:{pociski:8,dmg:1,przebicie:1}},
+        ]},
+        {nazwa:'OGIEŃ', u:[
+          {n:'Rozgrzane kolce', o:'+1 obrażeń', k:220, e:{dmg:1}},
+          {n:'Pierścień ognia', o:'Obrażenia od WYBUCHU — rani ołowiane', k:620, e:{typ:'wybuch'}},
+          {n:'Piekielny krąg', o:'+3 obrażeń i +45% zasięgu', k:1600, e:{dmg:3,zasiegM:0.45}},
+        ]},
+        {nazwa:'SPRĘŻYNA', u:[
+          {n:'Dalszy wyrzut', o:'+40% zasięgu', k:180, e:{zasiegM:0.4}},
+          {n:'Szybszy mechanizm', o:'O 30% szybciej', k:420, e:{tempoM:-0.3}},
+          {n:'Nakręcona', o:'O 45% szybciej i +35% zasięgu', k:1150, e:{tempoM:-0.45,zasiegM:0.35}},
+        ]},
+      ]},
+    armata:{ nazwa:'Armata', ik:'💣', koszt:290, zasieg:118, tempo:1.55, dmg:2, przebicie:1, typ:'wybuch', splash:46,
+      opis:'Pociski wybuchają, raniąc wszystko obok. Czarne balony są odporne.',
+      sciezki:[
+        {nazwa:'ŁADUNEK', u:[
+          {n:'Większy ładunek', o:'+1 obrażeń i większy wybuch', k:280, e:{dmg:1,splash:14}},
+          {n:'Pocisk burzący', o:'+2 obrażeń', k:640, e:{dmg:2}},
+          {n:'Bomba głębinowa', o:'+4 obrażeń i ogromny wybuch', k:1900, e:{dmg:4,splash:30}},
+        ]},
+        {nazwa:'ODŁAMKI', u:[
+          {n:'Odłamki', o:'Wybuch rozrzuca 4 odłamki (ostre)', k:340, e:{odlamki:4}},
+          {n:'Gęsty grad', o:'8 odłamków', k:720, e:{odlamki:4}},
+          {n:'Nawała', o:'12 odłamków i +1 obrażeń', k:1750, e:{odlamki:4,dmg:1}},
+        ]},
+        {nazwa:'LUFA', u:[
+          {n:'Dłuższa lufa', o:'+35% zasięgu', k:250, e:{zasiegM:0.35}},
+          {n:'Szybki zamek', o:'O 30% szybciej', k:560, e:{tempoM:-0.3}},
+          {n:'Bateria', o:'O 45% szybciej, +2 pociski', k:1550, e:{tempoM:-0.45,pociski:2}},
+        ]},
+      ]},
+    lod:{ nazwa:'Lodowa małpka', ik:'❄️', koszt:195, zasieg:78, tempo:1.9, dmg:0, przebicie:99, typ:'lod', spow:0.45, dookola:true, pociski:1,
+      opis:'NIE zadaje obrażeń — spowalnia balony w zasięgu o 45%. Białe są odporne.',
+      sciezki:[
+        {nazwa:'MRÓZ', u:[
+          {n:'Siarczysty mróz', o:'Spowolnienie 60% zamiast 45%', k:210, e:{spow:0.15}},
+          {n:'Lodowa aura', o:'Spowolnienie 70% i +30% zasięgu', k:520, e:{spow:0.10,zasiegM:0.3}},
+          {n:'Wieczna zmarzlina', o:'Spowolnienie 80%, działa też na dzieci po pęknięciu', k:1350, e:{spow:0.10,dziedziczy:true}},
+        ]},
+        {nazwa:'ZAMROŻENIE', u:[
+          {n:'Szron', o:'Zadaje 1 obrażeń', k:260, e:{dmg:1}},
+          {n:'Zamrożenie', o:'Co kilka sekund ZAMRAŻA cele w miejscu na 1,2 s', k:680, e:{zamrazanie:1.2}},
+          {n:'Lodowy grot', o:'+2 obrażeń, zamrożenie na 2 s', k:1700, e:{dmg:2,zamrazanie:0.8}},
+        ]},
+        {nazwa:'ZIMNO', u:[
+          {n:'Szerszy chłód', o:'+40% zasięgu', k:200, e:{zasiegM:0.4}},
+          {n:'Zimny wzrok', o:'Widzi balony w KAMUFLAŻU', k:430, e:{kamuflaz:true}},
+          {n:'Biegun', o:'+50% zasięgu i o 35% szybciej', k:1250, e:{zasiegM:0.5,tempoM:-0.35}},
+        ]},
+      ]},
+    snajper:{ nazwa:'Snajper', ik:'🎯', koszt:340, zasieg:999, tempo:2.0, dmg:6, przebicie:1, typ:'uniw',
+      opis:'Cała mapa w zasięgu. Przebija każdy typ balonu.',
+      sciezki:[
+        {nazwa:'KALIBER', u:[
+          {n:'Większy kaliber', o:'+4 obrażeń', k:360, e:{dmg:4}},
+          {n:'Przeciwpancerny', o:'+8 obrażeń', k:900, e:{dmg:8}},
+          {n:'Niszczyciel', o:'+22 obrażeń — pogromca MOAB-ów', k:2600, e:{dmg:22}},
+        ]},
+        {nazwa:'SZYBKOSTRZELNOŚĆ', u:[
+          {n:'Szybki przeładunek', o:'O 30% szybciej', k:330, e:{tempoM:-0.3}},
+          {n:'Karabin', o:'O 45% szybciej', k:780, e:{tempoM:-0.45}},
+          {n:'Seria', o:'Trzy strzały w serii', k:2100, e:{pociski:2,tempoM:-0.15}},
+        ]},
+        {nazwa:'OPTYKA', u:[
+          {n:'Celownik', o:'Widzi balony w KAMUFLAŻU', k:300, e:{kamuflaz:true}},
+          {n:'Amunicja przebijająca', o:'Pocisk przelatuje przez 3 balony', k:700, e:{przebicie:3}},
+          {n:'Wszystkowidzący', o:'+3 obrażeń i +4 przebicia', k:1900, e:{dmg:3,przebicie:4}},
+        ]},
+      ]},
+    plantacja:{ nazwa:'Plantacja bananów', ik:'🍌', koszt:250, zasieg:0, tempo:0, dmg:0, przebicie:0, typ:'brak', farma:22,
+      opis:'Nie strzela. Daje 22 banany po każdej fali.',
+      sciezki:[
+        {nazwa:'PLON', u:[
+          {n:'Nawóz', o:'34 banany po fali', k:230, e:{farma:12}},
+          {n:'Sad', o:'52 banany po fali', k:520, e:{farma:18}},
+          {n:'Plantacja przemysłowa', o:'90 bananów po fali', k:1400, e:{farma:38}},
+        ]},
+        {nazwa:'SKUP', u:[
+          {n:'Lepsze ceny', o:'+15% bananów z pękających balonów (globalnie)', k:280, e:{bonusKasa:0.15}},
+          {n:'Giełda', o:'kolejne +20% bananów z balonów', k:640, e:{bonusKasa:0.20}},
+          {n:'Bank', o:'kolejne +30% bananów z balonów', k:1600, e:{bonusKasa:0.30}},
+        ]},
+        {nazwa:'ZAPASY', u:[
+          {n:'Spiżarnia', o:'Jednorazowo +150 bananów', k:190, e:{jednorazowo:150}},
+          {n:'Magazyn', o:'Jednorazowo +400 bananów', k:520, e:{jednorazowo:400}},
+          {n:'Skarbiec', o:'Jednorazowo +1200 bananów', k:1500, e:{jednorazowo:1200}},
+        ]},
+      ]},
+    lotnisko:{ nazwa:'Lotnisko', ik:'🛩️', koszt:380, zasieg:0, tempo:0.55, dmg:2, przebicie:2, typ:'ostre', drony:1,
+      opis:'Wypuszcza drona, który LATA po całej mapie i ściga wybrany cel. Ignoruje przeszkody.',
+      sciezki:[
+        {nazwa:'UZBROJENIE', u:[
+          {n:'Cięższe pociski', o:'+2 obrażeń', k:320, e:{dmg:2}},
+          {n:'Działko', o:'+2 obrażeń i +2 przebicia', k:760, e:{dmg:2,przebicie:2}},
+          {n:'Bombowiec', o:'+5 obrażeń, pociski WYBUCHAJĄ', k:2100, e:{dmg:5,typ:'wybuch',splash:40}},
+        ]},
+        {nazwa:'SILNIK', u:[
+          {n:'Mocniejszy silnik', o:'Dron lata o 45% szybciej', k:280, e:{predkoscDrona:0.45}},
+          {n:'Szybkostrzelność', o:'Strzela o 35% szybciej', k:620, e:{tempoM:-0.35}},
+          {n:'Eskadra', o:'DRUGI dron i o 25% szybciej', k:1800, e:{drony:1,tempoM:-0.25}},
+        ]},
+        {nazwa:'ZWIAD', u:[
+          {n:'Kamera nocna', o:'Widzi balony w KAMUFLAŻU', k:340, e:{kamuflaz:true}},
+          {n:'Radar', o:'+1 obrażeń i szybszy namiar', k:700, e:{dmg:1,predkoscDrona:0.25}},
+          {n:'Rozpoznanie', o:'TRZECI dron', k:2300, e:{drony:1}},
+        ]},
+      ]},
+  };
+  var KOLEJNOSC=['dart','kolce','armata','lod','snajper','plantacja','lotnisko'];
+
+  function staty(m){
+    var d=MALPKI[m.typ];
+    var s={ dmg:d.dmg, tempo:d.tempo, zasieg:d.zasieg, przebicie:d.przebicie, typ:d.typ,
+            pociski:d.pociski||1, splash:d.splash||0, spow:d.spow||0, kamuflaz:false,
+            odlamki:0, zamrazanie:0, dziedziczy:false, farma:d.farma||0,
+            drony:d.drony||0, predkoscDrona:1 };
+    var zasiegM=0, tempoM=0;
+    m.poz.forEach(function(lv, si){
+      for(var i=0;i<lv;i++){
+        var e=d.sciezki[si].u[i].e;
+        if(e.dmg) s.dmg+=e.dmg;
+        if(e.przebicie) s.przebicie+=e.przebicie;
+        if(e.pociski) s.pociski+=e.pociski;
+        if(e.splash) s.splash+=e.splash;
+        if(e.spow) s.spow+=e.spow;
+        if(e.zasiegM) zasiegM+=e.zasiegM;
+        if(e.tempoM) tempoM+=e.tempoM;
+        if(e.kamuflaz) s.kamuflaz=true;
+        if(e.typ) s.typ=e.typ;
+        if(e.odlamki) s.odlamki+=e.odlamki;
+        if(e.zamrazanie) s.zamrazanie+=e.zamrazanie;
+        if(e.dziedziczy) s.dziedziczy=true;
+        if(e.farma) s.farma+=e.farma;
+        if(e.drony) s.drony+=e.drony;
+        if(e.predkoscDrona) s.predkoscDrona+=e.predkoscDrona;
+      }
+    });
+    s.zasieg=d.zasieg*(1+zasiegM);
+    s.tempo=Math.max(0.12, d.tempo*(1+tempoM));
+    return s;
+  }
+  // Zasada scieżek: jedna do 3, druga najwyzej do 1, trzecia zero
+  function mozliwe(m, si){
+    if(m.poz[si]>=3) return false;
+    var inne=m.poz.filter(function(v,i){ return i!==si && v>0; });
+    var maxInne=Math.max.apply(null,[0].concat(inne));
+    var pelne=m.poz.filter(function(v,i){ return i!==si && v>=2; }).length;
+    if(pelne>0 && m.poz[si]>=1) return false;      // druga sciezka tylko do 1
+    if(m.poz[si]>=2 && inne.filter(function(v){return v>0;}).length>1) return false;
+    if(m.poz.filter(function(v){return v>0;}).length>=2 && m.poz[si]===0) return false;
+    return true;
+  }
+
+  // ---------- FALE ----------
+  function sklad(nr){
+    var f=[], i=nr;
+    function d(t,n,kam){ for(var j=0;j<n;j++) f.push({t:t,kam:!!kam}); }
+    if(i<=2) d('czerwony',10+i*5);
+    else if(i<=4){ d('czerwony',12); d('niebieski',5+i*2); }
+    else if(i<=6){ d('niebieski',14); d('zielony',5+i); }
+    else if(i<=8){ d('zielony',14); d('zolty',5+i); }
+    else if(i<=10){ d('zolty',16); d('rozowy',6+i); }
+    // Kamuflaz pojawia sie dopiero teraz i na poczatku jest go MALO -
+    // ma zaskoczyc i zmusic do ulepszenia, a nie od razu zabic.
+    else if(i===11){ d('zolty',14); d('rozowy',10); d('czerwony',5,true); }
+    else if(i<=13){ d('rozowy',14); d('czarny',4+(i-11)*3); d('bialy',5); d('niebieski',5,true); }
+    else if(i<=15){ d('czarny',10); d('bialy',10); d('olowiany',3+(i-13)*3); d('zielony',7,true); }
+    else if(i<=17){ d('olowiany',10); d('ceramiczny',2+(i-15)*2); d('rozowy',14); d('zolty',8,true); }
+    else if(i<=19){ d('ceramiczny',4+(i-17)*3); d('olowiany',12); d('bialy',12); d('rozowy',10,true); }
+    else if(i<=21){ d('teczowy',3+(i-19)*2); d('ceramiczny',7); d('czarny',12,true); }
+    else if(i<=23){ d('teczowy',6+(i-21)*3); d('ceramiczny',10); d('olowiany',12,true); }
+    else if(i===24){ d('moab',1); d('teczowy',9); d('ceramiczny',11); }
+    else { d('moab',2); d('teczowy',12); d('ceramiczny',14); d('olowiany',14,true); }
+    for(var k=f.length-1;k>0;k--){ var j2=Math.floor(Math.random()*(k+1)); var t=f[k]; f[k]=f[j2]; f[j2]=t; }
     return f;
   }
 
-  // ---- STAN ----
-  var zycia, kasa, nrFali, wieze, balony, pociski, iskry;
-  var wybranyTyp = null, wybranaWieza = null;
-  var falaTrwa = false, doWypuszczenia = [], licznikWypuszczen = 0;
-  var trwa = false, czasOstatni = null, czasGlobalny = 0, zakonczona = false;
+  var OPISY_FAL={
+    3:['NIEBIESKIE BALONY','Pod niebieskim kryje się czerwony. Mocniejsze obrażenia rozbijają obie warstwy jednym trafieniem.'],
+    5:['ZIELONE BALONY','Trzy warstwy. Zainwestuj w obrażenia albo w przebijalność.'],
+    11:['KAMUFLAŻ','Przezroczyste balony są NIEWIDOCZNE dla większości małpek. Potrzebujesz ulepszenia „Detektor”, „Celownik” lub „Zimny wzrok”.'],
+    8:['LOTNISKO','Nowa małpka w sklepie: 🛩️ Lotnisko wypuszcza drona, który lata po całej mapie i ściga wybrany cel. Ignoruje ścieżki i przeszkody.'],
+    9:['RÓŻOWE BALONY','Bardzo szybkie. Lodowa małpka je przytrzyma.'],
+    12:['CZARNE I BIAŁE','Czarne są odporne na WYBUCHY, białe na LÓD. Każdy rozpada się na dwa różowe.'],
+    14:['OŁOWIANE BALONY','Odporne na OSTRE. Darty i kolce ich nie ruszą — potrzebna armata, snajper albo „Pierścień ognia”.'],
+    16:['CERAMICZNE BALONY','Mają 9 punktów wytrzymałości, zanim w ogóle pękną. Liczą się obrażenia, nie liczba strzałów.'],
+    20:['TĘCZOWE BALONY','Pod spodem dwa ceramiczne, a pod nimi ołowiane. Potrzebujesz wszystkiego naraz.'],
+    24:['MOAB','Latająca forteca: 200 wytrzymałości, w środku cztery tęczowe. Snajper z ulepszeniem „Niszczyciel” to jego pogromca.'],
+  };
 
-  // ---- DZWIEK ----
-  var audioCtx = null;
-  function inicjujDzwiek() {
-    try {
-      var o; try { o = window.top; } catch (e) { o = window; }
-      if (o.__wspolnyKontekstAudio && o.__wspolnyKontekstAudio.state !== 'closed') audioCtx = o.__wspolnyKontekstAudio;
-      else if (!audioCtx || audioCtx.state === 'closed') {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        try { o.__wspolnyKontekstAudio = audioCtx; } catch (e2) {}
-      }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      var el = document.getElementById('odblokowanieDzwiekuIOS');
-      if (el && !el.src) { el.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='; el.play().catch(function () {}); }
-    } catch (e) {}
-  }
-  ['pointerdown','touchstart','click'].forEach(function (ev) {
-    document.addEventListener(ev, inicjujDzwiek, { passive: true });
-  });
-  function ton(f, dl, typ, gl) {
-    if (!audioCtx) return;
-    try {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-      var o = audioCtx.createOscillator(), g = audioCtx.createGain();
-      o.type = typ || 'square'; o.frequency.value = f;
-      g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      g.gain.exponentialRampToValueAtTime(gl || 0.10, audioCtx.currentTime + 0.008);
-      g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + dl);
-      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + dl + 0.02);
-    } catch (e) {}
-  }
-  function dzwiekPek() { ton(600 + Math.random()*300, 0.04, 'square', 0.05); }
-  function dzwiekStawiam() { ton(520, 0.09, 'triangle', 0.12); }
-  function dzwiekUlepsz() { [520,660,820].forEach(function(f,i){ setTimeout(function(){ton(f,0.1,'triangle',0.12);}, i*70); }); }
-  function dzwiekStrata() { ton(180, 0.16, 'sawtooth', 0.14); }
-  function dzwiekFala() { [420,560].forEach(function(f,i){ setTimeout(function(){ton(f,0.13,'square',0.11);}, i*95); }); }
-  function dzwiekKoniec() { [523,659,784,1046,1318].forEach(function(f,i){ setTimeout(function(){ton(f,0.2,'triangle',0.15);}, i*125); }); }
-  function dzwiekPorazka() { [300,230,170,110].forEach(function(f,i){ setTimeout(function(){ton(f,0.22,'sawtooth',0.15);}, i*140); }); }
+  // ---------- STAN ----------
+  var zycia, banany, nrFali, malpki, balony, pociski, iskry, teksty;
+  var wybranyTyp=null, wybrana=null, przeciaganie=null;
+  var falaTrwa=false, doWypuszczenia=[], licznikWyp=0;
+  var trwa=false, czasOstatni=null, czasGlob=0, zakonczona=false, bonusKasa=0;
 
-  // ---- SKLEP ----
-  function zbudujSklep() {
-    elSklep.innerHTML = '';
-    KOLEJNOSC_WIEZ.forEach(function (t) {
-      var d = WIEZE[t];
-      var b = document.createElement('div');
-      b.className = 'wieza-btn' + (wybranyTyp === t ? ' wybrana' : '') + (kasa < d.koszt ? ' drogo' : '');
-      b.innerHTML = '<div class="ik">' + d.ik + '</div><div class="cena">' + d.koszt + '</div>';
-      b.addEventListener('click', function () {
-        inicjujDzwiek();
-        wybranyTyp = (wybranyTyp === t) ? null : t;
-        wybranaWieza = null;
-        odswiezPanel();
+  // ---------- DZWIEK ----------
+  var audioCtx=null;
+  function inicjujDzwiek(){
+    try{
+      var o; try{o=window.top;}catch(e){o=window;}
+      if(o.__wspolnyKontekstAudio && o.__wspolnyKontekstAudio.state!=='closed') audioCtx=o.__wspolnyKontekstAudio;
+      else if(!audioCtx||audioCtx.state==='closed'){ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); try{o.__wspolnyKontekstAudio=audioCtx;}catch(e2){} }
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      var el=document.getElementById('odblokowanieDzwiekuIOS');
+      if(el&&!el.src){ el.src='data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='; el.play().catch(function(){}); }
+    }catch(e){}
+  }
+  ['pointerdown','touchstart','click'].forEach(function(ev){ document.addEventListener(ev,inicjujDzwiek,{passive:true}); });
+  function ton(f,dl,typ,gl){
+    if(!audioCtx) return;
+    try{
+      if(audioCtx.state==='suspended') audioCtx.resume();
+      var o=audioCtx.createOscillator(), g=audioCtx.createGain();
+      o.type=typ||'square'; o.frequency.value=f;
+      g.gain.setValueAtTime(0.0001,audioCtx.currentTime);
+      g.gain.exponentialRampToValueAtTime(gl||0.09,audioCtx.currentTime+0.008);
+      g.gain.exponentialRampToValueAtTime(0.0001,audioCtx.currentTime+dl);
+      o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime+dl+0.02);
+    }catch(e){}
+  }
+  function dzPek(){ ton(620+Math.random()*260,0.035,'square',0.045); }
+  function dzStaw(){ ton(540,0.09,'triangle',0.11); }
+  function dzUlepsz(){ [540,680,860].forEach(function(f,i){ setTimeout(function(){ton(f,0.1,'triangle',0.12);},i*65); }); }
+  function dzStrata(){ ton(170,0.17,'sawtooth',0.14); }
+  function dzFala(){ [430,580].forEach(function(f,i){ setTimeout(function(){ton(f,0.13,'square',0.1);},i*90); }); }
+  function dzKoniec(){ [523,659,784,1046,1318].forEach(function(f,i){ setTimeout(function(){ton(f,0.2,'triangle',0.15);},i*120); }); }
+  function dzPorazka(){ [300,230,170,110].forEach(function(f,i){ setTimeout(function(){ton(f,0.22,'sawtooth',0.14);},i*135); }); }
+
+  function komunikat(t, zly){
+    elKomunikat.textContent=t;
+    elKomunikat.style.color = zly ? '#ff9a8a' : '#a8f0c0';
+    elKomunikat.classList.add('pokaz');
+    clearTimeout(komunikat._t);
+    komunikat._t=setTimeout(function(){ elKomunikat.classList.remove('pokaz'); }, 1600);
+  }
+  function karta(tyt, tre){
+    elKarta.querySelector('.tyt').textContent=tyt;
+    elKarta.querySelector('.tre').textContent=tre;
+    elKarta.classList.remove('pokaz'); void elKarta.offsetWidth; elKarta.classList.add('pokaz');
+  }
+
+  // ---------- OBRAZENIA Z PRZELEWEM ----------
+  function zadaj(b, dmg, typObr, s){
+    if(odporny(b.typ,typObr)) return 0;
+    b.hp-=dmg;
+    if(b.hp>0) return 0;
+    var przelew=-b.hp, pek=1;
+    banany += Math.round(BALONY[b.typ].kasa*(1+bonusKasa));
+    var pk=punktNa(b.s);
+    for(var q=0;q<4;q++) iskry.push({x:pk.x,y:pk.y,r:4,zycie:0.26,max:0.26,kol:BALONY[b.typ].kol,
+                                     vx:(Math.random()-0.5)*130,vy:(Math.random()-0.5)*130});
+    var dz=BALONY[b.typ].dzieci;
+    var idx=balony.indexOf(b);
+    if(idx>=0) balony.splice(idx,1);
+    dzPek();
+    if(dz) dz.forEach(function(t,di){
+      var nowy={typ:t, s:Math.max(0,b.s-di*10), hp:(BALONY[t].hp||1), spow:b.spowDziedzicz?b.spow:0,
+                spowM:b.spowDziedzicz?b.spowM:0, zamr:0, kam:b.kam, spowDziedzicz:b.spowDziedzicz};
+      balony.push(nowy);
+      if(przelew>0) pek+=zadaj(nowy, przelew, typObr, s);
+    });
+    return pek;
+  }
+
+  // ---------- SKLEP I PANEL ----------
+  function zbudujSklep(){
+    elSklep.innerHTML='';
+    KOLEJNOSC.forEach(function(t){
+      var d=MALPKI[t];
+      var b=document.createElement('div');
+      b.className='mbtn'+(wybranyTyp===t?' wybrana':'')+(banany<d.koszt?' drogo':'');
+      b.innerHTML='<div class="ik">'+d.ik+'</div><div class="c">'+d.koszt+'</div>';
+      b.addEventListener('pointerdown', function(e){
+        e.preventDefault(); inicjujDzwiek();
+        if(banany<d.koszt){ komunikat('Za mało bananów', true); return; }
+        wybranyTyp=t; wybrana=null;
+        przeciaganie={typ:t, x:SZER/2, y:WYS/2, aktywne:false};
+        odswiez();
       });
       elSklep.appendChild(b);
     });
   }
 
-  function odswiezPanel() {
-    elZycia.textContent = '❤️ ' + zycia;
-    elKasa.textContent = '🪙 ' + Math.floor(kasa);
-    elFala.textContent = 'FALA ' + nrFali + ' / 20';
-    zbudujSklep();
-
-    if (wybranaWieza) {
-      var d = WIEZE[wybranaWieza.typ], st = staty(wybranaWieza);
-      var kolejne = wybranaWieza.poz < 3 ? d.ulepsz[wybranaWieza.poz] : null;
-      elInfo.innerHTML = '<b>' + d.ik + ' ' + d.nazwa + ' · poziom ' + (wybranaWieza.poz + 1) + '</b><br>'
-        + 'Obrażenia <b>' + st.dmg.toFixed(1) + '</b> · co <b>' + st.tempo.toFixed(2) + 's</b>'
-        + (d.zasieg < 900 ? ' · zasięg <b>' + Math.round(st.zasieg) + '</b>' : ' · zasięg <b>cała mapa</b>')
-        + '<br><span style="opacity:0.85">' + d.opis + '</span>';
-      btnUlepsz.disabled = !kolejne || kasa < kolejne;
-      btnUlepsz.textContent = kolejne ? ('Ulepsz · ' + kolejne) : 'Maksymalny poziom';
-      btnSprzedaj.disabled = false;
-      btnSprzedaj.textContent = 'Sprzedaj ' + Math.floor(wartoscWiezy(wybranaWieza) * 0.7);
-    } else if (wybranyTyp) {
-      var dd = WIEZE[wybranyTyp];
-      elInfo.innerHTML = '<b>' + dd.ik + ' ' + dd.nazwa + ' · ' + dd.koszt + ' 🪙</b><br>'
-        + 'Obrażenia <b>' + dd.dmg + '</b> · co <b>' + dd.tempo + 's</b><br>'
-        + '<span style="opacity:0.85">' + dd.opis + '</span><br>'
-        + '<span style="color:#ffd96a">Dotknij mapy, żeby postawić.</span>';
-      btnUlepsz.disabled = true; btnUlepsz.textContent = 'Ulepsz';
-      btnSprzedaj.disabled = true; btnSprzedaj.textContent = 'Sprzedaj';
-    } else {
-      elInfo.innerHTML = 'Wybierz wieżę ze sklepu albo dotknij postawionej, żeby ją ulepszyć.'
-        + (nrFali === 0 ? '<br><span style="color:#ffd96a">Postaw coś, zanim ruszysz falę.</span>' : '');
-      btnUlepsz.disabled = true; btnUlepsz.textContent = 'Ulepsz';
-      btnSprzedaj.disabled = true; btnSprzedaj.textContent = 'Sprzedaj';
-    }
-    btnFala.disabled = falaTrwa || zakonczona;
-    btnFala.textContent = falaTrwa ? ('Fala ' + nrFali + ' trwa…') : ('▶ Fala ' + (nrFali + 1));
+  function opisMalpki(t){
+    var d=MALPKI[t];
+    return '<b>'+d.ik+' '+d.nazwa+' · '+d.koszt+' 🍌</b><br><span style="opacity:0.88">'+d.opis+'</span>';
   }
 
-  function wartoscWiezy(w) {
-    var s = WIEZE[w.typ].koszt;
-    for (var i = 0; i < w.poz; i++) s += WIEZE[w.typ].ulepsz[i];
+  function odswiez(){
+    elZycia.textContent='❤️ '+zycia;
+    elBanany.textContent='🍌 '+Math.floor(banany);
+    elFala.textContent='FALA '+nrFali+' / 25';
+    zbudujSklep();
+    elSciezki.innerHTML='';
+    elCelowanie.style.display='none';
+
+    if(wybrana){
+      var d=MALPKI[wybrana.typ], st=staty(wybrana);
+      var l=[];
+      if(st.dmg>0) l.push('obrażenia <b>'+st.dmg+'</b>');
+      if(st.przebicie>0 && st.przebicie<50) l.push('przebicie <b>'+st.przebicie+'</b>');
+      if(st.tempo>0) l.push('co <b>'+st.tempo.toFixed(2)+'s</b>');
+      if(d.zasieg>0 && d.zasieg<900) l.push('zasięg <b>'+Math.round(st.zasieg)+'</b>');
+      if(d.zasieg>=900) l.push('zasięg <b>cała mapa</b>');
+      if(st.spow>0) l.push('spowolnienie <b>'+Math.round(st.spow*100)+'%</b>');
+      if(st.farma>0) l.push('<b>'+st.farma+' 🍌</b> po fali');
+      if(st.kamuflaz) l.push('<b style="color:#7ee0ff">widzi kamuflaż</b>');
+      elInfo.innerHTML='<b>'+d.ik+' '+d.nazwa+'</b><br>'+l.join(' · ');
+
+      if(d.zasieg>0){
+        elCelowanie.style.display='flex';
+        elCelowanie.innerHTML='';
+        [['pierwszy','Pierwszy'],['ostatni','Ostatni'],['silny','Najsilniejszy']].forEach(function(p){
+          var b2=document.createElement('button');
+          b2.className='cel-btn'+(wybrana.cel===p[0]?' akt':'');
+          b2.textContent=p[1];
+          b2.addEventListener('click', function(){ wybrana.cel=p[0]; odswiez(); });
+          elCelowanie.appendChild(b2);
+        });
+      }
+
+      d.sciezki.forEach(function(sc, si){
+        var box=document.createElement('div'); box.className='sc';
+        var poz=wybrana.poz[si];
+        var kropki='●'.repeat(poz)+'○'.repeat(3-poz);
+        var naglowek='<div class="nag">'+sc.nazwa+' <span class="kropki">'+kropki+'</span></div>';
+        var wiersz='';
+        if(poz<3){
+          var u=sc.u[poz];
+          var wolno=mozliwe(wybrana, si);
+          var stac=banany>=u.k;
+          wiersz='<div class="ul"><span class="txt"><b>'+u.n+'</b><br>'+u.o+'</span>'
+            +'<button '+((!wolno||!stac)?'disabled':'')+' data-sc="'+si+'">'+u.k+' 🍌</button></div>';
+          if(!wolno) wiersz+='<div class="txt" style="opacity:0.6;margin-top:3px">Zablokowane: możesz rozwinąć jedną ścieżkę do końca i drugą tylko o jeden poziom.</div>';
+        } else {
+          wiersz='<div class="txt" style="opacity:0.75">Ścieżka rozwinięta do końca.</div>';
+        }
+        box.innerHTML=naglowek+wiersz;
+        var btn=box.querySelector('button');
+        if(btn) btn.addEventListener('click', function(){
+          var si2=+btn.getAttribute('data-sc');
+          var u2=MALPKI[wybrana.typ].sciezki[si2].u[wybrana.poz[si2]];
+          if(banany<u2.k || !mozliwe(wybrana,si2)) return;
+          banany-=u2.k; wybrana.poz[si2]++;
+          if(u2.e.bonusKasa) bonusKasa+=u2.e.bonusKasa;
+          if(u2.e.jednorazowo){ banany+=u2.e.jednorazowo; komunikat('+'+u2.e.jednorazowo+' bananów'); }
+          dzUlepsz(); odswiez();
+        });
+        elSciezki.appendChild(box);
+      });
+      btnSprzedaj.disabled=false;
+      btnSprzedaj.textContent='Sprzedaj '+Math.floor(wartosc(wybrana)*0.7);
+    } else {
+      elInfo.innerHTML = wybranyTyp ? opisMalpki(wybranyTyp)
+        : 'Przeciągnij małpkę ze sklepu na mapę. Dotknij postawionej, żeby zobaczyć ścieżki rozwoju.';
+      btnSprzedaj.disabled=true; btnSprzedaj.textContent='Sprzedaj';
+    }
+    btnFala.disabled=falaTrwa||zakonczona;
+    btnFala.textContent=falaTrwa?('Fala '+nrFali+' trwa…'):('▶ Fala '+(nrFali+1));
+  }
+
+  function wartosc(m){
+    var s=MALPKI[m.typ].koszt;
+    m.poz.forEach(function(lv,si){ for(var i=0;i<lv;i++) s+=MALPKI[m.typ].sciezki[si].u[i].k; });
     return s;
   }
 
-  // ---- INTERAKCJA Z MAPA ----
-  mapa.addEventListener('pointerdown', function (e) {
+  // ---------- STAWIANIE PRZECIAGANIEM ----------
+  function powodBlokady(x,y,typ){
+    if(x<16||x>SZER-16||y<34||y>WYS-12) return 'Poza mapą';
+    if(odlOdSciezki(x,y)<26) return 'Ścieżka blokuje';
+    var kol=malpki.some(function(m){ return Math.hypot(m.x-x,m.y-y)<34; });
+    if(kol) return 'Za blisko innej małpki';
+    if(banany<MALPKI[typ].koszt) return 'Za mało bananów';
+    return null;
+  }
+  function pozycjaNaMapie(e){
+    var r=mapa.getBoundingClientRect();
+    return { x:(e.clientX-r.left)*(SZER/r.width), y:(e.clientY-r.top)*(WYS/r.height) };
+  }
+  document.addEventListener('pointermove', function(e){
+    if(!przeciaganie) return;
+    var p=pozycjaNaMapie(e);
+    przeciaganie.x=p.x; przeciaganie.y=p.y; przeciaganie.aktywne=true;
+  });
+  document.addEventListener('pointerup', function(e){
+    if(!przeciaganie) return;
+    var p=pozycjaNaMapie(e), typ=przeciaganie.typ;
+    var powod= (p.y<0||p.y>WYS) ? 'Upuść na mapie' : powodBlokady(p.x,p.y,typ);
+    przeciaganie=null;
+    if(powod){ komunikat(powod, true); wybranyTyp=null; odswiez(); return; }
+    banany-=MALPKI[typ].koszt;
+    var nowa={typ:typ, x:p.x, y:p.y, poz:[0,0,0], cd:0, kat:0, cel:'pierwszy', zamrCd:0, drony:[]};
+    malpki.push(nowa);
+    wybrana=nowa; wybranyTyp=null;
+    dzStaw(); odswiez();
+  });
+  mapa.addEventListener('pointerdown', function(e){
+    if(przeciaganie) return;
     inicjujDzwiek();
-    var r = mapa.getBoundingClientRect();
-    var x = (e.clientX - r.left) * (SZER / r.width);
-    var y = (e.clientY - r.top) * (WYS / r.height);
-
-    var kliknieta = null;
-    wieze.forEach(function (w) { if (Math.hypot(w.x-x, w.y-y) < 20) kliknieta = w; });
-    if (kliknieta) { wybranaWieza = kliknieta; wybranyTyp = null; odswiezPanel(); return; }
-
-    if (wybranyTyp) {
-      var d = WIEZE[wybranyTyp];
-      if (kasa < d.koszt) { elInfo.innerHTML = '<b style="color:#ff8a7a">Za mało monet.</b>'; return; }
-      if (odlegloscOdSciezki(x, y) < 26) { elInfo.innerHTML = '<b style="color:#ff8a7a">Za blisko ścieżki.</b>'; return; }
-      if (y > WYS - 14 || y < 36 || x < 14 || x > SZER - 14) { elInfo.innerHTML = '<b style="color:#ff8a7a">Poza planszą.</b>'; return; }
-      var koliduje = wieze.some(function (w) { return Math.hypot(w.x-x, w.y-y) < 32; });
-      if (koliduje) { elInfo.innerHTML = '<b style="color:#ff8a7a">Za blisko innej wieży.</b>'; return; }
-      kasa -= d.koszt;
-      var nowa = { typ:wybranyTyp, x:x, y:y, poz:0, cd:0, kat:0 };
-      wieze.push(nowa);
-      wybranaWieza = nowa; wybranyTyp = null;
-      dzwiekStawiam();
-      odswiezPanel();
-      return;
-    }
-    wybranaWieza = null;
-    odswiezPanel();
+    var p=pozycjaNaMapie(e), klik=null;
+    malpki.forEach(function(m){ if(Math.hypot(m.x-p.x,m.y-p.y)<20) klik=m; });
+    wybrana=klik; wybranyTyp=null;
+    odswiez();
   });
 
-  btnUlepsz.addEventListener('click', function () {
-    if (!wybranaWieza || wybranaWieza.poz >= 3) return;
-    var koszt = WIEZE[wybranaWieza.typ].ulepsz[wybranaWieza.poz];
-    if (kasa < koszt) return;
-    kasa -= koszt; wybranaWieza.poz++;
-    dzwiekUlepsz();
-    odswiezPanel();
+  btnSprzedaj.addEventListener('click', function(){
+    if(!wybrana) return;
+    banany+=Math.floor(wartosc(wybrana)*0.7);
+    // cofamy globalne bonusy plantacji
+    wybrana.poz.forEach(function(lv,si){
+      for(var i=0;i<lv;i++){
+        var e=MALPKI[wybrana.typ].sciezki[si].u[i].e;
+        if(e.bonusKasa) bonusKasa-=e.bonusKasa;
+      }
+    });
+    malpki.splice(malpki.indexOf(wybrana),1);
+    wybrana=null; ton(300,0.1,'square',0.09); odswiez();
   });
-  btnSprzedaj.addEventListener('click', function () {
-    if (!wybranaWieza) return;
-    kasa += Math.floor(wartoscWiezy(wybranaWieza) * 0.7);
-    wieze.splice(wieze.indexOf(wybranaWieza), 1);
-    wybranaWieza = null;
-    ton(300, 0.1, 'square', 0.1);
-    odswiezPanel();
-  });
-  btnFala.addEventListener('click', function () {
-    if (falaTrwa || zakonczona) return;
+  btnFala.addEventListener('click', function(){
+    if(falaTrwa||zakonczona) return;
     nrFali++;
-    doWypuszczenia = sklad(nrFali);
-    licznikWypuszczen = 0;
-    falaTrwa = true;
-    dzwiekFala();
-    odswiezPanel();
+    if(OPISY_FAL[nrFali]) karta(OPISY_FAL[nrFali][0], OPISY_FAL[nrFali][1]);
+    doWypuszczenia=sklad(nrFali); licznikWyp=0; falaTrwa=true;
+    dzFala(); odswiez();
   });
 
-  // ---- PETLA ----
-  function aktualizuj(dt) {
-    czasGlobalny += dt;
+  // ---------- CELOWANIE ----------
+  function wybierzCele(m, st, ile){
+    var widoczne=balony.filter(function(b){
+      if(b.kam && !st.kamuflaz) return false;
+      if(odporny(b.typ, st.typ)) return false;
+      if(st.dmg<=0 && !st.spow && !st.zamrazanie) return false;
+      var p=punktNa(b.s);
+      return Math.hypot(p.x-m.x,p.y-m.y)<=st.zasieg;
+    });
+    if(!widoczne.length) return [];
+    // Nie marnujemy strzalow na balon, ktory juz oberwal tyle, ze peknie
+    var zywe=widoczne.filter(function(b){ return (b.hp-(b.oczekujace||0))>0; });
+    var pula=zywe.length?zywe:widoczne;
+    if(m.cel==='ostatni') pula.sort(function(a,c){ return a.s-c.s; });
+    else if(m.cel==='silny') pula.sort(function(a,c){ return (BALONY[c.typ].hp||1)-(BALONY[a.typ].hp||1) || c.s-a.s; });
+    else pula.sort(function(a,c){ return c.s-a.s; });
+    return pula.slice(0, ile);
+  }
 
-    if (falaTrwa && doWypuszczenia.length) {
-      licznikWypuszczen -= dt;
-      if (licznikWypuszczen <= 0) {
-        licznikWypuszczen = 0.28;
-        var t = doWypuszczenia.shift();
-        balony.push({ typ:t, s:0, hp:(BALONY[t].hp || 1), spow:0 });
+  // ---------- AKTUALIZACJA ----------
+  function aktualizuj(dt){
+    czasGlob+=dt;
+    if(falaTrwa && doWypuszczenia.length){
+      licznikWyp-=dt;
+      if(licznikWyp<=0){
+        licznikWyp=0.26;
+        var e=doWypuszczenia.shift();
+        balony.push({typ:e.t, s:0, hp:(BALONY[e.t].hp||1), spow:0, spowM:0, zamr:0, kam:e.kam, oczekujace:0});
       }
     }
-
-    for (var i = balony.length - 1; i >= 0; i--) {
-      var b = balony[i];
-      var v = BALONY[b.typ].v * (b.spow > 0 ? 0.5 : 1);
-      if (b.spow > 0) b.spow -= dt;
-      b.s += v * dt;
-      if (b.s >= DLUGOSC) {
-        balony.splice(i, 1);
-        zycia -= (BALONY[b.typ].duzy ? 4 : 1);
-        dzwiekStrata();
-        odswiezPanel();
-        if (zycia <= 0) { przegrana(); return; }
+    for(var i=balony.length-1;i>=0;i--){
+      var b=balony[i];
+      if(b.zamr>0){ b.zamr-=dt; }
+      else {
+        if(b.spow>0){ b.spow-=dt; if(b.spow<=0) b.spowM=0; }
+        var v=BALONY[b.typ].v*(1-(b.spowM||0));
+        b.s+=v*dt;
+      }
+      if(b.s>=DLUGOSC){
+        balony.splice(i,1);
+        zycia-=(BALONY[b.typ].duzy?5:1);
+        dzStrata(); odswiez();
+        if(zycia<=0){ przegrana(); return; }
       }
     }
+    balony.forEach(function(b){ b.oczekujace=0; });
 
-    wieze.forEach(function (w) {
-      w.cd -= dt;
-      if (w.cd > 0) return;
-      var st = staty(w);
-      var cele = balony.filter(function (b2) {
-        if (odporny(b2.typ, st.typ)) return false;
-        var p = punktNaSciezce(b2.s);
-        return Math.hypot(p.x - w.x, p.y - w.y) <= st.zasieg;
-      }).sort(function (a, c) { return c.s - a.s; });
-      if (!cele.length) return;
-      w.cd = st.tempo;
-      var pierwszy = punktNaSciezce(cele[0].s);
-      w.kat = Math.atan2(pierwszy.y - w.y, pierwszy.x - w.x);
-      var ile = Math.min(cele.length, st.poc);
-      for (var c3 = 0; c3 < ile; c3++) {
-        var cel = cele[c3];
-        var pc = punktNaSciezce(cel.s);
-        pociski.push({ x:w.x, y:w.y, cx:pc.x, cy:pc.y, zycie:0.14, max:0.14,
-                       kolor: st.typ === 'wybuch' ? '#ff9a4a' : (st.typ === 'lod' ? '#7ec4e8' : '#f0e8d0') });
-        cel.hp -= st.dmg;
-        if (st.spow) cel.spow = 1.2;
-        if (st.splash) {
-          balony.forEach(function (b3) {
-            if (b3 === cel || odporny(b3.typ, st.typ)) return;
-            var p3 = punktNaSciezce(b3.s);
-            if (Math.hypot(p3.x - pc.x, p3.y - pc.y) < st.splash) b3.hp -= st.dmg * 0.6;
+    // --- DRONY: latajace jednostki scigajace cel po calej mapie ---
+    malpki.forEach(function(m){
+      if(m.typ!=='lotnisko') return;
+      var st=staty(m);
+      m.drony = m.drony || [];
+      while(m.drony.length < st.drony)
+        m.drony.push({x:m.x, y:m.y-18, cd:0, kat:0, faza:Math.random()*6});
+      while(m.drony.length > st.drony) m.drony.pop();
+
+      var widoczne=balony.filter(function(b2){ return !(b2.kam && !st.kamuflaz); });
+      var cel=null;
+      if(widoczne.length){
+        var kop=widoczne.slice();
+        if(m.cel==='ostatni') kop.sort(function(a,c){ return a.s-c.s; });
+        else if(m.cel==='silny') kop.sort(function(a,c){ return (BALONY[c.typ].hp||1)-(BALONY[a.typ].hp||1) || c.s-a.s; });
+        else kop.sort(function(a,c){ return c.s-a.s; });
+        cel=kop[0];
+      }
+      m.drony.forEach(function(dr, di){
+        dr.faza+=dt*3;
+        var docX, docY;
+        if(cel){
+          var pc=punktNa(cel.s);
+          // Kazdy dron krazy wokol celu pod innym katem
+          var kat=dr.faza + di*(Math.PI*2/Math.max(1,m.drony.length));
+          docX=pc.x+Math.cos(kat)*34; docY=pc.y+Math.sin(kat)*34;
+        } else { docX=m.x; docY=m.y-20; }
+        var vx=docX-dr.x, vy=docY-dr.y, dl=Math.hypot(vx,vy);
+        var pred=170*st.predkoscDrona;
+        if(dl>2){ dr.x+=vx/dl*Math.min(pred*dt, dl); dr.y+=vy/dl*Math.min(pred*dt, dl); }
+        if(vx||vy) dr.kat=Math.atan2(vy,vx);
+        dr.cd-=dt;
+        if(cel && dr.cd<=0){
+          var pc2=punktNa(cel.s);
+          var odl=Math.hypot(pc2.x-dr.x, pc2.y-dr.y);
+          if(odl<90){
+            dr.cd=st.tempo;
+            cel.oczekujace=(cel.oczekujace||0)+st.dmg;
+            var ka2=Math.atan2(pc2.y-dr.y, pc2.x-dr.x);
+            pociski.push({ x:dr.x, y:dr.y, vx:Math.cos(ka2)*440, vy:Math.sin(ka2)*440,
+                           dmg:st.dmg, typ:st.typ, przebicie:st.przebicie, splash:st.splash,
+                           odlamki:0, kamuflaz:st.kamuflaz, zycie:0.9, trafione:[] });
+          }
+        }
+      });
+    });
+
+    malpki.forEach(function(m){
+      var d=MALPKI[m.typ], st=staty(m);
+      if(d.zasieg<=0) return;
+      m.cd-=dt;
+      if(st.zamrazanie>0){
+        m.zamrCd-=dt;
+        if(m.zamrCd<=0){
+          m.zamrCd=4.0;
+          balony.forEach(function(b){
+            if(b.kam&&!st.kamuflaz) return;
+            if(odporny(b.typ,'lod')) return;
+            var p=punktNa(b.s);
+            if(Math.hypot(p.x-m.x,p.y-m.y)<=st.zasieg){ b.zamr=Math.max(b.zamr, st.zamrazanie); }
           });
-          iskry.push({ x:pc.x, y:pc.y, r:st.splash, zycie:0.2, max:0.2, kolor:'#ff9a4a' });
+          iskry.push({x:m.x,y:m.y,r:st.zasieg,zycie:0.3,max:0.3,kol:'#9fe4ff',pierscien:true});
         }
       }
-      // pekanie i rozpad
-      for (var k = balony.length - 1; k >= 0; k--) {
-        var bb = balony[k];
-        if (bb.hp > 0) continue;
-        kasa += BALONY[bb.typ].kasa;
-        var pk = punktNaSciezce(bb.s);
-        for (var q = 0; q < 5; q++) {
-          iskry.push({ x:pk.x, y:pk.y, r:5, zycie:0.28, max:0.28, kolor:BALONY[bb.typ].kolor,
-                       vx:(Math.random()-0.5)*120, vy:(Math.random()-0.5)*120 });
-        }
-        var dz = BALONY[bb.typ].dzieci;
-        balony.splice(k, 1);
-        dzwiekPek();
-        if (dz) dz.forEach(function (d4, di) {
-          balony.push({ typ:d4, s: Math.max(0, bb.s - di*11), hp:(BALONY[d4].hp || 1), spow:bb.spow });
+      if(m.cd>0) return;
+      // Lodowa aura dziala ciagle, nie pociskiem
+      if(st.spow>0 && st.dmg<=0 || (st.spow>0 && d.typ==='lod')){
+        m.cd=0.25;
+        var ktos=false;
+        balony.forEach(function(b){
+          if(b.kam&&!st.kamuflaz) return;
+          if(odporny(b.typ,'lod')) return;
+          var p=punktNa(b.s);
+          if(Math.hypot(p.x-m.x,p.y-m.y)<=st.zasieg){
+            b.spow=1.0; b.spowM=Math.max(b.spowM||0, st.spow);
+            b.spowDziedzicz=st.dziedziczy;
+            ktos=true;
+            if(st.dmg>0) zadaj(b, st.dmg, 'lod', st);
+          }
         });
+        if(ktos && st.dmg>0) m.cd=st.tempo;
+        return;
+      }
+      var cele=wybierzCele(m, st, d.dookola? st.pociski : st.pociski);
+      if(!cele.length) return;
+      m.cd=st.tempo;
+      var pierwszy=punktNa(cele[0].s);
+      m.kat=Math.atan2(pierwszy.y-m.y, pierwszy.x-m.x);
+      var ilePoc=st.pociski;
+      for(var k=0;k<ilePoc;k++){
+        var cel=cele[Math.min(k, cele.length-1)];
+        cel.oczekujace=(cel.oczekujace||0)+st.dmg;
+        var pc=punktNa(cel.s);
+        var kat=Math.atan2(pc.y-m.y, pc.x-m.x);
+        if(d.dookola) kat=(k/ilePoc)*Math.PI*2;
+        pociski.push({ x:m.x, y:m.y, vx:Math.cos(kat)*420, vy:Math.sin(kat)*420,
+                       dmg:st.dmg, typ:st.typ, przebicie:st.przebicie, splash:st.splash,
+                       odlamki:st.odlamki, kamuflaz:st.kamuflaz, zycie: d.dookola?(st.zasieg/420):1.3,
+                       trafione:[] });
       }
     });
 
-    for (var p2 = pociski.length - 1; p2 >= 0; p2--) {
-      pociski[p2].zycie -= dt;
-      if (pociski[p2].zycie <= 0) pociski.splice(p2, 1);
-    }
-    for (var s2 = iskry.length - 1; s2 >= 0; s2--) {
-      var isk = iskry[s2];
-      isk.zycie -= dt;
-      if (isk.vx) { isk.x += isk.vx*dt; isk.y += isk.vy*dt; }
-      if (isk.zycie <= 0) iskry.splice(s2, 1);
+    // pociski
+    for(var p2=pociski.length-1;p2>=0;p2--){
+      var pc2=pociski[p2];
+      pc2.x+=pc2.vx*dt; pc2.y+=pc2.vy*dt; pc2.zycie-=dt;
+      var zderzyl=false;
+      for(var bi=0;bi<balony.length;bi++){
+        var b2=balony[bi];
+        if(pc2.trafione.indexOf(b2)>=0) continue;
+        if(b2.kam && !pc2.kamuflaz) continue;
+        var pb=punktNa(b2.s);
+        var r=(BALONY[b2.typ].duzy?16:10);
+        if(Math.hypot(pb.x-pc2.x, pb.y-pc2.y)>r+3) continue;
+        pc2.trafione.push(b2);
+        zderzyl=true;
+        if(pc2.splash){
+          iskry.push({x:pb.x,y:pb.y,r:pc2.splash,zycie:0.22,max:0.22,kol:'#ff9a4a'});
+          var kop=balony.slice();
+          kop.forEach(function(b3){
+            var p3=punktNa(b3.s);
+            if(Math.hypot(p3.x-pb.x,p3.y-pb.y)<pc2.splash) zadaj(b3, pc2.dmg, pc2.typ, null);
+          });
+        } else {
+          zadaj(b2, pc2.dmg, pc2.typ, null);
+        }
+        if(pc2.odlamki){
+          for(var o2=0;o2<pc2.odlamki;o2++){
+            var ka=(o2/pc2.odlamki)*Math.PI*2;
+            pociski.push({ x:pb.x, y:pb.y, vx:Math.cos(ka)*360, vy:Math.sin(ka)*360,
+                           dmg:1, typ:'ostre', przebicie:1, splash:0, odlamki:0,
+                           kamuflaz:pc2.kamuflaz, zycie:0.22, trafione:[] });
+          }
+          pc2.odlamki=0;
+        }
+        pc2.przebicie--;
+        if(pc2.przebicie<=0) break;
+      }
+      if(pc2.zycie<=0 || (zderzyl && pc2.przebicie<=0)
+         || pc2.x<-20||pc2.x>SZER+20||pc2.y<-20||pc2.y>WYS+20) pociski.splice(p2,1);
     }
 
-    if (falaTrwa && !doWypuszczenia.length && !balony.length) {
-      falaTrwa = false;
-      kasa += 45;
-      if (nrFali >= 20) { wygrana(); return; }
-      odswiezPanel();
+    for(var s3=iskry.length-1;s3>=0;s3--){
+      var isk=iskry[s3]; isk.zycie-=dt;
+      if(isk.vx){ isk.x+=isk.vx*dt; isk.y+=isk.vy*dt; }
+      if(isk.zycie<=0) iskry.splice(s3,1);
     }
-    if (czasGlobalny % 0.5 < dt) odswiezPanel();
+
+    if(falaTrwa && !doWypuszczenia.length && !balony.length){
+      falaTrwa=false;
+      var zFarm=0;
+      malpki.forEach(function(m){ zFarm+=staty(m).farma; });
+      banany+=60+nrFali*8+zFarm;
+      if(zFarm>0) komunikat('Plantacje dały +'+zFarm+' 🍌');
+      if(nrFali>=25){ wygrana(); return; }
+      odswiez();
+    }
+    if(czasGlob%0.4<dt) odswiez();
   }
 
-  // ---- RYSOWANIE ----
-  function rysuj() {
-    var g = ctx.createLinearGradient(0, 0, 0, WYS);
-    g.addColorStop(0, '#1c3a1e'); g.addColorStop(1, '#0f2411');
-    ctx.fillStyle = g; ctx.fillRect(0, 0, SZER, WYS);
-
-    // Trawa - drobne kepki
-    ctx.fillStyle = 'rgba(255,255,255,0.030)';
-    for (var i = 0; i < 90; i++) {
-      var gx = (i * 97) % SZER, gy = (i * 53) % WYS;
-      ctx.fillRect(gx, gy, 2, 5);
+  // ---------- RYSOWANIE ----------
+  function rysuj(){
+    var g=ctx.createLinearGradient(0,0,0,WYS);
+    g.addColorStop(0,'#2a6a4a'); g.addColorStop(0.5,'#1e5238'); g.addColorStop(1,'#153c29');
+    ctx.fillStyle=g; ctx.fillRect(0,0,SZER,WYS);
+    // Kepki trawy i kwiatki
+    for(var i=0;i<140;i++){
+      var gx=(i*97)%SZER, gy=(i*61)%WYS;
+      if(odlOdSciezki(gx,gy)<20) continue;
+      ctx.fillStyle= (i%13===0)?'rgba(255,220,120,0.30)':'rgba(255,255,255,0.045)';
+      if(i%13===0){ ctx.beginPath(); ctx.arc(gx,gy,2,0,Math.PI*2); ctx.fill(); }
+      else ctx.fillRect(gx,gy,2,5);
     }
-
     // Sciezka
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#4a3a22'; ctx.lineWidth = 32;
-    ctx.beginPath(); ctx.moveTo(PUNKTY[0][0], PUNKTY[0][1]);
-    for (var p = 1; p < PUNKTY.length; p++) ctx.lineTo(PUNKTY[p][0], PUNKTY[p][1]);
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.strokeStyle='#4a3520'; ctx.lineWidth=34;
+    ctx.beginPath(); ctx.moveTo(PUNKTY[0][0],PUNKTY[0][1]);
+    for(var p=1;p<PUNKTY.length;p++) ctx.lineTo(PUNKTY[p][0],PUNKTY[p][1]);
     ctx.stroke();
-    ctx.strokeStyle = '#6b5330'; ctx.lineWidth = 26;
-    ctx.beginPath(); ctx.moveTo(PUNKTY[0][0], PUNKTY[0][1]);
-    for (var p2 = 1; p2 < PUNKTY.length; p2++) ctx.lineTo(PUNKTY[p2][0], PUNKTY[p2][1]);
+    ctx.strokeStyle='#7a5c34'; ctx.lineWidth=28;
+    ctx.beginPath(); ctx.moveTo(PUNKTY[0][0],PUNKTY[0][1]);
+    for(var p2=1;p2<PUNKTY.length;p2++) ctx.lineTo(PUNKTY[p2][0],PUNKTY[p2][1]);
     ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.07)'; ctx.lineWidth=3; ctx.setLineDash([9,13]);
+    ctx.beginPath(); ctx.moveTo(PUNKTY[0][0],PUNKTY[0][1]);
+    for(var p3=1;p3<PUNKTY.length;p3++) ctx.lineTo(PUNKTY[p3][0],PUNKTY[p3][1]);
+    ctx.stroke(); ctx.setLineDash([]);
+    var kon=PUNKTY[PUNKTY.length-1];
+    ctx.fillStyle='#c0392b'; ctx.fillRect(SZER-10, kon[1]-18, 10, 36);
+    ctx.fillStyle='rgba(255,255,255,0.3)';
+    for(var z=0;z<4;z++) ctx.fillRect(SZER-10, kon[1]-18+z*9, 10, 4);
 
-    // Meta
-    var kon = PUNKTY[PUNKTY.length-1];
-    ctx.fillStyle = '#c0392b';
-    ctx.fillRect(SZER-12, kon[1]-16, 12, 32);
-
-    // Podglad zasiegu przy stawianiu / wybranej wiezy
-    var podglad = wybranaWieza ? { x:wybranaWieza.x, y:wybranaWieza.y, z:staty(wybranaWieza).zasieg } : null;
-    if (podglad && podglad.z < 900) {
-      ctx.save(); ctx.globalAlpha = 0.14; ctx.fillStyle = '#ffd96a';
-      ctx.beginPath(); ctx.arc(podglad.x, podglad.y, podglad.z, 0, Math.PI*2); ctx.fill();
+    // Zasieg wybranej
+    if(wybrana && MALPKI[wybrana.typ].zasieg>0 && MALPKI[wybrana.typ].zasieg<900){
+      var stw=staty(wybrana);
+      ctx.save(); ctx.globalAlpha=0.13; ctx.fillStyle='#ffe08a';
+      ctx.beginPath(); ctx.arc(wybrana.x,wybrana.y,stw.zasieg,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=0.45; ctx.strokeStyle='#ffe08a'; ctx.lineWidth=1.5;
+      ctx.beginPath(); ctx.arc(wybrana.x,wybrana.y,stw.zasieg,0,Math.PI*2); ctx.stroke(); ctx.restore();
+    }
+    // Podglad przeciagania
+    if(przeciaganie && przeciaganie.aktywne){
+      var d0=MALPKI[przeciaganie.typ];
+      var powod=powodBlokady(przeciaganie.x,przeciaganie.y,przeciaganie.typ);
+      var kol= powod? '#ff6a5a' : '#6ae08a';
+      if(d0.zasieg>0 && d0.zasieg<900){
+        ctx.save(); ctx.globalAlpha=0.18; ctx.fillStyle=kol;
+        ctx.beginPath(); ctx.arc(przeciaganie.x,przeciaganie.y,d0.zasieg,0,Math.PI*2); ctx.fill();
+        ctx.globalAlpha=0.75; ctx.strokeStyle=kol; ctx.lineWidth=2;
+        ctx.beginPath(); ctx.arc(przeciaganie.x,przeciaganie.y,d0.zasieg,0,Math.PI*2); ctx.stroke(); ctx.restore();
+      }
+      ctx.save(); ctx.globalAlpha=0.85;
+      ctx.fillStyle=kol; ctx.beginPath(); ctx.arc(przeciaganie.x,przeciaganie.y,15,0,Math.PI*2); ctx.fill();
       ctx.restore();
-      ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = '#ffd96a'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.arc(podglad.x, podglad.y, podglad.z, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+      ctx.font='17px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(d0.ik, przeciaganie.x, przeciaganie.y+1);
+      if(powod){
+        ctx.font='bold 10px sans-serif'; ctx.fillStyle='#fff';
+        ctx.fillText(powod, przeciaganie.x, przeciaganie.y-26);
+      }
     }
 
     // Balony
-    balony.forEach(function (b) {
-      var p3 = punktNaSciezce(b.s), d = BALONY[b.typ];
-      var r = d.duzy ? 15 : 9;
+    balony.forEach(function(b){
+      var pp=punktNa(b.s), d=BALONY[b.typ];
+      var r=d.duzy?16:10;
       ctx.save();
-      if (b.spow > 0) { ctx.shadowColor = '#7ec4e8'; ctx.shadowBlur = 8; }
-      var gb = ctx.createRadialGradient(p3.x - r*0.3, p3.y - r*0.4, r*0.2, p3.x, p3.y, r);
-      if (d.tecza) { gb.addColorStop(0, '#fff'); gb.addColorStop(0.5, '#7ec4e8'); gb.addColorStop(1, '#c06bff'); }
-      else { gb.addColorStop(0, '#ffffff'); gb.addColorStop(0.35, d.kolor); gb.addColorStop(1, d.kolor); }
-      ctx.fillStyle = gb;
-      ctx.beginPath(); ctx.ellipse(p3.x, p3.y, r, r*1.12, 0, 0, Math.PI*2); ctx.fill();
+      if(b.kam) ctx.globalAlpha=0.42;
+      if(b.zamr>0){ ctx.shadowColor='#9fe4ff'; ctx.shadowBlur=12; }
+      else if(b.spowM>0){ ctx.shadowColor='#7ec4e8'; ctx.shadowBlur=7; }
+      var gb=ctx.createRadialGradient(pp.x-r*0.32,pp.y-r*0.42,r*0.18,pp.x,pp.y,r);
+      if(d.tecza){ gb.addColorStop(0,'#fff'); gb.addColorStop(0.45,'#7ee0ff'); gb.addColorStop(1,'#b46bff'); }
+      else { gb.addColorStop(0,'#ffffff'); gb.addColorStop(0.32,d.kol); gb.addColorStop(1,d.kol); }
+      ctx.fillStyle=gb;
+      ctx.beginPath(); ctx.ellipse(pp.x,pp.y,r,r*1.14,0,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.32)'; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.ellipse(pp.x,pp.y,r,r*1.14,0,0,Math.PI*2); ctx.stroke();
       ctx.restore();
-      ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.ellipse(p3.x, p3.y, r, r*1.12, 0, 0, Math.PI*2); ctx.stroke();
-      if (d.duzy) {
-        ctx.fillStyle = 'rgba(0,0,0,0.5)';
-        ctx.fillRect(p3.x-14, p3.y-22, 28, 4);
-        ctx.fillStyle = '#ff6a5a';
-        ctx.fillRect(p3.x-14, p3.y-22, 28*(b.hp/(BALONY[b.typ].hp||1)), 4);
+      if(b.kam){
+        ctx.strokeStyle='rgba(180,240,255,0.9)'; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+        ctx.beginPath(); ctx.ellipse(pp.x,pp.y,r+2,r*1.14+2,0,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+      }
+      if(b.zamr>0){
+        ctx.fillStyle='rgba(160,230,255,0.42)';
+        ctx.beginPath(); ctx.arc(pp.x,pp.y,r+3,0,Math.PI*2); ctx.fill();
+      }
+      if(d.hp&&d.hp>1){
+        var proc=Math.max(0,b.hp/d.hp);
+        ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(pp.x-r,pp.y-r-8,r*2,3.5);
+        ctx.fillStyle='#ff7a5a'; ctx.fillRect(pp.x-r,pp.y-r-8,r*2*proc,3.5);
       }
     });
 
-    // Iskry
-    iskry.forEach(function (s3) {
-      ctx.save(); ctx.globalAlpha = Math.max(0, s3.zycie/s3.max) * 0.7;
-      ctx.fillStyle = s3.kolor;
-      ctx.beginPath(); ctx.arc(s3.x, s3.y, s3.r * (s3.vx ? 0.6 : 1), 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-    });
-
-    // Pociski jako linie strzalu
-    pociski.forEach(function (p4) {
-      ctx.save(); ctx.globalAlpha = Math.max(0, p4.zycie/p4.max);
-      ctx.strokeStyle = p4.kolor; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(p4.x, p4.y); ctx.lineTo(p4.cx, p4.cy); ctx.stroke();
-      ctx.restore();
-    });
-
-    // Wieze
-    wieze.forEach(function (w) {
-      var d = WIEZE[w.typ];
-      ctx.save();
-      ctx.globalAlpha = 0.3; ctx.fillStyle = '#000';
-      ctx.beginPath(); ctx.ellipse(w.x, w.y+11, 13, 5, 0, 0, Math.PI*2); ctx.fill();
-      ctx.restore();
-      ctx.fillStyle = w === wybranaWieza ? '#ffd96a' : '#2c4426';
-      ctx.beginPath(); ctx.arc(w.x, w.y, 14, 0, Math.PI*2); ctx.fill();
-      ctx.strokeStyle = '#7ec46a'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(w.x, w.y, 14, 0, Math.PI*2); ctx.stroke();
-      ctx.font = '16px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(d.ik, w.x, w.y + 1);
-      // Kropki poziomu
-      for (var u = 0; u < w.poz; u++) {
-        ctx.fillStyle = '#ffd96a';
-        ctx.beginPath(); ctx.arc(w.x - 7 + u*7, w.y + 17, 2.2, 0, Math.PI*2); ctx.fill();
+    iskry.forEach(function(s4){
+      ctx.save(); ctx.globalAlpha=Math.max(0,s4.zycie/s4.max)*0.65;
+      if(s4.pierscien){
+        ctx.strokeStyle=s4.kol; ctx.lineWidth=3;
+        ctx.beginPath(); ctx.arc(s4.x,s4.y,s4.r*(1.1-s4.zycie/s4.max),0,Math.PI*2); ctx.stroke();
+      } else {
+        ctx.fillStyle=s4.kol;
+        ctx.beginPath(); ctx.arc(s4.x,s4.y,s4.r*(s4.vx?0.55:1),0,Math.PI*2); ctx.fill();
       }
+      ctx.restore();
+    });
+
+    pociski.forEach(function(p4){
+      ctx.save();
+      ctx.fillStyle= p4.typ==='wybuch'?'#ff9a4a':(p4.typ==='lod'?'#9fe4ff':'#f4ecd0');
+      ctx.beginPath(); ctx.arc(p4.x,p4.y,2.6,0,Math.PI*2); ctx.fill();
+      ctx.globalAlpha=0.35;
+      ctx.fillRect(p4.x-p4.vx*0.012, p4.y-p4.vy*0.012, 2.4, 2.4);
+      ctx.restore();
+    });
+
+    malpki.forEach(function(m){
+      var d=MALPKI[m.typ];
+      ctx.save(); ctx.globalAlpha=0.32; ctx.fillStyle='#000';
+      ctx.beginPath(); ctx.ellipse(m.x,m.y+12,14,5,0,0,Math.PI*2); ctx.fill(); ctx.restore();
+      ctx.fillStyle= m===wybrana?'#ffd45a':'#1d4557';
+      ctx.beginPath(); ctx.arc(m.x,m.y,15,0,Math.PI*2); ctx.fill();
+      ctx.strokeStyle='#5ad1c4'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.arc(m.x,m.y,15,0,Math.PI*2); ctx.stroke();
+      ctx.font='17px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(d.ik,m.x,m.y+1);
+      var suma=m.poz[0]+m.poz[1]+m.poz[2];
+      for(var u=0;u<suma;u++){
+        ctx.fillStyle='#ffd45a';
+        ctx.beginPath(); ctx.arc(m.x-9+u*4.6, m.y+18, 1.9, 0, Math.PI*2); ctx.fill();
+      }
+      if(staty(m).kamuflaz){
+        ctx.fillStyle='#7ee0ff'; ctx.beginPath(); ctx.arc(m.x+11,m.y-11,3.2,0,Math.PI*2); ctx.fill();
+      }
+      (m.drony||[]).forEach(function(dr){
+        ctx.save();
+        ctx.globalAlpha=0.26; ctx.fillStyle='#000';
+        ctx.beginPath(); ctx.ellipse(dr.x, dr.y+11, 8, 3, 0, 0, Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.save();
+        ctx.translate(dr.x, dr.y); ctx.rotate(dr.kat);
+        ctx.fillStyle='#2e5a6e';
+        ctx.beginPath(); ctx.moveTo(9,0); ctx.lineTo(-6,5); ctx.lineTo(-3,0); ctx.lineTo(-6,-5);
+        ctx.closePath(); ctx.fill();
+        ctx.fillStyle='#7ee0ff'; ctx.fillRect(-1,-7,2.5,14);
+        ctx.restore();
+      });
     });
   }
 
-  function petla(czas) {
-    if (!trwa) { czasOstatni = null; return; }
-    if (czasOstatni === null) czasOstatni = czas;
-    var dt = Math.min((czas - czasOstatni)/1000, 0.033);
-    czasOstatni = czas;
+  function petla(czas){
+    if(!trwa){ czasOstatni=null; return; }
+    if(czasOstatni===null) czasOstatni=czas;
+    var dt=Math.min((czas-czasOstatni)/1000,0.033);
+    czasOstatni=czas;
     aktualizuj(dt);
-    if (trwa) { rysuj(); requestAnimationFrame(petla); }
+    if(trwa){ rysuj(); requestAnimationFrame(petla); }
   }
 
-  function przegrana() {
-    trwa = false; zakonczona = true;
-    dzwiekPorazka();
-    nakladka.style.display = 'flex';
-    nakladkaTytul.textContent = '💥 Balony się przedarły';
-    nakladkaOpis.innerHTML = 'Dotarłaś do <b>fali ' + nrFali + ' z 20</b>.<br><br>'
-      + 'Wskazówka: sama siła nie wystarczy — ołowiane przebijesz tylko armatą albo snajperem,'
-      + ' a czarne nie boją się wybuchów.';
-    nakladkaBtn.style.display = 'inline-block';
-    nakladkaBtn.textContent = 'Jeszcze raz';
-    nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  function przegrana(){
+    trwa=false; zakonczona=true; dzPorazka();
+    nakladka.style.display='flex';
+    nakladkaTytul.textContent='💥 Balony się przedarły';
+    nakladkaOpis.innerHTML='Dotarłaś do <b>fali '+nrFali+' z 25</b>.<br><br>'
+      +'Ołowiane przebijesz tylko armatą, snajperem albo „Pierścieniem ognia”. '
+      +'Kamuflaż wymaga „Detektora”, „Celownika” lub „Zimnego wzroku”.';
+    nakladkaBtn.style.display='inline-block';
+    nakladkaBtn.textContent='Jeszcze raz';
+    nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznij(); };
   }
-
-  function wygrana() {
-    trwa = false; zakonczona = true;
-    dzwiekKoniec();
-    nakladka.style.display = 'flex';
-    nakladkaTytul.textContent = '🏆 Obroniłaś się!';
-    nakladkaOpis.innerHTML = 'Wszystkie 20 fal odparte, zostało Ci <b>' + zycia + '</b> żyć.<br><br>Etap zaliczony automatycznie!';
-    nakladkaBtn.style.display = 'none';
-    var w = { type:'streamlit-child:zaliczono', wartosc:true };
-    window.postMessage(w, '*');
-    if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
+  function wygrana(){
+    trwa=false; zakonczona=true; dzKoniec();
+    nakladka.style.display='flex';
+    nakladkaTytul.textContent='🏆 Obroniłaś się!';
+    nakladkaOpis.innerHTML='Wszystkie 25 fal odparte, zostało <b>'+zycia+'</b> żyć.<br><br>Etap zaliczony automatycznie!';
+    nakladkaBtn.style.display='none';
+    var w={type:'streamlit-child:zaliczono',wartosc:true};
+    window.postMessage(w,'*');
+    if(window.parent&&window.parent!==window) window.parent.postMessage(w,'*');
   }
-
-  function rozpocznijGre() {
-    zycia = 25; kasa = 175; nrFali = 0;
-    wieze = []; balony = []; pociski = []; iskry = [];
-    wybranyTyp = null; wybranaWieza = null;
-    falaTrwa = false; doWypuszczenia = []; zakonczona = false;
-    nakladka.style.display = 'none';
-    odswiezPanel();
-    trwa = true; czasOstatni = null;
+  function rozpocznij(){
+    zycia=20; banany=340; nrFali=0; bonusKasa=0;
+    malpki=[]; balony=[]; pociski=[]; iskry=[]; teksty=[];
+    wybranyTyp=null; wybrana=null; przeciaganie=null;
+    falaTrwa=false; doWypuszczenia=[]; zakonczona=false;
+    nakladka.style.display='none';
+    odswiez(); trwa=true; czasOstatni=null;
     requestAnimationFrame(petla);
   }
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznij(); };
 
-  zycia = 25; kasa = 175; nrFali = 0;
-  wieze = []; balony = []; pociski = []; iskry = [];
-  odswiezPanel();
-  rysuj();
+  zycia=20; banany=340; nrFali=0; bonusKasa=0;
+  malpki=[]; balony=[]; pociski=[]; iskry=[]; teksty=[];
+  odswiez(); rysuj();
 </script>
 
 <script>
@@ -17872,10 +18301,10 @@ def renderuj_obrona(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_OBRONA, 600, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_OBRONA, 660, key=f"kmp_{klucz}")
         return True if wynik else None
 
-    components.html(SZABLON_OBRONA, height=660, scrolling=False)
+    components.html(SZABLON_OBRONA, height=720, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_obrona"), etykieta_bledow=t("bledy_etykieta_obrona"))
 
 
