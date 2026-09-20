@@ -500,20 +500,13 @@ ETAPY = [
 
 KATEGORIE = [
     {
-        "id": "zagadki",
+        "id": "rozgrzewka",
         "emoji": "🧠",
-        "nazwa": {"pl": "Zagadki", "en": "Riddles"},
-        "opis": {"pl": "Do pomyślenia — bez pośpiechu", "en": "Think it through"},
+        "nazwa": {"pl": "Główka i refleks", "en": "Mind & reflex"},
+        "opis": {"pl": "Zagadki i zręczność", "en": "Riddles and reflexes"},
         "kolor": "#7ea8e6",
-        "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman"],
-    },
-    {
-        "id": "zrecznosciowki",
-        "emoji": "⚡",
-        "nazwa": {"pl": "Zręczność", "en": "Reflex"},
-        "opis": {"pl": "Refleks i szybkie palce", "en": "Fast reflexes"},
-        "kolor": "#e6c15c",
-        "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake"],
+        "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman",
+                  "gra", "dron", "zaba", "memory", "simon", "piano", "snake"],
     },
     {
         "id": "precyzja",
@@ -572,6 +565,12 @@ TEKST = {
     "pl": {
         "rozpocznij": "Rozpocznij 🔓",
         "wroc_do_menu": "⬅ Powrót do menu",
+        "wiadomosc_tytul": "Ukryta wiadomość",
+        "wiadomosc_pod": "Odsłania się z każdym ukończonym etapem",
+        "wiadomosc_odkryto": "Odsłonięte:",
+        "wiadomosc_etapy": "etapy",
+        "wiadomosc_dalej": "Rozwiąż kolejne etapy, żeby odsłonić resztę.",
+        "wiadomosc_otworz": "📜 Otwórz wiadomość",
         "sprawdz": "Sprawdź",
         "zatwierdz": "Sprawdź",
         "twoja_odpowiedz": "Twoja odpowiedź:",
@@ -641,6 +640,12 @@ TEKST = {
     "en": {
         "rozpocznij": "Start 🔓",
         "wroc_do_menu": "⬅ Back to menu",
+        "wiadomosc_tytul": "Hidden message",
+        "wiadomosc_pod": "Revealed with every stage you finish",
+        "wiadomosc_odkryto": "Revealed:",
+        "wiadomosc_etapy": "stages",
+        "wiadomosc_dalej": "Solve more stages to reveal the rest.",
+        "wiadomosc_otworz": "📜 Open the message",
         "sprawdz": "Check",
         "zatwierdz": "Check",
         "twoja_odpowiedz": "Your answer:",
@@ -746,6 +751,140 @@ SZABLON_GRY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
+/* ---------- MENU: klikalne kwadraty ---------- */
+.pasek-globalny {
+  height: 6px; border-radius: 4px; overflow: hidden; margin: 2px 0 7px;
+  background: rgba(255,255,255,0.07);
+}
+.pasek-globalny-wyp {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #7ea8e6, #e6c15c 55%, #b48ce6);
+  box-shadow: 0 0 10px rgba(230,193,92,0.4);
+  transition: width 0.6s ease;
+}
+/* Baner ukrytej wiadomosci */
+.zwoj-baner { margin: 4px 0 6px; }
+.zwoj-baner + div [data-testid="stBaseButton-secondary"],
+.zwoj-baner ~ div [data-testid="stBaseButton-secondary"] { }
+.zwoj-pod {
+  text-align: center; color: #a8946a; font-size: 0.74rem;
+  margin: -2px 0 14px; letter-spacing: 0.03em;
+}
+/* Kategoria: przycisk JEST kafelkiem */
+div[data-testid="column"] .stButton > button {
+  aspect-ratio: 1 / 1;
+  height: auto; min-height: 104px; width: 100%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 2px; padding: 8px 6px;
+  border-radius: 17px;
+  border: 1.5px solid var(--kolor, #4a4468);
+  background: linear-gradient(158deg, rgba(255,255,255,0.055), rgba(0,0,0,0.30));
+  box-shadow: 0 5px 16px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07);
+  color: #ece4d2;
+  font-size: 0.68rem; font-weight: 700; line-height: 1.25;
+  text-align: center; white-space: normal;
+  transition: transform 0.10s ease, box-shadow 0.10s ease, border-color 0.10s;
+}
+div[data-testid="column"] .stButton > button p { margin: 0; }
+div[data-testid="column"] .stButton > button p:first-child { font-size: 1.85rem; line-height: 1.1; }
+div[data-testid="column"] .stButton > button:hover {
+  transform: translateY(-2px);
+  border-color: #ffe08a;
+  box-shadow: 0 8px 22px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,224,138,0.35);
+}
+div[data-testid="column"] .stButton > button:active { transform: scale(0.97); }
+.kat-pasek {
+  height: 4px; border-radius: 3px; overflow: hidden;
+  margin: 6px 3px 0; background: rgba(255,255,255,0.08);
+}
+.kat-pasek-wyp {
+  height: 100%; border-radius: 3px; background: var(--kolor, #e6c15c);
+  box-shadow: 0 0 7px var(--kolor, #e6c15c); transition: width 0.5s ease;
+}
+.kat-opis {
+  text-align: center; font-size: 0.63rem; color: #8d8598;
+  margin: 4px 2px 2px; line-height: 1.25; min-height: 2.1em;
+}
+
+/* ---------- UKRYTA WIADOMOSC ---------- */
+.papirus-otoczka { padding: 6px 0 2px; }
+.papirus {
+  position: relative;
+  background:
+    radial-gradient(ellipse at 22% 12%, rgba(255,255,255,0.35), rgba(255,255,255,0) 55%),
+    radial-gradient(ellipse at 78% 88%, rgba(140,98,44,0.18), rgba(140,98,44,0) 60%),
+    linear-gradient(152deg, #efdcb0 0%, #e4cb97 38%, #d9bd85 68%, #e8d5a8 100%);
+  border-radius: 5px;
+  padding: 30px 24px 34px;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.45), inset 0 0 44px rgba(120,84,36,0.24);
+  color: #46331c;
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 2.05;
+  font-size: 1.02rem;
+  clip-path: polygon(
+    0% 2%, 3% 0.4%, 12% 1.6%, 27% 0.2%, 44% 1.8%, 61% 0.3%, 79% 1.7%, 93% 0.4%, 100% 2.2%,
+    99.2% 20%, 100% 41%, 99% 62%, 100% 80%, 99.4% 97.6%,
+    90% 99.6%, 73% 98.2%, 56% 99.8%, 38% 98.4%, 21% 99.7%, 8% 98.3%, 0.6% 99.5%,
+    1% 78%, 0% 56%, 1.2% 34%, 0.2% 18%
+  );
+}
+.papirus::after {
+  content: ''; position: absolute; inset: 0; pointer-events: none;
+  background:
+    repeating-linear-gradient(94deg, rgba(150,110,56,0.05) 0 2px, rgba(150,110,56,0) 2px 7px),
+    repeating-linear-gradient(3deg, rgba(150,110,56,0.045) 0 1px, rgba(150,110,56,0) 1px 9px);
+  mix-blend-mode: multiply;
+}
+.papirus-pieczec {
+  position: absolute; top: -13px; right: 22px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #d4564a, #8e2a20 70%);
+  color: #f6dcae; font-size: 17px; line-height: 38px; text-align: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.45); border: 2px solid #6f2018;
+}
+.papirus-tekst { position: relative; z-index: 1; word-break: break-word; }
+.zn { display: inline; letter-spacing: 0.02em; }
+.zn.pusta {
+  display: inline-block; width: 0.62em;
+  border-bottom: 1px solid rgba(90,66,32,0.16);
+}
+.zn.nowa { animation: rozblysk 2.4s cubic-bezier(.2,.75,.3,1) both; }
+@keyframes rozblysk {
+  0%   { opacity: 0; color: #fff3c4; text-shadow: 0 0 22px #ffd97a, 0 0 42px #ffbe3a;
+         transform: translateY(5px) scale(1.5); filter: blur(3px); }
+  22%  { opacity: 1; color: #fff8dc; text-shadow: 0 0 20px #ffd97a, 0 0 36px #ffbe3a;
+         transform: translateY(0) scale(1.18); filter: blur(0); }
+  55%  { color: #c9963a; text-shadow: 0 0 10px rgba(255,200,90,0.75); transform: scale(1.04); }
+  100% { color: #46331c; text-shadow: none; transform: scale(1); }
+}
+.papirus-postep { margin-top: 14px; }
+.papirus-pasek {
+  height: 9px; border-radius: 6px; overflow: hidden;
+  background: rgba(0,0,0,0.42); border: 1px solid rgba(212,175,55,0.38);
+}
+.papirus-wypelnienie {
+  height: 100%; border-radius: 6px;
+  background: linear-gradient(90deg, #8a6b28, #e6c15c 55%, #fff0b8);
+  box-shadow: 0 0 12px rgba(230,193,92,0.55);
+  transition: width 0.7s ease;
+}
+.papirus-opis {
+  text-align: center; margin-top: 6px; font-size: 0.82rem;
+  color: #d8c89a; letter-spacing: 0.05em;
+}
+.kafel-wiadomosc {
+  background: linear-gradient(140deg, #3d2f16, #241a0c);
+  border: 1.5px solid rgba(230,193,92,0.55);
+  border-radius: 15px; padding: 12px 15px; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 13px;
+  box-shadow: 0 5px 18px rgba(0,0,0,0.42);
+}
+.kafel-wiadomosc .zwoj { font-size: 27px; }
+.kafel-wiadomosc .tyt {
+  color: #f0e0b0; font-size: 0.95rem; font-weight: 800; letter-spacing: 0.03em;
+}
+.kafel-wiadomosc .pod { color: #b9a678; font-size: 0.76rem; margin-top: 2px; }
+
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
   html {
     background: #0d0d0d;
@@ -2917,6 +3056,7 @@ SZABLON_MEMORY = """
   }
   .karta {
     position: relative;
+    touch-action: none;
     min-width: 0;
     cursor: pointer;
     perspective: 600px;
@@ -2925,9 +3065,39 @@ SZABLON_MEMORY = """
     position: relative;
     width: 100%;
     height: 100%;
-    transition: transform 0.4s;
+    /* Sprezysta krzywa zamiast liniowej - karta "dobija" na koncu obrotu */
+    transition: transform 0.46s cubic-bezier(.2,.9,.3,1.25);
     transform-style: preserve-3d;
   }
+  /* Wejscie kart przy starcie - po kolei, z gory */
+  .karta { animation: kartaWchodzi 0.42s cubic-bezier(.2,.9,.3,1.1) both; }
+  @keyframes kartaWchodzi {
+    from { opacity: 0; transform: translateY(-22px) scale(0.86); }
+    to   { opacity: 1; transform: none; }
+  }
+  /* Dotkniecie karty - lekkie wcisniecie */
+  .karta:active .karta-wnetrze { transform: scale(0.94); }
+  .karta.odkryta:active .karta-wnetrze,
+  .karta.dopasowana:active .karta-wnetrze { transform: rotateY(180deg) scale(0.94); }
+  /* Trafiona para - zloty rozblysk i podskok */
+  .karta.blysk .karta-przod { animation: paraBlysk 0.7s ease-out; }
+  @keyframes paraBlysk {
+    0%   { box-shadow: 0 0 0 rgba(74,222,128,0); transform: rotateY(0deg) scale(1); }
+    25%  { box-shadow: 0 0 26px 6px rgba(74,222,128,0.85); transform: rotateY(0deg) scale(1.10); }
+    55%  { box-shadow: 0 0 14px 2px rgba(74,222,128,0.45); transform: rotateY(0deg) scale(0.98); }
+    100% { box-shadow: 0 0 0 rgba(74,222,128,0); transform: rotateY(0deg) scale(1); }
+  }
+  /* Pomylka - drzenie */
+  .karta.pomylka .karta-wnetrze { animation: kartaDrzy 0.42s ease-in-out; }
+  @keyframes kartaDrzy {
+    0%,100% { transform: rotateY(180deg) translateX(0); }
+    20%     { transform: rotateY(180deg) translateX(-7px); }
+    45%     { transform: rotateY(180deg) translateX(6px); }
+    70%     { transform: rotateY(180deg) translateX(-3px); }
+  }
+  /* Dopasowana para gasnie do spokojnego stanu */
+  .karta.dopasowana .karta-wnetrze { transition: transform 0.46s cubic-bezier(.2,.9,.3,1.25), opacity 0.4s; }
+  .karta.dopasowana { opacity: 0.82; }
   .karta.odkryta .karta-wnetrze,
   .karta.dopasowana .karta-wnetrze {
     transform: rotateY(180deg);
@@ -3143,8 +3313,18 @@ SZABLON_MEMORY = """
 
   function oznaczDopasowane(indeks) {
     karty[indeks].stan = 'dopasowana';
-    karty[indeks].el.classList.remove('odkryta');
-    karty[indeks].el.classList.add('dopasowana');
+    var el = karty[indeks].el;
+    el.classList.remove('odkryta', 'pomylka');
+    el.classList.add('dopasowana', 'blysk');
+    setTimeout(function () { el.classList.remove('blysk'); }, 750);
+  }
+
+  function zadrzyj(indeks) {
+    var el = karty[indeks].el;
+    el.classList.remove('pomylka');
+    void el.offsetWidth;
+    el.classList.add('pomylka');
+    setTimeout(function () { el.classList.remove('pomylka'); }, 450);
   }
 
   function kliknietoKarte(indeks) {
@@ -3175,6 +3355,8 @@ SZABLON_MEMORY = """
         }, 500);
       } else {
         zagrajDzwiek('zle');
+        zadrzyj(odkryteTeraz[0]);
+        zadrzyj(odkryteTeraz[1]);
         setTimeout(function () {
           zakryjKarte(odkryteTeraz[0]);
           zakryjKarte(odkryteTeraz[1]);
@@ -3188,17 +3370,15 @@ SZABLON_MEMORY = """
   function stworzKarte(indeks, symbol) {
     var el = document.createElement('div');
     el.className = 'karta';
+    el.style.animationDelay = (indeks * 0.035) + 's';
     el.innerHTML = '<div class="karta-wnetrze"><div class="karta-tyl">🔒</div><div class="karta-przod">' + symbol + '</div></div>';
-    el.addEventListener('click', function () {
-      if (el.dataset.dotkniete) return;
+    // Jedno zrodlo zdarzen - wczesniejsza blokada na 500 ms polykala
+    // szybkie dotkniecia dwoch kart pod rzad.
+    el.addEventListener('pointerdown', function (ev) {
+      ev.preventDefault();
       kliknietoKarte(indeks);
     });
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      el.dataset.dotkniete = '1';
-      kliknietoKarte(indeks);
-      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
-    }, { passive: false });
+    el.addEventListener('contextmenu', function (ev) { ev.preventDefault(); });
     return el;
   }
 
@@ -3523,6 +3703,43 @@ SZABLON_SIMON = """
     height: 100%;
     padding: 36px 16px 16px;
   }
+  /* Wejscie przyciskow przy starcie */
+  .przycisk-koloru { animation: simonWchodzi 0.45s cubic-bezier(.2,.9,.3,1.15) both; }
+  .pk-0 { animation-delay: 0.00s; }
+  .pk-1 { animation-delay: 0.07s; }
+  .pk-2 { animation-delay: 0.14s; }
+  .pk-3 { animation-delay: 0.21s; }
+  @keyframes simonWchodzi {
+    from { opacity: 0; transform: scale(0.7); }
+    to   { opacity: 1; transform: scale(1); }
+  }
+  /* Rozblysk przy graniu sekwencji - pulsujaca poswiata */
+  .przycisk-koloru.aktywny {
+    animation: simonBlysk 0.34s ease-out;
+  }
+  @keyframes simonBlysk {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    22%  { transform: scale(1.09); filter: brightness(2.1) saturate(1.5); }
+    100% { transform: scale(1);    filter: brightness(1); }
+  }
+  /* Dotkniecie przez gracza - krotsze i mocniejsze */
+  .przycisk-koloru.wcisniety {
+    animation: simonWcisk 0.20s ease-out;
+  }
+  @keyframes simonWcisk {
+    0%   { transform: scale(1);    filter: brightness(1); }
+    35%  { transform: scale(0.93); filter: brightness(2.4); }
+    100% { transform: scale(1);    filter: brightness(1); }
+  }
+  /* Blad - calosc drzy na czerwono */
+  #siatkaKolorow.blad { animation: simonBlad 0.5s ease-in-out; }
+  @keyframes simonBlad {
+    0%,100% { transform: translateX(0); filter: none; }
+    15%     { transform: translateX(-9px); filter: hue-rotate(-25deg) brightness(1.3); }
+    38%     { transform: translateX(8px);  filter: hue-rotate(-25deg) brightness(1.3); }
+    62%     { transform: translateX(-5px); filter: hue-rotate(-25deg); }
+    82%     { transform: translateX(3px); }
+  }
   .przycisk-koloru {
     border-radius: 16px;
     cursor: pointer;
@@ -3664,7 +3881,27 @@ SZABLON_SIMON = """
   }
 
   function rozjasnij(idx) {
-    przyciski[idx].classList.add('aktywny');
+    var el = przyciski[idx];
+    el.classList.remove('aktywny');
+    void el.offsetWidth;          // wymusza restart animacji
+    el.classList.add('aktywny');
+  }
+
+  function wcisnij(idx) {
+    var el = przyciski[idx];
+    el.classList.remove('wcisniety');
+    void el.offsetWidth;
+    el.classList.add('wcisniety');
+    setTimeout(function () { el.classList.remove('wcisniety'); }, 220);
+  }
+
+  function zadrzyjPlansze() {
+    var el = document.getElementById('siatkaKolorow');
+    if (!el) return;
+    el.classList.remove('blad');
+    void el.offsetWidth;
+    el.classList.add('blad');
+    setTimeout(function () { el.classList.remove('blad'); }, 520);
   }
   function przygas(idx) {
     przyciski[idx].classList.remove('aktywny');
@@ -3703,9 +3940,8 @@ SZABLON_SIMON = """
 
   function kliknietoKolor(idx) {
     if (trwaOdtwarzanie || !trwa) return;
-    rozjasnij(idx);
+    wcisnij(idx);
     zagrajTon(CZESTOTLIWOSCI[idx], 0.2);
-    setTimeout(function () { przygas(idx); }, 200);
 
     if (idx === sekwencja[pozycjaGracza]) {
       pozycjaGracza++;
@@ -3717,21 +3953,20 @@ SZABLON_SIMON = """
         }
       }
     } else {
+      zadrzyjPlansze();
       zakonczGre(false);
     }
   }
 
+  // Jedno zrodlo zdarzen. Wczesniej click i touchstart razem wymuszaly
+  // blokade na pol sekundy, przez co powtorzony kolor w sekwencji
+  // (np. zielony-zielony) nie dawal sie wcisnac drugi raz.
   przyciski.forEach(function (el, idx) {
-    el.addEventListener('click', function () {
-      if (el.dataset.dotkniete) return;
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
       kliknietoKolor(idx);
     });
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      el.dataset.dotkniete = '1';
-      kliknietoKolor(idx);
-      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
-    }, { passive: false });
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   });
 
   function rozpocznijGre() {
@@ -4031,6 +4266,22 @@ SZABLON_PIANO = """
     position: relative;
     border-right: 1px solid rgba(212,175,55,0.15);
     cursor: pointer;
+    touch-action: none;          /* bez tego przegladarka polyka szybkie serie */
+    overflow: hidden;
+  }
+  /* Blysk pod palcem - natychmiastowa informacja, ze dotkniecie zarejestrowane */
+  .pas.blysk::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 78%, rgba(212,175,55,0.42), rgba(212,175,55,0) 62%);
+    animation: blyskPasa 0.22s ease-out forwards;
+    pointer-events: none;
+    z-index: 2;
+  }
+  @keyframes blyskPasa {
+    from { opacity: 1; }
+    to   { opacity: 0; }
   }
   .pas:last-child { border-right: none; }
   #linia-trafien {
@@ -4051,6 +4302,15 @@ SZABLON_PIANO = """
     border-radius: 8px;
     z-index: 3;
     pointer-events: none;
+  }
+  .kafelek.trafiony {
+    animation: kafelekTrafiony 0.16s ease-out forwards;
+  }
+  @keyframes kafelekTrafiony {
+    0%   { transform: scale(1); background: linear-gradient(135deg,#ffe9a0,#d4af37);
+           box-shadow: 0 0 18px rgba(212,175,55,0.75); }
+    100% { transform: scale(0.82); opacity: 0;
+           background: linear-gradient(135deg,#ffe9a0,#d4af37); }
   }
   #nakladka {
     position: absolute;
@@ -4292,7 +4552,10 @@ SZABLON_PIANO = """
                     0.6,0.5,1,1,1,1,1.4, 0.6,0.5,1,1,1,2.2],
   };
   function rytmAktywny() { return RYTMY[piosenkaAktywna] || null; }
-  var STREFA_TRAFIEN_PROC = 0.55; // od tej wysokosci w dol liczy sie jako "mozna trafic"
+  // W Piano Tiles kafelek mozna dotknac od razu, gdy sie pojawi - nie ma
+// czegos takiego jak "za wczesnie". Zamiast strefy trzymamy BUFOR: dotkniecie
+// tuz przed pojawieniem sie kafelka nie przepada, tylko czeka chwile.
+var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   var trwa = false;
   var czasOstatni = null;
 
@@ -4389,6 +4652,8 @@ SZABLON_PIANO = """
     var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
     czasOstatni = czas;
 
+    obsluzBufor(dt);
+
     var wys = gra.clientHeight;
     var predkosc = PREDKOSC_START + indeksNuty * PREDKOSC_PRZYROST;
 
@@ -4421,41 +4686,71 @@ SZABLON_PIANO = """
     requestAnimationFrame(petla);
   }
 
+  var buforPasa = -1, buforCzas = 0;
+
+  function blysniecie(pas) {
+    var el = pasy[pas];
+    if (!el) return;
+    el.classList.remove('blysk');
+    void el.offsetWidth;
+    el.classList.add('blysk');
+  }
+
+  function trafKafelek(kafelek) {
+    kafelek.el.classList.add('trafiony');
+    zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
+    usunKafelekZTablicy(kafelek);
+    indeksNuty++;
+    aktualizujPostep();
+    if (indeksNuty >= NUTY.length) zakonczGre(true);
+  }
+
   function kliknietoPas(pas) {
     if (!trwa) return;
     var celKafelek = null;
     for (var i = 0; i < kafelki.length; i++) {
       if (kafelki[i].nrWSekwencji === indeksNuty) { celKafelek = kafelki[i]; break; }
     }
-    if (!celKafelek) return; // jeszcze nic nie spadlo - ignorujemy dotkniecie
+    if (!celKafelek) {
+      // Kafelek jeszcze nie zdazyl sie pojawic - zapamietujemy dotkniecie
+      buforPasa = pas; buforCzas = BUFOR_DOTKNIECIA;
+      blysniecie(pas);
+      return;
+    }
     if (celKafelek.pas !== pas) {
+      blysniecie(pas);
       zakonczGre(false, 'zly-pas');
       return;
     }
-    var wys = gra.clientHeight;
-    if (celKafelek.y < wys * STREFA_TRAFIEN_PROC) {
-      return; // wlasciwy pas, ale za wczesnie - ignorujemy bez kary
-    }
-    zagrajTon(NUTY[indeksNuty], 0.4, 'triangle');
-    usunKafelekZTablicy(celKafelek);
-    indeksNuty++;
-    aktualizujPostep();
-    if (indeksNuty >= NUTY.length) {
-      zakonczGre(true);
+    blysniecie(pas);
+    trafKafelek(celKafelek);
+  }
+
+  // Bufor: jesli dotknieto tuz przed pojawieniem sie kafelka, zalicz go,
+  // gdy tylko spadnie. Wywolywane z petli gry.
+  function obsluzBufor(dt) {
+    if (buforCzas <= 0) return;
+    buforCzas -= dt;
+    if (buforCzas <= 0) { buforPasa = -1; return; }
+    for (var i = 0; i < kafelki.length; i++) {
+      if (kafelki[i].nrWSekwencji !== indeksNuty) continue;
+      if (kafelki[i].pas === buforPasa) {
+        buforCzas = 0; buforPasa = -1;
+        trafKafelek(kafelki[i]);
+      }
+      return;
     }
   }
 
+  // Jedno zrodlo zdarzen zamiast click + touchstart z blokada na 500 ms.
+  // Stara wersja nie pozwalala dotknac tego samego pasa dwa razy w ciagu
+  // pol sekundy - przy powtorzonych nutach gra po prostu nie reagowala.
   pasy.forEach(function (el, idx) {
-    el.addEventListener('click', function () {
-      if (el.dataset.dotkniete) return;
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
       kliknietoPas(idx);
     });
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      el.dataset.dotkniete = '1';
-      kliknietoPas(idx);
-      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
-    }, { passive: false });
+    el.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   });
 
   function rozpocznijGre() {
@@ -10147,31 +10442,113 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   function ekrY(wy){ return wy - kamY + ZIEMIA; }   // wy=0 to poziom gruntu
 
   function rysujTlo(){
+    var t=Date.now()/1000;
     var g1=ctx.createLinearGradient(0,0,0,H);
-    g1.addColorStop(0,'#5b9bd5'); g1.addColorStop(0.55,'#a9d3ea'); g1.addColorStop(1,'#d8ecf5');
+    g1.addColorStop(0,'#2f6fb5'); g1.addColorStop(0.34,'#5b9bd5');
+    g1.addColorStop(0.68,'#a9d3ea'); g1.addColorStop(1,'#e6f3f8');
     ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
-    // Slonce
-    ctx.fillStyle='rgba(255,246,214,0.85)';
-    ctx.beginPath(); ctx.arc(310,72,32,0,Math.PI*2); ctx.fill();
-    // Chmury w tle (paralaksa)
-    ctx.fillStyle='rgba(255,255,255,0.55)';
-    for(var i=0;i<26;i++){
-      var cx=(i*430 - kamX*0.28) % 2600; if(cx< -140) cx+=2600;
-      var cy=60 + (i*67)%180 - kamY*0.14;
-      if(cy<-60||cy>H+60) continue;
+
+    // Slonce z aureola i delikatnymi promieniami
+    var sx=306, sy=70;
+    var ga=ctx.createRadialGradient(sx,sy,8,sx,sy,104);
+    ga.addColorStop(0,'rgba(255,248,214,0.95)'); ga.addColorStop(1,'rgba(255,236,170,0)');
+    ctx.fillStyle=ga; ctx.beginPath(); ctx.arc(sx,sy,104,0,Math.PI*2); ctx.fill();
+    ctx.save(); ctx.globalAlpha=0.10; ctx.translate(sx,sy); ctx.rotate(t*0.08);
+    ctx.fillStyle='#fff8d6';
+    for(var r=0;r<10;r++){
+      ctx.rotate(Math.PI/5);
+      ctx.beginPath(); ctx.moveTo(0,-14); ctx.lineTo(96,-8); ctx.lineTo(96,8); ctx.lineTo(0,14);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+    ctx.fillStyle='#fffbe6';
+    ctx.beginPath(); ctx.arc(sx,sy,29,0,Math.PI*2); ctx.fill();
+
+    // Chmury na TRZECH planach - im blizej, tym szybciej i wyrazniej
+    [[0.14,0.30,1.35,22],[0.28,0.48,1.0,26],[0.52,0.72,0.72,18]].forEach(function(pl,li){
+      ctx.fillStyle='rgba(255,255,255,'+pl[1]+')';
+      for(var i=0;i<pl[3];i++){
+        var cx=(i*(330+li*70) - kamX*pl[0]) % 2400; if(cx<-180) cx+=2400;
+        var cy=34 + (i*(53+li*29))%210 - kamY*pl[0]*0.5;
+        if(cy<-70||cy>H+70) continue;
+        var s2=pl[2];
+        ctx.beginPath();
+        ctx.ellipse(cx,cy,42*s2,16*s2,0,0,Math.PI*2);
+        ctx.ellipse(cx+28*s2,cy-9*s2,29*s2,13*s2,0,0,Math.PI*2);
+        ctx.ellipse(cx-26*s2,cy-4*s2,24*s2,11*s2,0,0,Math.PI*2);
+        ctx.fill();
+        ctx.save(); ctx.globalAlpha=0.16; ctx.fillStyle='#8fb6cf';
+        ctx.beginPath(); ctx.ellipse(cx,cy+8*s2,38*s2,7*s2,0,0,Math.PI*2); ctx.fill();
+        ctx.restore();
+        ctx.fillStyle='rgba(255,255,255,'+pl[1]+')';
+      }
+    });
+
+    // Ptaki w oddali
+    ctx.strokeStyle='rgba(60,80,100,0.35)'; ctx.lineWidth=1.6;
+    for(var p2=0;p2<5;p2++){
+      var px=((p2*280 - kamX*0.20 + t*12) % 1500); if(px<-40) px+=1500;
+      var py=52+(p2*41)%90 - kamY*0.10 + Math.sin(t*1.6+p2)*4;
+      if(py<-20||py>H) continue;
+      var sk=0.8+((p2%3)*0.22);
       ctx.beginPath();
-      ctx.ellipse(cx,cy,44,17,0,0,Math.PI*2);
-      ctx.ellipse(cx+30,cy-9,30,14,0,0,Math.PI*2);
-      ctx.fill();
+      ctx.moveTo(px-6*sk,py); ctx.quadraticCurveTo(px-3*sk,py-4*sk,px,py);
+      ctx.quadraticCurveTo(px+3*sk,py-4*sk,px+6*sk,py); ctx.stroke();
     }
   }
 
   function rysujZiemie(){
     var y=ekrY(0);
     if(y>H+40) return;
+
+    // Dalekie wzgorza za linia ziemi (paralaksa)
+    ctx.save();
+    ctx.fillStyle='rgba(92,132,96,0.55)';
+    ctx.beginPath(); ctx.moveTo(0,y+2);
+    for(var wx=0; wx<=W+40; wx+=40){
+      var fala=Math.sin((wx+kamX*0.16)/130)*16 + Math.sin((wx+kamX*0.16)/47)*6;
+      ctx.lineTo(wx, y-26+fala);
+    }
+    ctx.lineTo(W+40,y+6); ctx.lineTo(0,y+6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle='rgba(72,112,78,0.75)';
+    ctx.beginPath(); ctx.moveTo(0,y+2);
+    for(var wx2=0; wx2<=W+40; wx2+=36){
+      var f2=Math.sin((wx2+kamX*0.30)/88)*11 + Math.sin((wx2+kamX*0.30)/31)*4;
+      ctx.lineTo(wx2, y-12+f2);
+    }
+    ctx.lineTo(W+40,y+6); ctx.lineTo(0,y+6); ctx.closePath(); ctx.fill();
+    ctx.restore();
+
     var g2=ctx.createLinearGradient(0,y,0,H);
-    g2.addColorStop(0,'#7fb85a'); g2.addColorStop(0.16,'#5f9440'); g2.addColorStop(1,'#3d6b2a');
+    g2.addColorStop(0,'#8ac462'); g2.addColorStop(0.10,'#6ba348');
+    g2.addColorStop(0.30,'#568c39'); g2.addColorStop(1,'#335c24');
     ctx.fillStyle=g2; ctx.fillRect(0,y,W,H-y);
+
+    // Jasny pas trawy na krawedzi + kepki
+    ctx.fillStyle='rgba(168,214,120,0.6)'; ctx.fillRect(0,y,W,4);
+    ctx.fillStyle='rgba(58,96,40,0.45)';
+    var odT=Math.floor(kamX/24)*24;
+    for(var g3=odT; g3<kamX+W+24; g3+=24){
+      var gx=ekrX(g3);
+      if(gx<-10||gx>W+10) continue;
+      var hh=4+((Math.abs(g3)/24|0)%5);
+      ctx.fillRect(gx, y-hh, 2, hh);
+    }
+    // Drzewa wzdluz trasy
+    var odD=Math.floor(kamX/260)*260;
+    for(var d3=odD; d3<kamX+W+260; d3+=260){
+      var dx2=ekrX(d3+((Math.abs(d3)/260|0)%3)*40);
+      if(dx2<-30||dx2>W+30) continue;
+      var sk2=0.8+((Math.abs(d3)/260|0)%3)*0.18;
+      ctx.fillStyle='#4a3520';
+      ctx.fillRect(dx2-2, y-20*sk2, 4, 20*sk2);
+      ctx.fillStyle='rgba(48,92,36,0.92)';
+      ctx.beginPath(); ctx.arc(dx2, y-26*sk2, 12*sk2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(dx2-8*sk2, y-20*sk2, 9*sk2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(dx2+8*sk2, y-20*sk2, 9*sk2, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle='rgba(120,180,90,0.30)';
+      ctx.beginPath(); ctx.arc(dx2-4*sk2, y-30*sk2, 6*sk2, 0, Math.PI*2); ctx.fill();
+    }
     // Znaczniki co 50m
     ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=2;
     ctx.fillStyle='rgba(255,255,255,0.75)'; ctx.font='bold 10px sans-serif'; ctx.textAlign='center';
@@ -10218,27 +10595,56 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 
   function rysujSamolot(){
     var ex=ekrX(samX), ey=ekrY(samY);
-    // Slad
-    ctx.strokeStyle='rgba(255,255,255,0.55)'; ctx.lineWidth=2;
-    ctx.beginPath();
-    slad.forEach(function(p,i){
-      var px=ekrX(p.x), py=ekrY(p.y);
-      if(i===0) ctx.moveTo(px,py); else ctx.lineTo(px,py);
-    });
-    ctx.stroke();
+    // Smuga: zanika ku tylowi i cienieje
+    for(var i=1;i<slad.length;i++){
+      var a=slad[i-1], b2=slad[i];
+      var proc=i/slad.length;
+      ctx.strokeStyle='rgba(255,255,255,'+(0.06+proc*0.5).toFixed(3)+')';
+      ctx.lineWidth=0.6+proc*2.6; ctx.lineCap='round';
+      ctx.beginPath();
+      ctx.moveTo(ekrX(a.x),ekrY(a.y)); ctx.lineTo(ekrX(b2.x),ekrY(b2.y));
+      ctx.stroke();
+    }
+
+    // Cien na ziemi pod samolotem
+    var yz=ekrY(0);
+    if(yz<H+40 && ey<yz){
+      var odl=Math.max(0, Math.min(1,(yz-ey)/260));
+      ctx.save(); ctx.globalAlpha=0.24*(1-odl);
+      ctx.fillStyle='#1c3a12';
+      ctx.beginPath(); ctx.ellipse(ex, yz+2, 16-odl*8, 4.5-odl*2, 0, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
 
     ctx.save();
     ctx.translate(ex,ey);
     ctx.rotate(kat);
-    // Papierowy samolot rysowany POZIOMO (nos w prawo) - obrot podaza za lotem
-    ctx.fillStyle='#f7f3e4'; ctx.strokeStyle='#b9ae90'; ctx.lineWidth=1.4;
+    // Papierowy samolot: dwa skrzydla z zagieciem i cieniem
+    ctx.save(); ctx.globalAlpha=0.20; ctx.fillStyle='#4a6070';
     ctx.beginPath();
-    ctx.moveTo(20,0); ctx.lineTo(-14,-11); ctx.lineTo(-6,0); ctx.lineTo(-14,11);
+    ctx.moveTo(21,2); ctx.lineTo(-13,-9); ctx.lineTo(-5,2); ctx.lineTo(-13,13);
+    ctx.closePath(); ctx.fill(); ctx.restore();
+
+    var gs=ctx.createLinearGradient(-14,-11,-6,11);
+    gs.addColorStop(0,'#ffffff'); gs.addColorStop(0.55,'#f7f3e4'); gs.addColorStop(1,'#ddd6bd');
+    ctx.fillStyle=gs; ctx.strokeStyle='#a89c7e'; ctx.lineWidth=1.3; ctx.lineJoin='round';
+    ctx.beginPath();
+    ctx.moveTo(21,0); ctx.lineTo(-14,-11); ctx.lineTo(-6,0); ctx.lineTo(-14,11);
     ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // Gorne skrzydlo - jasniejsze, tworzy zagiecie
+    var gs2=ctx.createLinearGradient(0,-11,0,0);
+    gs2.addColorStop(0,'#ffffff'); gs2.addColorStop(1,'#e8e1ca');
+    ctx.fillStyle=gs2;
     ctx.beginPath();
-    ctx.moveTo(20,0); ctx.lineTo(-6,0); ctx.lineTo(-14,-11);
-    ctx.closePath();
-    ctx.fillStyle='#e2dcc6'; ctx.fill(); ctx.stroke();
+    ctx.moveTo(21,0); ctx.lineTo(-6,0); ctx.lineTo(-14,-11);
+    ctx.closePath(); ctx.fill(); ctx.stroke();
+
+    // Grzbiet i nosek
+    ctx.strokeStyle='rgba(120,110,88,0.55)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(21,0); ctx.lineTo(-6,0); ctx.stroke();
+    ctx.fillStyle='rgba(255,255,255,0.7)';
+    ctx.beginPath(); ctx.moveTo(21,0); ctx.lineTo(12,-3); ctx.lineTo(12,3); ctx.closePath(); ctx.fill();
     ctx.restore();
   }
 
@@ -17620,42 +18026,67 @@ def pokaz_menu():
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
 
     zrobione_lacznie = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
+    proc_globalny = int(zrobione_lacznie / len(ETAPY) * 100) if ETAPY else 0
     st.markdown(
-        f"<p class='licznik-globalny'>{zrobione_lacznie} / {len(ETAPY)} {t('ukonczonych')}</p>",
+        f"""
+        <div class='pasek-globalny'>
+          <div class='pasek-globalny-wyp' style='width:{proc_globalny}%'></div>
+        </div>
+        <p class='licznik-globalny'>{zrobione_lacznie} / {len(ETAPY)} {t('ukonczonych')}</p>
+        """,
         unsafe_allow_html=True,
     )
 
-    for wiersz in range(0, len(KATEGORIE), 2):
-        kolumny = st.columns(2)
-        for i, kat in enumerate(KATEGORIE[wiersz:wiersz + 2]):
-            zrobione, ile = _postep_kategorii(kat)
-            komplet = zrobione == ile
-            proc = int(zrobione / ile * 100) if ile else 0
-            with kolumny[i]:
-                st.markdown(
-                    f"""<div class='kafel-kategorii' style='--kolor:{kat["kolor"]}'>
-                        <div class='kafel-emoji'>{kat["emoji"]}</div>
-                        <div class='kafel-nazwa'>{tt(kat["nazwa"])}{" ✅" if komplet else ""}</div>
-                        <div class='kafel-opis'>{tt(kat["opis"])}</div>
-                        <div class='kafel-pasek'><div class='kafel-pasek-wyp' style='width:{proc}%'></div></div>
-                        <div class='kafel-licznik'>{zrobione} / {ile}</div>
-                    </div>""",
-                    unsafe_allow_html=True,
-                )
-                if st.button(t("otworz"), key=f"kat_{kat['id']}"):
-                    st.session_state.ekran = f"kategoria:{kat['id']}"
-                    st.rerun()
+    # Ukryta wiadomosc - caly baner jest przyciskiem, bez osobnego guzika
+    if zrobione_lacznie > 0:
+        proc_wiad = int(frakcja_odslonieta(waga_zrobiona(), waga_calkowita()) * 100)
+        st.markdown("<div class='zwoj-baner'>", unsafe_allow_html=True)
+        if st.button(
+            f"📜  {t('wiadomosc_tytul')} · {proc_wiad}%",
+            key="otworz_wiadomosc",
+            use_container_width=True,
+        ):
+            st.session_state.ekran = "wiadomosc"
+            st.rerun()
+        st.markdown(
+            f"<div class='zwoj-pod'>{t('wiadomosc_pod')}</div></div>",
+            unsafe_allow_html=True,
+        )
+
+    # Kategorie jako klikalne kwadraty
+    st.markdown("<div class='siatka-kategorii'>", unsafe_allow_html=True)
+    kolumny = st.columns(len(KATEGORIE))
+    for i, kat in enumerate(KATEGORIE):
+        zrobione, ile = _postep_kategorii(kat)
+        komplet = zrobione == ile
+        with kolumny[i]:
+            st.markdown(
+                f"<div class='kat-kolor' style='--kolor:{kat['kolor']}'>",
+                unsafe_allow_html=True,
+            )
+            etykieta = f"{kat['emoji']}  \n**{tt(kat['nazwa'])}**  \n{zrobione}/{ile}"
+            if komplet:
+                etykieta += " ✅"
+            if st.button(etykieta, key=f"kat_{kat['id']}", use_container_width=True):
+                st.session_state.ekran = f"kategoria:{kat['id']}"
+                st.rerun()
+            st.markdown(
+                f"""<div class='kat-pasek'><div class='kat-pasek-wyp'
+                     style='width:{int(zrobione/ile*100) if ile else 0}%'></div></div>
+                    <div class='kat-opis'>{tt(kat['opis'])}</div></div>""",
+                unsafe_allow_html=True,
+            )
+    st.markdown("</div>", unsafe_allow_html=True)
 
     wszystkie = all(e["klucz"] in st.session_state.rozwiazane for e in ETAPY)
     if wszystkie:
         st.success(t("wszystko_rozwiazane"))
-        if st.button(t("zobacz_kod"), key="zobacz_kod_btn"):
+        if st.button(t("zobacz_kod"), key="zobacz_kod_btn", use_container_width=True):
             st.session_state.ekran = "final"
             st.rerun()
 
-    st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:2.2rem;'></div>", unsafe_allow_html=True)
     pokaz_przycisk_resetu()
-
 
 def pokaz_ekran_etapu(etap_dane):
     klucz = etap_dane["klucz"]
@@ -17731,6 +18162,154 @@ def pokaz_ekran_etapu(etap_dane):
         if etap_dane.get("jedna_proba"):
             st.session_state.nieudane.add(klucz)
         zapisz_postep()
+
+
+# ---------------------------------------------------------------------------
+# UKRYTA WIADOMOSC
+# Jeden dlugi list na papirusie. Po kazdym zaliczonym etapie odslania sie
+# kolejny procent znakow - w losowej, ale STALEJ kolejnosci, wiec raz
+# odkryta litera nigdy nie znika. Nowe litery dostaja zloty rozblysk.
+# ---------------------------------------------------------------------------
+UKRYTA_WIADOMOSC = {
+    "pl": (
+        "Nie umiem tego powiedzieć na głos tak, żeby zabrzmiało dobrze, "
+        "więc schowałem to tutaj i kazałem Ci po to przyjść.\n\n"
+        "Zależy mi na Tobie bardziej, niż to po mnie widać. "
+        "Nie chodzi o wielkie gesty, tylko o to, że codziennie chcę wiedzieć, jak Ci minął dzień.\n\n"
+        "Chcę z Tobą zwykłych rzeczy. Pójść na spacer bez celu. Znaleźć serial, "
+        "przy którym pierwszy raz nie zasnę. Zbudować z Tobą domek i farmę na wspólnym świecie, "
+        "a potem pokłócić się, gdzie postawić drzwi. Ugotować coś i udawać, że wyszło.\n\n"
+        "Chcę z Tobą odkładać pieniądze, żeby móc je później na Ciebie wydać. "
+        "Zapocić się z Tobą na treningu i narzekać razem przez resztę dnia.\n\n"
+        "Ale chcę też rzeczy, na które trzeba czekać latami. "
+        "Stanąć z Tobą pod zorzą i nie odezwać się ani słowem. Zmarznąć przy wodospadzie. "
+        "Wejść do lodowej jaskini. Wypłynąć w rejs, nad którym nie będzie zasięgu. "
+        "Pojechać nad jezioro, gdzie nie będzie nikogo poza nami.\n\n"
+        "Nie wiem, ile z tego się uda. Wiem tylko, że każdą z tych rzeczy chcę robić z Tobą "
+        "i z nikim innym.\n\n"
+        "Reszta jest w sejfie. Kod znajdziesz na końcu."
+    ),
+    "en": (
+        "I can't say this out loud without it sounding wrong, "
+        "so I hid it here and made you come and get it.\n\n"
+        "You matter to me more than I show. "
+        "It's not about grand gestures — it's that every day I want to know how your day went.\n\n"
+        "I want ordinary things with you. A walk with no destination. A series I won't fall asleep to "
+        "for once. Building a house and a farm with you on a shared world, then arguing about the door. "
+        "Cooking something and pretending it worked.\n\n"
+        "I want to save money with you, so I can spend it on you later. "
+        "To sweat through a workout with you and complain about it for the rest of the day.\n\n"
+        "But I also want the things you wait years for. Standing under the northern lights with you "
+        "and saying nothing. Freezing by a waterfall. Walking into an ice cave. Sailing somewhere "
+        "with no signal. A lake with nobody but us.\n\n"
+        "I don't know how much of it will happen. I only know I want every single one of them "
+        "with you and no one else.\n\n"
+        "The rest is in the safe. You'll find the code at the end."
+    ),
+}
+
+
+def _kolejnosc_odslaniania(tekst, ziarno=20240214):
+    """Stala, 'losowa' kolejnosc odslaniania znakow."""
+    pozycje = [i for i, z in enumerate(tekst) if not z.isspace()]
+    rnd = random.Random(ziarno)
+    rnd.shuffle(pozycje)
+    return pozycje
+
+
+# Odslanianie NIE jest liniowe. Przy podziale po rowno polowa etapow
+# odkrywalaby polowe liter, a to juz wystarczy, zeby przeczytac sens.
+# Krzywa 2.4 trzyma tekst nieczytelny prawie do konca: po 11 z 22 etapow
+# widac 19% znakow, a rozstrzyga sie dopiero na ostatnich kilku.
+# Nie kazdy etap wazy tyle samo. Trzy duze gry z "Wielkich przygod"
+# odslaniaja po trzy razy wiecej niz reszta - inaczej godzina w Labiryncie
+# liczylaby sie tyle samo co jedna krzyzowka.
+WAGI_ETAPOW = {"minecraft": 3.0, "labirynt": 3.0, "poziom_diabla": 3.0}
+WAGA_DOMYSLNA = 1.0
+
+
+def waga_etapu(klucz):
+    return WAGI_ETAPOW.get(klucz, WAGA_DOMYSLNA)
+
+
+def waga_zrobiona():
+    return sum(waga_etapu(e["klucz"]) for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
+
+
+def waga_calkowita():
+    return sum(waga_etapu(e["klucz"]) for e in ETAPY)
+
+
+KRZYWA_ODSLANIANIA = 2.4
+MIN_ODSLONIETE = 0.015
+
+
+def frakcja_odslonieta(zrobione, wszystkie):
+    if not wszystkie or zrobione <= 0:
+        return 0.0
+    if zrobione >= wszystkie:
+        return 1.0
+    p = zrobione / wszystkie
+    return max(MIN_ODSLONIETE, p ** KRZYWA_ODSLANIANIA)
+
+
+def pokaz_ukryta_wiadomosc():
+    if st.button(t("wroc_do_menu"), key="powrot_wiadomosc"):
+        st.session_state.ekran = "menu"
+        st.rerun()
+
+    tekst = tt(UKRYTA_WIADOMOSC)
+    wszystkie = waga_calkowita()
+    zrobione = waga_zrobiona()
+    etapow = len(ETAPY)
+    zrobionych_etapow = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
+
+    kolejnosc = _kolejnosc_odslaniania(tekst)
+    frakcja = frakcja_odslonieta(zrobione, wszystkie)
+    ile_teraz = int(len(kolejnosc) * frakcja)
+    odkryte = set(kolejnosc[:ile_teraz])
+
+    # Co doszlo od ostatniego wejscia - to podswietlimy
+    poprzednio = st.session_state.get("wiadomosc_widziano", 0.0)
+    ile_wczesniej = int(len(kolejnosc) * frakcja_odslonieta(poprzednio, wszystkie))
+    swieze = set(kolejnosc[ile_wczesniej:ile_teraz]) if ile_teraz > ile_wczesniej else set()
+    st.session_state.wiadomosc_widziano = zrobione
+
+    kawalki, licznik = [], 0
+    for i, znak in enumerate(tekst):
+        if znak == "\n":
+            kawalki.append("<br>")
+            continue
+        if znak.isspace():
+            kawalki.append(" ")
+            continue
+        if i in odkryte:
+            if i in swieze:
+                op = round((licznik % 26) * 0.045, 2)
+                kawalki.append(f"<span class='zn nowa' style='animation-delay:{op}s'>{znak}</span>")
+                licznik += 1
+            else:
+                kawalki.append(f"<span class='zn'>{znak}</span>")
+        else:
+            kawalki.append("<span class='zn pusta'>&nbsp;</span>")
+
+    st.markdown(
+        f"""
+        <div class='papirus-otoczka'>
+          <div class='papirus'>
+            <div class='papirus-pieczec'>✦</div>
+            <div class='papirus-tekst'>{''.join(kawalki)}</div>
+          </div>
+        </div>
+        <div class='papirus-postep'>
+          <div class='papirus-pasek'><div class='papirus-wypelnienie' style='width:{frakcja*100:.0f}%'></div></div>
+          <div class='papirus-opis'>{t('wiadomosc_odkryto')} <b>{frakcja*100:.0f}%</b> · {t('wiadomosc_etapy')} {zrobionych_etapow}/{etapow}</div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+    if zrobionych_etapow < etapow:
+        st.caption(t("wiadomosc_dalej"))
 
 
 def pokaz_rozpiske_bledow():
@@ -17851,6 +18430,8 @@ def main():
         pokaz_powitanie()
     elif ekran == "final":
         pokaz_final()
+    elif ekran == "wiadomosc":
+        pokaz_ukryta_wiadomosc()
     elif ekran.startswith("kategoria:"):
         kat_id = ekran.split(":", 1)[1]
         kat = next((k for k in KATEGORIE if k["id"] == kat_id), None)
