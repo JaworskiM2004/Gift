@@ -751,7 +751,7 @@ SZABLON_GRY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
-/* ---------- MENU: klikalne kwadraty ---------- */
+/* ---------- MENU ---------- */
 .pasek-globalny {
   height: 6px; border-radius: 4px; overflow: hidden; margin: 2px 0 7px;
   background: rgba(255,255,255,0.07);
@@ -762,49 +762,58 @@ SZABLON_GRY = """
   box-shadow: 0 0 10px rgba(230,193,92,0.4);
   transition: width 0.6s ease;
 }
-/* Baner ukrytej wiadomosci */
-.zwoj-baner { margin: 4px 0 6px; }
-.zwoj-baner + div [data-testid="stBaseButton-secondary"],
-.zwoj-baner ~ div [data-testid="stBaseButton-secondary"] { }
 .zwoj-pod {
   text-align: center; color: #a8946a; font-size: 0.74rem;
-  margin: -2px 0 14px; letter-spacing: 0.03em;
+  margin: -6px 0 16px; letter-spacing: 0.03em;
 }
-/* Kategoria: przycisk JEST kafelkiem */
-div[data-testid="column"] .stButton > button {
-  aspect-ratio: 1 / 1;
-  height: auto; min-height: 104px; width: 100%;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 2px; padding: 8px 6px;
-  border-radius: 17px;
-  border: 1.5px solid var(--kolor, #4a4468);
-  background: linear-gradient(158deg, rgba(255,255,255,0.055), rgba(0,0,0,0.30));
-  box-shadow: 0 5px 16px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.07);
-  color: #ece4d2;
-  font-size: 0.68rem; font-weight: 700; line-height: 1.25;
-  text-align: center; white-space: normal;
-  transition: transform 0.10s ease, box-shadow 0.10s ease, border-color 0.10s;
+
+/* Kafelki kategorii = przyciski "primary". Celujemy w typ przycisku,
+   a nie w opakowanie, bo Streamlit nie pozwala owijac ich wlasnym divem. */
+button[data-testid="stBaseButton-primary"],
+.stButton > button[kind="primary"] {
+  display: flex !important;
+  flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; padding: 15px 12px 13px !important;
+  min-height: 132px;
+  border-radius: 18px !important;
+  border: 1.5px solid rgba(230,193,92,0.42) !important;
+  background: linear-gradient(158deg, #241f36 0%, #171327 55%, #100d1c 100%) !important;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+  color: #ece4d2 !important;
+  white-space: normal !important;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease;
+  margin-bottom: 11px;
 }
-div[data-testid="column"] .stButton > button p { margin: 0; }
-div[data-testid="column"] .stButton > button p:first-child { font-size: 1.85rem; line-height: 1.1; }
-div[data-testid="column"] .stButton > button:hover {
+button[data-testid="stBaseButton-primary"] p,
+.stButton > button[kind="primary"] p { margin: 0 !important; line-height: 1.32; }
+/* 1. wiersz - emoji */
+button[data-testid="stBaseButton-primary"] p:nth-of-type(1),
+.stButton > button[kind="primary"] p:nth-of-type(1) {
+  font-size: 2.1rem; line-height: 1.05; margin-bottom: 3px !important;
+}
+/* 2. wiersz - nazwa */
+button[data-testid="stBaseButton-primary"] p:nth-of-type(2),
+.stButton > button[kind="primary"] p:nth-of-type(2) {
+  font-size: 1.02rem; font-weight: 800; color: #f4ead2; letter-spacing: 0.01em;
+}
+/* 3. wiersz - opis */
+button[data-testid="stBaseButton-primary"] p:nth-of-type(3),
+.stButton > button[kind="primary"] p:nth-of-type(3) {
+  font-size: 0.76rem; color: #9a90a8; font-weight: 400;
+}
+/* 4. wiersz - pasek postepu */
+button[data-testid="stBaseButton-primary"] p:nth-of-type(4),
+.stButton > button[kind="primary"] p:nth-of-type(4) {
+  font-size: 0.82rem; color: #e6c15c; letter-spacing: 1px; margin-top: 5px !important;
+}
+button[data-testid="stBaseButton-primary"]:hover,
+.stButton > button[kind="primary"]:hover {
   transform: translateY(-2px);
-  border-color: #ffe08a;
-  box-shadow: 0 8px 22px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,224,138,0.35);
+  border-color: #ffe08a !important;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,224,138,0.3) !important;
 }
-div[data-testid="column"] .stButton > button:active { transform: scale(0.97); }
-.kat-pasek {
-  height: 4px; border-radius: 3px; overflow: hidden;
-  margin: 6px 3px 0; background: rgba(255,255,255,0.08);
-}
-.kat-pasek-wyp {
-  height: 100%; border-radius: 3px; background: var(--kolor, #e6c15c);
-  box-shadow: 0 0 7px var(--kolor, #e6c15c); transition: width 0.5s ease;
-}
-.kat-opis {
-  text-align: center; font-size: 0.63rem; color: #8d8598;
-  margin: 4px 2px 2px; line-height: 1.25; min-height: 2.1em;
-}
+button[data-testid="stBaseButton-primary"]:active,
+.stButton > button[kind="primary"]:active { transform: scale(0.985); }
 
 /* ---------- UKRYTA WIADOMOSC ---------- */
 .papirus-otoczka { padding: 6px 0 2px; }
@@ -18027,6 +18036,9 @@ def pokaz_menu():
 
     zrobione_lacznie = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
     proc_globalny = int(zrobione_lacznie / len(ETAPY) * 100) if ETAPY else 0
+    # Jeden zamkniety blok HTML. Rozbijanie go na kilka wywolan markdown
+    # NIE dziala - Streamlit renderuje kazde jako osobny fragment DOM,
+    # wiec niedomkniety <div> nie opakowuje tego, co po nim nastepuje.
     st.markdown(
         f"""
         <div class='pasek-globalny'>
@@ -18037,10 +18049,8 @@ def pokaz_menu():
         unsafe_allow_html=True,
     )
 
-    # Ukryta wiadomosc - caly baner jest przyciskiem, bez osobnego guzika
     if zrobione_lacznie > 0:
         proc_wiad = int(frakcja_odslonieta(waga_zrobiona(), waga_calkowita()) * 100)
-        st.markdown("<div class='zwoj-baner'>", unsafe_allow_html=True)
         if st.button(
             f"📜  {t('wiadomosc_tytul')} · {proc_wiad}%",
             key="otworz_wiadomosc",
@@ -18049,34 +18059,31 @@ def pokaz_menu():
             st.session_state.ekran = "wiadomosc"
             st.rerun()
         st.markdown(
-            f"<div class='zwoj-pod'>{t('wiadomosc_pod')}</div></div>",
+            f"<p class='zwoj-pod'>{t('wiadomosc_pod')}</p>",
             unsafe_allow_html=True,
         )
 
-    # Kategorie jako klikalne kwadraty
-    st.markdown("<div class='siatka-kategorii'>", unsafe_allow_html=True)
-    kolumny = st.columns(len(KATEGORIE))
-    for i, kat in enumerate(KATEGORIE):
+    # Kategorie: caly kafelek to przycisk. Pasek postepu rysujemy znakami,
+    # bo do etykiety przycisku nie da sie wstrzyknac wlasnego HTML.
+    for kat in KATEGORIE:
         zrobione, ile = _postep_kategorii(kat)
-        komplet = zrobione == ile
-        with kolumny[i]:
-            st.markdown(
-                f"<div class='kat-kolor' style='--kolor:{kat['kolor']}'>",
-                unsafe_allow_html=True,
-            )
-            etykieta = f"{kat['emoji']}  \n**{tt(kat['nazwa'])}**  \n{zrobione}/{ile}"
-            if komplet:
-                etykieta += " ✅"
-            if st.button(etykieta, key=f"kat_{kat['id']}", use_container_width=True):
-                st.session_state.ekran = f"kategoria:{kat['id']}"
-                st.rerun()
-            st.markdown(
-                f"""<div class='kat-pasek'><div class='kat-pasek-wyp'
-                     style='width:{int(zrobione/ile*100) if ile else 0}%'></div></div>
-                    <div class='kat-opis'>{tt(kat['opis'])}</div></div>""",
-                unsafe_allow_html=True,
-            )
-    st.markdown("</div>", unsafe_allow_html=True)
+        pelne = round(zrobione / ile * 10) if ile else 0
+        pasek = "▰" * pelne + "▱" * (10 - pelne)
+        znacznik = " ✅" if zrobione == ile else ""
+        etykieta = (
+            f"{kat['emoji']}\n\n"
+            f"**{tt(kat['nazwa'])}**{znacznik}\n\n"
+            f"{tt(kat['opis'])}\n\n"
+            f"{pasek}  {zrobione}/{ile}"
+        )
+        if st.button(
+            etykieta,
+            key=f"kat_{kat['id']}",
+            use_container_width=True,
+            type="primary",
+        ):
+            st.session_state.ekran = f"kategoria:{kat['id']}"
+            st.rerun()
 
     wszystkie = all(e["klucz"] in st.session_state.rozwiazane for e in ETAPY)
     if wszystkie:
@@ -18085,7 +18092,7 @@ def pokaz_menu():
             st.session_state.ekran = "final"
             st.rerun()
 
-    st.markdown("<div style='margin-top:2.2rem;'></div>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
     pokaz_przycisk_resetu()
 
 def pokaz_ekran_etapu(etap_dane):
