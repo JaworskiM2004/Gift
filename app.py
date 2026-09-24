@@ -57,6 +57,13 @@ def gra_z_wynikiem(html_gry, wysokosc, key):
     Zwraca None jesli komponent-most jest niedostepny (patrz wyzej)."""
     if _KOMPONENT_WYNIKU is None:
         return None
+    # Komponent pamieta swoj wynik pod danym kluczem. Przy powtorce dajemy
+    # mu NOWY klucz - inaczej od razu zwrocilby stare "zaliczone", zanim
+    # ktokolwiek zacznie grac.
+    biezacy = st.session_state.get("etap_biezacy")
+    nr = st.session_state.get("nr_powtorki", {}).get(biezacy, 0)
+    if nr:
+        key = f"{key}__powtorka{nr}"
     return _KOMPONENT_WYNIKU(html_gry=html_gry, wysokosc=wysokosc, key=key, default=None)
 
 
@@ -589,6 +596,10 @@ TEKST = {
         "wordle_brak_polaczenia": "Nie udało się automatycznie pobrać dzisiejszego słowa. Spróbuj ponownie za chwilę.",
         "wordle_sprobuj_pobrac": "🔄 Spróbuj pobrać ponownie",
         "rozwiazane_status": "✅ Rozwiązane",
+        "zagraj_ponownie": "🔁 Zagraj jeszcze raz",
+        "powtorka_info": "Możesz zagrać ponownie ile razy chcesz. Postęp wiadomości nie zmieni się — ani w górę, ani w dół.",
+        "tryb_powtorki_info": "🔁 Powtórka — gra dla przyjemności, postęp zostaje bez zmian.",
+        "powtorka_ukonczona": "🎉 Przeszłaś jeszcze raz! Postęp bez zmian — ten etap był już zaliczony.",
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
         "menu_tytul": "Wybierz etap",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
@@ -664,6 +675,10 @@ TEKST = {
         "wordle_brak_polaczenia": "Couldn't automatically fetch today's word. Try again in a moment.",
         "wordle_sprobuj_pobrac": "🔄 Try fetching again",
         "rozwiazane_status": "✅ Solved",
+        "zagraj_ponownie": "🔁 Play again",
+        "powtorka_info": "Replay as many times as you like. The message progress won't change — neither up nor down.",
+        "tryb_powtorki_info": "🔁 Replay — just for fun, progress stays the same.",
+        "powtorka_ukonczona": "🎉 Beaten again! Progress unchanged — this stage was already solved.",
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
         "menu_tytul": "Choose a stage",
         "wszystko_rozwiazane": "🎉 You solved everything!",
@@ -1197,16 +1212,12 @@ button[data-testid="stBaseButton-primary"]:active,
     el.dataset.vx = vx;
     el.dataset.vy = vy;
 
-    el.addEventListener('click', function () {
-      if (el.dataset.dotkniete) return;
+    // Jedno zrodlo zdarzen zamiast click + touchstart. Kazdy element i tak
+    // chroni flaga 'klik' w kliknieto(), wiec podwojne zaliczenie jest niemozliwe.
+    el.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
       kliknieto(el);
     });
-    el.addEventListener('touchstart', function (e) {
-      e.preventDefault();
-      el.dataset.dotkniete = '1';
-      kliknieto(el);
-      setTimeout(function () { delete el.dataset.dotkniete; }, 500);
-    }, { passive: false });
 
     gra.appendChild(el);
     aktywneElementy.push(el);
@@ -2355,8 +2366,10 @@ SZABLON_ZABY = """<!DOCTYPE html>
   var KAFEL = 30;
   var POZIOM_ZIEMI = 340;          // y gornej krawedzi ziemi
   var BOK = 24;                    // bok kwadratu gracza
-  var PREDKOSC = 240;              // stale tempo w prawo
-  var GRAWITACJA = 2400, SILA_SKOKU = -680;
+  // Wolniej o 13%. Grawitacja i skok przeskalowane tak, zeby luk mial ten sam
+  // ksztalt w przestrzeni - poziomy dalej pasuja, a czasu na reakcje jest wiecej.
+  var PREDKOSC = 209;              // stale tempo w prawo
+  var GRAWITACJA = 1817, SILA_SKOKU = -592;
   var X_GRACZA = 96;               // gracz stoi w stalym miejscu ekranu
 
   // Znaki poziomu: '.' pusto | '^' kolec | '1','2' blok o tej wysokosci | ' ' przepasc
@@ -2372,11 +2385,11 @@ SZABLON_ZABY = """<!DOCTYPE html>
 
     { nazwa:'Skoki', kolor:['#3a1a52','#180d30'], akcent:'#c06bff', tempo:132, gama:[0,3,7,10],
       teren:'==========11111====  ====2222222=====  ====111111====2222===========  ====22222=====11111====  ====222222====  ====1111==========22222====  ====111====222222====  ====22222====1111===============  ====2222====111111====  ====22222====222222=============1111====  ====22222===================',
-      nad:  '.....^.............p.....^.^......p.....................^.......^..p......^.........^....p............p.............^...............p...................^.^....p..........^......^...........^....p...............^.....p.................^....^.................p.................^....^..........' },
+      nad:  '.....^.............p.....^........p.....................^.......^..p......^.........^....p............p.............^...............p...................^......p..........^......^...........^....p...............^.....p.................^....^.................p.................^....^..........' },
 
     { nazwa:'Burza', kolor:['#52281a','#30140d'], akcent:'#ff8a4a', tempo:146, gama:[0,2,5,9],
       teren:'======2222====  ====22222====1111====  ====22222===222222========  ====111111====  ====2222222====  ====22222====2222========1111====  ====222222====22222====  ====111111====  ====222====  ====22222====2222====  ====1111111====  ====22222===========222222====  ====1111============================',
-      nad:  '..^.................p...^.................P....^...................................p....^.^...............P......^...........^.^...............p......^.............^.....P.................................p................^.....P......^...............^.^...............p....^.^....^................' },
+      nad:  '..^.................p...^.................P....^...................................p....^.................P......^...........^.................p......^.............^.....P.................................p................^.....P......^...............^.................p....^......^................' },
   ];
 
   // ---------- DZWIEK ----------
@@ -2568,9 +2581,9 @@ SZABLON_ZABY = """<!DOCTYPE html>
       var podloga = poziomPodloza(kk);
       if (podloga === null) continue;
       var srodek = kk * KAFEL + KAFEL/2;
-      var polSzer = KAFEL * (znakNad(kk)==='o' ? 0.42 : 0.26);
+      var polSzer = KAFEL * (znakNad(kk)==='o' ? 0.40 : 0.23);
       if (gracz.x + BOK - 4 > srodek - polSzer && gracz.x + 4 < srodek + polSzer
-          && gracz.y + BOK > podloga - KAFEL * 0.62) { zgin(); return; }
+          && gracz.y + BOK > podloga - KAFEL * 0.58) { zgin(); return; }
     }
 
     // --- Wpadniecie w przepasc ---
@@ -2627,24 +2640,79 @@ SZABLON_ZABY = """<!DOCTYPE html>
     }, 340);
   }
 
+  // Gra liczy sie jako zaliczona juz po DRUGIM etapie. Trzeci to wyzwanie
+  // dla chetnych - przegrana na nim niczego nie odbiera.
+  var ETAP_ZALICZAJACY = 1;
+  var zaliczenieWyslane = false;
+
+  function wyslijZaliczenie() {
+    if (zaliczenieWyslane) return;
+    zaliczenieWyslane = true;
+    var w = { type:'streamlit-child:zaliczono', wartosc:true };
+    window.postMessage(w, '*');
+    if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
+  }
+
   function nastepnyEtap() {
     if (etapIdx >= ETAPY.length - 1) { wygrana(); return; }
+    if (etapIdx === ETAP_ZALICZAJACY && !zaliczenieWyslane) {
+      pokazWyborTrzeciego();
+      return;
+    }
+    przejdzDalej();
+  }
+
+  function przejdzDalej() {
     dzwiekEtapu();
     etapIdx++; proby = 1;
     wczytajEtap(etapIdx);
     blyskAkcentu = 1;
   }
 
+  function pokazWyborTrzeciego() {
+    trwa = false;
+    dzwiekKonca();
+    wyslijZaliczenie();
+    nakladka.style.display = 'flex';
+    nakladkaTytul.textContent = '🏆 Gra zaliczona!';
+    nakladkaOpis.innerHTML = 'Przeszłaś dwa etapy — to wystarczy, żeby zaliczyć tę grę.<br><br>'
+      + 'Został jeszcze <b style="color:#ff8a4a">etap 3 · Burza</b> — najtrudniejszy ze wszystkich. '
+      + 'Możesz go spróbować, ale nie musisz. Przegrana na nim niczego nie odbiera.';
+    nakladkaBtn.style.display = 'inline-block';
+    nakladkaBtn.textContent = '⚡ Spróbuję etapu 3';
+    nakladkaBtn.onclick = function () {
+      inicjujDzwiek();
+      nakladka.style.display = 'none';
+      var bk = document.getElementById('btnKoniecZaby'); if (bk) bk.style.display = 'none';
+      przejdzDalej();
+      trwa = true; czasOstatni = null;
+      requestAnimationFrame(petla);
+    };
+    var bk = document.getElementById('btnKoniecZaby');
+    if (!bk) {
+      bk = document.createElement('button');
+      bk.id = 'btnKoniecZaby'; bk.className = 'gra-btn';
+      bk.style.cssText = 'margin-top:10px;background:linear-gradient(135deg,#4a4a5a,#2c2c38);color:#dde4f0;';
+      bk.textContent = '✔ Wystarczy, kończę';
+      bk.onclick = function () {
+        nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
+        nakladkaBtn.style.display = 'none';
+        bk.style.display = 'none';
+      };
+      nakladkaBtn.parentNode.appendChild(bk);
+    }
+    bk.style.display = 'inline-block';
+  }
+
   function wygrana() {
     trwa = false;
     dzwiekKonca();
+    wyslijZaliczenie();
     nakladka.style.display = 'flex';
-    nakladkaTytul.textContent = '🏆 Wszystkie etapy zaliczone!';
-    nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!';
+    nakladkaTytul.textContent = '⚡ Pokonałaś Burzę!';
+    nakladkaOpis.innerHTML = 'Wszystkie trzy etapy, łącznie z najtrudniejszym. Szacunek.';
     nakladkaBtn.style.display = 'none';
-    var w = { type:'streamlit-child:zaliczono', wartosc:true };
-    window.postMessage(w, '*');
-    if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
+    var bk = document.getElementById('btnKoniecZaby'); if (bk) bk.style.display = 'none';
   }
 
   // ---------- RYSOWANIE ----------
@@ -6667,16 +6735,7 @@ SZABLON_MINECRAFT = """
     box-shadow: 0 2px 5px rgba(0,0,0,0.4);
   }
   .slot-hud.widoczny { display: flex; }
-  #zadanieDomu {
-    display: flex;
-    justify-content: center;
-    align-items: stretch;
-    gap: 8px;
-    padding: 38px 8px 10px;
-    margin-top: 20px;
-    border-top: 1px solid rgba(212,175,55,0.2);
-  }
-  #btnDom {
+    #btnDom {
     background: linear-gradient(135deg, #7a5a2e, #5a3f1e);
     border: 1px solid #d4af37;
     border-radius: 10px;
@@ -6700,6 +6759,27 @@ SZABLON_MINECRAFT = """
     white-space: nowrap;
   }
   #btnNowySwiat:active { transform: scale(0.93); }
+  #wielkiKomunikat {
+    position: absolute;
+    top: 42%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.8);
+    z-index: 20; pointer-events: none;
+    text-align: center;
+    font-size: 26px; font-weight: 900; letter-spacing: 0.02em;
+    line-height: 1.22;
+    text-shadow: 0 3px 0 rgba(0,0,0,0.85), 0 0 26px rgba(0,0,0,0.9);
+    opacity: 0;
+    width: 88%;
+  }
+  #wielkiKomunikat.widoczny { animation: wielkiWjazd 2.9s cubic-bezier(.2,.9,.3,1.1) forwards; }
+  @keyframes wielkiWjazd {
+    0%   { opacity: 0; transform: translate(-50%,-50%) scale(0.72); }
+    11%  { opacity: 1; transform: translate(-50%,-50%) scale(1.08); }
+    19%  { transform: translate(-50%,-50%) scale(1); }
+    78%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%,-56%) scale(0.96); }
+  }
+
   #celZadania {
     position: absolute;
     bottom: 10px;
@@ -6715,8 +6795,10 @@ SZABLON_MINECRAFT = """
     text-shadow: 0 1px 4px rgba(0,0,0,0.95);
   }
   .btn-narzedzie {
-    position: absolute;
-    left: 6px;
+    position: relative;
+    width: 44px; height: 44px;
+    border-radius: 11px;
+    font-size: 20px;
     width: 34px; height: 34px;
     border-radius: 8px;
     background: linear-gradient(135deg, #e6c15c, #d4af37);
@@ -6733,11 +6815,18 @@ SZABLON_MINECRAFT = """
   #btnPiecToggle.widoczny { display: block; }
   #sterowanie {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
-    gap: 14px;
-    padding: 4px 0;
+    gap: 8px;
+    padding: 8px 10px 10px;
+    border-top: 1px solid rgba(212,175,55,0.22);
   }
+  .grupa-lewa, .grupa-prawa { display: flex; gap: 6px; }
+  .btn-narzedzie.akcja-dom {
+    background: linear-gradient(135deg, #7ec98a, #3f8a52);
+    border-color: #2c6a3c;
+  }
+  .grupa-ruch { display: flex; gap: 10px; }
   .btn-ruch {
     width: 84px; height: 60px;
     background: linear-gradient(135deg, #e6c15c, #d4af37);
@@ -6789,11 +6878,10 @@ SZABLON_MINECRAFT = """
     margin-bottom: 4px;
   }
   .wiersz-ekwipunku {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
   }
   .slot-narzedzie { cursor: default; }
   #panelReceptur {
@@ -6892,12 +6980,31 @@ SZABLON_MINECRAFT = """
   .btn-przetop:disabled { opacity: 0.35; }
   .slot-bloku {
     position: relative;
-    width: 40px; height: 40px;
-    border-radius: 8px;
-    border: 2px solid rgba(255,255,255,0.15);
+    width: 100%;
+    min-height: 66px;
+    padding: 6px 2px 4px;
+    border-radius: 10px;
+    border: 1.5px solid rgba(255,255,255,0.13);
+    background: rgba(255,255,255,0.045);
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: 3px;
+  }
+  .slot-bloku.wybrany {
+    border-color: #e6c15c;
+    background: rgba(230,193,92,0.16);
+    box-shadow: 0 0 0 1px rgba(230,193,92,0.35);
+  }
+  .podpis-slotu {
+    font-size: 9.5px; line-height: 1.15; color: #d8cfb8;
+    text-align: center; word-break: break-word;
+    max-width: 100%;
+  }
+  .ekw-pusto {
+    grid-column: 1 / -1;
+    text-align: center; color: #9a9080; font-size: 12px; padding: 10px 4px;
   }
   .slot-bloku.wybrany {
     border-color: #e6c15c;
@@ -6910,7 +7017,7 @@ SZABLON_MINECRAFT = """
   }
   .slot-bloku .licznik-bloku {
     position: absolute;
-    bottom: -3px; right: -3px;
+    top: 3px; right: 4px;
     background: #16130a;
     border: 1px solid #d4af37;
     border-radius: 8px;
@@ -6956,10 +7063,8 @@ SZABLON_MINECRAFT = """
         </div>
       </div>
       <div id="celZadania">🎯 Cel: zbuduj dom</div>
-      <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
-      <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
-      <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
-      <canvas id="canvasSwiat" width="260" height="260"></canvas>
+      <div id="wielkiKomunikat"></div>
+      <canvas id="canvasSwiat" width="260" height="338"></canvas>
       <div id="hudNarzedzi">
         <div class="slot-hud" id="hudKilof"></div>
         <div class="slot-hud" id="hudMiecz"></div>
@@ -6967,18 +7072,28 @@ SZABLON_MINECRAFT = """
     </div>
     <div id="dziennikMc"></div>
     <div id="wybranyBlokEtykieta"></div>
+    <!-- Pas sterowania jak w Labiryncie: narzedzia po lewej, ruch w srodku,
+         sprawdzenie domu po prawej. Wszystko w zasiegu kciukow. -->
     <div id="sterowanie">
-      <button class="btn-ruch" id="btnLewo">⬅️</button>
-      <button class="btn-ruch" id="btnPrawo">➡️</button>
+      <div class="grupa-lewa">
+        <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
+        <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
+        <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
+      </div>
+      <div class="grupa-ruch">
+        <button class="btn-ruch" id="btnLewo">⬅️</button>
+        <button class="btn-ruch" id="btnPrawo">➡️</button>
+      </div>
+      <div class="grupa-prawa">
+        <button class="btn-narzedzie akcja-dom" id="btnDom">🏠</button>
+        <button class="btn-narzedzie" id="btnSpij" style="display:none;">🛏️</button>
+        <button class="btn-narzedzie" id="btnNowySwiat">🔄</button>
+      </div>
     </div>
     <div id="ekwipunek"></div>
     <div id="panelReceptur"></div>
     <div id="panelPieca"></div>
-    <div id="zadanieDomu">
-      <button id="btnDom">🏠 Zbuduj dom i sprawdź</button>
-      <button id="btnSpij" style="display:none;">🛏️ Śpij</button>
-      <button id="btnNowySwiat">🔄 Reset</button>
-    </div>
+
     <div id="nakladka">
       <h2>⛏️ Prosty Minecraft</h2>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
@@ -7148,10 +7263,16 @@ SZABLON_MINECRAFT = """
   // W poziomie pokazujemy WIECEJ kolumn swiata - panoramiczny ekran
   // zyskuje sens, zamiast dokladac czarne pasy po bokach.
   var WIDOCZNE_KOLUMNY = 10;
-  var WIDOCZNE_WIERSZE = 10;
-  var ZASIEG = 2;
+  var WIDOCZNE_WIERSZE = 13;
+  var ZASIEG = 3;
+  // Zasieg to romb, nie kwadrat: 3 kratki w pionie i poziomie, ale rogi
+  // odpadaja. Dzieki temu nie da sie siegnac po skosie na sam kraniec.
+  function wZasiegu(bx, by) {
+    return Math.abs(bx - graczX) + Math.abs(by - graczY) <= ZASIEG;
+  }
 
   var KOLORY_BLOKOW = {
+    krzakJezyn: '#2f6a2c',
     trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
     drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
     zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
@@ -7161,6 +7282,7 @@ SZABLON_MINECRAFT = """
     deskiBrzozowe: '#e8d9b8', drzwiBrzozowe: '#c9b48a',
   };
   var NAZWY_BLOKOW = {
+    krzakJezyn: 'Krzak jeżyn', jezyny: 'Jeżyny',
     trawa: 'Trawa', ziemia: 'Ziemia', kamien: 'Kamień', drewno: 'Drewno',
     liscie: 'Liście', wegiel: 'Węgiel', zloto: 'Złoto', piach: 'Piach',
     szyby: 'Szyby', piec: 'Piec',
@@ -7188,6 +7310,7 @@ SZABLON_MINECRAFT = """
   var BLOKI_Z_TEKSTURA = {};
   Object.keys(KOLORY_BLOKOW).forEach(function (k) { BLOKI_Z_TEKSTURA[k] = true; });
   var IKONY_PRZEDMIOTOW = {
+    jezyny: '🫐',
     patyk: '🪵', pioro: '🪶', nici: '🧵', zelazo: '🔩', strzala: '➶',
     luk: '🏹', zbrojaZelazna: '🥋', zbrojaDiamentowa: '🦺',
     welna: '🧶', korona: '👑', zlotoStopione: '🟨',
@@ -7350,8 +7473,8 @@ SZABLON_MINECRAFT = """
 
   var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka'/'kurczak', kierunek: 1/-1}
   var GLOD_MAX = 10;
-  var LISTA_JEDZENIA = ['stek', 'szynka', 'mieso_kurczaka', 'baranina'];
-  var WARTOSC_GLODOWA_JEDZENIA = { stek: 5, szynka: 5, mieso_kurczaka: 3, baranina: 4 };
+  var LISTA_JEDZENIA = ['stek', 'szynka', 'mieso_kurczaka', 'baranina', 'jezyny'];
+  var WARTOSC_GLODOWA_JEDZENIA = { stek: 5, szynka: 5, mieso_kurczaka: 3, baranina: 4, jezyny: 2 };
   var graczGlod = GLOD_MAX;
   var probyDomu = 0;
 
@@ -7389,7 +7512,7 @@ SZABLON_MINECRAFT = """
     // Przewin czas do poczatku kolejnego dnia
     czasSwiata = Math.ceil(czasSwiata / PELNY_CYKL) * PELNY_CYKL;
     potwory = [];
-    graczHp = Math.min(HP_MAX, graczHp + 4);
+    graczHp = Math.min(GRACZ_HP_MAX, graczHp + 4);
     aktualizujPasekHp();
     pokazDziennikMc('🛏️ Przespana noc. Dzień dobry!', 2000);
     zagrajTon(392, 0.14, 'sine');
@@ -7463,6 +7586,15 @@ SZABLON_MINECRAFT = """
       }
     }
 
+    // jezyny rosna wylacznie na trawie
+    for (var xj = 1; xj < SZEROKOSC_SWIATA - 1; xj++) {
+      var pj = wysokoscPow[xj];
+      if (world[xj][pj] === 'trawa' && pj - 1 >= 0 && world[xj][pj - 1] === 'powietrze'
+          && Math.random() < 0.09) {
+        world[xj][pj - 1] = 'krzakJezyn';
+      }
+    }
+
     // drzewa - dab (drewno) lub brzoza (drewnoBrzozy, wizualna odmiana -
     // po wykopaniu i tak trafia do tego samego zasobu "drewno")
     for (var x = 2; x < SZEROKOSC_SWIATA - 2; x++) {
@@ -7513,7 +7645,8 @@ SZABLON_MINECRAFT = """
 
   function jestPuste(x, y) {
     if (x < 0 || x >= SZEROKOSC_SWIATA || y < 0 || y >= WYSOKOSC_SWIATA) return false;
-    return world[x][y] === 'powietrze';
+    // Krzak jezyn jest przenikalny - to roslina, nie sciana
+    return world[x][y] === 'powietrze' || world[x][y] === 'krzakJezyn';
   }
 
   function czyDrzwi(x, y) {
@@ -7613,15 +7746,27 @@ SZABLON_MINECRAFT = """
 
     var wierszBlokow = document.createElement('div');
     wierszBlokow.className = 'wiersz-ekwipunku';
-    KOLEJNOSC_EKWIPUNKU.forEach(function (klucz) {
+    // Tylko to, co faktycznie masz - wczesniej lista pokazywala np. "Piec 0"
+    var posiadaneBloki = KOLEJNOSC_EKWIPUNKU.filter(function (k) { return (ekwipunek[k] || 0) > 0; });
+    if (!posiadaneBloki.length) {
+      var pusto = document.createElement('div');
+      pusto.className = 'ekw-pusto';
+      pusto.textContent = 'Nie masz jeszcze żadnych bloków — wykop coś!';
+      wierszBlokow.appendChild(pusto);
+    }
+    posiadaneBloki.forEach(function (klucz) {
       var slot = document.createElement('div');
       slot.className = 'slot-bloku' + (klucz === wybranyBlok ? ' wybrany' : '');
       slot.title = NAZWY_BLOKOW[klucz];
       slot.appendChild(stworzIkonkeElementu(klucz, 28));
       var licznik = document.createElement('div');
       licznik.className = 'licznik-bloku';
-      licznik.textContent = ekwipunek[klucz] || 0;
+      licznik.textContent = ekwipunek[klucz];
       slot.appendChild(licznik);
+      var podpis = document.createElement('div');
+      podpis.className = 'podpis-slotu';
+      podpis.textContent = NAZWY_BLOKOW[klucz];
+      slot.appendChild(podpis);
       slot.addEventListener('click', function () {
         wybranyBlok = klucz;
         aktualizujEtykieteWybranego();
@@ -7888,6 +8033,24 @@ SZABLON_MINECRAFT = """
 
   // ---------- RYSOWANIE ----------
   function rysujTeksture(ctxDocelowy, x, y, blok) {
+    if (blok === 'krzakJezyn') {
+      var K = KOMORKA;
+      ctxDocelowy.fillStyle = '#2f6a2c';
+      [[0.30,0.62,0.30],[0.68,0.60,0.30],[0.50,0.40,0.32],[0.50,0.72,0.26]].forEach(function (k) {
+        ctxDocelowy.beginPath();
+        ctxDocelowy.arc(x + K*k[0], y + K*k[1], K*k[2], 0, Math.PI*2);
+        ctxDocelowy.fill();
+      });
+      ctxDocelowy.fillStyle = '#3f8a3a';
+      ctxDocelowy.beginPath(); ctxDocelowy.arc(x + K*0.42, y + K*0.36, K*0.14, 0, Math.PI*2); ctxDocelowy.fill();
+      [[0.28,0.52],[0.62,0.44],[0.46,0.68],[0.74,0.70],[0.36,0.32]].forEach(function (p) {
+        ctxDocelowy.fillStyle = '#3a1a4a';
+        ctxDocelowy.beginPath(); ctxDocelowy.arc(x + K*p[0], y + K*p[1], K*0.085, 0, Math.PI*2); ctxDocelowy.fill();
+        ctxDocelowy.fillStyle = 'rgba(200,160,230,0.7)';
+        ctxDocelowy.fillRect(x + K*p[0] - 1, y + K*p[1] - 2, 1.5, 1.5);
+      });
+      return;
+    }
     var kolor = KOLORY_BLOKOW[blok];
     ctxDocelowy.fillStyle = kolor;
     ctxDocelowy.fillRect(x, y, KOMORKA, KOMORKA);
@@ -8145,8 +8308,7 @@ SZABLON_MINECRAFT = """
         if (blok && blok !== 'powietrze') {
           rysujTeksture(ctx, vx * KOMORKA, vy * KOMORKA, blok);
         }
-        var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
-        if (dyst <= ZASIEG && !(wx === graczX && wy === graczY)) {
+        if (wZasiegu(wx, wy) && !(wx === graczX && wy === graczY)) {
           ctx.strokeStyle = 'rgba(230,193,92,0.35)';
           ctx.lineWidth = 1;
           ctx.strokeRect(vx * KOMORKA + 1, vy * KOMORKA + 1, KOMORKA - 2, KOMORKA - 2);
@@ -8197,8 +8359,7 @@ SZABLON_MINECRAFT = """
     var wx = kameraX + vx, wy = kameraY + vy;
     if (wx < 0 || wx >= SZEROKOSC_SWIATA || wy < 0 || wy >= WYSOKOSC_SWIATA) return;
 
-    var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
-    if (dyst > ZASIEG) {
+    if (!wZasiegu(wx, wy)) {
       pokazDziennikMc('Za daleko!', 1000);
       dzwiekBlokada();
       return;
@@ -8256,6 +8417,9 @@ SZABLON_MINECRAFT = """
       if (potwory[j].x === wx && potwory[j].y === wy) { idxPot = j; break; }
     }
     if (idxPot !== -1) {
+      // Odleglosc do potwora liczona osobno - zasieg KOPANIA to romb,
+      // ale do walki wrecz liczy sie sasiednie pole, takze po skosie.
+      var dyst = Math.max(Math.abs(wx - graczX), Math.abs(wy - graczY));
       atakujPotwora(idxPot, dyst);
       return;
     }
@@ -8275,6 +8439,15 @@ SZABLON_MINECRAFT = """
         return;
       }
       world[wx][wy] = 'powietrze';
+      if (blok === 'krzakJezyn') {
+        var ileJ = 1 + Math.floor(Math.random() * 3);
+        dodajDoEkwipunku('jezyny', ileJ);
+        pokazDziennikMc('🫐 Zebrano jeżyny: ' + ileJ, 1200);
+        dzwiekKopania('liscie');
+        zastosujGrawitacje();
+        rysuj();
+        return;
+      }
       dodajDoEkwipunku(blok, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania(blok);
@@ -8447,6 +8620,33 @@ SZABLON_MINECRAFT = """
     if (graczGlod === 3) pokazDziennikMc('😋 Robi się głodno... może czas na stek?', 1800);
     if (graczGlod === 0) pokazDziennikMc('🤤 W brzuchu strasznie burczy! Znajdź jakieś zwierzę.', 2000);
   }, 25000);
+
+  setInterval(function () {
+    if (!trwa) return;
+    for (var proba = 0; proba < 12; proba++) {
+      var rx = Math.floor(Math.random() * SZEROKOSC_SWIATA);
+      for (var ry = 1; ry < WYSOKOSC_SWIATA; ry++) {
+        if (world[rx][ry] === 'trawa') {
+          if (world[rx][ry - 1] === 'powietrze' && !(rx === graczX && ry - 1 === graczY)) {
+            world[rx][ry - 1] = 'krzakJezyn';
+            return;
+          }
+          break;
+        }
+        if (world[rx][ry] !== 'powietrze') break;
+      }
+    }
+  }, 45000);
+
+  // Regeneracja: najedzona postac powoli odzyskuje zdrowie. Wczesniej tego
+  // mechanizmu w ogole nie bylo - jedzenie tylko zatrzymywalo utrate HP.
+  setInterval(function () {
+    if (!trwa) return;
+    if (graczGlod >= 7 && graczHp > 0 && graczHp < GRACZ_HP_MAX) {
+      graczHp = Math.min(GRACZ_HP_MAX, graczHp + 1);
+      aktualizujPasekHp();
+    }
+  }, 3500);
 
   // Powolne, niewielkie obrazenia z glodu - TYLKO gdy pasek jest calkowicie
   // pusty, i rzadziej niz sam spadek glodu, zeby to bylo dokuczliwe, ale
@@ -8633,22 +8833,64 @@ SZABLON_MINECRAFT = """
   }, 1300);
 
   // ---------- ZADANIE-ZART: "ZBUDUJ DOM" ----------
+  // Dom musi NAPRAWDE stac w swiecie: drzwi, szyby (wytopione z piachu)
+  // i lozko. Szukamy ich wsrod POSTAWIONYCH blokow, nie w ekwipunku.
+  function czegoBrakujeWDomu() {
+    var maDrzwi = false, maSzyby = false, maLozko = false;
+    for (var x = 0; x < SZEROKOSC_SWIATA; x++) {
+      for (var y = 0; y < WYSOKOSC_SWIATA; y++) {
+        var bl = world[x][y];
+        if (bl === 'drzwi' || bl === 'drzwiBrzozowe') maDrzwi = true;
+        else if (bl === 'szyby') maSzyby = true;
+        else if (bl === 'lozko') maLozko = true;
+      }
+    }
+    var brak = [];
+    if (!maDrzwi) brak.push('drzwi');
+    if (!maSzyby) brak.push('okien');
+    if (!maLozko) brak.push('łóżka');
+    return brak;
+  }
+
+  function pokazWielkiKomunikat(tekst, kolor, czas) {
+    var el = document.getElementById('wielkiKomunikat');
+    if (!el) return;
+    el.textContent = tekst;
+    el.style.color = kolor || '#ffe08a';
+    el.classList.remove('widoczny');
+    void el.offsetWidth;
+    el.classList.add('widoczny');
+    clearTimeout(pokazWielkiKomunikat._t);
+    pokazWielkiKomunikat._t = setTimeout(function () {
+      el.classList.remove('widoczny');
+    }, czas || 2800);
+  }
+
   btnDom.addEventListener('click', function () {
     if (!trwa) return;
     inicjujDzwiek();
-    probyDomu++;
-    if (probyDomu === 1) {
-      pokazDziennikMc('🏠 Hmm... to ma być dom? Postaraj się bardziej!', 2400);
-      zagrajTon(220, 0.15, 'sawtooth');
-    } else {
-      pokazDziennikMc('🏠 Piękny dom! Zjedź niżej i kliknij przycisk, żeby zaliczyć! 🎉', 2600);
+    var brak = czegoBrakujeWDomu();
+
+    if (brak.length === 0) {
+      pokazWielkiKomunikat('🏠 PIĘKNY DOM!', '#8ef08a', 3200);
       zagrajTon(660, 0.15, 'triangle');
       setTimeout(function () { zagrajTon(880, 0.2, 'triangle'); }, 150);
-      if (window.parent) {
-        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
-        window.postMessage(wiadomoscZaliczenia, '*');
-        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
-      }
+      setTimeout(function () { zagrajTon(1180, 0.25, 'triangle'); }, 320);
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(wiadomoscZaliczenia, '*');
+      if (window.parent && window.parent !== window) window.parent.postMessage(wiadomoscZaliczenia, '*');
+      return;
+    }
+
+    probyDomu++;
+    if (probyDomu === 1) {
+      pokazWielkiKomunikat('TO MA BYĆ DOM?', '#ff8a7a', 2600);
+      zagrajTon(220, 0.18, 'sawtooth');
+    } else {
+      var lista = brak.length === 1 ? brak[0]
+        : brak.slice(0, -1).join(', ') + ' i ' + brak[brak.length - 1];
+      pokazWielkiKomunikat('BRAKUJE CI ' + lista.toUpperCase(), '#ffb45a', 3200);
+      zagrajTon(300, 0.16, 'sawtooth');
     }
   });
 
@@ -9013,19 +9255,21 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
-    gap: 8px;
-    width: 168px;
-    margin: 12px auto 0;
+    gap: 11px;
+    width: 258px;
+    max-width: 88%;
+    margin: 14px auto 0;
   }
   .btn-diag {
     background: linear-gradient(135deg, #3a3550, #262038);
-    border: 1px solid #5a4a2e;
-    border-radius: 12px;
+    border: 1.5px solid #5a4a2e;
+    border-radius: 16px;
     color: #f5f5f0;
-    font-size: 26px;
-    padding: 14px 0;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    font-size: 36px;
+    padding: 24px 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
     transition: transform 0.1s ease;
+    touch-action: none;
   }
   .btn-diag:active { transform: scale(0.9); background: linear-gradient(135deg, #4a4560, #362848); }
   #nakladka {
@@ -9103,6 +9347,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   var KIERUNEK_PD = { dx: 1, dy: 1 };
 
   var waz = [];
+  var usunietyOgon = null;   // ostatnia pozycja ogona - punkt startowy animacji
   var kierunek = KIERUNEK_PD;
   var nastepnyKierunek = KIERUNEK_PD;
   var jedzenie = null;
@@ -9238,14 +9483,26 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   function xPx(gx) { return gx * KOMORKA + 1; }
   function yPx(gy) { return gy * KOMORKA + 1; }
 
-  function rysujPlansze() {
+  // Kazdy segment wjezdza z pola, ktore zajmuje segment za nim. Ogon
+  // startuje z pola, ktore wlasnie opuscil. Czysto wizualne - siatka
+  // i kolizje dzialaja dokladnie tak samo jak wczesniej.
+  function zrodloSegmentu(i) {
+    if (i + 1 < waz.length) return waz[i + 1];
+    return usunietyOgon || waz[i];
+  }
+
+  function rysujPlansze(postep) {
+    var p = (typeof postep === 'number') ? Math.max(0, Math.min(1, postep)) : 1;
     elementyWeza.forEach(function (el) { if (el.parentNode) el.remove(); });
     elementyWeza = [];
     waz.forEach(function (seg, i) {
+      var zr = zrodloSegmentu(i);
+      var ix = zr.x + (seg.x - zr.x) * p;
+      var iy = zr.y + (seg.y - zr.y) * p;
       var el = document.createElement('div');
       el.className = 'segment' + (i === 0 ? ' segment-glowa' : '');
-      el.style.left = xPx(seg.x) + 'px';
-      el.style.top = yPx(seg.y) + 'px';
+      el.style.left = xPx(ix) + 'px';
+      el.style.top = yPx(iy) + 'px';
       if (i === 0) {
         var okoL = document.createElement('div');
         okoL.className = 'oko oko-lewe';
@@ -9312,6 +9569,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
     var nowaGlowa = { x: nx, y: ny };
     waz.unshift(nowaGlowa);
+    usunietyOgon = null;
 
     var zjadl = jedzenie && jedzenie.x === nx && jedzenie.y === ny;
     if (zjadl) {
@@ -9325,10 +9583,10 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       }
       jedzenie = losujJedzenie();
     } else {
-      waz.pop();
+      usunietyOgon = waz.pop();   // stad wyjedzie ogon w animacji
     }
 
-    rysujPlansze();
+    rysujPlansze(0);
   }
 
   function petla(czas) {
@@ -9340,11 +9598,15 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     czasOdOstatniegoTicku += dt;
     var progTicku = Math.max(TICK_MIN, TICK_START - wynik * TICK_PRZYROST);
     if (czasOdOstatniegoTicku >= progTicku) {
-      czasOdOstatniegoTicku = 0;
+      czasOdOstatniegoTicku -= progTicku;
+      if (czasOdOstatniegoTicku > progTicku) czasOdOstatniegoTicku = 0;
       wykonajTick();
       if (!trwa) return;
     }
 
+    // Rysujemy KAZDA klatke, z postepem miedzy kratkami - waz plynie
+    // zamiast przeskakiwac o cale pole.
+    rysujPlansze(czasOdOstatniegoTicku / progTicku);
     requestAnimationFrame(petla);
   }
 
@@ -10331,7 +10593,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   <div id="paskKlikow"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">✈️ Lot papierowego samolotu</div>
-    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>9 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>1000 m</b>.</div>
+    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>12 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>2137 m</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -10344,7 +10606,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   var nakladkaOpis=document.getElementById('nakladkaOpis'), nakladkaBtn=document.getElementById('nakladkaBtn');
 
   var W=380, H=560, ZIEMIA=470;          // ZIEMIA - ekranowe y linii gruntu przy starcie
-  var CEL_METROW=1000;
+  var CEL_METROW=2137;
 
   // Fizyka - wartosci dobrane i sprawdzone symulacja PRZED napisaniem gry:
   // dobra gra daje ~640m, plaski spam tylko ~115m.
@@ -10357,20 +10619,23 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   // podskoki i trampoliny oraz 9 dotkniec na start zamiast 5. Kalibrowane
   // symulacja z prawdziwym zbieraniem bonusow: slaba gra ~600-900 m,
   // dobra ~1100-1300 m, lot zawsze sie konczy (21-28 s).
-  var G=175, OPOR_KW=0.00005, MOC=3.6, MAX_CIAG=100;
+  // Kalibracja pod cel 2137 m. Kluczem okazal sie NIE opor, tylko odbicie
+  // od ziemi - przy 0.26 kazde zetkniecie zabijalo trzy czwarte predkosci.
+  var G=175, OPOR_KW=0.00002, MOC=3.6, MAX_CIAG=100;
   // Dotkniecie = PODSKOK (jak we Flappy): ustawia stala predkosc w gore
   // zamiast dodawac ciag wzdluz nosa. Dzieki temu nie oplaca sie juz
   // wystrzelic stromo i zuzyc wszystkich dotkniec od razu na starcie.
-  var PODSKOK_VY=-205, PODSKOK_VX=26, ODSTEP_KLIKOW=0.55;
-  var TRAMP_ODB=1.03, TRAMP_DOD=180, MIN_V_TRAMP=150;
-  var ZIEM_ODB=0.26, ZIEM_TARCIE=0.24;
-  var START_KLIKOW=9;
+  var PODSKOK_VY=-225, PODSKOK_VX=26, ODSTEP_KLIKOW=0.55;
+  var TRAMP_ODB=1.03, TRAMP_DOD=240, MIN_V_TRAMP=150;
+  var ZIEM_ODB=0.42, ZIEM_TARCIE=0.45;
+  var START_KLIKOW=12;
 
   var faza='celowanie';   // celowanie | lot | koniec
   var sx=0, sy=0, ax=0, ay=0, celuje=false;
   var samX=0, samY=0, vx=0, vy=0, kat=0;
   var klikiPozostale=START_KLIKOW, ostatniKlik=-99, czasLotu=0;
-  var kamX=0, kamY=0;
+  var kamX=0, kamY=0, celKamY=0;
+  var ogienSily=0;        // rosnie po dopalaczu i przy duzej predkosci
   var trampoliny=[], bonusy=[], slad=[], czastki=[];
   var rekord=0, dystansM=0, trwa=false, czasOstatni=null, zaliczone=false;
 
@@ -10431,8 +10696,8 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   function generujSwiat(){
     trampoliny=[]; bonusy=[];
     // Trampoliny co ~600px, z lekkim rozrzutem
-    for(var i=1;i<140;i++){
-      trampoliny.push({ x: i*400 + losowo(-60,60), w: 150 });
+    for(var i=1;i<340;i++){
+      trampoliny.push({ x: i*300 + losowo(-50,50), w: 150 });
     }
     // Bonusy w powietrzu, na roznych wysokosciach
     for(var b=1;b<200;b++){
@@ -10452,10 +10717,33 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 
   function rysujTlo(){
     var t=Date.now()/1000;
+    // Im wyzej, tym ciemniejsze niebo - przy samej gorze widac gwiazdy
+    var wys3=Math.max(0, Math.min(1, (-samY)/1400));
+    function mieszaj(a,b3,t4){
+      var pa=parseInt(a.slice(1),16), pb=parseInt(b3.slice(1),16);
+      var r=Math.round(((pa>>16)&255)*(1-t4)+((pb>>16)&255)*t4);
+      var g=Math.round(((pa>>8)&255)*(1-t4)+((pb>>8)&255)*t4);
+      var b4=Math.round((pa&255)*(1-t4)+(pb&255)*t4);
+      return 'rgb('+r+','+g+','+b4+')';
+    }
     var g1=ctx.createLinearGradient(0,0,0,H);
-    g1.addColorStop(0,'#2f6fb5'); g1.addColorStop(0.34,'#5b9bd5');
-    g1.addColorStop(0.68,'#a9d3ea'); g1.addColorStop(1,'#e6f3f8');
+    g1.addColorStop(0, mieszaj('#2f6fb5','#080c28', wys3));
+    g1.addColorStop(0.34, mieszaj('#5b9bd5','#1b2a5e', wys3*0.9));
+    g1.addColorStop(0.68, mieszaj('#a9d3ea','#4a6aa8', wys3*0.75));
+    g1.addColorStop(1, mieszaj('#e6f3f8','#8fa8cc', wys3*0.5));
     ctx.fillStyle=g1; ctx.fillRect(0,0,W,H);
+
+    // Gwiazdy pojawiaja sie wysoko
+    if(wys3>0.25){
+      ctx.save(); ctx.globalAlpha=(wys3-0.25)/0.75*0.9;
+      for(var gw=0;gw<60;gw++){
+        var gx2=(gw*137)%W, gy2=(gw*79)%Math.round(H*0.7);
+        var mig=0.5+Math.sin(t*2+gw)*0.5;
+        ctx.fillStyle='#fff';
+        ctx.fillRect(gx2, gy2, 1.6+mig*0.8, 1.6+mig*0.8);
+      }
+      ctx.restore();
+    }
 
     // Slonce z aureola i delikatnymi promieniami
     var sx=306, sy=70;
@@ -10571,39 +10859,197 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   }
 
   function rysujTrampoliny(){
+    var tt=Date.now()/1000;
     trampoliny.forEach(function(t){
       var ex=ekrX(t.x), ey=ekrY(0);
       if(ex<-120||ex>W+120||ey>H+30) return;
-      ctx.fillStyle='#2f6f3a';
-      ctx.fillRect(ex-t.w/2, ey-8, t.w, 11);
-      ctx.fillStyle='#4ad07a';
-      ctx.fillRect(ex-t.w/2, ey-14, t.w, 9);
-      ctx.fillStyle='#1e4a26';
-      ctx.fillRect(ex-t.w/2+3, ey-2, 6, 14);
-      ctx.fillRect(ex+t.w/2-9, ey-2, 6, 14);
-      ctx.font='11px sans-serif'; ctx.textAlign='center';
-      ctx.fillStyle='rgba(255,255,255,0.9)';
-      ctx.fillText('▲▲▲', ex, ey-13);
+      var pol=t.w/2, x0=ex-pol, x1=ex+pol, gora=ey-20;
+      // Swiezo uzyta trampolina jeszcze drga
+      var drg=t.drganie||0;
+      var ugiecie=4+Math.sin(tt*28)*drg*9;
+
+      // Cien na trawie
+      ctx.fillStyle='rgba(0,0,0,0.18)';
+      ctx.beginPath(); ctx.ellipse(ex, ey+3, pol*0.95, 5, 0, 0, Math.PI*2); ctx.fill();
+
+      // Nogi w ksztalcie litery W
+      ctx.strokeStyle='#3a3a44'; ctx.lineWidth=3; ctx.lineCap='round';
+      [x0+10, ex-pol*0.35, ex+pol*0.35, x1-10].forEach(function(nx,i){
+        ctx.beginPath(); ctx.moveTo(nx, gora+4);
+        ctx.lineTo(nx+(i%2?4:-4), ey+1); ctx.stroke();
+      });
+
+      // Sprezyny - zygzaki miedzy rama a mata
+      ctx.strokeStyle='#c8ccd6'; ctx.lineWidth=1.3;
+      for(var sx=x0+8; sx<x1-6; sx+=10){
+        ctx.beginPath(); ctx.moveTo(sx, gora);
+        for(var k=1;k<=4;k++) ctx.lineTo(sx+(k%2?3:-3), gora+k*1.6+ugiecie*0.25*k/4);
+        ctx.stroke();
+      }
+
+      // Mata - ugina sie do srodka
+      var gm=ctx.createLinearGradient(0, gora, 0, gora+ugiecie+6);
+      gm.addColorStop(0,'#2a2a3a'); gm.addColorStop(1,'#12121c');
+      ctx.fillStyle=gm;
+      ctx.beginPath();
+      ctx.moveTo(x0+6, gora+2);
+      ctx.quadraticCurveTo(ex, gora+2+ugiecie*2, x1-6, gora+2);
+      ctx.lineTo(x1-6, gora+6);
+      ctx.quadraticCurveTo(ex, gora+6+ugiecie*2, x0+6, gora+6);
+      ctx.closePath(); ctx.fill();
+
+      // Rama w paski - czerwono-biala oslona
+      var paski=Math.max(6, Math.round(t.w/14));
+      for(var p=0;p<paski;p++){
+        var px0=x0+p*t.w/paski, px1=x0+(p+1)*t.w/paski;
+        ctx.fillStyle= p%2 ? '#f4f1e8' : '#e0453a';
+        ctx.beginPath(); ctx.moveTo(px0, gora-3); ctx.lineTo(px1, gora-3);
+        ctx.lineTo(px1, gora+2); ctx.lineTo(px0, gora+2); ctx.closePath(); ctx.fill();
+      }
+      ctx.fillStyle='rgba(255,255,255,0.35)';
+      ctx.fillRect(x0, gora-3, t.w, 1.5);
+
+      // Delikatne strzalki w gore, pulsujace
+      ctx.save();
+      ctx.globalAlpha=0.45+Math.sin(tt*4+t.x)*0.25;
+      ctx.fillStyle='#fff6c0';
+      for(var a=-1;a<=1;a++){
+        var ax=ex+a*22, ay=gora-10-Math.sin(tt*4+a)*2;
+        ctx.beginPath(); ctx.moveTo(ax, ay-5); ctx.lineTo(ax+5, ay+1); ctx.lineTo(ax-5, ay+1); ctx.closePath(); ctx.fill();
+      }
+      ctx.restore();
     });
   }
 
+  // Kazdy typ bonusu ma wlasny ksztalt zamiast emoji na bialym kolku.
+  function rysujBalon(x, y, r, kol, tt, faza){
+    var kolysanie=Math.sin(tt*1.6+faza)*0.08;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(kolysanie);
+    // sznurek - falujacy
+    ctx.strokeStyle='rgba(255,255,255,0.75)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(0, r*1.15);
+    for(var k=1;k<=6;k++) ctx.lineTo(Math.sin(tt*3+k+faza)*3, r*1.15+k*5);
+    ctx.stroke();
+    // czasza
+    var g=ctx.createRadialGradient(-r*0.35, -r*0.4, r*0.1, 0, 0, r*1.25);
+    g.addColorStop(0,'#ffd6e4'); g.addColorStop(0.35, kol); g.addColorStop(1,'#9a2e58');
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.ellipse(0, 0, r*0.92, r*1.12, 0, 0, Math.PI*2); ctx.fill();
+    // wezelek
+    ctx.fillStyle='#9a2e58';
+    ctx.beginPath(); ctx.moveTo(-3, r*1.08); ctx.lineTo(3, r*1.08); ctx.lineTo(0, r*1.22); ctx.closePath(); ctx.fill();
+    // odblask
+    ctx.fillStyle='rgba(255,255,255,0.55)';
+    ctx.beginPath(); ctx.ellipse(-r*0.32, -r*0.42, r*0.18, r*0.3, -0.4, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function rysujDopalacz(x, y, r, tt, faza){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(-0.5);
+    // plomien - migocze
+    var dl=r*(0.9+Math.sin(tt*30+faza)*0.25);
+    var gp=ctx.createLinearGradient(-r*0.9, 0, -r*0.9-dl, 0);
+    gp.addColorStop(0,'#fff6c0'); gp.addColorStop(0.4,'#ffb43a'); gp.addColorStop(1,'rgba(255,90,40,0)');
+    ctx.fillStyle=gp;
+    ctx.beginPath(); ctx.moveTo(-r*0.8, -r*0.35); ctx.lineTo(-r*0.9-dl, 0); ctx.lineTo(-r*0.8, r*0.35); ctx.closePath(); ctx.fill();
+    // korpus rakiety
+    var gk=ctx.createLinearGradient(0, -r*0.4, 0, r*0.4);
+    gk.addColorStop(0,'#f2f4f8'); gk.addColorStop(0.5,'#c6ccd8'); gk.addColorStop(1,'#8a92a4');
+    ctx.fillStyle=gk;
+    ctx.beginPath(); ctx.moveTo(-r*0.85, -r*0.38); ctx.lineTo(r*0.5, -r*0.38);
+    ctx.quadraticCurveTo(r*1.1, 0, r*0.5, r*0.38); ctx.lineTo(-r*0.85, r*0.38); ctx.closePath(); ctx.fill();
+    // czerwony nos i statecznik
+    ctx.fillStyle='#e0453a';
+    ctx.beginPath(); ctx.moveTo(r*0.5, -r*0.38); ctx.quadraticCurveTo(r*1.1, 0, r*0.5, r*0.38); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-r*0.85, -r*0.38); ctx.lineTo(-r*0.5, -r*0.38); ctx.lineTo(-r*0.95, -r*0.8); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-r*0.85, r*0.38); ctx.lineTo(-r*0.5, r*0.38); ctx.lineTo(-r*0.95, r*0.8); ctx.closePath(); ctx.fill();
+    // okienko
+    ctx.fillStyle='#7ec4e8';
+    ctx.beginPath(); ctx.arc(r*0.05, 0, r*0.17, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function rysujGwiazdke(x, y, r, tt, faza){
+    ctx.save(); ctx.translate(x, y); ctx.rotate(tt*1.2+faza);
+    ctx.shadowColor='#ffe08a'; ctx.shadowBlur=16;
+    var g=ctx.createRadialGradient(0,0,r*0.1,0,0,r);
+    g.addColorStop(0,'#fffbe0'); g.addColorStop(0.6,'#ffd84a'); g.addColorStop(1,'#e8a020');
+    ctx.fillStyle=g;
+    ctx.beginPath();
+    for(var i=0;i<10;i++){
+      var rr= i%2 ? r*0.45 : r;
+      var k=-Math.PI/2+i*Math.PI/5;
+      ctx.lineTo(Math.cos(k)*rr, Math.sin(k)*rr);
+    }
+    ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='#7a4a00'; ctx.font='bold 11px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('+1', x, y+1);
+  }
+
+  function rysujWir(x, y, r, tt, faza){
+    ctx.save(); ctx.translate(x, y);
+    // trzy spiralne smugi wiatru krecace sie w gore
+    for(var s2=0;s2<3;s2++){
+      ctx.strokeStyle='rgba(180,230,255,'+(0.85-s2*0.2)+')';
+      ctx.lineWidth=2.4-s2*0.5; ctx.lineCap='round';
+      ctx.beginPath();
+      for(var k=0;k<=22;k++){
+        var t4=k/22, kat=t4*Math.PI*3+tt*4+s2*2.1+faza;
+        var rr=r*(0.25+t4*0.75);
+        var px=Math.cos(kat)*rr, py=r*0.9-t4*r*1.8;
+        if(k===0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+
   function rysujBonusy(){
+    var tt=Date.now()/1000;
     bonusy.forEach(function(b){
       if(b.zebrany) return;
       var ex=ekrX(b.x), ey=ekrY(b.y);
       if(ex<-60||ex>W+60||ey<-60||ey>H+60) return;
+      var unos=Math.sin(tt*2.6+b.x)*4, faza=b.x*0.01;
+      // miekka poswiata w kolorze bonusu
       ctx.save();
-      ctx.shadowColor=b.kolor; ctx.shadowBlur=14;
-      ctx.fillStyle='rgba(255,255,255,0.85)';
-      ctx.beginPath(); ctx.arc(ex,ey+Math.sin(Date.now()/380+b.x)*4,b.r,0,Math.PI*2); ctx.fill();
+      var gp=ctx.createRadialGradient(ex, ey+unos, 2, ex, ey+unos, b.r*1.9);
+      gp.addColorStop(0, b.kolor+'66'); gp.addColorStop(1, b.kolor+'00');
+      ctx.fillStyle=gp;
+      ctx.beginPath(); ctx.arc(ex, ey+unos, b.r*1.9, 0, Math.PI*2); ctx.fill();
       ctx.restore();
-      ctx.font='30px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
-      ctx.fillText(b.ikona, ex, ey+Math.sin(Date.now()/380+b.x)*4);
+      if(b.typ==='balon') rysujBalon(ex, ey+unos, b.r*0.95, b.kolor, tt, faza);
+      else if(b.typ==='ciag') rysujDopalacz(ex, ey+unos, b.r, tt, faza);
+      else if(b.typ==='klik') rysujGwiazdke(ex, ey+unos, b.r, tt, faza);
+      else rysujWir(ex, ey+unos, b.r, tt, faza);
     });
   }
 
   function rysujSamolot(){
     var ex=ekrX(samX), ey=ekrY(samY);
+    var t3=Date.now()/1000;
+
+    // Ogien za samolotem - po dopalaczu albo przy bardzo duzej predkosci
+    var szybko=Math.max(0, (Math.hypot(vx,vy)-420)/420);
+    var sila=Math.max(ogienSily, Math.min(1.3, szybko));
+    if(sila>0.05){
+      var kat3=Math.atan2(vy,vx);
+      ctx.save();
+      ctx.translate(ex,ey); ctx.rotate(kat3);
+      for(var p5=0;p5<7;p5++){
+        var d5=10+p5*7*sila;
+        var r5=(8-p5)*0.9*sila*(0.8+Math.sin(t3*22+p5)*0.2);
+        if(r5<=0) continue;
+        var kol5 = p5<2 ? '#fff6d0' : (p5<4 ? '#ffc24a' : '#ff7a3a');
+        ctx.globalAlpha=Math.max(0,(1-p5/7))*0.75*Math.min(1,sila);
+        ctx.fillStyle=kol5;
+        ctx.beginPath(); ctx.arc(-d5, Math.sin(t3*16+p5)*1.6, r5, 0, Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+
     // Smuga: zanika ku tylowi i cienieje
     for(var i=1;i<slad.length;i++){
       var a=slad[i-1], b2=slad[i];
@@ -10776,18 +11222,21 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
           dzwiekBonusu();
           elPodpowiedz.textContent=b.opis;
           for(var i=0;i<12;i++) czastki.push({x:b.x,y:b.y,vx:losowo(-130,130),vy:losowo(-130,130),zycie:0.5,kolor:b.kolor});
-          if(b.typ==='ciag'){ vy=PODSKOK_VY*1.5; vx+=55; }
+          if(b.typ==='ciag'){ vy=PODSKOK_VY*1.5; vx+=55; ogienSily=1.6; }
           else if(b.typ==='klik'){ klikiPozostale++; odswiezKliki(); }
           else if(b.typ==='balon'){ vy=-Math.abs(vy)*0.3-190; }
-          else if(b.typ==='prad'){ vy=Math.min(vy,-125); vx+=35; }
+          else if(b.typ==='prad'){ vy=Math.min(vy,-125); vx+=35; ogienSily=Math.max(ogienSily,1.0); }
         }
       });
 
       // Kontakt z ziemia
       if(samY>=0){
         samY=0;
-        var naTr=trampoliny.some(function(t){ return Math.abs(samX-t.x)<t.w/2+16; });
+        var trafiona=null;
+        trampoliny.forEach(function(t){ if(Math.abs(samX-t.x)<t.w/2+16) trafiona=t; });
+        var naTr=!!trafiona;
         if(naTr && vy>MIN_V_TRAMP){
+          trafiona.drganie=1;
           vy=-Math.abs(vy)*TRAMP_ODB-TRAMP_DOD;
           dzwiekTrampoliny();
           elPodpowiedz.textContent='Trampolina!';
@@ -10863,7 +11312,15 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
     klikiPozostale=START_KLIKOW; ostatniKlik=-99; czasLotu=0;
     slad=[]; czastki=[]; dystansM=0;
     faza='celowanie'; celuje=false;
-    kamX=samX-W*0.3; kamY=Math.min(0,samY+120);
+    if(ogienSily>0) ogienSily-=dt*0.9;
+    trampoliny.forEach(function(t){ if(t.drganie>0) t.drganie=Math.max(0, t.drganie-dt*2.2); });
+    kamX=samX-W*0.3;
+    // Im szybciej opadamy, tym wyzej samolot siedzi na ekranie - dzieki temu
+    // widac ziemie z wyprzedzeniem i da sie zdazyc z dotknieciem.
+    var wyprzedzenie = 120 + Math.max(0, vy) * 0.42;
+    if (wyprzedzenie > 330) wyprzedzenie = 330;
+    celKamY = Math.min(0, samY + wyprzedzenie);
+    kamY += (celKamY - kamY) * Math.min(1, dt * 6);
     elDystans.textContent='0 m';
     elRekord.textContent='Rekord: '+rekord+' m · Cel: '+CEL_METROW+' m';
     elPodpowiedz.textContent='Przeciągnij i puść, żeby wyrzucić';
@@ -10874,7 +11331,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   }
 
   nakladkaBtn.onclick=function(){ inicjujDzwiek(); rozpocznijLot(); };
-  generujSwiat(); samX=0; samY=-40; kamX=samX-W*0.3; kamY=-80; odswiezKliki(); rysuj();
+  generujSwiat(); samX=0; samY=-40; kamX=samX-W*0.3; kamY=-80; celKamY=-80; odswiezKliki(); rysuj();
 </script>
 
 <script>
@@ -13011,7 +13468,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       pulapki:[
         { typ:'zapadnia', strefa:[9,9,3,3], kafle:[[10,10]], opoznienie:0.42, tekst:'Rusz się!' },
         { typ:'spadajaceKolce', strefa:[12,9,2,3], kolumny:[15], tekst:'' },
-        { typ:'laser', strefa:[12,9,2,3], wiersz:11, odKol:17, doKol:18, cykl:1.2, aktywny:0.55, tekst:'' },
+        { typ:'laser', strefa:[11,8,2,4], kol:17, cykl:1.25, aktywny:0.55, tekst:'' },
       ] },
 
     { nazwa:'Coraz ciaśniej',
@@ -13045,9 +13502,9 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
               '...................','...................','...................','..S.............D..',
               '###################','...................','...................'],
       pulapki:[
-        { typ:'laser', strefa:[4,9,2,3], wiersz:11, odKol:7, doKol:8, cykl:1.5, aktywny:0.65, tekst:'Poczekaj na przerwę.' },
-        { typ:'laser', strefa:[9,9,2,3], wiersz:11, odKol:12, doKol:13, cykl:1.3, aktywny:0.6, tekst:'' },
-        { typ:'laser', strefa:[13,9,2,3], wiersz:11, odKol:16, doKol:17, cykl:0.95, aktywny:0.45, tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:7,  cykl:1.55, aktywny:0.70, przesuniecie:0.0, tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:11, cykl:1.55, aktywny:0.70, przesuniecie:0.8, tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:15, cykl:1.20, aktywny:0.55, przesuniecie:0.3, tekst:'' },
       ] },
 
     { nazwa:'Ostrzał',
@@ -13082,6 +13539,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         { typ:'zapadnia', strefa:[8,8,2,4], kafle:[[10,12],[11,12]], tekst:'' },
         { typ:'spadajaceKolce', strefa:[11,8,2,4], kolumny:[14], tekst:'' },
         { typ:'przesunDrzwi', strefa:[14,9,3,3], nowe:[17,11], tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:12, cykl:1.35, aktywny:0.6, tekst:'' },
       ] },
 
     { nazwa:'Blok z nieba',
@@ -13094,6 +13552,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         { typ:'blokSpadajacy', strefa:[9,8,2,4], kolumna:12, tekst:'' },
         { typ:'blokSpadajacy', strefa:[11,8,2,4], kolumna:10, tekst:'' },
         { typ:'zapadnia', strefa:[13,8,2,4], kafle:[[15,12]], tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:6,  cykl:1.30, aktywny:0.58, przesuniecie:0.0, tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:14, cykl:1.30, aktywny:0.58, przesuniecie:0.65, tekst:'' },
       ] },
 
     { nazwa:'Wszystko naraz',
@@ -13105,7 +13565,9 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         { typ:'zapadnia', strefa:[5,9,3,3], kafle:[[6,10]], opoznienie:0.38, tekst:'Nie stój.' },
         { typ:'zapadnia', strefa:[11,9,3,3], kafle:[[12,10]], opoznienie:0.34, tekst:'' },
         { typ:'spadajaceKolce', strefa:[14,10,2,2], kolumny:[16], tekst:'' },
-        { typ:'przesunDrzwi', strefa:[15,10,2,2], nowe:[18,11], tekst:'Jeszcze kawałek.' },
+        { typ:'przesunDrzwi', strefa:[15,10,2,2], nowe:[18,11], tekst:'' },
+        { typ:'laser', strefa:[3,8,2,4], kol:9,  cykl:1.15, aktywny:0.52, tekst:'' },
+        { typ:'pociskBoczny', strefa:[7,8,2,4], zPrawej:true, wiersz:11, tempo:1.0, ile:7, tekst:'' },
       ] },
 
     { nazwa:'Ostatni żart',
@@ -13118,6 +13580,9 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
           kafle:[[13,12],[14,12],[15,12],[16,12],[17,12],[18,12]], tekst:'Serio myślałaś, że tak łatwo?' },
         { typ:'bloki', strefa:[9,8,2,4], kafle:[[15,10],[16,10]], tekst:'' },
         { typ:'przesunDrzwi', strefa:[9,8,2,4], nowe:[16,9], tekst:'' },
+        { typ:'laser', strefa:[2,8,2,4], kol:5,  cykl:1.25, aktywny:0.55, przesuniecie:0.0, tekst:'' },
+        { typ:'laser', strefa:[2,8,2,4], kol:9,  cykl:1.25, aktywny:0.55, przesuniecie:0.62, tekst:'' },
+        { typ:'spadajaceKolce', strefa:[6,8,2,4], kolumny:[11], tekst:'' },
       ] },
   ];
 
@@ -13177,8 +13642,10 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     szyderstwo.classList.add('pokaz');
   }
   function pokazTytul(idx) {
-    tytulPoziomu.querySelector('.numer').textContent = 'POZIOM ' + (idx+1);
-    tytulPoziomu.querySelector('.nazwa').textContent = POZIOMY[idx].nazwa;
+    // Sama nazwa poziomu zdradzala pulapke ("Uwaga na sufit", "Blok z nieba"),
+    // wiec pokazujemy wylacznie numer.
+    tytulPoziomu.querySelector('.numer').textContent = 'POZIOM';
+    tytulPoziomu.querySelector('.nazwa').textContent = (idx+1) + ' / ' + POZIOMY.length;
     tytulPoziomu.classList.remove('pokaz');
     void tytulPoziomu.offsetWidth;
     tytulPoziomu.classList.add('pokaz');
@@ -13230,8 +13697,10 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     } else if (d.typ === 'prasa') {
       prasa = { odKol:d.odKol, doKol:d.doKol, y:-KAFEL, v:54 };
     } else if (d.typ === 'laser') {
-      lasery.push({ wiersz:d.wiersz, odKol:d.odKol, doKol:d.doKol,
-                    cykl:d.cykl, aktywny:d.aktywny, faza:0 });
+      // Pionowa kurtyna przez cala wysokosc planszy. Nie da sie jej
+      // przeskoczyc - trzeba przebiec w przerwie.
+      lasery.push({ kol:d.kol, cykl:d.cykl, aktywny:d.aktywny,
+                    faza:(d.przesuniecie || 0) });
     } else if (d.typ === 'pociskBoczny') {
       var p2 = { zPrawej:d.zPrawej, wiersz:d.wiersz, tempo:d.tempo, doWystrzelenia:d.ile, licznik:0 };
       pociski.push(p2);
@@ -13328,8 +13797,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     lasery.forEach(function (l) {
       l.faza = (l.faza + dt) % l.cykl;
       if (l.faza < l.aktywny) {
-        if (gracz.y + WYS_GRACZA > l.wiersz*KAFEL + 3 && gracz.y < l.wiersz*KAFEL + KAFEL - 3
-            && gracz.x + SZER_GRACZA > l.odKol*KAFEL && gracz.x < (l.doKol+1)*KAFEL) {
+        var sr = l.kol*KAFEL + KAFEL/2, pol = KAFEL*0.30;
+        if (gracz.x + SZER_GRACZA - 2 > sr - pol && gracz.x + 2 < sr + pol) {
           zgin('Spalona.');
         }
       }
@@ -13532,20 +14001,32 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     // Lasery
     lasery.forEach(function (l) {
       var wl = l.faza < l.aktywny;
-      var x0 = l.odKol*KAFEL, x1 = (l.doKol+1)*KAFEL, yc = l.wiersz*KAFEL + KAFEL/2;
+      var xs = l.kol*KAFEL + KAFEL/2;
+      // Emitery u gory i u dolu
+      ctx.fillStyle = '#6a3030';
+      ctx.fillRect(xs - 7, 0, 14, 9);
+      ctx.fillRect(xs - 7, WYS - 9, 14, 9);
+      ctx.fillStyle = '#a04a3a';
+      ctx.fillRect(xs - 7, 7, 14, 2);
+      ctx.fillRect(xs - 7, WYS - 9, 14, 2);
       ctx.save();
       if (wl) {
-        ctx.shadowColor = '#ff4a3a'; ctx.shadowBlur = 12;
-        ctx.fillStyle = '#ff6a52'; ctx.fillRect(x0, yc - 3, x1 - x0, 6);
-        ctx.fillStyle = '#ffd9c8'; ctx.fillRect(x0, yc - 1, x1 - x0, 2);
+        // Ostatnie 0,18 s przed zgasnieciem - migotanie, zeby dalo sie wyczuc rytm
+        var gasnie = (l.aktywny - l.faza) < 0.18;
+        ctx.shadowColor = '#ff4a3a'; ctx.shadowBlur = 16;
+        ctx.globalAlpha = gasnie ? (0.55 + Math.sin(czasGlobalny*40)*0.35) : 1;
+        ctx.fillStyle = '#ff5c42'; ctx.fillRect(xs - 5, 9, 10, WYS - 18);
+        ctx.fillStyle = '#ffb49c'; ctx.fillRect(xs - 2.5, 9, 5, WYS - 18);
+        ctx.fillStyle = '#fff2ec'; ctx.fillRect(xs - 1, 9, 2, WYS - 18);
       } else {
-        ctx.globalAlpha = 0.30;
-        ctx.strokeStyle = '#ff6a52'; ctx.lineWidth = 1; ctx.setLineDash([3, 3]);
-        ctx.beginPath(); ctx.moveTo(x0, yc); ctx.lineTo(x1, yc); ctx.stroke();
+        // Zapowiedz: cienka, przerywana linia pokazuje, gdzie uderzy
+        var zaraz = (l.cykl - l.faza) < 0.45;
+        ctx.globalAlpha = zaraz ? 0.65 : 0.26;
+        ctx.strokeStyle = '#ff6a52'; ctx.lineWidth = zaraz ? 2 : 1;
+        ctx.setLineDash([4, 5]);
+        ctx.beginPath(); ctx.moveTo(xs, 9); ctx.lineTo(xs, WYS - 9); ctx.stroke();
       }
       ctx.restore();
-      ctx.fillStyle = '#6a3030';
-      ctx.fillRect(x0 - 3, yc - 7, 3, 14); ctx.fillRect(x1, yc - 7, 3, 14);
     });
 
     // Drzwi z pulsujaca poswiata
@@ -14018,7 +14499,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   .slot-ekw.pusty { opacity:0.3; }
   .naglowek-sekcji { color:#a89878; font-size:10px; text-transform:uppercase; letter-spacing:0.06em; margin:7px 0 4px; font-weight:700; }
   .zalozone-wiersz { display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); border-radius:7px; padding:5px 7px; margin-bottom:3px; }
-  .zalozone-wiersz .ikona { font-size:17px; }
+  .zalozone-wiersz .ikona { font-size:17px; position:relative; }
+  /* Dwie osobne odznaki: punkty do rozdania i nowe przedmioty */
+  .odznaka-pkt  { background:#3f8a52 !important; left:-6px; right:auto !important; }
+  .odznaka-nowe { background:#c0392b !important; right:-6px; }
+  .slot-znaczek {
+    position:absolute; right:-5px; bottom:-4px;
+    font-size:10px; line-height:1;
+    background:rgba(8,6,14,0.9); border-radius:5px; padding:1px 2px;
+  }
   .zalozone-wiersz .opis { flex:1; }
   .zalozone-wiersz .tytul { font-size:11px; font-weight:700; }
   .zalozone-wiersz .staty { font-size:10px; color:#a89878; }
@@ -14061,7 +14550,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   </div>
 
   <div id="pasSterowania">
-    <button class="btn-boczny" id="btnEkw">🎒<span class="odznaka" id="odznakaEkw" style="display:none">0</span></button>
+    <button class="btn-boczny" id="btnEkw">🎒<span class="odznaka odznaka-pkt" id="odznakaPkt2" style="display:none">0</span><span class="odznaka odznaka-nowe" id="odznakaEkw" style="display:none">0</span></button>
     <div id="strefaDrazka"><div id="drazekBaza"><div id="drazekGalka"></div></div></div>
     <button class="btn-boczny" id="btnMikstura">🧪<span class="licznik-mikstur" id="licznikMikstur">0</span></button>
   </div>
@@ -14086,6 +14575,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul'), nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
 
   var WID = 380, WYS = 470;
+  var ZOOM = 0.84;          // nieco dalej - widac wiecej pola walki
+  var POJEMNOSC_PLECAKA = 50;
+  // Obszar swiata widoczny na ekranie. Przy ZOOM < 1 miesci sie go wiecej.
+  var WID_SWIATA = WID / ZOOM, WYS_SWIATA = WYS / ZOOM;
   var KAFEL = 44;
   var SIATKA = 68;                 // rosnie z kazdym poziomem labiryntu
   var POZIOMY_SIATKI = [86, 106, 126];
@@ -14161,9 +14654,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                   efektBroni:'rzut' },
     kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:70, magiczna:false,
                   pocisk:true, opis:'Powolny, ciężki bełt — ogromne obrażenia' },
-    rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:200, tempo:0.60, obr:7,  magiczna:true,  opis:'Pocisk na dystans' },
-    rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:180, tempo:0.72, obr:9,  magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
-    rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:190, tempo:0.66, obr:8,  magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
+    rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:210, tempo:0.52, obr:13, magiczna:true,  opis:'Pocisk na dystans' },
+    rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:195, tempo:0.62, obr:16, magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
+    rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:200, tempo:0.58, obr:15, magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
     rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:6,  magiczna:true,  opis:'Mocno spowalnia wrogów', efekt:'zima' },
     rozdzkaWiedzmy:{nazwa:'Różdżka Wiedźmy',ikona:'🌈', zasieg:205, tempo:0.62, obr:4, magiczna:true,
                     opis:'+1 obrażeń za każdego zabitego wroga', mityczna:true },
@@ -14215,6 +14708,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var gracz, wrogowie = [], pociski = [], lupyNaZiemi = [], czastki = [], teksty = [], skrzynie = [];
   var trwa = false, czasOstatni = null, kamX = 0, kamY = 0;
   var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
+  var widzianePrzedmioty = 0;      // ile przedmiotow bylo przy ostatnim otwarciu plecaka
+  var kulkiXp = [];                // zielone kulki doswiadczenia rozrzucone po smierci wroga
+  var blyskPoziomu = 0;            // animacja awansu
+  var migawkaPietra = null;        // stan gracza w chwili wejscia na pietro
+
+  // Przedmioty i poziom zostaja po smierci. Cofa sie tylko to, co zuzylas
+  // na tym pietrze: zdrowie i mikstury wracaja do stanu z wejscia.
+  function zapiszMigawkePietra() {
+    migawkaPietra = {
+      hp: gracz.hp,
+      mikstury: gracz.mikstury,
+    };
+  }
   var bossPrzywolany = false, wygrana = false;
   var portal = null;               // pojawia sie po pokonaniu bossa
   var czasGry = 0;                 // sekundy gry (juz NIE skaluje trudnosci)
@@ -14415,7 +14921,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bron.opis) return bron.opis;
     var t = bron.tier || 0;
     if (bron.efektBroni === 'wampiryzm') return 'Leczy ' + Math.round(procentWampiryzmu(t)*100) + '% zadanych obrażeń';
-    if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 50% obrażeń od krwawienia';
+    if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 33% obrażeń od krwawienia';
     if (bron.efektBroni === 'rozpedzanie') return 'Rozpędza się: do ' + Math.round(maksRozpedzenie(t)*100)
       + '% szybciej po serii ciosów (reset po ' + PRZERWA_ROZPEDU + 's)';
     if (bron.efektBroni === 'rzut') return 'Długi zasięg · rzut co ' + coIleRzut(t) + '. atak';
@@ -14492,7 +14998,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // ---------- GRACZ ----------
   function nowyGracz() {
     return {
-      x:0, y:0, r:13, hp:100, hpMax:100, poziom:1, xp:0, xpDoNastepnego:33,
+      x:0, y:0, r:13, hp:100, hpMax:100, poziom:1, xp:0, xpDoNastepnego:55,
       punkty:0, mikstury:1,
       staty:{ zdrowie:0, obrazenia:0, obrona:0, predkosc:0 },
       ekwipunek:[], zalozone:{ bron:stworzBron(0,'miecz'), helm:null, zbroja:null, buty:null, amulet:null },
@@ -14582,9 +15088,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         gracz.staty.obrona += 5 / 11;
         przeliczHpMax();
       } else {
-        gracz.punkty += 3;
+        gracz.punkty += 5;
+      blyskPoziomu = 1.4;
       }
-      gracz.xpDoNastepnego = Math.floor(26 + gracz.poziom * gracz.poziom * 7);
+      // Poziomy rzadziej (5/3 razy), ale kazdy daje 5 punktow zamiast 3 -
+    // laczne tempo przyrostu statystyk zostaje takie samo.
+    gracz.xpDoNastepnego = Math.floor((26 + gracz.poziom * gracz.poziom * 7) * 1.667);
       // Awans NIE leczy - jedynie mikstury przywracaja zdrowie.
       dziennik('⭐ Poziom ' + gracz.poziom + '! Masz ' + gracz.punkty + ' pkt. do rozdania.');
       dzwiekAwans();
@@ -14595,24 +15104,34 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // ---------- WROGOWIE ----------
   // Wszyscy szybsi niz wczesniej, plus dwa nowe typy: bombiarz (dopada
   // i wybucha) oraz kusznik (strzela z duzo wiekszego dystansu).
+  // Ikona czesci ciala - widoczna przy kazdym elemencie pancerza
+  var IKONY_SLOTOW = { helm:'🪖', zbroja:'🛡️', buty:'👢', amulet:'📿', bron:'⚔️' };
+  var NAZWY_SLOTOW = { helm:'Głowa', zbroja:'Korpus', buty:'Stopy', amulet:'Szyja', bron:'Broń' };
+
   var TYPY_WROGOW = {
-    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:34,  atak:9,  pancerz:2,  predkosc:96,  xp:9,  r:11, kolor:'#8a6a4a' },
-    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:62,  atak:16, pancerz:12, predkosc:82,  xp:15, r:13, kolor:'#d8d0c0' },
-    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:48,  atak:13, pancerz:6,  predkosc:120, xp:13, r:12, kolor:'#5a9a4a' },
-    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:44, atak:22, pancerz:4, predkosc:70, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
-    bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:40,  atak:34, pancerz:3,  predkosc:132, xp:20, r:12, kolor:'#e6743c', wybuchowy:true },
-    kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:52,  atak:18, pancerz:7,  predkosc:74,  xp:19, r:12, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
+    // Obrazenia scietе ok. 25%, HP ok. 12%. Strzelajacy i uciekajacy dostali
+    // mocniejsze ciecie HP i predkosci - byli najbardziej uciazliwi.
+    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:30,  atak:7,  pancerz:2,  predkosc:96,  xp:9,  r:11, kolor:'#8a6a4a' },
+    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:55,  atak:12, pancerz:11, predkosc:82,  xp:15, r:13, kolor:'#d8d0c0' },
+    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:43,  atak:10, pancerz:6,  predkosc:118, xp:13, r:12, kolor:'#5a9a4a' },
+    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:36, atak:15, pancerz:4, predkosc:70, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
+    bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:36,  atak:25, pancerz:3,  predkosc:128, xp:20, r:12, kolor:'#e6743c', wybuchowy:true },
+    kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:12, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
-    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:46,  atak:14, pancerz:5,  predkosc:126, xp:18, r:12, kolor:'#6a5a8a',
+    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:12, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
-    trujacy:  { nazwa:'Truciciel', ikona:'🧪', hp:58,  atak:8,  pancerz:6,  predkosc:104, xp:22, r:13, kolor:'#6a9a4a',
+    trujacy:  { nazwa:'Truciciel', ikona:'🧪', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:13, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
-    jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:72,  atak:20, pancerz:10, predkosc:138, xp:24, r:14, kolor:'#8a5a3a',
+    jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:14, kolor:'#8a5a3a',
                 zachowanie:'szarzaBoki' },
-    lucznik:  { nazwa:'Łucznik',   ikona:'🎯', hp:44,  atak:20, pancerz:5,  predkosc:88,  xp:20, r:12, kolor:'#9a7a4a',
+    lucznik:  { nazwa:'Łucznik',   ikona:'🎯', hp:33,  atak:14, pancerz:5,  predkosc:80,  xp:20, r:12, kolor:'#9a7a4a',
                 dystansowy:true, zasiegStrzalu:280, zachowanie:'okrazajacy' },
-    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:150, atak:28, pancerz:22, predkosc:60,  xp:34, r:17, kolor:'#a04a3a' },
+    // Czarodziej: strzela i RAZ moze sie teleportowac, gdy zostanie trafiony
+    czarodziej:{ nazwa:'Czarodziej', ikona:'🔮', hp:40, atak:14, pancerz:5, predkosc:66, xp:28, r:13, kolor:'#4a9ad4',
+                dystansowy:true, zasiegStrzalu:290, teleportuje:true },
+    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:132, atak:21, pancerz:20, predkosc:60,  xp:34, r:17, kolor:'#a04a3a' },
   };
+
   var KLUCZE_WROGOW = Object.keys(TYPY_WROGOW);
 
   function stworzWroga(x, y, typKlucz, poziomMapy) {
@@ -14716,6 +15235,26 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     w.hp -= finalne;
     w.migotanie = 0.14;
     w.czuwa = true;                      // trafiony wrog zawsze sie budzi
+    // Czarodziej RAZ na zycie znika i pojawia sie kilka kratek dalej
+    if (w.teleportuje && !w.juzSieTeleportowal && w.hp > 0) {
+      var udany = false;
+      for (var pr = 0; pr < 22 && !udany; pr++) {
+        var kat = losowo(0, Math.PI * 2), odl = losowo(110, 190);
+        var nx2 = w.x + Math.cos(kat) * odl, ny2 = w.y + Math.sin(kat) * odl;
+        var wolne = !czySciana(nx2, ny2)
+          && !czySciana(nx2 - w.r, ny2) && !czySciana(nx2 + w.r, ny2)
+          && !czySciana(nx2, ny2 - w.r) && !czySciana(nx2, ny2 + w.r);
+        if (wolne) {
+          rozbryzg(w.x, w.y, '#4a9ad4', 12);
+          w.x = nx2; w.y = ny2;
+          rozbryzg(w.x, w.y, '#9fd8ff', 14);
+          w.juzSieTeleportowal = true;
+          udany = true;
+          ton(880, 0.12, 'sine', 0.10);
+          tekstNaSwiecie(w.x, w.y - w.r - 8, 'blink!', '#9fd8ff');
+        }
+      }
+    }
     tekstNaSwiecie(w.x, w.y - w.r, '' + finalne, '#f0e8d0');
     rozbryzg(w.x, w.y, '#c0392b', 5);
     dzwiekTrafienia();
@@ -14737,6 +15276,46 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (w.hp <= 0) zabijWroga(w);
   }
 
+  // Rozsypuje kulki doswiadczenia - im silniejszy wrog, tym wiecej.
+  function rozsypKulkiXp(x, y, ile, wartosc) {
+    var sztuk = Math.max(3, Math.min(14, Math.round(ile)));
+    var naKulke = wartosc / sztuk;
+    for (var i = 0; i < sztuk; i++) {
+      var k = losowo(0, Math.PI * 2), v = losowo(55, 165);
+      kulkiXp.push({
+        x: x, y: y, vx: Math.cos(k) * v, vy: Math.sin(k) * v,
+        xp: naKulke, zycie: 22, opoznienie: 0.28, faza: losowo(0, 6.28),
+      });
+    }
+  }
+
+  function aktualizujKulkiXp(dt) {
+    for (var i = kulkiXp.length - 1; i >= 0; i--) {
+      var k = kulkiXp[i];
+      k.faza += dt * 6;
+      k.zycie -= dt;
+      if (k.opoznienie > 0) k.opoznienie -= dt;
+      var dx = gracz.x - k.x, dy = gracz.y - k.y;
+      var d = Math.hypot(dx, dy) || 1;
+      if (k.opoznienie <= 0 && d < 150) {
+        // Przyciaganie rosnie, im blizej gracza - kulka "wskakuje" do niego
+        var sila = 120 + (150 - d) * 5.5;
+        k.vx += (dx / d) * sila * dt;
+        k.vy += (dy / d) * sila * dt;
+      }
+      k.vx *= 0.93; k.vy *= 0.93;
+      k.x += k.vx * dt; k.y += k.vy * dt;
+      if (d < 18 || k.zycie <= 0) {
+        if (k.zycie > 0) {
+          dodajXp(k.xp);
+          czastki.push({ x:k.x, y:k.y, vx:0, vy:-40, zycie:0.3, kolor:'#7ee87a' });
+          ton(760 + Math.random() * 260, 0.05, 'triangle', 0.06);
+        }
+        kulkiXp.splice(i, 1);
+      }
+    }
+  }
+
   function zabijWroga(w) {
     var idx = wrogowie.indexOf(w);
     if (idx === -1) return;
@@ -14750,7 +15329,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
     rozbryzg(w.x, w.y, w.kolor, 14);
     dzwiekSmierciWroga();
-    dodajXp(w.xp);
+    rozsypKulkiXp(w.x, w.y, 3 + w.xp / 6 + (w.boss ? 9 : 0), w.xp);
 
     if (w.sekretny) {
       // Rozdzka trafia PROSTO do rak - od tej chwili obowiazuja zasady
@@ -14890,11 +15469,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           odswiezHud();
         }
         if (bron.efektBroni === 'krwawienieLecznicze' && w.hp > 0) {
-          w.krwawienie = 3.2;
+          w.krwawienie = 2.1;
           w.krwawienieObr = Math.max(2, Math.round(bron.obr * mnoznikKrwawienia(bron.tier || 0)));
           // Topor: krwawienie ODDAJE graczowi polowe zadanych obrazen
           // (poza bossami - inaczej walki z nimi bylyby trywialne)
-          w.krwawienieLeczy = !w.boss;   // topor oddaje polowe obrazen od krwawienia
+          w.krwawienieLeczy = !w.boss;   // topor oddaje 33% obrazen od krwawienia
         }
       });
       gracz.animCios = 0.16;
@@ -14903,6 +15482,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // ---------- PETLA ----------
   function aktualizuj(dt) {
+    aktualizujKulkiXp(dt);
+    if (blyskPoziomu > 0) blyskPoziomu -= dt;
+
     // Ruch gracza
     var predkosc = wartoscStatu('predkosc');
     if (gracz._spowolnionyPrzezBossa > 0) { predkosc *= 0.55; gracz._spowolnionyPrzezBossa -= dt; }
@@ -14984,7 +15566,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (Math.hypot(wyjscieSekretne.x - gracz.x, wyjscieSekretne.y - gracz.y) < 34 + gracz.r) {
         var st2 = komnaty[0];
         gracz.x = (st2.cx + 0.5) * KAFEL; gracz.y = (st2.cy + 0.5) * KAFEL;
-        kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+        kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
         wyjscieSekretne = null; wSekretnej = false;
         opuscilStartowa = true; drzwiSekretne = null;
         dziennik('✨ Wracasz do labiryntu.');
@@ -15310,7 +15892,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         if (lu.przedmiot.kategoria === 'mikstura') {
           gracz.mikstury++;
           dziennik('🧪 Podniesiono miksturę zdrowia');
-        } else if (gracz.ekwipunek.length < 30) {
+        } else if (gracz.ekwipunek.length < POJEMNOSC_PLECAKA) {
           gracz.ekwipunek.push(lu.przedmiot);
           dziennik(lu.przedmiot.ikona + ' ' + lu.przedmiot.nazwa);
         } else {
@@ -15386,7 +15968,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
   // Wieksza i odsunieta od gornej krawedzi - przycisk pelnego ekranu
   // siedzi w prawym gornym rogu i wczesniej ladowal na minimapie.
-  var MINI_BOK = 108, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 48;
+  var MINI_BOK = 104, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
   function rysujMinimape() {
     var skala = MINI_BOK / (SIATKA * KAFEL);
     var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_ODSTEP_GORA;
@@ -15394,7 +15976,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.save();
     // Wyrazniejsza niz wczesniej: ciemniejsze, gestsze tlo i mocniejsza ramka,
     // zeby kontur korytarzy odcinal sie od jasnej podlogi gry.
-    ctx.globalAlpha = 0.92;
+    ctx.globalAlpha = 0.62;      // polprzezroczysta - nie zaslania walki
     ctx.fillStyle = '#07060c';
     ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
     ctx.strokeStyle = 'rgba(230,193,92,0.85)'; ctx.lineWidth = 2;
@@ -15536,8 +16118,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.fillStyle = '#0a0810';
     ctx.fillRect(0, 0, WID, WYS);
 
-    var tx0 = Math.max(0, Math.floor(kamX / KAFEL) - 1), tx1 = Math.min(SIATKA-1, Math.ceil((kamX + WID) / KAFEL) + 1);
-    var ty0 = Math.max(0, Math.floor(kamY / KAFEL) - 1), ty1 = Math.min(SIATKA-1, Math.ceil((kamY + WYS) / KAFEL) + 1);
+    // Swiat rysujemy pomniejszony, zeby widziec wiecej pola walki.
+    // Jawna transformacja zamiast save/scale - w kodzie rysowania jest
+    // niezbilansowany restore, ktory zdjalby skalowanie w polowie klatki.
+    ctx.setTransform(ZOOM, 0, 0, ZOOM, 0, 0);
+
+    var tx0 = Math.max(0, Math.floor(kamX / KAFEL) - 1), tx1 = Math.min(SIATKA-1, Math.ceil((kamX + WID_SWIATA) / KAFEL) + 1);
+    var ty0 = Math.max(0, Math.floor(kamY / KAFEL) - 1), ty1 = Math.min(SIATKA-1, Math.ceil((kamY + WYS_SWIATA) / KAFEL) + 1);
 
     // ---- PODLOGA ----
     // Cztery warianty kafla zamiast jednolitej szachownicy: gladki, spekany,
@@ -15829,6 +16416,23 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.restore();
     });
 
+    // Kulki doswiadczenia - migoczace, zielone
+    kulkiXp.forEach(function (k) {
+      var ex = k.x - kamX, ey = k.y - kamY;
+      var puls = 0.75 + Math.sin(k.faza) * 0.25;
+      var r = 4.2 * puls;
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, k.zycie / 2) * 0.55;
+      ctx.fillStyle = '#7ee87a';
+      ctx.beginPath(); ctx.arc(ex, ey, r * 2.6, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = Math.min(1, k.zycie / 2);
+      var gk = ctx.createRadialGradient(ex - r*0.3, ey - r*0.3, r*0.2, ex, ey, r);
+      gk.addColorStop(0, '#e8ffd8'); gk.addColorStop(0.5, '#8ef08a'); gk.addColorStop(1, '#3faa48');
+      ctx.fillStyle = gk;
+      ctx.beginPath(); ctx.arc(ex, ey, r, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+
     // Czastki
     czastki.forEach(function (cz) {
       ctx.globalAlpha = Math.max(0, cz.zycie / 0.45);
@@ -15848,6 +16452,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     });
     ctx.globalAlpha = 1;
 
+    // Awans poziomu - rozchodzacy sie zloty pierscien
+    if (blyskPoziomu > 0) {
+      var pg = 1 - (blyskPoziomu / 1.4);
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, blyskPoziomu / 1.4) * 0.85;
+      ctx.strokeStyle = '#ffe08a'; ctx.lineWidth = 4 - pg * 2.6;
+      ctx.beginPath();
+      ctx.arc(gracz.x - kamX, gracz.y - kamY, 16 + pg * 92, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.globalAlpha = Math.max(0, blyskPoziomu / 1.4) * 0.45;
+      ctx.strokeStyle = '#fff6d0'; ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(gracz.x - kamX, gracz.y - kamY, 10 + pg * 58, 0, Math.PI*2);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    ctx.setTransform(1, 0, 0, 1, 0, 0);   // HUD i minimapa w skali 1:1
+
     // MINIMAPA w prawym gornym rogu - cala mapa w pomniejszeniu
     rysujMinimape();
 
@@ -15865,8 +16488,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (lm) lm.textContent = gracz.mikstury;
     odznakaPkt.style.display = gracz.punkty > 0 ? 'inline-block' : 'none';
     odznakaPkt.textContent = gracz.punkty;
-    odznakaEkw.style.display = gracz.ekwipunek.length > 0 ? 'inline-block' : 'none';
-    odznakaEkw.textContent = gracz.ekwipunek.length;
+    // Na plecaku dwie osobne odznaki: zielona to punkty do rozdania,
+    // czerwona to przedmioty, ktorych jeszcze nie widzialas.
+    var op2 = document.getElementById('odznakaPkt2');
+    if (op2) {
+      op2.style.display = gracz.punkty > 0 ? 'inline-block' : 'none';
+      op2.textContent = gracz.punkty;
+    }
+    var nowe = Math.max(0, gracz.ekwipunek.length - widzianePrzedmioty);
+    odznakaEkw.style.display = nowe > 0 ? 'inline-block' : 'none';
+    odznakaEkw.textContent = nowe;
   }
 
   function odswiezPanele() {
@@ -15919,13 +16550,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // ================= EKWIPUNEK =================
     sekcjaEkw.innerHTML = '';
 
-    function gwiazdkiTieru(p) {
-      // Gwiazdki w KOLORZE rzadkosci - od razu widac klase przedmiotu
-      var kol = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
-      var ile = p.mityczna ? 5 : p.tier + 1;
-      return '<span style="color:' + kol + ';letter-spacing:1px;font-size:11px">'
-           + '★'.repeat(ile) + '</span>';
-    }
+
     function nazwaTieru(p) {
       return p.mityczna ? 'Mityczny' : TIERY[p.tier].nazwa;
     }
@@ -15964,13 +16589,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         ? ('<b style="color:#f0dfa8">' + p.obr + ' obr.</b> · ' + p.tempo.toFixed(2) + 's'
            + ' · <b>' + Math.round(p.obr / p.tempo) + ' obr./s</b>')
         : ('<b style="color:#f0dfa8">' + p.obrona + ' obrony</b>');
+      var slotP = p.slot || (p.kategoria === 'bron' ? 'bron' : null);
+      var znaczek = slotP
+        ? '<span class="slot-znaczek" title="' + (NAZWY_SLOTOW[slotP] || '') + '">'
+          + (IKONY_SLOTOW[slotP] || '') + '</span>'
+        : '';
       w.innerHTML =
-        '<span class="ikona">' + p.ikona + '</span>'
+        '<span class="ikona">' + p.ikona + znaczek + '</span>'
         + '<span class="opis">'
         +   '<span class="tytul" style="color:' + kol + '">' + p.nazwa + '</span> ' + gwiazdkiTieru(p)
         +   '<br><span class="staty">' + liczby + '</span>'
         +   '<br><span class="staty" style="opacity:0.85">' + opisPrzedmiotu(p) + '</span>'
-        +   (zalozony ? '' : '<br><span class="staty">' + porownanie(p) + '</span>')
+        
         + '</span>';
       if (!zalozony) {
         var akcje = document.createElement('div');
@@ -16010,8 +16640,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var btnPolacz = document.createElement('button');
     btnPolacz.style.cssText = 'width:100%;margin:8px 0 4px;background:linear-gradient(135deg,#3a3550,#262038);'
       + 'border:1px solid #5a4a2e;border-radius:9px;color:#f0e8d0;font-size:12px;font-weight:700;padding:9px 2px;';
-    btnPolacz.innerHTML = '🔗 Połącz pary w lepsze przedmioty';
-    btnPolacz.addEventListener('click', polaczPrzedmioty);
+    btnPolacz.innerHTML = '🔗 Połącz przedmioty';
+    btnPolacz.addEventListener('click', otworzKreatorLaczenia);
     sekcjaEkw.appendChild(btnPolacz);
 
     // ---- PLECAK, podzielony na sekcje ----
@@ -16068,7 +16698,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var stopka = document.createElement('div');
     stopka.className = 'naglowek-sekcji';
     stopka.style.cssText = 'opacity:0.5;text-transform:none;letter-spacing:0;margin-top:10px';
-    stopka.textContent = 'Plecak: ' + gracz.ekwipunek.length + ' / 30';
+    stopka.textContent = 'Plecak: ' + gracz.ekwipunek.length + ' / ' + POJEMNOSC_PLECAKA;
     sekcjaEkw.appendChild(stopka);
   }
 
@@ -16077,53 +16707,207 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // zwykle buty na nogach + zwykle buty w plecaku daja niezwykle.
   // Mityczne sie nie lacza (sa jedyne w swoim rodzaju).
   function mozeSieLaczyc(a, c) {
-    return a && c && !a.mityczna && !c.mityczna
-        && a.kategoria === c.kategoria && a.rodzaj === c.rodzaj
-        && a.tier === c.tier && a.tier < TIERY.length - 1;
+    if (!a || !c || a === c || a.mityczna || c.mityczna) return false;
+    if (a.kategoria !== c.kategoria || a.tier !== c.tier) return false;
+    if (a.tier >= TIERY.length - 1) return false;
+    // Bron: ten sam rodzaj. Pancerz: wystarczy ta sama czesc ciala,
+    // wiec dwa rozne helmy w tym samym kolorze tez sie polacza.
+    return a.kategoria === 'bron' ? a.rodzaj === c.rodzaj : a.slot === c.slot;
   }
-  function polaczPrzedmioty() {
-    var polaczono = 0, zmiana = true;
-    var SLOTY = ['bron','helm','zbroja','buty','amulet'];
-    while (zmiana) {
-      zmiana = false;
-      // para w samym plecaku
-      for (var i = 0; i < gracz.ekwipunek.length && !zmiana; i++) {
-        for (var j = i + 1; j < gracz.ekwipunek.length; j++) {
-          if (!mozeSieLaczyc(gracz.ekwipunek[i], gracz.ekwipunek[j])) continue;
-          var stary = gracz.ekwipunek[i];
-          var nowy = stary.kategoria === 'bron' ? stworzBron(stary.tier + 1, stary.rodzaj)
-                                                : stworzPancerz(stary.tier + 1, stary.rodzaj);
-          gracz.ekwipunek.splice(j, 1);
-          gracz.ekwipunek.splice(i, 1);
-          gracz.ekwipunek.push(nowy);
-          polaczono++; zmiana = true; break;
-        }
-      }
-      if (zmiana) continue;
-      // para: przedmiot ZALOZONY + jego odpowiednik z plecaka
-      for (var sI = 0; sI < SLOTY.length && !zmiana; sI++) {
-        var zal = gracz.zalozone[SLOTY[sI]];
-        if (!zal) continue;
-        for (var k = 0; k < gracz.ekwipunek.length; k++) {
-          if (!mozeSieLaczyc(zal, gracz.ekwipunek[k])) continue;
-          var nowy2 = zal.kategoria === 'bron' ? stworzBron(zal.tier + 1, zal.rodzaj)
-                                               : stworzPancerz(zal.tier + 1, zal.rodzaj);
-          gracz.ekwipunek.splice(k, 1);
-          gracz.zalozone[SLOTY[sI]] = nowy2;
-          polaczono++; zmiana = true; break;
-        }
+
+  // Wszystkie przedmioty gracza (plecak + zalozone) z etykieta skad pochodza
+  function wszystkiePrzedmioty() {
+    var lista = [];
+    gracz.ekwipunek.forEach(function (p, i) {
+      lista.push({ p: p, skad: 'plecak', indeks: i });
+    });
+    ['bron','helm','zbroja','buty','amulet'].forEach(function (sl) {
+      if (gracz.zalozone[sl]) lista.push({ p: gracz.zalozone[sl], skad: 'zalozone', slot: sl });
+    });
+    return lista;
+  }
+
+  // Pary, ktore da sie polaczyc (a do kazdej trzeba jeszcze oplaty)
+  function dostepneParyDoLaczenia() {
+    var wsz = wszystkiePrzedmioty(), pary = [];
+    for (var i = 0; i < wsz.length; i++) {
+      for (var j = i + 1; j < wsz.length; j++) {
+        if (!mozeSieLaczyc(wsz[i].p, wsz[j].p)) continue;
+        // Oplata: dowolny INNY przedmiot w tym samym tierze
+        var oplaty = wsz.filter(function (x) {
+          return x !== wsz[i] && x !== wsz[j] && x.p.tier === wsz[i].p.tier && !x.p.mityczna;
+        });
+        if (oplaty.length) pary.push({ a: wsz[i], b: wsz[j], oplaty: oplaty });
       }
     }
-    if (polaczono > 0) {
-      przeliczHpMax();
-      dziennik('🔗 Połączono ' + polaczono + (polaczono === 1 ? ' parę!' : ' pary/par!'));
-      ton(560, 0.07, 'triangle', 0.14);
-      setTimeout(function () { ton(840, 0.11, 'triangle', 0.13); }, 70);
+    return pary;
+  }
+
+  function usunPrzedmiot(wpis) {
+    if (wpis.skad === 'plecak') {
+      var i = gracz.ekwipunek.indexOf(wpis.p);
+      if (i >= 0) gracz.ekwipunek.splice(i, 1);
     } else {
-      dziennik('🔗 Brak pasujących par do połączenia');
+      gracz.zalozone[wpis.slot] = null;
     }
-    odswiezPanele(); odswiezHud();
   }
+
+  // Wykonuje polaczenie: zachowany awansuje o tier, drugi i oplata znikaja
+  function wykonajPolaczenie(zachowany, drugi, oplata) {
+    var wzor = zachowany.p;
+    var nowy = wzor.kategoria === 'bron'
+      ? stworzBron(wzor.tier + 1, wzor.rodzaj)
+      : stworzPancerz(wzor.tier + 1, wzor.rodzaj);
+    usunPrzedmiot(oplata);
+    usunPrzedmiot(drugi);
+    if (zachowany.skad === 'zalozone') {
+      gracz.zalozone[zachowany.slot] = nowy;
+    } else {
+      var i2 = gracz.ekwipunek.indexOf(zachowany.p);
+      if (i2 >= 0) gracz.ekwipunek.splice(i2, 1);
+      gracz.ekwipunek.push(nowy);
+    }
+    dziennik('🔗 Powstał przedmiot: ' + nowy.nazwa + ' ' + gwiazdkiTieru(nowy));
+    ton(680, 0.14, 'triangle', 0.14);
+    setTimeout(function () { ton(920, 0.16, 'triangle', 0.13); }, 110);
+    return nowy;
+  }
+  // Gwiazdki tieru - byla zagniezdzona w odswiezPanele, przez co kreator
+  // laczenia jej nie widzial i wywalal gre przy pierwszym polaczeniu.
+    function gwiazdkiTieru(p) {
+    // Gwiazdki w KOLORZE rzadkosci - od razu widac klase przedmiotu
+    var kol = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
+    var ile = p.mityczna ? 5 : p.tier + 1;
+    return '<span style="color:' + kol + ';letter-spacing:1px;font-size:11px">'
+         + '★'.repeat(ile) + '</span>';
+  }
+
+  // ---------- KREATOR LACZENIA ----------
+  var kreator = { krok: 0, para: null, zachowany: null };
+
+  function otworzKreatorLaczenia() {
+    kreator = { krok: 1, para: null, zachowany: null };
+    rysujKreator();
+  }
+
+  function kartaPrzedmiotu(wpis, przyKliknieciu, dopisek) {
+    var p = wpis.p;
+    var kol = p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor;
+    var el = document.createElement('div');
+    el.className = 'zalozone-wiersz';
+    el.style.borderLeft = '3px solid ' + kol;
+    el.style.cursor = 'pointer';
+    var liczby = p.kategoria === 'bron'
+      ? (p.obr + ' obr. · ' + p.tempo.toFixed(2) + 's')
+      : (p.obrona + ' obrony');
+    var slotP = p.slot || (p.kategoria === 'bron' ? 'bron' : null);
+    el.innerHTML =
+      '<span class="ikona">' + p.ikona + '</span>'
+      + '<span class="opis">'
+      +   '<span class="tytul" style="color:' + kol + '">' + p.nazwa + '</span> ' + gwiazdkiTieru(p)
+      +   '<br><span class="staty">' + liczby
+      +     (slotP ? ' · ' + (NAZWY_SLOTOW[slotP] || '') : '')
+      +     (wpis.skad === 'zalozone' ? ' · <b style="color:#7ec98a">założone</b>' : '')
+      +     (dopisek ? ' · ' + dopisek : '')
+      +   '</span></span>';
+    el.addEventListener('click', przyKliknieciu);
+    return el;
+  }
+
+  function naglowekKreatora(tekst, podtekst) {
+    var h = document.createElement('div');
+    h.style.cssText = 'margin:2px 0 8px;color:#e6c15c;font-size:12.5px;font-weight:800;letter-spacing:0.03em;';
+    h.innerHTML = tekst + (podtekst
+      ? '<div style="color:#b8ad98;font-size:11px;font-weight:400;margin-top:3px;line-height:1.5">'
+        + podtekst + '</div>' : '');
+    return h;
+  }
+
+  function przyciskWstecz(dokad) {
+    var b2 = document.createElement('button');
+    b2.style.cssText = 'width:100%;margin-top:9px;background:linear-gradient(135deg,#3a3550,#262038);'
+      + 'color:#dcd0b0;border:1px solid #5a4a2e;border-radius:10px;padding:10px;font-size:12px;font-weight:700;';
+    b2.textContent = '← Wstecz';
+    b2.addEventListener('click', dokad);
+    return b2;
+  }
+
+  function rysujKreator() {
+    sekcjaEkw.innerHTML = '';
+
+    if (kreator.krok === 1) {
+      var pary = dostepneParyDoLaczenia();
+      if (!pary.length) {
+        sekcjaEkw.appendChild(naglowekKreatora('🔗 ŁĄCZENIE PRZEDMIOTÓW',
+          'Brak przedmiotów do połączenia.<br>Potrzebujesz <b>dwóch takich samych przedmiotów w tym samym kolorze</b> '
+          + '(u pancerza wystarczy ta sama część ciała) oraz <b>trzeciego przedmiotu w tym samym kolorze</b>, '
+          + 'którym zapłacisz.'));
+        sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 0; odswiezPanele(); }));
+        return;
+      }
+      sekcjaEkw.appendChild(naglowekKreatora('🔗 CO CHCESZ ULEPSZYĆ?',
+        'Wybierz przedmiot, który ma awansować o jeden kolor. Drugi taki sam zostanie zużyty.'));
+      // Pokazujemy unikalne "pierwsze" przedmioty par
+      var pokazane = [];
+      pary.forEach(function (para) {
+        [para.a, para.b].forEach(function (wpis) {
+          if (pokazane.indexOf(wpis.p) >= 0) return;
+          pokazane.push(wpis.p);
+          var moje = pary.filter(function (x) { return x.a === wpis || x.b === wpis; });
+          sekcjaEkw.appendChild(kartaPrzedmiotu(wpis, function () {
+            kreator.zachowany = wpis;
+            kreator.mozliwe = moje;
+            kreator.krok = 2;
+            rysujKreator();
+          }, moje.length + (moje.length === 1 ? ' para' : ' pary')));
+        });
+      });
+      sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 0; odswiezPanele(); }));
+      return;
+    }
+
+    if (kreator.krok === 2) {
+      var zach = kreator.zachowany;
+      sekcjaEkw.appendChild(naglowekKreatora('🔗 KTÓRY PRZEDMIOT POŚWIĘCIĆ?',
+        'Zachowasz <b>' + zach.p.nazwa + '</b>, a ten drugi zniknie. '
+        + 'Efekty zachowanego przedmiotu przejdą na ulepszoną wersję.'));
+      kreator.mozliwe.forEach(function (para) {
+        var drugi = (para.a === zach) ? para.b : para.a;
+        sekcjaEkw.appendChild(kartaPrzedmiotu(drugi, function () {
+          kreator.para = para;
+          kreator.drugi = drugi;
+          kreator.krok = 3;
+          rysujKreator();
+        }));
+      });
+      sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 1; rysujKreator(); }));
+      return;
+    }
+
+    if (kreator.krok === 3) {
+      var oplaty = kreator.para.oplaty.filter(function (x) { return x !== kreator.drugi; });
+      if (!oplaty.length) {
+        sekcjaEkw.appendChild(naglowekKreatora('🔗 BRAK ZAPŁATY',
+          'Nie masz już trzeciego przedmiotu w tym kolorze.'));
+        sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 2; rysujKreator(); }));
+        return;
+      }
+      sekcjaEkw.appendChild(naglowekKreatora('🔗 CZYM ZAPŁACISZ?',
+        'Wybierz przedmiot w tym samym kolorze, który zostanie <b>spalony</b> jako koszt połączenia.'));
+      oplaty.forEach(function (op) {
+        sekcjaEkw.appendChild(kartaPrzedmiotu(op, function () {
+          wykonajPolaczenie(kreator.zachowany, kreator.drugi, op);
+          kreator.krok = 1;
+          odswiezHud();
+          rysujKreator();
+        }));
+      });
+      sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 2; rysujKreator(); }));
+      return;
+    }
+  }
+
+
 
   function wyrzucPrzedmiot(indeks) {
     var p = gracz.ekwipunek[indeks];
@@ -16180,7 +16964,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (nakladkaEkw.classList.contains('widoczna')) { zamknijPlecak(); return; }
     nakladkaEkw.classList.add('widoczna');
     btnEkw.classList.add('aktywny');
+    widzianePrzedmioty = gracz.ekwipunek.length;   // od teraz nic nie jest "nowe"
     pokazZakladke('ekw');
+    odswiezHud();
   });
   zakEkw.addEventListener('click', function () { pokazZakladke('ekw'); });
   zakStaty.addEventListener('click', function () { pokazZakladke('staty'); });
@@ -16294,7 +17080,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var minTyp = glebokosc > 0.55 ? 1 : 0;
       // Co trzeci wrog to STRZELAJACY albo o specjalnym zachowaniu -
       // trzeba unikac pociskow, a nie tylko klikac w tlum.
-      var SPECJALNE = ['mag', 'kusznik', 'lucznik', 'okrazacz', 'trujacy', 'jezdziec'];
+      var SPECJALNE = ['mag', 'kusznik', 'lucznik', 'okrazacz', 'trujacy', 'jezdziec', 'czarodziej'];
 
       for (var i = 0; i < ile; i++) {
         var typ;
@@ -16377,6 +17163,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // ale postac (poziom, staty, ekwipunek) zostaje zachowana.
   function przejdzNaNastepnyPoziom() {
     poziomLabiryntu++;
+    zapiszMigawkePietra();
     portal = null; bossPrzywolany = false;
     arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
     pociski = []; czastki = []; teksty = [];
@@ -16385,7 +17172,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.x = (st.cx + 0.5) * KAFEL;
     gracz.y = (st.cy + 0.5) * KAFEL;
     gracz.hp = gracz.hpMax;
-    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
     zaludnijMape();
     odswiezHud(); odswiezPanele();
     dziennik('⚔️ Poziom ' + (poziomLabiryntu+1) + ': ' + DEFINICJE_BOSSOW[poziomLabiryntu].opis);
@@ -16419,7 +17206,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       pytanieOSekretnej = false; wSekretnej = true;
       gracz.x = (sekretnaKomnata.cx + 0.5) * KAFEL;
       gracz.y = (sekretnaKomnata.y + sekretnaKomnata.h - 1.5) * KAFEL;
-      kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+      kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
       if (!sekretnyBossZyje) {
         sekretnyBossZyje = true;
         wrogowie.push(stworzSekretnegoBossa((sekretnaKomnata.cx+0.5)*KAFEL, (sekretnaKomnata.y+1.5)*KAFEL));
@@ -16519,13 +17306,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.x = (st.cx + 0.5) * KAFEL;
     gracz.y = (st.cy + 0.5) * KAFEL;
     przeliczHpMax();
-    gracz.hp = gracz.hpMax;                 // pelne zdrowie na start proby
+    // Powrot do stanu z wejscia na pietro - ekwipunek i poziom zostaja nietkniete
+    if (migawkaPietra) {
+      gracz.hp = Math.min(gracz.hpMax, migawkaPietra.hp);
+      gracz.mikstury = migawkaPietra.mikstury;
+    } else {
+      gracz.hp = gracz.hpMax;
+    }
     gracz.mikstury = Math.max(gracz.mikstury, 1);
     gracz.cooldown = 0; gracz.rozpedzenie = 0; gracz.odOstatniegoCiosu = 0;
     gracz.niewrazliwosc = 0;
-    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
 
-    pociski = []; pociskiBossa = []; czastki = []; teksty = []; gazy = [];
+    pociski = []; pociskiBossa = []; czastki = []; teksty = []; gazy = []; kulkiXp = [];
     bossPrzywolany = false; pytanieOBossa = false; arenaZamknieta = false;
     portal = null; cooldownSlug = 0;
     wyjscieSekretne = null; pytanieOSekretnej = false;
@@ -16638,7 +17431,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.x = (SIATKA/2) * KAFEL; gracz.y = (SIATKA/2) * KAFEL;
     gracz.hp = gracz.hpMax;
     wrogowie = []; pociski = []; lupyNaZiemi = []; skrzynie = []; czastki = []; teksty = [];
-    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
     nakladka.style.display = 'none';
     odswiezHud(); odswiezPanele();
     dziennik('♾️ Tryb nieskończony! Przetrwaj jak najdłużej.');
@@ -16675,6 +17468,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     trybNieskonczony = false;
     poziomLabiryntu = 0; czasGry = 0; zaliczoneZglosozone = false;
     zwiedzoneKomnaty = 0; odwiedzone = {};
+    migawkaPietra = null;
     sciezkaWiedzmy = false;   // odblokowanie zostaje, ale sciezka startuje od nowa
     wyjscieSekretne = null; pytanieOSekretnej = false; sekretnyPokonany = false;
     portal = null; arenaZamknieta = false; pytanieOBossa = false; cooldownSlug = 0;
@@ -16689,7 +17483,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.hp = gracz.hpMax;
     pociski = []; czastki = []; teksty = [];
     bossPrzywolany = false; wygrana = false;
-    kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
     zaludnijMape();
     odswiezHud(); odswiezPanele();
     nakladka.style.display = 'none';
@@ -16709,7 +17503,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   generujMape();
   gracz = nowyGracz();
   gracz.x = (komnaty[0].cx+0.5)*KAFEL; gracz.y = (komnaty[0].cy+0.5)*KAFEL;
-  kamX = gracz.x - WID/2; kamY = gracz.y - WYS/2;
+  kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
   przeliczHpMax(); odswiezHud(); odswiezPanele(); rysuj();
 </script>
 
@@ -18095,19 +18889,35 @@ def pokaz_menu():
     st.markdown("<div style='margin-top:2rem;'></div>", unsafe_allow_html=True)
     pokaz_przycisk_resetu()
 
+def _rozpocznij_powtorke(klucz):
+    st.session_state.setdefault("tryb_powtorki", set()).add(klucz)
+    nr = st.session_state.setdefault("nr_powtorki", {})
+    nr[klucz] = nr.get(klucz, 0) + 1
+
+
 def pokaz_ekran_etapu(etap_dane):
     klucz = etap_dane["klucz"]
+    st.session_state.etap_biezacy = klucz
 
     if st.button(t("wroc_do_menu"), key=f"powrot_{klucz}"):
+        # Wyjscie z etapu konczy tryb powtorki - po powrocie widac status
+        st.session_state.setdefault("tryb_powtorki", set()).discard(klucz)
         st.session_state.ekran = "menu"
         st.rerun()
 
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
 
-    if klucz in st.session_state.rozwiazane:
+    powtorka = klucz in st.session_state.get("tryb_powtorki", set())
+    if klucz in st.session_state.rozwiazane and not powtorka:
         st.success(t("rozwiazane_status"))
+        st.caption(t("powtorka_info"))
+        if st.button(t("zagraj_ponownie"), key=f"powtorz_{klucz}", use_container_width=True):
+            _rozpocznij_powtorke(klucz)
+            st.rerun()
         return
-    if klucz in st.session_state.nieudane:
+    if powtorka:
+        st.info(t("tryb_powtorki_info"))
+    if klucz in st.session_state.nieudane and not powtorka:
         st.error(t("zamkniete_status"))
         return
 
@@ -18158,6 +18968,17 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_poziom_diabla(etap_dane)
     else:
         wynik = None
+
+    if powtorka:
+        # Powtorka: zadnych zmian w postepie. Pomylka nie zamyka etapu
+        # jednej proby, a wygrana nie dolicza nic do wiadomosci.
+        if wynik is True:
+            st.success(t("powtorka_ukonczona"))
+            st.balloons()
+            if st.button(t("zagraj_ponownie"), key=f"powtorz_znow_{klucz}", use_container_width=True):
+                _rozpocznij_powtorke(klucz)
+                st.rerun()
+        return
 
     if wynik is True:
         st.session_state.rozwiazane.add(klucz)
