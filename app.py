@@ -240,10 +240,12 @@ WSPOLNA_OPRAWA_JS = """<script>
   window.stat = function (k, ile) { staty[k] = (staty[k] || 0) + (ile === undefined ? 1 : ile); zapiszStaty(); };
   window.statMax = function (k, v) { if (!(k in staty) || v > staty[k]) { staty[k] = v; zapiszStaty(); } };
   window.statStartCzasu = function () { if (!staty._start) { staty._start = Date.now(); zapiszStaty(); } };
+  // Zatrzymanie zegara (np. Labirynt: czas przejscia bez areny)
+  window.statZamrozCzas = function () { if (staty._start && !staty._koniec) { staty._koniec = Date.now(); zapiszStaty(); } };
   window.statyDoWyslania = function () {
     var kopia = {};
     Object.keys(staty).forEach(function (k) { if (k.charAt(0) !== '_') kopia[k] = Math.round(staty[k]); });
-    if (staty._start) kopia.czas = Math.round((Date.now() - staty._start) / 1000);
+    if (staty._start) kopia.czas = Math.round(((staty._koniec || Date.now()) - staty._start) / 1000);
     return { zaliczono: true, staty: kopia };
   };
 
@@ -492,7 +494,7 @@ ETAPY = [
             "en": "What's the exact date of the first time you rode in a car with me?",
         },
         "data": date(2026, 2, 24),
-        "jedna_proba": True,
+        "jedna_proba": False,   # zgadywanie bez limitu - bez blokady
     },
     {
         "klucz": "szachy",
@@ -15345,7 +15347,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // polaczona jednym przejsciem. Tylko na pierwszym pietrze.
     sekretnaKomnata = null; drzwiSekretne = null;
     wSekretnej = false; opuscilStartowa = false; sekretnyBossZyje = false;
-    if (poziomLabiryntu === 0 && komnaty.length > 0 && labiryntPrzeszly) {
+    if (false) {   // sekretna komnata z bossem i Sciezka Wiedzmy - usuniete z gry
       var st0 = komnaty[0];
       // Szukamy WOLNEGO miejsca w calej mapie, wybierajac najblizsze
       // komnacie startowej. Ograniczenie do czterech rogow powodowalo, ze
@@ -18225,39 +18227,27 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bjn3) bjn3.style.display = 'none';
     if (zwyciestwo) {
       dzwiekZwyciestwo();
-      // NIE zaliczamy od razu: zgloszenie wyniku przeladowuje komponent
-      // i gra by zniknela, zanim zdazysz wybrac tryb nieskonczony.
-      // Etap zalicza sie po kliknieciu "Zakoncz" (albo po smierci w arenie).
+      // Czas przejscia zamykamy tutaj - arena sie do niego nie wlicza
+      if (window.statZamrozCzas) window.statZamrozCzas();
+      oznaczPrzejscie();
+      // Po trzecim bossie tryb nieskonczony jest obowiazkowy.
+      // Smierc w nim konczy i zalicza cala gre.
       nakladkaTytul.textContent = '👑 Wszystkie trzy labirynty pokonane!';
       nakladkaOpis.innerHTML = 'Ukończono na poziomie postaci <b>' + gracz.poziom + '</b>.'
-        + '<br><br>Kliknij <b>„Zakończ”</b>, żeby zaliczyć etap — albo sprawdź, jak długo wytrzymasz '
-        + 'w <b>trybie nieskończonym</b>. Etap zaliczysz też po zakończeniu areny.';
+        + '<br><br>Została ostatnia próba: <b>tryb nieskończony</b>. Wytrzymaj jak najdłużej — '
+        + 'gdy polegniesz, gra zaliczy się sama.';
       nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = '♾️ Tryb nieskończony';
+      nakladkaBtn.textContent = '♾️ Zaczynamy';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
-      oznaczPrzejscie();   // labirynt przeszly - ukryte przejscie odblokowane
-      if (!document.getElementById('btnZakoncz')) {
-        var bz = document.createElement('button');
-        bz.id = 'btnZakoncz'; bz.className = 'gra-btn';
-        bz.style.marginTop = '10px';
-        bz.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
-        bz.style.color = '#f0e8d0';
-        bz.textContent = '✔ Zakończ';
-        bz.onclick = function () {
-          nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.'
-            + '<br><br>🚪 Odblokowano <b>ukryte przejście</b> w pierwszej komnacie — '
-            + 'przy następnym podejściu znajdziesz tam alternatywną ścieżkę.';
-          nakladkaBtn.style.display = 'none';
-          document.getElementById('btnZakoncz').style.display = 'none';
-          zglosZaliczenie();
-        };
-        nakladkaBtn.parentNode.appendChild(bz);
-      }
-      document.getElementById('btnZakoncz').style.display = 'inline-block';
     } else {
       dzwiekSmierciGracza();
       statLab('smierci');
       if (trybNieskonczony) {
+        var fala = 1 + Math.floor(czasAreny / 12);
+        if (window.statMax) {
+          window.statMax('fala', fala);
+          window.statMax('arena', Math.round(czasAreny));
+        }
         nakladkaTytul.textContent = '♾️ Wytrzymałaś ' + czasAreny.toFixed(1) + 's!';
         var stL = (window.statyDoWyslania ? window.statyDoWyslania().staty : {}) || {};
         var wiersz = function (e, nz, v) {
@@ -18267,41 +18257,34 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         nakladkaOpis.innerHTML =
           '<div style="text-align:left;background:rgba(255,255,255,0.05);border:1px solid rgba(230,193,92,0.3);'
           + 'border-radius:10px;padding:10px 12px;margin:2px 0 10px;font-size:13px;line-height:1.75">'
-          + '<div style="color:#e6c15c;font-weight:800">♾️ Arena</div>'
-          + wiersz('🌊', 'Fala', 1 + Math.floor(czasAreny / 12)) + wiersz('⭐', 'Poziom postaci', gracz.poziom)
+          + '<div style="color:#e6c15c;font-weight:800">♾️ Tryb nieskończony</div>'
+          + wiersz('🌊', 'Fala', fala) + wiersz('⭐', 'Poziom postaci', gracz.poziom)
           + '<div style="color:#e6c15c;font-weight:800;margin-top:6px">🗺️ Przejście labiryntu</div>'
           + wiersz('💀', 'Śmierci', stL.smierci || 0) + wiersz('⚔️', 'Zabici wrogowie', stL.zabici || 0)
           + wiersz('💥', 'Zadane obrażenia', stL.zadane || 0) + wiersz('🩸', 'Przyjęte obrażenia', stL.przyjete || 0)
           + wiersz('🟢', 'Kulki doświadczenia', stL.kulki || 0) + wiersz('🔗', 'Połączone przedmioty', stL.polaczenia || 0)
           + wiersz('⏱️', 'Czas przejścia', czasTxt)
           + '</div>'
-          + '<div style="font-size:12.5px;color:#cfc4ad;line-height:1.5">💡 Przy kolejnym podejściu do labiryntu czeka '
-          + 'na Ciebie mały dodatek na samym starcie — ukryte przejście w pierwszej komnacie. Z nim powinno pójść łatwiej.</div>';
-        nakladkaBtn.style.display = 'inline-block';
-        nakladkaBtn.textContent = '♾️ Spróbuj jeszcze raz';
-        nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
-        // Drugi przycisk: zakoncz i wroc do menu
+          + '<div style="font-size:13px;color:#8ef08a;font-weight:800">🎉 Gra zaliczona!</div>';
+        nakladkaBtn.style.display = 'none';
+        // Smierc w trybie nieskonczonym konczy gre. Zglaszamy po chwili, zeby
+        // dalo sie rzucic okiem na wynik - albo od razu, po kliknieciu.
+        var zglosRaz = function () {
+          if (zaliczoneZglosozone) return;
+          zaliczoneZglosozone = true;
+          zglosZaliczenie();
+        };
         var bk = document.getElementById('btnZakonczArena');
         if (!bk) {
           bk = document.createElement('button');
           bk.id = 'btnZakonczArena'; bk.className = 'gra-btn';
           bk.style.marginTop = '10px';
-          bk.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
-          bk.style.color = '#f0e8d0';
-          bk.textContent = '✔ Zakończ i zalicz';
-          bk.onclick = function () {
-            inicjujDzwiek();
-            nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
-            nakladkaBtn.style.display = 'none';
-            bk.style.display = 'none';
-            // Wczesniej ten przycisk tylko PISAL "zaliczony", nic nie zglaszajac
-            zglosZaliczenie();
-          };
+          bk.textContent = '✔ Zakończ grę';
           nakladkaBtn.parentNode.appendChild(bk);
         }
+        bk.onclick = function () { inicjujDzwiek(); zglosRaz(); };
         bk.style.display = 'inline-block';
-        oznaczPrzejscie();
-        if (!zaliczoneZglosozone) { zaliczoneZglosozone = true; zglosZaliczenie(); }
+        setTimeout(zglosRaz, 6000);
         return;
       }
       nakladkaTytul.textContent = '💀 Poległaś...';
@@ -19111,7 +19094,10 @@ def zainicjuj_stan():
     czas_plik = zapisane.get("czas_startu")
 
     st.session_state.rozwiazane = rozwiazane_url | rozwiazane_plik
-    st.session_state.nieudane = nieudane_url | nieudane_plik
+    st.session_state.nieudane = {
+        k for k in (nieudane_url | nieudane_plik)
+        if next((e for e in ETAPY if e["klucz"] == k), {}).get("jedna_proba")
+    }
     bledy_polaczone = dict(bledy_plik)
     for klucz_etapu, wartosc in bledy_url.items():
         bledy_polaczone[klucz_etapu] = max(bledy_polaczone.get(klucz_etapu, 0), wartosc)
@@ -19610,11 +19596,11 @@ def renderuj_data(etap_dane):
         try:
             wybrana = date(int(rok), int(miesiac), int(dzien))
         except ValueError:
-            st.error(t("zle_jedna_proba"))
-            return False
+            st.error(tt({"pl": "Taka data nie istnieje. Spróbuj jeszcze raz.", "en": "That date doesn't exist. Try again."}))
+            return None
         if wybrana == etap_dane["data"]:
             return True
-        st.error(t("zle_jedna_proba"))
+        st.error(tt({"pl": "To nie ta data. Spróbuj jeszcze raz 🙂", "en": "Not that date. Try again 🙂"}))
         return False
     return None
 
@@ -20054,6 +20040,7 @@ def pokaz_ekran_etapu(etap_dane):
     powtorka = klucz in st.session_state.get("tryb_powtorki", set())
     if klucz in st.session_state.rozwiazane and not powtorka:
         st.success(t("rozwiazane_status"))
+        pokaz_karte_statystyk(klucz)
         st.caption(t("powtorka_info"))
         if st.button(t("zagraj_ponownie"), key=f"powtorz_{klucz}", use_container_width=True):
             _rozpocznij_powtorke(klucz)
@@ -20603,7 +20590,9 @@ OPISY_STATOW = {
     "labirynt":  [("smierci", "💀", "Śmierci", "Deaths"), ("zabici", "⚔️", "Zabici wrogowie", "Enemies slain"),
                   ("zadane", "💥", "Zadane obrażenia", "Damage dealt"), ("przyjete", "🩸", "Przyjęte obrażenia", "Damage taken"),
                   ("kulki", "🟢", "Kulki doświadczenia", "XP orbs"), ("polaczenia", "🔗", "Połączone przedmioty", "Items merged"),
-                  ("czas", "⏱️", "Czas przejścia", "Time")],
+                  ("czas", "⏱️", "Czas przejścia", "Time"),
+                  ("fala", "🌊", "Fala w trybie nieskończonym", "Infinite-mode wave"),
+                  ("arena", "♾️", "Przetrwane w trybie nieskończonym", "Survived in infinite mode")],
     "poziom_diabla": [("smierci", "💀", "Śmierci", "Deaths")],
 }
 
@@ -20612,11 +20601,33 @@ def _wartosc_statu(klucz_gry, klucz, staty):
     v = staty.get(klucz, 0)
     if klucz_gry == "gra" and klucz == "porazki":
         return str(int(v) + 1)                       # podejscia = porazki + 1
-    if klucz == "czas":
+    if klucz in ("czas", "arena"):
         return f"{int(v) // 60}:{int(v) % 60:02d}"
     if klucz == "metry":
         return f"{int(v)} m"
     return f"{int(v):,}".replace(",", " ")
+
+
+def _karta_statystyk_html(klucz):
+    staty = st.session_state.get("staty_gier", {}).get(klucz)
+    etap = next((e for e in ETAPY if e["klucz"] == klucz), None)
+    if not etap or klucz not in OPISY_STATOW:
+        return None
+    if staty:
+        wiersze = "".join(
+            f"<div class='stat-wiersz'><span>{e} {tt({'pl': pl, 'en': en})}</span>"
+            f"<b>{_wartosc_statu(klucz, k, staty)}</b></div>"
+            for k, e, pl, en in OPISY_STATOW[klucz] if k in staty or k in ("czas",)
+        )
+    else:
+        wiersze = f"<div class='stat-wiersz brak'>{tt({'pl': 'brak danych', 'en': 'no data'})}</div>"
+    return f"<div class='stat-karta'><div class='stat-tytul'>{tt(etap['tytul'])}</div>{wiersze}</div>"
+
+
+def pokaz_karte_statystyk(klucz):
+    html = _karta_statystyk_html(klucz)
+    if html and st.session_state.get("staty_gier", {}).get(klucz):
+        st.markdown(html, unsafe_allow_html=True)
 
 
 def pokaz_statystyki_gier():
@@ -20628,16 +20639,7 @@ def pokaz_statystyki_gier():
             etap = next((e for e in ETAPY if e["klucz"] == klucz), None)
             if not etap or klucz not in OPISY_STATOW:
                 continue
-            staty = wszystkie.get(klucz)
-            if staty:
-                wiersze = "".join(
-                    f"<div class='stat-wiersz'><span>{e} {tt({'pl': pl, 'en': en})}</span>"
-                    f"<b>{_wartosc_statu(klucz, k, staty)}</b></div>"
-                    for k, e, pl, en in OPISY_STATOW[klucz]
-                )
-            else:
-                wiersze = f"<div class='stat-wiersz brak'>{tt({'pl': 'brak danych', 'en': 'no data'})}</div>"
-            karty.append(f"<div class='stat-karta'><div class='stat-tytul'>{tt(etap['tytul'])}</div>{wiersze}</div>")
+            karty.append(_karta_statystyk_html(klucz))
     st.markdown(
         "<div class='stat-naglowek'>" + tt({"pl": "📊 Twoje statystyki", "en": "📊 Your stats"}) + "</div>"
         + "<div class='stat-siatka'>" + "".join(karty) + "</div>",
