@@ -229,6 +229,24 @@ WSPOLNA_OPRAWA_JS = """<script>
     } catch (e) {}
   };
 
+  // ---------- STATYSTYKI GRY ----------
+  // Liczniki leza w pamieci telefonu, wiec przetrwaja zamkniecie karty.
+  // Przy zaliczeniu gra wysyla je razem z informacja "zaliczone".
+  var KLUCZ_STATOW = 'staty_gry_' + (window.__KLUCZ_GRY || 'nieznana');
+  var magazyn = null, staty = {};
+  try { magazyn = window.localStorage; } catch (e) {}
+  try { staty = JSON.parse((magazyn && magazyn.getItem(KLUCZ_STATOW)) || '{}') || {}; } catch (e) { staty = {}; }
+  function zapiszStaty() { try { if (magazyn) magazyn.setItem(KLUCZ_STATOW, JSON.stringify(staty)); } catch (e) {} }
+  window.stat = function (k, ile) { staty[k] = (staty[k] || 0) + (ile === undefined ? 1 : ile); zapiszStaty(); };
+  window.statMax = function (k, v) { if (!(k in staty) || v > staty[k]) { staty[k] = v; zapiszStaty(); } };
+  window.statStartCzasu = function () { if (!staty._start) { staty._start = Date.now(); zapiszStaty(); } };
+  window.statyDoWyslania = function () {
+    var kopia = {};
+    Object.keys(staty).forEach(function (k) { if (k.charAt(0) !== '_') kopia[k] = Math.round(staty[k]); });
+    if (staty._start) kopia.czas = Math.round((Date.now() - staty._start) / 1000);
+    return { zaliczono: true, staty: kopia };
+  };
+
   // Ukonczenie gry = fanfara + konfetti (raz na przejscie)
   var swietowano = false;
   window.addEventListener('message', function (e) {
@@ -255,7 +273,7 @@ _ZACZEPY_PORAZKI = {
 }
 
 
-def dodaj_oprawe(html):
+def dodaj_oprawe(html, klucz=None):
     if "<script>" not in html or "wyjscieDzwieku" in html:
         return html
     import re
@@ -263,8 +281,12 @@ def dodaj_oprawe(html):
                   ".connect(window.wyjscieDzwieku(audioCtx))", html)
     for zaczep, kod in _ZACZEPY_PORAZKI.items():
         html = html.replace(zaczep, zaczep + "\n    " + kod)
+    # Zamiast samego "true" gra wysyla paczke {zaliczono, staty}
+    html = re.sub(r"(type\s*:\s*'streamlit-child:zaliczono'\s*,\s*wartosc\s*:\s*)true",
+                  r"\1(window.statyDoWyslania ? window.statyDoWyslania() : true)", html)
     i = html.index("<script>")
-    return html[:i] + WSPOLNA_OPRAWA_JS + html[i:]
+    znacznik = "<script>window.__KLUCZ_GRY = " + json.dumps(klucz or "nieznana") + ";</script>\n"
+    return html[:i] + znacznik + WSPOLNA_OPRAWA_JS + html[i:]
 
 
 def gra_z_wynikiem(html_gry, wysokosc, key):
@@ -273,7 +295,7 @@ def gra_z_wynikiem(html_gry, wysokosc, key):
     Zwraca None jesli komponent-most jest niedostepny (patrz wyzej)."""
     if _KOMPONENT_WYNIKU is None:
         return None
-    html_gry = dodaj_oprawe(html_gry)
+    html_gry = dodaj_oprawe(html_gry, st.session_state.get("etap_biezacy"))
     # Komponent pamieta swoj wynik pod danym kluczem. Przy powtorce dajemy
     # mu NOWY klucz - inaczej od razu zwrocilby stare "zaliczone", zanim
     # ktokolwiek zacznie grac.
@@ -281,7 +303,18 @@ def gra_z_wynikiem(html_gry, wysokosc, key):
     nr = st.session_state.get("nr_powtorki", {}).get(biezacy, 0)
     if nr:
         key = f"{key}__powtorka{nr}"
-    return _KOMPONENT_WYNIKU(html_gry=html_gry, wysokosc=wysokosc, key=key, default=None)
+    wynik = _KOMPONENT_WYNIKU(html_gry=html_gry, wysokosc=wysokosc, key=key, default=None)
+    if isinstance(wynik, dict):
+        staty = wynik.get("staty") or {}
+        if not staty and "porazki" in wynik:          # Bitwa liczy porazki sama
+            staty = {"smierci": wynik.get("porazki", 0)}
+        # Zapamietujemy tylko PIERWSZE przejscie - powtorki nie nadpisuja wynikow
+        powtorka = biezacy in st.session_state.get("tryb_powtorki", set())
+        magazyn = st.session_state.setdefault("staty_gier", {})
+        if biezacy and staty and not powtorka and biezacy not in magazyn:
+            magazyn[biezacy] = {k: v for k, v in staty.items() if isinstance(v, (int, float))}
+        wynik = True if wynik.get("zaliczono") else None
+    return wynik
 
 
 # ======================================================================
@@ -509,8 +542,8 @@ ETAPY = [
     },
     {
         "klucz": "zaba",
-        "emoji": "🐸",
-        "tytul": {"pl": "🐸 Żaba", "en": "🐸 Frog"},
+        "emoji": "🟧",
+        "tytul": {"pl": "🟧 Geometry Dash", "en": "🟧 Geometry Dash"},
         "typ": "zaba",
     },
     {
@@ -739,16 +772,16 @@ KATEGORIE = [
     {
         "id": "mozgowe",
         "emoji": "🧠",
-        "nazwa": {"pl": "Mózgowe", "en": "Brain teasers"},
-        "opis": {"pl": "Zagadki i łamigłówki", "en": "Riddles and puzzles"},
+        "nazwa": {"pl": "Level 1", "en": "Level 1"},
+        "opis": {"pl": "Mózgowe · zagadki i łamigłówki", "en": "Brain teasers · riddles and puzzles"},
         "kolor": "#7ea8e6",
         "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman"],
     },
     {
         "id": "gry",
         "emoji": "🎮",
-        "nazwa": {"pl": "Gry", "en": "Games"},
-        "opis": {"pl": "Refleks, precyzja i zręczność", "en": "Reflexes, aim and skill"},
+        "nazwa": {"pl": "Level 2", "en": "Level 2"},
+        "opis": {"pl": "Gry · refleks, precyzja i zręczność", "en": "Games · reflexes, aim and skill"},
         "kolor": "#7ec98a",
         "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake",
                   "bitwa", "blackjack", "samolot", "odyseusz", "parkour"],
@@ -756,12 +789,10 @@ KATEGORIE = [
     {
         "id": "przygody",
         "emoji": "🏰",
-        "nazwa": {"pl": "Wielkie przygody", "en": "Big adventures"},
-        "opis": {"pl": "Na dłużej — całe światy", "en": "Whole worlds to explore"},
+        "nazwa": {"pl": "Level 3", "en": "Level 3"},
+        "opis": {"pl": "Wielkie przygody · całe światy", "en": "Big adventures · whole worlds"},
         "kolor": "#b98ae6",
         "etapy": ["minecraft", "labirynt", "poziom_diabla"],
-        # Odblokowuje sie dopiero po zaliczeniu WSZYSTKICH pozostalych etapow
-        "zablokowana": True,
     },
 ]
 
@@ -772,16 +803,22 @@ KATEGORIE = [
 TRYB_TESTOWY = True
 
 
-def etapy_poza_przygodami():
-    return [k for kat in KATEGORIE if not kat.get("zablokowana") for k in kat["etapy"]]
+def _wymagane_przed(kat):
+    """Etapy wszystkich POPRZEDNICH leveli - trzeba je zaliczyc, zeby wejsc."""
+    idx = KATEGORIE.index(kat)
+    return [k for poprzednia in KATEGORIE[:idx] for k in poprzednia["etapy"]]
+
+
+def _zablokowany_bez_testu(kat):
+    return any(k not in st.session_state.rozwiazane for k in _wymagane_przed(kat))
 
 
 def przygody_odblokowane():
-    return all(k in st.session_state.rozwiazane for k in etapy_poza_przygodami())
+    return not _zablokowany_bez_testu(KATEGORIE[-1])
 
 
-def _postep_odblokowania():
-    wymagane = etapy_poza_przygodami()
+def _postep_odblokowania(kat):
+    wymagane = _wymagane_przed(kat)
     return sum(1 for k in wymagane if k in st.session_state.rozwiazane), len(wymagane)
 
 
@@ -790,9 +827,10 @@ def _kategoria_etapu(klucz):
 
 
 def _dostep_zablokowany(kat):
-    return bool(kat and kat.get("zablokowana")
-                and not przygody_odblokowane()
-                and not st.session_state.get("test_obejscie"))
+    # Level N otwiera sie dopiero, gdy wszystkie poprzednie sa zaliczone
+    if not kat or st.session_state.get("test_obejscie"):
+        return False
+    return _zablokowany_bez_testu(kat)
 
 def etapy_kategorii(kat):
     """Etapy danej kategorii, w kolejności z definicji."""
@@ -860,6 +898,8 @@ TEKST = {
         "zagraj_ponownie": "🔁 Zagraj jeszcze raz",
         "przygody_zablokowane": "Odblokujesz po ukończeniu wszystkich gier",
         "przygody_odblokowane": "🏰 Wielkie przygody odblokowane! Wszystkie gry zaliczone.",
+        "level_zablokowany": "Odblokujesz po ukończeniu Level {n}",
+        "level_odblokowany": "🔓 Level {n} odblokowany!",
         "powtorka_info": "Możesz zagrać ponownie ile razy chcesz. Postęp wiadomości nie zmieni się — ani w górę, ani w dół.",
         "tryb_powtorki_info": "🔁 Powtórka — gra dla przyjemności, postęp zostaje bez zmian.",
         "powtorka_ukonczona": "🎉 Przeszłaś jeszcze raz! Postęp bez zmian — ten etap był już zaliczony.",
@@ -941,6 +981,8 @@ TEKST = {
         "zagraj_ponownie": "🔁 Play again",
         "przygody_zablokowane": "Unlocks after you finish every other game",
         "przygody_odblokowane": "🏰 Big adventures unlocked! Every game completed.",
+        "level_zablokowany": "Unlocks after you finish Level {n}",
+        "level_odblokowany": "🔓 Level {n} unlocked!",
         "powtorka_info": "Replay as many times as you like. The message progress won't change — neither up nor down.",
         "tryb_powtorki_info": "🔁 Replay — just for fun, progress stays the same.",
         "powtorka_ukonczona": "🎉 Beaten again! Progress unchanged — this stage was already solved.",
@@ -1031,6 +1073,54 @@ SZABLON_GRY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
+/* ---------- PODSUMOWANIE STATYSTYK ---------- */
+.stat-naglowek { color:#e6c15c; font-weight:800; font-size:1.1rem; margin:1.6rem 0 0.6rem; text-align:center; }
+.stat-siatka { display:grid; grid-template-columns:1fr; gap:10px; }
+.stat-karta { background:linear-gradient(135deg,#221d33,#16131f); border:1px solid rgba(230,193,92,0.28);
+  border-radius:14px; padding:10px 14px; }
+.stat-tytul { color:#f0e6cc; font-weight:800; margin-bottom:5px; }
+.stat-wiersz { display:flex; justify-content:space-between; gap:12px; color:#cfc4ad; font-size:0.9rem; padding:2px 0; }
+.stat-wiersz b { color:#ffe08a; }
+.stat-wiersz.brak { color:#8a8070; font-style:italic; }
+
+/* ---------- LISTA ETAPOW W KATEGORII ---------- */
+[class*="st-key-menu_"] button {
+  aspect-ratio: auto !important;
+  height: auto !important;
+  min-height: 56px !important;
+  padding: 0.7rem 1.1rem !important;
+  margin-bottom: 2px;
+  border-radius: 14px !important;
+  justify-content: flex-start !important;
+  text-align: left !important;
+  background: linear-gradient(135deg, #221d33 0%, #16131f 100%) !important;
+  border: 1.5px solid rgba(230,193,92,0.30) !important;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.45) !important;
+  animation: none !important;
+}
+[class*="st-key-menu_"] button p {
+  color: #f0e6cc !important;
+  font-size: 1.06rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  margin: 0 !important;
+}
+[class*="st-key-menu_"] button:hover {
+  border-color: #e6c15c !important;
+  transform: translateX(3px) !important;
+}
+/* Zaliczony - zielony akcent, wyciszony tekst */
+[class*="st-key-menu_ok_"] button {
+  background: linear-gradient(135deg, #16261c 0%, #121a15 100%) !important;
+  border-color: rgba(126,201,138,0.45) !important;
+}
+[class*="st-key-menu_ok_"] button p { color: #b9dcc0 !important; }
+/* Zamkniety (czeka test na czlowieka) - czerwonawy akcent */
+[class*="st-key-menu_rb_"] button {
+  border-color: rgba(232,124,124,0.55) !important;
+  border-style: dashed !important;
+}
+
 /* ---------- TRYB TESTOWY: celowo nie pasuje do niczego ---------- */
 [class*="st-key-zalicz_test"] button {
   background: repeating-linear-gradient(45deg, #ff00ff 0 12px, #39ff14 12px 24px) !important;
@@ -1622,6 +1712,7 @@ button[data-testid="stBaseButton-primary"]:active,
   }
 
   function zakonczPoziom(wygrana, powod) {
+    if (!wygrana && window.stat) window.stat('porazki');
     zatrzymajMuzyke();
     aktywneElementy.forEach(function (el) { el.remove(); });
     aktywneElementy = [];
@@ -2285,6 +2376,7 @@ SZABLON_DRONA = """
   }
 
   function rozpocznijGre() {
+    window.stat && window.stat('podejscia');
     przeszkody.forEach(function (p) { usunPrzeszkode(p); });
     przeszkody = [];
     wynik = 0;
@@ -2627,9 +2719,9 @@ SZABLON_ZABY = """<!DOCTYPE html>
   <div id="wskazowka">dotknij, żeby skoczyć</div>
 
   <div id="nakladka">
-    <div id="nakladkaTytul">🐸 Skok Żaby</div>
+    <div id="nakladkaTytul">🟧 Geometry Dash</div>
     <div id="nakladkaOpis">
-      Żaba biegnie sama. Ty tylko <b>skaczesz</b> — dotknij gdziekolwiek.<br><br>
+      Kostka biegnie sama. Ty tylko <b>skaczesz</b> — dotknij gdziekolwiek.<br><br>
       <b>Przytrzymaj</b>, żeby skakać od razu po wylądowaniu.<br><br>
       Trzy etapy. Po śmierci wracasz na start etapu — natychmiast, bez czekania.
     </div>
@@ -2785,6 +2877,17 @@ SZABLON_ZABY = """<!DOCTYPE html>
       return 0;
     });
     nad = nStr.split('');
+    // Ladowisko na scianie: po wzniesieniu o 2+ kafle pierwsze trzy kafle
+    // na gorze musza byc wolne. Kolec lezal dokladnie tam, gdzie wypada
+    // ladowanie po skoku - a gdy przed sciana byl spadek, nie bylo jak
+    // skoczyc wczesniej. Bot przechodzil to tylko w jednej klatce.
+    for (var ks = 1; ks < dl; ks++) {
+      if (teren[ks] === null || teren[ks - 1] === null) continue;
+      if (teren[ks] - teren[ks - 1] < 2) continue;
+      for (var kl = ks; kl < Math.min(dl, ks + 3); kl++) {
+        if (nad[kl] === '^' && teren[kl] === teren[ks]) nad[kl] = '.';
+      }
+    }
     mapa = teren;
     dlugoscMapy = dl;
     gracz = { x: 0, y: POZIOM_ZIEMI - BOK, vy: 0, naZiemi: true, obrot: 0, obrotCel: 0 };
@@ -2906,6 +3009,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
   }
 
   function zgin() {
+    window.stat && window.stat('smierci');
     proby++;
     dzwiekSmierci();
     trzesienie = 0.4;
@@ -3733,6 +3837,7 @@ SZABLON_MEMORY = """
         }, 500);
       } else {
         zagrajDzwiek('zle');
+        window.stat && window.stat('pomylki');
         zadrzyj(odkryteTeraz[0]);
         zadrzyj(odkryteTeraz[1]);
         setTimeout(function () {
@@ -3772,6 +3877,7 @@ SZABLON_MEMORY = """
   }
 
   function rozpocznijGre() {
+    window.statStartCzasu && window.statStartCzasu();
     dopasowanychPar = 0;
     odkryteTeraz = [];
     zablokowane = false;
@@ -4348,6 +4454,7 @@ SZABLON_SIMON = """
   });
 
   function rozpocznijGre() {
+    window.stat && window.stat('podejscia');
     sekwencja = [];
     pozycjaGracza = 0;
     trwa = true;
@@ -5144,6 +5251,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   }
 
   function zakonczGre(wygrana, powod) {
+    if (!wygrana && window.stat) window.stat('pomylki');
     trwa = false;
     usunWszystkieKafelki();
     nakladka.style.display = 'flex';
@@ -7539,10 +7647,12 @@ SZABLON_MINECRAFT = """
   }
   function dzwiekAtaku() { zagrajTon(220, 0.09, 'sawtooth'); }
   function dzwiekPotworaSmierc() {
+    window.stat && window.stat('potwory');
     zagrajTon(180, 0.1, 'sawtooth');
     setTimeout(function () { zagrajTon(90, 0.18, 'sawtooth'); }, 90);
   }
   function dzwiekSmierci() {
+    window.stat && window.stat('smierci');
     [260, 220, 180, 130].forEach(function (f, i) {
       setTimeout(function () { zagrajTon(f, 0.28, 'sawtooth'); }, i * 160);
     });
@@ -8749,6 +8859,7 @@ SZABLON_MINECRAFT = """
         rysuj();
         return;
       }
+      window.stat && window.stat('bloki');
       dodajDoEkwipunku(blok, 1);
       pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania(blok);
@@ -9702,6 +9813,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   // Miekkie "mlasniecie" przy zjedzeniu oliwki - nizsze i krotsze niz
   // chrupanie, dwa szybkie impulsy zamiast czystego tonu.
   function zagrajChrupanie() {
+    window.stat && window.stat('oliwki');
     if (!audioCtx) return;
     try {
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
@@ -9724,6 +9836,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   }
   function zagrajKlikniecie() { zagrajTon(420, 0.04, 'square'); }
   function zagrajZderzenie() {
+    window.stat && window.stat('smierci');
     zagrajTon(180, 0.15, 'sawtooth');
     setTimeout(function () { zagrajTon(90, 0.25, 'sawtooth'); }, 130);
   }
@@ -10515,6 +10628,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
   }
 
   function rozpocznijRozdanie() {
+    window.stat && window.stat('rozdania');
     if (talia.length < 15) talia = nowaTalia();
     rekaGracza = [dobierzZTalii(), dobierzZTalii()];
     rekaKrupiera = [dobierzZTalii(), dobierzZTalii()];
@@ -11571,6 +11685,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   function zakonczLot(){
     if(faza==='koniec') return;
     faza='koniec'; trwa=false;
+    window.statMax && window.statMax('metry', dystansM);
     var nowyRekord = dystansM>rekord;
     if(nowyRekord) rekord=dystansM;
     elRekord.textContent='Rekord: '+rekord+' m · Cel: '+CEL_METROW+' m';
@@ -11608,6 +11723,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   }
 
   function rozpocznijLot(){
+    window.stat && window.stat('podejscia');
     generujSwiat();
     samX=0; samY=-40; vx=0; vy=0; kat=0;
     klikiPozostale=START_KLIKOW; ostatniKlik=-99; czasLotu=0;
@@ -11963,7 +12079,8 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   function dzwiekTrafienia(){
     [700,900,1200].forEach(function(f,i){ setTimeout(function(){ ton(f,0.12,'triangle',0.15); }, i*80); });
   }
-  function dzwiekPudla(){ ton(200,0.12,'sawtooth',0.12); setTimeout(function(){ton(130,0.16,'sawtooth',0.1);},100); }
+  function dzwiekPudla(){
+    window.stat && window.stat('pudla'); ton(200,0.12,'sawtooth',0.12); setTimeout(function(){ton(130,0.16,'sawtooth',0.1);},100); }
   function dzwiekBloku(){ ton(150,0.1,'square',0.14); setTimeout(function(){ton(95,0.14,'square',0.11);},80); }
   function dzwiekEtapu(){ [523,659,784].forEach(function(f,i){setTimeout(function(){ton(f,0.16,'triangle',0.16);},i*120);}); }
   function dzwiekZwyciestwa(){ [523,659,784,1046,1318].forEach(function(f,i){setTimeout(function(){ton(f,0.19,'triangle',0.17);},i*120);}); }
@@ -13180,6 +13297,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
 
   function wykonajSkok() {
+    window.stat && window.stat('skoki');
     if (!ladowanie) return;
     var proc = Math.min(1, czasLadowania / MAX_LADOWANIE_S);
     var moc = MOC_MIN + proc * (MOC_MAX - MOC_MIN);
@@ -14204,6 +14322,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   }
 
   function zgin(tekst) {
+    window.stat && window.stat('smierci');
     zgony++;
     zgonyNapis.textContent = '💀 ' + zgony;
     dzwiekSmierci();
@@ -14689,13 +14808,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   #widok { display:block; width:100%; height:470px; background:#12100e; }
 
   #hud { position:absolute; top:0; left:0; width:56%; padding:6px 8px; z-index:5; pointer-events:none; }
-  #btnSkrzynia { position:absolute; bottom:16px; left:50%; transform:translateX(-50%); z-index:6;
+  #btnSkrzynia { position:absolute; bottom:30%; left:50%; transform:translateX(-50%); z-index:6;
     background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:22px;
-    padding:9px 20px; font-weight:700; font-size:13px; box-shadow:0 3px 10px rgba(0,0,0,0.5); display:none; }
+    padding:11px 22px; font-weight:800; font-size:14px; box-shadow:0 3px 10px rgba(0,0,0,0.5); display:none;
+    animation: skrzyniaPuls 1.4s ease-in-out infinite; }
+  @keyframes skrzyniaPuls {
+    0%,100% { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 0 0 rgba(230,193,92,0.65); }
+    50%     { box-shadow: 0 3px 10px rgba(0,0,0,0.5), 0 0 0 8px rgba(230,193,92,0); }
+  }
   .pasek-otoczka { height:12px; background:rgba(0,0,0,0.55); border:1px solid rgba(255,255,255,0.25); border-radius:6px; overflow:hidden; margin-bottom:3px; }
   .pasek-wyp { height:100%; transition:width 0.18s ease; }
   #paskHp { background:linear-gradient(90deg,#c0392b,#e74c3c); }
-  #paskXp { background:linear-gradient(90deg,#8e6cc4,#b89ae6); }
+  #paskXp { background:linear-gradient(90deg,#3f9a52,#7ee87a); box-shadow:0 0 8px rgba(126,232,122,0.45); }
   #hudTekst { display:flex; justify-content:space-between; color:#f0e8d0; font-size:11px; font-weight:700; text-shadow:0 1px 3px rgba(0,0,0,0.9); }
 
   #dziennik { position:absolute; top:64px; left:8px; right:8px; z-index:5; pointer-events:none; }
@@ -14804,11 +14928,22 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   /* Dwie osobne odznaki: punkty do rozdania i nowe przedmioty */
   .odznaka-pkt  { background:#3f8a52 !important; left:-6px; right:auto !important; }
   .odznaka-nowe { background:#c0392b !important; right:-6px; }
+  /* Znaczek czesci ciala na przedmiocie w plecaku - wiekszy, czarno-bialy */
   .slot-znaczek {
-    position:absolute; right:-5px; bottom:-4px;
-    font-size:10px; line-height:1;
-    background:rgba(8,6,14,0.9); border-radius:5px; padding:1px 2px;
+    position:absolute; right:-7px; bottom:-6px;
+    width:19px; height:19px; display:flex; align-items:center; justify-content:center;
+    background:#0b0a10; border:1.5px solid rgba(255,255,255,0.85); border-radius:6px;
+    box-shadow:0 1px 3px rgba(0,0,0,0.7);
   }
+  .slot-znaczek svg { width:13px; height:13px; }
+  /* Plytka slotu na zalozonych rzeczach: ta sama ikona + nazwa czesci ciala */
+  .plytka-slotu {
+    flex:0 0 auto; width:42px; margin-right:7px; padding:5px 2px 3px;
+    display:inline-flex; flex-direction:column; align-items:center; gap:2px;
+    background:#0b0a10; border:1.5px solid rgba(255,255,255,0.55); border-radius:9px;
+  }
+  .plytka-slotu svg { width:21px; height:21px; }
+  .plytka-slotu small { font-size:8.5px; font-weight:800; color:#e8e8e8; letter-spacing:0.04em; text-transform:uppercase; }
   .zalozone-wiersz .opis { flex:1; }
   .zalozone-wiersz .tytul { font-size:11px; font-weight:700; }
   .zalozone-wiersz .staty { font-size:10px; color:#a89878; }
@@ -14866,6 +15001,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 <script>
   var widok = document.getElementById('widok');
   var ctx = widok.getContext('2d');
+  // Plansza miala stale 380x470 pikseli, a telefon rozciagal ja na ekran
+  // o 3x gestszych pikselach - wszystko, a minimapa najbardziej, bylo rozmyte.
+  // Limit 2 to kompromis miedzy ostroscia a plynnoscia.
+  // Rozmiar plotna ustawiamy dopiero w rysuj() - ta linia stoi PRZED
+  // definicja WID/WYS, wiec tu wyszloby NaN, czyli plotno o zerowym rozmiarze.
+  var DPR = Math.min(2, window.devicePixelRatio || 1);
   var paskHp = document.getElementById('paskHp'), paskXp = document.getElementById('paskXp');
   var hudHp = document.getElementById('hudHp'), hudPoziom = document.getElementById('hudPoziom'), hudMikstury = document.getElementById('hudMikstury');
   var dziennikEl = document.getElementById('dziennik');
@@ -14880,6 +15021,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var POJEMNOSC_PLECAKA = 50;
   // Obszar swiata widoczny na ekranie. Przy ZOOM < 1 miesci sie go wiecej.
   var WID_SWIATA = WID / ZOOM, WYS_SWIATA = WYS / ZOOM;
+  var KAM_PION = 0.56;      // postac lekko ponizej srodka - u gory sa paski i minimapa
   var KAFEL = 44;
   var SIATKA = 68;                 // rosnie z kazdym poziomem labiryntu
   var POZIOMY_SIATKI = [86, 106, 126];
@@ -14955,10 +15097,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                   efektBroni:'rzut' },
     kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:70, magiczna:false,
                   pocisk:true, opis:'Powolny, ciężki bełt — ogromne obrażenia' },
-    rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:210, tempo:0.52, obr:13, magiczna:true,  opis:'Pocisk na dystans' },
-    rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:195, tempo:0.62, obr:16, magiczna:true,  opis:'Podpala — wróg płonie', efekt:'ogien' },
+    rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:210, tempo:0.47, obr:15, magiczna:true,  opis:'Pocisk na dystans' },
+    rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:195, tempo:0.62, obr:16, magiczna:true,  opis:'Wybucha przy trafieniu i podpala kilku wrogów', efekt:'ogien' },
     rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:200, tempo:0.58, obr:15, magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
-    rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:6,  magiczna:true,  opis:'Mocno spowalnia wrogów', efekt:'zima' },
+    rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:13, magiczna:true,  opis:'Wybucha mrozem i spowalnia kilku wrogów', efekt:'zima' },
     rozdzkaWiedzmy:{nazwa:'Różdżka Wiedźmy',ikona:'🌈', zasieg:205, tempo:0.62, obr:4, magiczna:true,
                     opis:'+1 obrażeń za każdego zabitego wroga', mityczna:true },
   };
@@ -15002,6 +15144,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     { klucz:'obrazenia', nazwa:'Obrażenia', ikona:'⚔️', naPunkt:4  },
     { klucz:'obrona',    nazwa:'Obrona',    ikona:'🛡️', naPunkt:11 },
     { klucz:'predkosc',  nazwa:'Prędkość',  ikona:'👟', naPunkt:13 },
+    // Start od 75% obecnej predkosci ataku. naPunkt dobrane tak, zeby przy
+    // malejacych zyskach (SPADEK_ZYSKU) dokladnie 7. punkt dawal 100%,
+    // a kazdy kolejny szedl juz ponad dawny poziom (ok. +3% za punkt).
+    { klucz:'szybkosc',  nazwa:'Prędk. ataku', ikona:'⚡', naPunkt:4.1234, jednostka:'%' },
   ];
 
   // ---------- STAN ----------
@@ -15010,6 +15156,78 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var trwa = false, czasOstatni = null, kamX = 0, kamY = 0;
   var joyAktywny = false, joyBazaX = 0, joyBazaY = 0, joyX = 0, joyY = 0;
   var widzianePrzedmioty = 0;      // ile przedmiotow bylo przy ostatnim otwarciu plecaka
+  var scianyMagiczne = [];         // chwilowe sciany czarodzieja - blokuja gracza i jego pociski
+  var wiry = [];                   // wiry czarodzieja - przyciagaja gracza
+  var bomby = [];                  // bomby z tlacym sie lontem (po smierci bombiarza)
+  var PROMIEN_WYBUCHU = 150;       // bylo 104
+  var PROMIEN_OGNIA = 62;          // maly wybuch kuli ognia - kilku wrogow naraz
+  // Graczowi, z pominieciem pancerza: 30% maks. zdrowia + staly dodatek,
+  // rosnacy z kazdym labiryntem (1.: +0, 2.: +50, 3.: +100).
+  var DODATEK_WYBUCHU = [0, 50, 100];
+  function obrazeniaWybuchu() {
+    var etap = Math.max(0, Math.min(2, poziomLabiryntu || 0));
+    return Math.round(gracz.hpMax * 0.30 + DODATEK_WYBUCHU[etap]);
+  }
+  var MNOZNIK_WYBUCHU_WROGOM = 2;  // swoim: 200% ataku bombiarza
+  function odlDoOdcinka(px, py, sc) {
+    var dx = sc.x2 - sc.x1, dy = sc.y2 - sc.y1, l2 = dx*dx + dy*dy || 1;
+    var t = Math.max(0, Math.min(1, ((px - sc.x1)*dx + (py - sc.y1)*dy) / l2));
+    return Math.hypot(px - (sc.x1 + t*dx), py - (sc.y1 + t*dy));
+  }
+  // Blokuje tylko ruch W STRONE sciany - jesli sciana wyrosnie na graczu,
+  // nie uwiezi go, bo oddalanie sie jest zawsze dozwolone.
+  function scianaBlokuje(x0, y0, x1, y1, r) {
+    for (var i = 0; i < scianyMagiczne.length; i++) {
+      var sc = scianyMagiczne[i], d1 = odlDoOdcinka(x1, y1, sc);
+      if (d1 < r + sc.grubosc / 2 && d1 < odlDoOdcinka(x0, y0, sc)) return true;
+    }
+    return false;
+  }
+  function postawSciane(w, kat) {
+    var cx = w.x + Math.cos(kat) * 62, cy = w.y + Math.sin(kat) * 62;
+    var px = -Math.sin(kat) * 75, py = Math.cos(kat) * 75;
+    scianyMagiczne.push({ x1: cx - px, y1: cy - py, x2: cx + px, y2: cy + py, grubosc: 14, zycie: 4, max: 4 });
+    tekstNaSwiecie(w.x, w.y - w.r - 10, 'Ściana!', '#9fd8ff');
+    ton(330, 0.3, 'sine', 0.1);
+  }
+  function rzucWir(w) {
+    wiry.push({ x: gracz.x, y: gracz.y, r: 95, zycie: 4.2, max: 4.2, rozruch: 0.7, faza: 0, tik: 0, atak: w.atak });
+    tekstNaSwiecie(w.x, w.y - w.r - 10, 'Wir!', '#c9a8ff');
+    ton(180, 0.5, 'triangle', 0.1);
+  }
+  function wybuchBomby(bm) {
+    rozbryzg(bm.x, bm.y, '#ffd24a', 40);
+    rozbryzg(bm.x, bm.y, '#e6743c', 30);
+    fale.push({ x: bm.x, y: bm.y, zycie: 0.45, max: 0.45 });
+    ton(70, 0.5, 'sawtooth', 0.26); ton(45, 0.6, 'sine', 0.3);
+    if (Math.hypot(gracz.x - bm.x, gracz.y - bm.y) <= PROMIEN_WYBUCHU) {
+      zadajObrazeniaGraczowi(obrazeniaWybuchu(), true);
+    }
+    // Swoich tez rani - na kopii tablicy, bo zabici z niej znikaja
+    wrogowie.slice().forEach(function (o) {
+      if (o.hp > 0 && Math.hypot(o.x - bm.x, o.y - bm.y) <= PROMIEN_WYBUCHU) {
+        zadajObrazeniaWrogowi(o, Math.round(bm.atak * MNOZNIK_WYBUCHU_WROGOM));
+      }
+    });
+  }
+  var fale = [];                   // fale uderzeniowe wybuchow
+  var blyskawice = [];             // widoczne wyladowania rozdzki piorunow
+  var ZASIEG_PIORUNA = 150;        // skok od wroga do wroga (wczesniej 92 od pocisku)
+  var SKOKI_PIORUNA = 5;
+  function dodajBlyskawice(x1, y1, x2, y2) {
+    var dl = Math.hypot(x2 - x1, y2 - y1), ile = Math.max(4, Math.round(dl / 16));
+    var nx = -(y2 - y1) / (dl || 1), ny = (x2 - x1) / (dl || 1), pkt = [[x1, y1]];
+    for (var i = 1; i < ile; i++) {
+      var t = i / ile, zwez = Math.sin(t * Math.PI), o = (Math.random() * 2 - 1) * 11 * zwez;
+      pkt.push([x1 + (x2 - x1) * t + nx * o, y1 + (y2 - y1) * t + ny * o]);
+    }
+    pkt.push([x2, y2]);
+    blyskawice.push({ pkt: pkt, zycie: 0.32, max: 0.32 });
+    for (var c = 0; c < 6; c++) {
+      czastki.push({ x: x2, y: y2, vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160,
+                     zycie: 0.3, kolor: c % 2 ? '#ffffff' : '#9fd8ff' });
+    }
+  }
   var kulkiXp = [];                // zielone kulki doswiadczenia rozrzucone po smierci wroga
   var blyskPoziomu = 0;            // animacja awansu
   var migawkaPietra = null;        // stan gracza w chwili wejscia na pietro
@@ -15035,23 +15253,27 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var sekretnaKomnata = null, drzwiSekretne = null;
   var opuscilStartowa = false, wSekretnej = false, sekretnyBossZyje = false;
   var pytanieOSekretnej = false, wyjscieSekretne = null, sekretnyPokonany = false;
+  var wiedzmaOczekuje = null;   // stan sprzed rozdzki - na wypadek smierci przed wyjsciem
   // Ukryta komnata to ALTERNATYWNA sciezka, odblokowywana dopiero po
   // pierwszym przejsciu labiryntu. Ta zmienna NIE jest zerowana przy
   // restarcie gry, wiec odblokowanie zostaje na cala sesje.
   var labiryntPrzeszly = false;
   try { if (window.localStorage && localStorage.getItem('labiryntPrzeszly') === '1') labiryntPrzeszly = true; } catch (e) {}
+  // Statystyki liczymy tylko przy PIERWSZYM przejsciu, do trybu nieskonczonego
+  function statLab(k, ile) { if (!labiryntPrzeszly && !trybNieskonczony && window.stat) window.stat(k, ile); }
   var sciezkaWiedzmy = false;   // czy gramy wersja z Rozdzka Wiedzmy
   var arenaZamknieta = false;      // podczas walki z bossem nie mozna wyjsc
   var pytanieOBossa = false;
   var cooldownSlug = 0;
   var pociskiBossa = [];
-  var gazy = [];      // trujace chmury zostawiane przez Trucicieli
+  var gazy = [];      // trujace chmury zostawiane przez Śmierdzieli
 
   function losowo(a, b) { return Math.random() * (b - a) + a; }
   function losCalk(a, b) { return Math.floor(losowo(a, b + 1)); }
 
   // ---------- GENEROWANIE MAPY ----------
   function generujMape() {
+    if (!labiryntPrzeszly && !trybNieskonczony && window.statStartCzasu) window.statStartCzasu();
     SIATKA = POZIOMY_SIATKI[poziomLabiryntu];
     var docelowoKomnat = POZIOMY_KOMNAT[poziomLabiryntu];
     mapa = [];
@@ -15170,6 +15392,79 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (d > najdal) { najdal = d; najdalsza = k; }
     });
     komnataBossa = najdalsza;
+    // Jesli zamurowanie przejsc odcieloby jakas komnate, losujemy mape od nowa
+    if (!uformujKomnateBossa()) {
+      generujMape._proby = (generujMape._proby || 0) + 1;
+      if (generujMape._proby < 30) { generujMape(); return; }
+    }
+    generujMape._proby = 0;
+  }
+
+  // Komnata bossa: powiekszona i z JEDNYM wejsciem od strony startu.
+  // Zwraca false, gdy na tej mapie sie nie da (np. korytarz innych komnat
+  // biegl przez srodek i zamurowanie by je odcielo).
+  function uformujKomnateBossa() {
+    var kb = komnataBossa;
+    if (!kb || komnaty.length < 2) return true;
+    var inne = komnaty.filter(function (k) { return k !== kb; });
+    if (sekretnaKomnata) inne.push(sekretnaKomnata);
+    function koliduje(x, y, w, h) {
+      if (x < 2 || y < 2 || x + w > SIATKA - 3 || y + h > SIATKA - 3 || w > 20 || h > 20) return true;
+      return inne.some(function (k) { return !(x + w + 2 < k.x || x > k.x + k.w + 2 || y + h + 2 < k.y || y > k.y + k.h + 2); });
+    }
+    // 1. Powiekszenie - po kaflu w kazda strone, dopoki nie nachodzi na inne komnaty
+    for (var krok = 0; krok < 4; krok++) {
+      [[-1,0,1,0],[0,-1,0,1],[0,0,1,0],[0,0,0,1]].forEach(function (d) {
+        var nx = kb.x + d[0], ny = kb.y + d[1], nw = kb.w + d[2], nh = kb.h + d[3];
+        if (!koliduje(nx, ny, nw, nh)) { kb.x = nx; kb.y = ny; kb.w = nw; kb.h = nh; }
+      });
+    }
+    kb.cx = Math.floor(kb.x + kb.w / 2); kb.cy = Math.floor(kb.y + kb.h / 2);
+    var yy, xx;
+    for (yy = kb.y; yy < kb.y + kb.h; yy++) for (xx = kb.x; xx < kb.x + kb.w; xx++) mapa[yy][xx] = 1;
+    // 2. Pelny pierscien scian - zamyka WSZYSTKIE dotychczasowe przejscia
+    var pierscien = [];
+    for (xx = kb.x - 1; xx <= kb.x + kb.w; xx++) { pierscien.push([xx, kb.y - 1, 0, -1]); pierscien.push([xx, kb.y + kb.h, 0, 1]); }
+    for (yy = kb.y; yy < kb.y + kb.h; yy++) { pierscien.push([kb.x - 1, yy, -1, 0]); pierscien.push([kb.x + kb.w, yy, 1, 0]); }
+    pierscien.forEach(function (c) { mapa[c[1]][c[0]] = 0; });
+    // 3. Odleglosci od startu po podlodze (komnata bossa jest juz odcieta)
+    function bfs() {
+      var odl = {}, kol = [[komnaty[0].cx, komnaty[0].cy]], g = 0;
+      odl[komnaty[0].cx + ',' + komnaty[0].cy] = 0;
+      while (g < kol.length) {
+        var c = kol[g++], dd = odl[c[0] + ',' + c[1]];
+        [[1,0],[-1,0],[0,1],[0,-1]].forEach(function (k) {
+          var x2 = c[0] + k[0], y2 = c[1] + k[1], kl = x2 + ',' + y2;
+          if (x2 < 0 || y2 < 0 || x2 >= SIATKA || y2 >= SIATKA || mapa[y2][x2] !== 1 || kl in odl) return;
+          odl[kl] = dd + 1; kol.push([x2, y2]);
+        });
+      }
+      return odl;
+    }
+    var odl = bfs();
+    // 4. Jedno wejscie: punkt pierscienia (bez naroznikow), za ktorym jest
+    //    osiagalna podloga - ten najblizszy startu.
+    var najl = null, najO = Infinity;
+    pierscien.forEach(function (c) {
+      var naroznik = (c[0] === kb.x - 1 || c[0] === kb.x + kb.w) && (c[1] === kb.y - 1 || c[1] === kb.y + kb.h);
+      if (naroznik) return;
+      var o = odl[(c[0] + c[2]) + ',' + (c[1] + c[3])];
+      if (o !== undefined && o < najO) { najO = o; najl = c; }
+    });
+    if (!najl) return false;
+    // Wejscie 3 kafle szerokosci, jak korytarze
+    var wzdluzX = najl[3] !== 0;
+    for (var s2 = -1; s2 <= 1; s2++) {
+      var ex = najl[0] + (wzdluzX ? s2 : 0), ey = najl[1] + (wzdluzX ? 0 : s2);
+      var wRogu = (ex <= kb.x - 1 || ex >= kb.x + kb.w) && (ey <= kb.y - 1 || ey >= kb.y + kb.h);
+      if (wRogu) continue;
+      mapa[ey][ex] = 1;
+      var ox = ex + najl[2], oy = ey + najl[3];
+      if (ox > 0 && oy > 0 && ox < SIATKA - 1 && oy < SIATKA - 1) mapa[oy][ox] = 1;
+    }
+    // 5. Kontrola: kazda komnata (poza sekretna) musi byc osiagalna
+    odl = bfs();
+    return komnaty.every(function (k) { return (k.cx + ',' + k.cy) in odl; });
   }
 
   function czySciana(px, py) {
@@ -15301,7 +15596,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return {
       x:0, y:0, r:13, hp:100, hpMax:100, poziom:1, xp:0, xpDoNastepnego:55,
       punkty:0, mikstury:1,
-      staty:{ zdrowie:0, obrazenia:0, obrona:0, predkosc:0 },
+      staty:{ zdrowie:0, obrazenia:0, obrona:0, predkosc:0, szybkosc:0 },
       ekwipunek:[], zalozone:{ bron:stworzBron(0,'miecz'), helm:null, zbroja:null, buty:null, amulet:null },
       cooldown:0, kierunekX:1, kierunekY:0, migotanie:0,
     };
@@ -15319,13 +15614,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
   function zyskZNastepnego(klucz) {
     var def = DEF_STATOW.find(function (d) { return d.klucz === klucz; });
-    return def.naPunkt / (1 + gracz.staty[klucz] * SPADEK_ZYSKU);
+    return def.naPunkt / (1 + (gracz.staty[klucz] || 0) * SPADEK_ZYSKU);
+  }
+
+  // 100% = dawna predkosc ataku. 75% na starcie wydluza przerwy o 1/3.
+  function mnoznikTempaAtaku() {
+    return 100 / Math.max(20, wartoscStatu('szybkosc'));
   }
 
   function wartoscStatu(klucz) {
     var def = DEF_STATOW.find(function (d) { return d.klucz === klucz; });
-    var baza = { zdrowie:100, obrazenia:8, obrona:0, predkosc:118 }[klucz];
-    var zPunktow = sumaZPunktow(def.naPunkt, gracz.staty[klucz]);
+    var baza = { zdrowie:100, obrazenia:10, obrona:0, predkosc:118, szybkosc:75 }[klucz];
+    var zPunktow = sumaZPunktow(def.naPunkt, gracz.staty[klucz] || 0);
     var zPancerza = 0;
     ['helm','zbroja','buty','amulet'].forEach(function (s) {
       var p = gracz.zalozone[s];
@@ -15387,6 +15687,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         gracz.staty.zdrowie += 5 / 30;
         gracz.staty.predkosc += 5 / 13;
         gracz.staty.obrona += 5 / 11;
+        gracz.staty.szybkosc = (gracz.staty.szybkosc || 0) + 1;
         przeliczHpMax();
       } else {
         gracz.punkty += 5;
@@ -15408,29 +15709,42 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Ikona czesci ciala - widoczna przy kazdym elemencie pancerza
   var IKONY_SLOTOW = { helm:'🪖', zbroja:'🛡️', buty:'👢', amulet:'📿', bron:'⚔️' };
   var NAZWY_SLOTOW = { helm:'Głowa', zbroja:'Korpus', buty:'Stopy', amulet:'Szyja', bron:'Broń' };
+  // Czarno-biale ikony czesci ciala - te same na zalozonych slotach i na
+  // przedmiotach w plecaku, zeby od razu bylo widac, co gdzie pasuje.
+  var SVG_SLOTOW = {
+    helm:   '<path d="M4 15a8 8 0 0 1 16 0v2H4z"/><path d="M9 17v3M15 17v3"/><path d="M12 7v4"/>',
+    zbroja: '<path d="M9 3L4 6v6l3 1v8h10v-8l3-1V6l-5-3a3 3 0 0 1-6 0z"/>',
+    buty:   '<path d="M8 3h5v9l5 2.5a2 2 0 0 1 1 1.8V19H5v-5l3-3z"/><path d="M5 19h14"/>',
+    amulet: '<path d="M5 3l7 8 7-8"/><path d="M12 12l4 4-4 5-4-5z"/>',
+    bron:   '<path d="M19 3L9 13"/><path d="M19 3h-3M19 3v3"/><path d="M7 11l6 6"/><path d="M9 15l-5 5"/>'
+  };
+  function ikonaSlotu(slot) {
+    return '<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" '
+      + 'stroke-linecap="round" stroke-linejoin="round">' + (SVG_SLOTOW[slot] || '') + '</svg>';
+  }
 
   var TYPY_WROGOW = {
     // Obrazenia scietе ok. 25%, HP ok. 12%. Strzelajacy i uciekajacy dostali
     // mocniejsze ciecie HP i predkosci - byli najbardziej uciazliwi.
-    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:30,  atak:7,  pancerz:2,  predkosc:96,  xp:9,  r:11, kolor:'#8a6a4a' },
-    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:55,  atak:12, pancerz:11, predkosc:82,  xp:15, r:13, kolor:'#d8d0c0' },
-    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:43,  atak:10, pancerz:6,  predkosc:118, xp:13, r:12, kolor:'#5a9a4a' },
-    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:36, atak:15, pancerz:4, predkosc:70, xp:22, r:13, kolor:'#8a5ac4', dystansowy:true },
-    bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:36,  atak:25, pancerz:3,  predkosc:128, xp:20, r:12, kolor:'#e6743c', wybuchowy:true },
-    kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:12, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
+    szczur:   { nazwa:'Szczur',    ikona:'🐀', hp:30,  atak:7,  pancerz:2,  predkosc:96,  xp:9,  r:14, kolor:'#8a6a4a' },
+    szkielet: { nazwa:'Szkielet',  ikona:'💀', hp:55,  atak:12, pancerz:11, predkosc:82,  xp:15, r:17, kolor:'#d8d0c0' },
+    goblin:   { nazwa:'Goblin',    ikona:'👺', hp:43,  atak:10, pancerz:6,  predkosc:118, xp:13, r:16, kolor:'#5a9a4a' },
+    mag:      { nazwa:'Mroczny mag', ikona:'🧙', hp:36, atak:15, pancerz:4, predkosc:70, xp:22, r:17, kolor:'#8a5ac4', dystansowy:true },
+    bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:75,  atak:25, pancerz:3,  predkosc:168, xp:28, r:16, kolor:'#e6743c', wybuchowy:true },
+    kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:16, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
-    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:12, kolor:'#6a5a8a',
+    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
-    trujacy:  { nazwa:'Truciciel', ikona:'🧪', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:13, kolor:'#6a9a4a',
+    trujacy:  { nazwa:'Śmierdziel', ikona:'🦨', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:17, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
-    jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:14, kolor:'#8a5a3a',
+    jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:18, kolor:'#8a5a3a',
                 zachowanie:'szarzaBoki' },
-    lucznik:  { nazwa:'Łucznik',   ikona:'🎯', hp:33,  atak:14, pancerz:5,  predkosc:80,  xp:20, r:12, kolor:'#9a7a4a',
+    lucznik:  { nazwa:'Łucznik',   ikona:'🎯', hp:33,  atak:14, pancerz:5,  predkosc:80,  xp:20, r:16, kolor:'#9a7a4a',
                 dystansowy:true, zasiegStrzalu:280, zachowanie:'okrazajacy' },
     // Czarodziej: strzela i RAZ moze sie teleportowac, gdy zostanie trafiony
-    czarodziej:{ nazwa:'Czarodziej', ikona:'🔮', hp:40, atak:14, pancerz:5, predkosc:66, xp:28, r:13, kolor:'#4a9ad4',
+    czarodziej:{ nazwa:'Czarodziej', ikona:'🔮', hp:40, atak:14, pancerz:5, predkosc:66, xp:28, r:17, kolor:'#4a9ad4',
                 dystansowy:true, zasiegStrzalu:290, teleportuje:true },
-    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:132, atak:21, pancerz:20, predkosc:60,  xp:34, r:17, kolor:'#a04a3a' },
+    ogr:      { nazwa:'Ogr',       ikona:'👹', hp:132, atak:21, pancerz:20, predkosc:60,  xp:34, r:22, kolor:'#a04a3a' },
   };
 
   var KLUCZE_WROGOW = Object.keys(TYPY_WROGOW);
@@ -15474,11 +15788,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // Trzy bossy o ROZNYCH mechanikach - kazdy wymaga innego sposobu gry.
   var DEFINICJE_BOSSOW = [
-    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:1100, atak:44, pancerz:70,  predkosc:92, r:26,
+    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:1100, atak:44, pancerz:70,  predkosc:92, r:34,
       wzorzec:'goniacy', opis:'Goni cię i szarżuje — nie daj się osaczyć.' },
-    { nazwa:'Wiedźma Otchłani', ikona:'🧝', kolor:'#8a5ac4', hp:1700, atak:34, pancerz:95,  predkosc:46, r:27,
+    { nazwa:'Wiedźma Otchłani', ikona:'🧝', kolor:'#8a5ac4', hp:1700, atak:34, pancerz:95,  predkosc:46, r:35,
       wzorzec:'salwy',   opis:'Gęste salwy pocisków i groźni pomocnicy.' },
-    { nazwa:'Tytan Popiołów',  ikona:'👺', kolor:'#e6743c', hp:4200, atak:72, pancerz:130, predkosc:66, r:32,
+    { nazwa:'Tytan Popiołów',  ikona:'👺', kolor:'#e6743c', hp:4200, atak:72, pancerz:130, predkosc:66, r:42,
       wzorzec:'tytan',   opis:'Sam, ale w trzech fazach. Szarżuje po długim rozpędzie.' },
   ];
 
@@ -15486,7 +15800,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // ale z czytelnym, powtarzalnym wzorcem: da sie go pokonac samym unikaniem.
   function stworzSekretnegoBossa(x, y) {
     return {
-      x:x, y:y, typ:'boss', r:24, ikona:'👻', kolor:'#7ec4e8', nazwa:'Strażnik Progu',
+      x:x, y:y, typ:'boss', r:31, ikona:'👻', kolor:'#7ec4e8', nazwa:'Strażnik Progu',
       hp:240, hpMax:240, atak:16, pancerz:10, predkosc:74, xp:180,
       dystansowy:false, cooldown:0, spowolnienie:0, zamrozony:0, plonie:0, migotanie:0,
       boss:true, sekretny:true, czuwa:true, czujnosc:9999, wzorzec:'salwy',
@@ -15534,10 +15848,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var surowe = bazowe + wartoscStatu('obrazenia');
     var finalne = Math.max(1, Math.round(surowe * (1 - redukcja(w.pancerz, 0))));
     w.hp -= finalne;
+    statLab('zadane', finalne);
     w.migotanie = 0.14;
     w.czuwa = true;                      // trafiony wrog zawsze sie budzi
     // Czarodziej RAZ na zycie znika i pojawia sie kilka kratek dalej
-    if (w.teleportuje && !w.juzSieTeleportowal && w.hp > 0) {
+    if (w.teleportuje && !w.juzSieTeleportowal && w.hp > 0 && w.hp <= w.hpMax * 0.5) {
       var udany = false;
       for (var pr = 0; pr < 22 && !udany; pr++) {
         var kat = losowo(0, Math.PI * 2), odl = losowo(110, 190);
@@ -15609,6 +15924,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (d < 18 || k.zycie <= 0) {
         if (k.zycie > 0) {
           dodajXp(k.xp);
+          statLab('kulki');
           czastki.push({ x:k.x, y:k.y, vx:0, vy:-40, zycie:0.3, kolor:'#7ee87a' });
           ton(760 + Math.random() * 260, 0.05, 'triangle', 0.06);
         }
@@ -15618,6 +15934,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function zabijWroga(w) {
+    statLab('zabici');
+    // Bombiarz ZAWSZE wybucha po smierci - kto zabije go wrecz, musi uciekac
+    if (w.wybuchowy && !w.wybuchl) {
+      w.wybuchl = true;
+      bomby.push({ x: w.x, y: w.y, lont: 0.6, max: 0.6, atak: w.atak });
+    }
     var idx = wrogowie.indexOf(w);
     if (idx === -1) return;
     wrogowie.splice(idx, 1);
@@ -15630,11 +15952,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
     rozbryzg(w.x, w.y, w.kolor, 14);
     dzwiekSmierciWroga();
-    rozsypKulkiXp(w.x, w.y, 3 + w.xp / 6 + (w.boss ? 9 : 0), w.xp);
+    if (!trybNieskonczony) rozsypKulkiXp(w.x, w.y, 3 + w.xp / 6 + (w.boss ? 9 : 0), w.xp);
 
     if (w.sekretny) {
       // Rozdzka trafia PROSTO do rak - od tej chwili obowiazuja zasady
       // sciezki Wiedzmy: bez zmiany broni, bez lupow z wrogow, bez punktow.
+      wiedzmaOczekuje = { bron: gracz.zalozone.bron, punkty: gracz.punkty, sciezka: sciezkaWiedzmy };
       sciezkaWiedzmy = true;
       gracz.zalozone.bron = stworzBron(4, 'rozdzkaWiedzmy');
       gracz.punkty = 0;
@@ -15650,7 +15973,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       arenaZamknieta = false;
       if (poziomLabiryntu >= POZIOMY_SIATKI.length - 1) { zakonczGre(true); return; }
       arenaZamknieta = false;
-      portal = { x:w.x, y:w.y, r:30, faza:0 };
+      portal = { x:w.x, y:w.y, r:30, faza:0, formowanie:3.5, czasFormowania:3.5 };
       dziennik('🌀 Otworzył się portal na poziom ' + (poziomLabiryntu + 2) + '!');
       ton(300,0.2,'sine',0.16);
       setTimeout(function(){ ton(450,0.24,'sine',0.15); },180);
@@ -15690,7 +16013,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function znajdzNajblizszegoWroga(zasieg) {
     var naj = null, najD = zasieg;
     wrogowie.forEach(function (w) {
-      var d = Math.hypot(w.x - gracz.x, w.y - gracz.y);
+      var d = Math.hypot(w.x - gracz.x, w.y - gracz.y) - w.r;   // do krawedzi, nie do srodka
       if (d >= najD) return;
       if (!czyWidacLinie(gracz.x, gracz.y, w.x, w.y)) return;   // mur zaslania
       najD = d; naj = w;
@@ -15714,10 +16037,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var maks = maksRozpedzenie(bron.tier || 0);
       gracz.rozpedzenie = Math.min(maks, (gracz.rozpedzenie || 0) + maks / 8);
       gracz.odOstatniegoCiosu = 0;
-      gracz.cooldown = bron.tempo * (1 - gracz.rozpedzenie);
+      gracz.cooldown = bron.tempo * (1 - gracz.rozpedzenie) * mnoznikTempaAtaku();
     } else {
       gracz.rozpedzenie = 0;
-      gracz.cooldown = bron.tempo;
+      gracz.cooldown = bron.tempo * mnoznikTempaAtaku();
     }
 
     var kat = Math.atan2(cel.y - gracz.y, cel.x - gracz.x);
@@ -15736,9 +16059,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
 
     if (bron.pocisk) {
-      // Kusza: powolny, ciezki belt - widac go lecacego, wiec trzeba celowac
-      pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*220, vy:Math.sin(kat)*220,
-                     obr:bron.obr, efekt:null, zycie:2.6, kolor:'#d8d0b0',
+      // Kusza: szybki, ciezki belt (bylo 220 px/s - lecial tak wolno, ze
+      // wrogowie zdazali zejsc z linii strzalu)
+      pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*640, vy:Math.sin(kat)*640,
+                     obr:bron.obr, efekt:null, zycie:1.1, kolor:'#d8d0b0',
                      ksztalt:'wlocznia', kat:kat });
       ton(240, 0.10, 'square', 0.13);
       setTimeout(function () { ton(150, 0.08, 'square', 0.10); }, 60);
@@ -15785,6 +16109,42 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function aktualizuj(dt) {
     aktualizujKulkiXp(dt);
     if (blyskPoziomu > 0) blyskPoziomu -= dt;
+    for (var bi = blyskawice.length - 1; bi >= 0; bi--) {
+      blyskawice[bi].zycie -= dt;
+      if (blyskawice[bi].zycie <= 0) blyskawice.splice(bi, 1);
+    }
+    for (var si = scianyMagiczne.length - 1; si >= 0; si--) {
+      scianyMagiczne[si].zycie -= dt;
+      if (scianyMagiczne[si].zycie <= 0) scianyMagiczne.splice(si, 1);
+    }
+    for (var wi2 = wiry.length - 1; wi2 >= 0; wi2--) {
+      var wr = wiry[wi2];
+      wr.zycie -= dt; wr.faza += dt * 5;
+      if (wr.rozruch > 0) { wr.rozruch -= dt; }
+      else {
+        var dxw = wr.x - gracz.x, dyw = wr.y - gracz.y, dw = Math.hypot(dxw, dyw);
+        if (dw < wr.r && dw > 2) {
+          // Delikatne przyciaganie - im blizej srodka, tym mocniej
+          // Lagodne przyciaganie: 30 px/s na brzegu, 70 px/s w srodku - czuc opor,
+          // ale da sie wyjsc, bo gracz chodzi ok. 2x szybciej.
+          var ciag = (30 + (1 - dw / wr.r) * 40) * dt;
+          var nxw = dxw / dw * ciag, nyw = dyw / dw * ciag;
+          if (!czySciana(gracz.x + nxw + Math.sign(nxw) * gracz.r, gracz.y)) gracz.x += nxw;
+          if (!czySciana(gracz.x, gracz.y + nyw + Math.sign(nyw) * gracz.r)) gracz.y += nyw;
+        }
+        wr.tik -= dt;
+        if (dw < 26 && wr.tik <= 0) { wr.tik = 0.6; zadajObrazeniaGraczowi(Math.round(wr.atak * 0.5)); }
+      }
+      if (wr.zycie <= 0) wiry.splice(wi2, 1);
+    }
+    for (var bj = bomby.length - 1; bj >= 0; bj--) {
+      bomby[bj].lont -= dt;
+      if (bomby[bj].lont <= 0) { var bw = bomby.splice(bj, 1)[0]; wybuchBomby(bw); }
+    }
+    for (var fj = fale.length - 1; fj >= 0; fj--) {
+      fale[fj].zycie -= dt;
+      if (fale[fj].zycie <= 0) fale.splice(fj, 1);
+    }
 
     // Ruch gracza
     var predkosc = wartoscStatu('predkosc');
@@ -15796,8 +16156,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var sila = Math.min(1, dl / PROMIEN_DRAZKA);
         var nx = (dx/dl) * predkosc * sila * dt;
         var ny = (dy/dl) * predkosc * sila * dt;
-        if (!czySciana(gracz.x + nx + Math.sign(nx)*gracz.r, gracz.y)) gracz.x += nx;
-        if (!czySciana(gracz.x, gracz.y + ny + Math.sign(ny)*gracz.r)) gracz.y += ny;
+        if (!czySciana(gracz.x + nx + Math.sign(nx)*gracz.r, gracz.y) && !scianaBlokuje(gracz.x, gracz.y, gracz.x + nx, gracz.y, gracz.r)) gracz.x += nx;
+        if (!czySciana(gracz.x, gracz.y + ny + Math.sign(ny)*gracz.r) && !scianaBlokuje(gracz.x, gracz.y, gracz.x, gracz.y + ny, gracz.r)) gracz.y += ny;
       }
     }
 
@@ -15867,9 +16227,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (Math.hypot(wyjscieSekretne.x - gracz.x, wyjscieSekretne.y - gracz.y) < 34 + gracz.r) {
         var st2 = komnaty[0];
         gracz.x = (st2.cx + 0.5) * KAFEL; gracz.y = (st2.cy + 0.5) * KAFEL;
-        kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+        kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
         wyjscieSekretne = null; wSekretnej = false;
         opuscilStartowa = true; drzwiSekretne = null;
+        wiedzmaOczekuje = null;          // przezyla - rozdzka zostaje na dobre
         dziennik('✨ Wracasz do labiryntu.');
         ton(520, 0.18, 'sine', 0.16);
       }
@@ -15878,7 +16239,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Przywolanie bossa
     if (!bossPrzywolany && !pytanieOBossa && komnataBossa) {
       var bx = (komnataBossa.cx + 0.5) * KAFEL, by = (komnataBossa.cy + 0.5) * KAFEL;
-      if (Math.hypot(gracz.x - bx, gracz.y - by) < 210) {
+      // Komnata jest teraz duza - pytamy zaraz po przekroczeniu progu,
+      // a nie dopiero 210 px od srodka
+      var kbp = komnataBossa;
+      var wKomnacie = gracz.x > (kbp.x + 1) * KAFEL && gracz.x < (kbp.x + kbp.w - 1) * KAFEL
+                   && gracz.y > (kbp.y + 1) * KAFEL && gracz.y < (kbp.y + kbp.h - 1) * KAFEL;
+      if (wKomnacie || Math.hypot(gracz.x - bx, gracz.y - by) < 210) {
         pytanieOBossa = true; trwa = false;
         pokazPytanieOBossa();
         return;
@@ -16128,13 +16494,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       }
 
       // BOMBIARZ: dopada i wybucha, raniac wszystko dookola
+      // Dopadl gracza: zostawia bombe z krotkim lontem i znika. Lont daje
+      // ulamek sekundy na ucieczke z pokazanego na czerwono zasiegu.
       if (w.wybuchowy && d < w.r + gracz.r + 16) {
-        rozbryzg(w.x, w.y, '#ffd24a', 26);
-        tekstNaSwiecie(w.x, w.y - w.r, '💥', '#e6743c');
-        ton(90, 0.32, 'sawtooth', 0.2);
-        if (d < 104) zadajObrazeniaGraczowi(w.atak);
         var iw = wrogowie.indexOf(w);
-        if (iw !== -1) { wrogowie.splice(iw, 1); dodajXp(w.xp); odswiezHud(); }
+        if (iw !== -1) wrogowie.splice(iw, 1);
+        w.wybuchl = true;
+        bomby.push({ x: w.x, y: w.y, lont: 0.75, max: 0.75, atak: w.atak });
+        ton(880, 0.08, 'square', 0.08);
         return;
       }
 
@@ -16143,6 +16510,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         w.cooldown = w.boss ? 0.9 : 1.25;
         if (w.dystansowy) {
           var k2 = Math.atan2(gracz.y - w.y, gracz.x - w.x);
+          // Czarodziej co trzeci atak rzuca czar zamiast pocisku: na zmiane sciane i wir
+          if (w.teleportuje) {
+            w.licznikAtakow = (w.licznikAtakow || 0) + 1;
+            if (w.licznikAtakow % 3 === 0) {
+              if ((w.licznikAtakow / 3) % 2 === 1) postawSciane(w, k2); else rzucWir(w);
+              return;
+            }
+          }
           pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*230, vy:Math.sin(k2)*230, obr:w.atak, wroga:true, zycie:1.6, kolor:'#c46ce8' });
         } else {
           zadajObrazeniaGraczowi(w.atak);
@@ -16154,7 +16529,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     for (var i = pociski.length - 1; i >= 0; i--) {
       var p = pociski[i];
       p.x += p.vx * dt; p.y += p.vy * dt; p.zycie -= dt;
-      if (p.zycie <= 0 || czySciana(p.x, p.y)) { pociski.splice(i, 1); continue; }
+      if (p.zycie <= 0 || czySciana(p.x, p.y) || (!p.wroga && scianyMagiczne.some(function (sc) { return odlDoOdcinka(p.x, p.y, sc) < sc.grubosc / 2 + 3; }))) { pociski.splice(i, 1); continue; }
 
       if (p.wroga) {
         if (Math.hypot(p.x - gracz.x, p.y - gracz.y) < gracz.r + 5) {
@@ -16165,20 +16540,63 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var trafiony = null;
         for (var j = 0; j < wrogowie.length; j++) {
           var w2 = wrogowie[j];
-          if (Math.hypot(p.x - w2.x, p.y - w2.y) < w2.r + 5) { trafiony = w2; break; }
+          if (Math.hypot(p.x - w2.x, p.y - w2.y) < w2.r + 9) { trafiony = w2; break; }
         }
         if (trafiony) {
           zadajObrazeniaWrogowi(trafiony, p.obr);
-          if (p.efekt === 'ogien' && trafiony.hp > 0) { trafiony.plonie = 2.5; }
-          if (p.efekt === 'zar' && trafiony.hp > 0) { trafiony.plonie = 4.5; }
-          if (p.efekt === 'zima' && trafiony.hp > 0) { trafiony.spowolnienie = 3.2; }
-          if (p.efekt === 'mroz' && trafiony.hp > 0) { trafiony.zamrozony = 1.5; }
-          if (p.efekt === 'piorun') {
-            wrogowie.forEach(function (w3) {
-              if (w3 !== trafiony && Math.hypot(w3.x - p.x, w3.y - p.y) < 92) {
-                zadajObrazeniaWrogowi(w3, Math.round(p.obr * 0.55));
+          if (p.efekt === 'ogien') {
+            // Kula ognia wybucha przy trafieniu: rani wszystkich w malym
+            // promieniu (60% obrazen) i podpala kazdego, kogo dosiegnie.
+            if (trafiony.hp > 0) trafiony.plonie = 3;
+            fale.push({ x: p.x, y: p.y, zycie: 0.3, max: 0.3, r: PROMIEN_OGNIA, kolor: '#ff8a3a' });
+            rozbryzg(p.x, p.y, '#ff8a3a', 14);
+            ton(150, 0.14, 'sawtooth', 0.07);
+            var px4 = p.x, py4 = p.y, obr4 = p.obr;
+            wrogowie.slice().forEach(function (o) {
+              if (o === trafiony || o.hp <= 0) return;
+              if (Math.hypot(o.x - px4, o.y - py4) <= PROMIEN_OGNIA + o.r) {
+                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr4 * 0.6)));
+                if (o.hp > 0) o.plonie = 3;
               }
             });
+          }
+          if (p.efekt === 'zar' && trafiony.hp > 0) { trafiony.plonie = 4.5; }
+          if (p.efekt === 'zima') {
+            // Jak kula ognia: maly wybuch mrozu - 60% obrazen dla wszystkich
+            // w poblizu i spowolnienie kazdego, kogo dosiegnie.
+            if (trafiony.hp > 0) trafiony.spowolnienie = 3.2;
+            fale.push({ x: p.x, y: p.y, zycie: 0.3, max: 0.3, r: PROMIEN_OGNIA, kolor: '#8fd0ff' });
+            rozbryzg(p.x, p.y, '#cfefff', 14);
+            ton(640, 0.12, 'sine', 0.06);
+            var px5 = p.x, py5 = p.y, obr5 = p.obr;
+            wrogowie.slice().forEach(function (o) {
+              if (o === trafiony || o.hp <= 0) return;
+              if (Math.hypot(o.x - px5, o.y - py5) <= PROMIEN_OGNIA + o.r) {
+                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr5 * 0.6)));
+                if (o.hp > 0) o.spowolnienie = 3.2;
+              }
+            });
+          }
+          if (p.efekt === 'mroz' && trafiony.hp > 0) { trafiony.zamrozony = 1.5; }
+          if (p.efekt === 'piorun') {
+            // Lancuch: piorun przeskakuje do najblizszego nietrafionego wroga,
+            // od niego do kolejnego - do 5 skokow, z lekko malejaca sila.
+            var ogniwo = trafiony, trafieni = [trafiony], sila = 0.6;
+            dodajBlyskawice(p.x, p.y - 30, trafiony.x, trafiony.y);
+            for (var skok = 0; skok < SKOKI_PIORUNA; skok++) {
+              var cel = null, najD = ZASIEG_PIORUNA;
+              for (var wi = 0; wi < wrogowie.length; wi++) {
+                var w3 = wrogowie[wi];
+                if (trafieni.indexOf(w3) >= 0 || w3.hp <= 0) continue;
+                var d3 = Math.hypot(w3.x - ogniwo.x, w3.y - ogniwo.y);
+                if (d3 < najD) { najD = d3; cel = w3; }
+              }
+              if (!cel) break;
+              dodajBlyskawice(ogniwo.x, ogniwo.y, cel.x, cel.y);
+              ton(1100 + skok * 140 + Math.random() * 120, 0.05, 'sawtooth', 0.04);
+              zadajObrazeniaWrogowi(cel, Math.max(1, Math.round(p.obr * sila)));
+              trafieni.push(cel); ogniwo = cel; sila *= 0.85;
+            }
           }
           pociski.splice(i, 1);
         }
@@ -16234,7 +16652,24 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
     if (portal) {
       portal.faza += dt * 2.4;
-      if (Math.hypot(portal.x - gracz.x, portal.y - gracz.y) < portal.r + gracz.r) {
+      if (portal.formowanie > 0) {
+        portal.formowanie -= dt;
+        if (Math.random() < dt * 30) {
+          var kp = Math.random() * Math.PI * 2, rp = 70 + Math.random() * 40;
+          czastki.push({ x: portal.x + Math.cos(kp) * rp, y: portal.y + Math.sin(kp) * rp,
+                         vx: -Math.cos(kp) * rp * 1.6, vy: -Math.sin(kp) * rp * 1.6, zycie: 0.55, kolor: '#b89ae6' });
+        }
+        if (portal.formowanie <= 0) {
+          dziennik('🌀 Portal gotowy — możesz wejść!');
+          ton(520, 0.18, 'sine', 0.12);
+          setTimeout(function () { ton(780, 0.25, 'sine', 0.12); }, 140);
+          for (var pb = 0; pb < 26; pb++) {
+            var kb = pb / 26 * Math.PI * 2;
+            czastki.push({ x: portal.x, y: portal.y, vx: Math.cos(kb) * 170, vy: Math.sin(kb) * 170, zycie: 0.45, kolor: '#e0d0ff' });
+          }
+        }
+      }
+      if (portal.formowanie <= 0 && Math.hypot(portal.x - gracz.x, portal.y - gracz.y) < portal.r + gracz.r) {
         przejdzNaNastepnyPoziom();
         return;
       }
@@ -16250,14 +16685,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
 
     // Kamera
-    kamX += (gracz.x - WID/2 - kamX) * Math.min(1, dt * 7);
-    kamY += (gracz.y - WYS/2 - kamY) * Math.min(1, dt * 7);
+    // Wczesniej celowalo w WID/2 zamiast WID_SWIATA/2 - po oddaleniu widoku
+    // postac siedziala ok. 30 px w lewo i 38 px w gore od srodka ekranu.
+    kamX += (gracz.x - WID_SWIATA/2 - kamX) * Math.min(1, dt * 7);
+    kamY += (gracz.y - WYS_SWIATA*KAM_PION - kamY) * Math.min(1, dt * 7);
   }
 
-  function zadajObrazeniaGraczowi(bazowe) {
-    var finalne = bazowe * (1 - redukcja(wartoscStatu('obrona'), 0));
+  function zadajObrazeniaGraczowi(bazowe, bezPancerza) {
+    var finalne = bezPancerza ? bazowe : bazowe * (1 - redukcja(wartoscStatu('obrona'), 0));
     finalne = Math.max(1, Math.round(finalne));
     gracz.hp -= finalne;
+    statLab('przyjete', finalne);
     gracz.migotanie = 0.2;
     tekstNaSwiecie(gracz.x, gracz.y - gracz.r, '-' + finalne, '#e6543c');
     dzwiekObrazenia();
@@ -16277,19 +16715,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ctx.save();
     // Wyrazniejsza niz wczesniej: ciemniejsze, gestsze tlo i mocniejsza ramka,
     // zeby kontur korytarzy odcinal sie od jasnej podlogi gry.
-    ctx.globalAlpha = 0.62;      // polprzezroczysta - nie zaslania walki
+    // Tlo mocno przezroczyste (widac przez nie walke), ale sama mapa w pelnym
+    // kolorze. Wczesniej cala minimapa, lacznie z kropka gracza, byla przygaszona.
+    ctx.globalAlpha = 0.36;
     ctx.fillStyle = '#07060c';
     ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
+    ctx.globalAlpha = 1;
     ctx.strokeStyle = 'rgba(230,193,92,0.85)'; ctx.lineWidth = 2;
     ctx.strokeRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
 
     // CALA przechodnia mapa, wiec widac takze KORYTARZE, nie tylko komnaty
     var kaflik = Math.max(1.5, KAFEL * skala);
-    ctx.fillStyle = 'rgba(196,186,162,0.92)';
+    // Kafle wyrownane do pelnych pikseli - ostre krawedzie zamiast rozmycia
+    var krokM = KAFEL * skala;
+    ctx.fillStyle = 'rgba(222,212,186,0.80)';
     for (var my2 = 0; my2 < SIATKA; my2++) {
       for (var mx2 = 0; mx2 < SIATKA; mx2++) {
         if (mapa[my2][mx2] !== 1) continue;
-        ctx.fillRect(mx + mx2*KAFEL*skala, my + my2*KAFEL*skala, kaflik+0.6, kaflik+0.6);
+        var kx0 = Math.round(mx + mx2*krokM), ky0 = Math.round(my + my2*krokM);
+        ctx.fillRect(kx0, ky0, Math.round(mx + (mx2+1)*krokM) - kx0, Math.round(my + (my2+1)*krokM) - ky0);
       }
     }
     // Sekretna komnata - widoczna tylko dopoki przejscie jest otwarte
@@ -16416,13 +16860,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function rysuj() {
+    if (widok.width !== WID * DPR) { widok.width = WID * DPR; widok.height = WYS * DPR; }
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#0a0810';
     ctx.fillRect(0, 0, WID, WYS);
 
     // Swiat rysujemy pomniejszony, zeby widziec wiecej pola walki.
     // Jawna transformacja zamiast save/scale - w kodzie rysowania jest
     // niezbilansowany restore, ktory zdjalby skalowanie w polowie klatki.
-    ctx.setTransform(ZOOM, 0, 0, ZOOM, 0, 0);
+    ctx.setTransform(ZOOM * DPR, 0, 0, ZOOM * DPR, 0, 0);
 
     var tx0 = Math.max(0, Math.floor(kamX / KAFEL) - 1), tx1 = Math.min(SIATKA-1, Math.ceil((kamX + WID_SWIATA) / KAFEL) + 1);
     var ty0 = Math.max(0, Math.floor(kamY / KAFEL) - 1), ty1 = Math.min(SIATKA-1, Math.ceil((kamY + WYS_SWIATA) / KAFEL) + 1);
@@ -16558,12 +17004,23 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Portal
     if (portal) {
       var px2 = portal.x - kamX, py2 = portal.y - kamY;
+      // Podczas formowania portal rosnie od zera, z lekkim "przestrzeleniem"
+      var postepP = portal.formowanie > 0 ? 1 - portal.formowanie / portal.czasFormowania : 1;
+      var skalaPortalu = postepP < 1 ? Math.sin(postepP * Math.PI * 0.5) * (1 + 0.12 * Math.sin(postepP * Math.PI)) : 1;
+      if (portal.formowanie > 0) {
+        ctx.save();
+        ctx.font = 'bold 12px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)'; ctx.lineWidth = 3; ctx.fillStyle = '#e0d0ff';
+        var napisP = 'Portal się formuje… ' + Math.ceil(portal.formowanie) + 's';
+        ctx.strokeText(napisP, px2, py2 - 52); ctx.fillText(napisP, px2, py2 - 52);
+        ctx.restore();
+      }
       ctx.save();
       for (var pr = 3; pr >= 1; pr--) {
         ctx.globalAlpha = 0.22 * pr;
         ctx.fillStyle = '#8a5ac4';
         ctx.beginPath();
-        ctx.arc(px2, py2, portal.r * (0.6 + pr*0.22) + Math.sin(portal.faza + pr)*4, 0, Math.PI*2);
+        ctx.arc(px2, py2, portal.r * skalaPortalu * (0.6 + pr*0.22) + Math.sin(portal.faza + pr)*4, 0, Math.PI*2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
@@ -16578,7 +17035,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Skrzynie
     skrzynie.forEach(function (sk) {
       var ex = sk.x - kamX, ey = sk.y - kamY;
-      if (ex < -50 || ex > WID+50 || ey < -50 || ey > WYS+50) return;
+      if (ex < -50 || ex > WID_SWIATA+50 || ey < -50 || ey > WYS_SWIATA+50) return;
       var kol = TIERY[sk.tier].kolor;
       if (!sk.otwarta) {
         ctx.save();
@@ -16599,7 +17056,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Lupy
     lupyNaZiemi.forEach(function (lu) {
       var ex = lu.x - kamX, ey = lu.y - kamY;
-      if (ex < -30 || ex > WID+30 || ey < -30 || ey > WYS+30) return;
+      if (ex < -30 || ex > WID_SWIATA+30 || ey < -30 || ey > WYS_SWIATA+30) return;
       var kolorTieru = lu.przedmiot.mityczna ? KOLOR_MITYCZNY : (lu.przedmiot.kategoria === 'mikstura' ? '#e6543c' : TIERY[lu.przedmiot.tier].kolor);
       ctx.save();
       ctx.shadowColor = kolorTieru; ctx.shadowBlur = 12;
@@ -16627,7 +17084,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Wrogowie
     wrogowie.forEach(function (w) {
       var ex = w.x - kamX, ey = w.y - kamY;
-      if (ex < -50 || ex > WID+50 || ey < -50 || ey > WYS+50) return;
+      if (ex < -50 || ex > WID_SWIATA+50 || ey < -50 || ey > WYS_SWIATA+50) return;
       ctx.save();
       if (w.migotanie > 0) { ctx.globalAlpha = 0.55; }
       ctx.fillStyle = 'rgba(0,0,0,0.35)';
@@ -16635,12 +17092,32 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (w.elita) { ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 16 + Math.sin(Date.now()/260)*6; }
       if (w.poswiata) { ctx.shadowColor = w.poswiata; ctx.shadowBlur = 20 + Math.sin(Date.now()/220)*8; }
       if (w.przygotowanieSzarzy > 0) { ctx.shadowColor = '#ffd24a'; ctx.shadowBlur = 26; }
+      if (w.zamrozony > 0) { ctx.shadowColor = '#cfefff'; ctx.shadowBlur = 24; }
+      else if (w.spowolnienie > 0) { ctx.shadowColor = '#5aa8ff'; ctx.shadowBlur = 18 + Math.sin(Date.now() / 180) * 5; }
       ctx.font = (w.r*1.7) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText(w.ikona, ex, ey);
       ctx.shadowBlur = 0;
+      // Zamrozony / spowolniony: niebieska tarcza i krecaca sie obwodka
+      if (w.zamrozony > 0 || w.spowolnienie > 0) {
+        var lod = w.zamrozony > 0;
+        ctx.globalAlpha = lod ? 0.34 : 0.2;
+        ctx.fillStyle = lod ? '#cfefff' : '#5aa8ff';
+        ctx.beginPath(); ctx.arc(ex, ey, w.r * 1.05, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.9; ctx.strokeStyle = '#8fd0ff'; ctx.lineWidth = 1.6;
+        ctx.setLineDash([3, 3]); ctx.lineDashOffset = -Date.now() / 60;
+        ctx.beginPath(); ctx.arc(ex, ey, w.r + 5, 0, Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
+        if (lod) { ctx.font = '10px sans-serif'; ctx.fillText('❄', ex + w.r * 0.75, ey - w.r * 0.75); }
+        ctx.globalAlpha = w.migotanie > 0 ? 0.55 : 1;
+      }
       if (w.poleSpowolnienia) {
-        ctx.globalAlpha = 0.16; ctx.fillStyle = '#e6543c';
+        ctx.globalAlpha = 0.12; ctx.fillStyle = '#5aa8ff';
         ctx.beginPath(); ctx.arc(ex, ey, 190, 0, Math.PI*2); ctx.fill();
+        ctx.globalAlpha = 0.5 + Math.sin(Date.now() / 300) * 0.15;
+        ctx.strokeStyle = '#8fd0ff'; ctx.lineWidth = 2;
+        ctx.setLineDash([9, 7]); ctx.lineDashOffset = Date.now() / 40;
+        ctx.beginPath(); ctx.arc(ex, ey, 190, 0, Math.PI*2); ctx.stroke();
+        ctx.setLineDash([]);
         ctx.globalAlpha = 1;
       }
       ctx.restore();
@@ -16707,7 +17184,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Trujace chmury - rysowane pod postaciami
     gazy.forEach(function (gz) {
       var ex = gz.x - kamX, ey = gz.y - kamY;
-      if (ex < -60 || ex > WID+60 || ey < -60 || ey > WYS+60) return;
+      if (ex < -60 || ex > WID_SWIATA+60 || ey < -60 || ey > WYS_SWIATA+60) return;
       ctx.save();
       ctx.globalAlpha = Math.min(0.42, gz.zycie / gz.max * 0.42);
       var gg = ctx.createRadialGradient(ex, ey, 3, ex, ey, gz.r);
@@ -16753,6 +17230,98 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     });
     ctx.globalAlpha = 1;
 
+    // Wiry czarodzieja - krecace sie ramiona spirali
+    wiry.forEach(function (wr) {
+      var ex = wr.x - kamX, ey = wr.y - kamY;
+      var wzrost = wr.rozruch > 0 ? 1 - wr.rozruch / 0.7 : 1;
+      var zanik = Math.min(1, wr.zycie / 0.5);
+      ctx.save();
+      ctx.globalAlpha = 0.16 * zanik; ctx.fillStyle = '#6a4ac4';
+      ctx.beginPath(); ctx.arc(ex, ey, wr.r * wzrost, 0, Math.PI*2); ctx.fill();
+      ctx.lineCap = 'round';
+      for (var ra = 0; ra < 3; ra++) {
+        ctx.globalAlpha = (wr.rozruch > 0 ? 0.45 : 0.8) * zanik;
+        ctx.strokeStyle = ra % 2 ? '#c9a8ff' : '#e6dcff'; ctx.lineWidth = 3 - ra * 0.6;
+        ctx.beginPath();
+        for (var st2 = 0; st2 <= 26; st2++) {
+          var t2 = st2 / 26, kt = wr.faza * (ra % 2 ? -1 : 1) + ra * 2.09 + t2 * Math.PI * 2.4;
+          var rr = wr.r * wzrost * (0.12 + t2 * 0.88);
+          var qx = ex + Math.cos(kt) * rr, qy = ey + Math.sin(kt) * rr * 0.62;
+          if (st2) ctx.lineTo(qx, qy); else ctx.moveTo(qx, qy);
+        }
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 0.9 * zanik; ctx.fillStyle = '#1a1030';
+      ctx.beginPath(); ctx.arc(ex, ey, 9 * wzrost, 0, Math.PI*2); ctx.fill();
+      ctx.restore();
+    });
+
+    // Magiczne sciany - migocza, a pod koniec gasna
+    scianyMagiczne.forEach(function (sc) {
+      var a = Math.min(1, (sc.max - sc.zycie) / 0.25, sc.zycie / 0.5);
+      ctx.save();
+      ctx.lineCap = 'round'; ctx.globalAlpha = 0.4 * a;
+      ctx.strokeStyle = '#7ec4ff'; ctx.lineWidth = sc.grubosc + 8;
+      ctx.shadowColor = '#7ec4ff'; ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.moveTo(sc.x1 - kamX, sc.y1 - kamY); ctx.lineTo(sc.x2 - kamX, sc.y2 - kamY); ctx.stroke();
+      ctx.shadowBlur = 0; ctx.globalAlpha = (0.75 + Math.sin(Date.now() / 90) * 0.15) * a;
+      ctx.strokeStyle = '#dff2ff'; ctx.lineWidth = sc.grubosc * 0.45;
+      ctx.beginPath(); ctx.moveTo(sc.x1 - kamX, sc.y1 - kamY); ctx.lineTo(sc.x2 - kamX, sc.y2 - kamY); ctx.stroke();
+      ctx.restore();
+    });
+
+    // Bomby z lontem: czerwony krag pokazuje zasieg wybuchu
+    bomby.forEach(function (bm) {
+      var ex = bm.x - kamX, ey = bm.y - kamY, post = 1 - bm.lont / bm.max;
+      ctx.save();
+      ctx.globalAlpha = 0.14 + post * 0.18; ctx.fillStyle = '#e63c2c';
+      ctx.beginPath(); ctx.arc(ex, ey, PROMIEN_WYBUCHU, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.85; ctx.strokeStyle = '#ff6a4a'; ctx.lineWidth = 2;
+      ctx.setLineDash([8, 6]); ctx.lineDashOffset = -Date.now() / 30;
+      ctx.beginPath(); ctx.arc(ex, ey, PROMIEN_WYBUCHU, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1; ctx.strokeStyle = '#ffd24a'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(ex, ey, PROMIEN_WYBUCHU * post, 0, Math.PI*2); ctx.stroke();
+      var drg = (Math.random() - 0.5) * 3 * (1 + post * 2);
+      ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('💣', ex + drg, ey);
+      ctx.restore();
+    });
+
+    // Fale uderzeniowe wybuchow
+    fale.forEach(function (fa) {
+      var p3 = 1 - fa.zycie / fa.max;
+      ctx.save();
+      ctx.globalAlpha = (1 - p3) * 0.9; ctx.strokeStyle = fa.kolor || '#ffd24a'; ctx.lineWidth = 8 * (1 - p3) + 1;
+      ctx.beginPath(); ctx.arc(fa.x - kamX, fa.y - kamY, (fa.r || PROMIEN_WYBUCHU) * (0.2 + p3 * 0.85), 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    });
+
+    // Wyladowania rozdzki piorunow
+    blyskawice.forEach(function (bl) {
+      var a = Math.max(0, bl.zycie / bl.max) * (0.75 + Math.random() * 0.25);
+      ctx.save();
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.globalAlpha = a;
+      ctx.beginPath();
+      bl.pkt.forEach(function (q, i) { if (i) ctx.lineTo(q[0] - kamX, q[1] - kamY); else ctx.moveTo(q[0] - kamX, q[1] - kamY); });
+      ctx.shadowColor = '#7ec4ff'; ctx.shadowBlur = 14;
+      ctx.strokeStyle = 'rgba(126,196,255,0.95)'; ctx.lineWidth = 5; ctx.stroke();
+      ctx.shadowBlur = 0; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.8; ctx.stroke();
+      ctx.restore();
+    });
+
+    // Gracz spowolniony przez bossa - ta sama niebieska poswiata co u wrogow
+    if (gracz._spowolnionyPrzezBossa > 0) {
+      var gxs = gracz.x - kamX, gys = gracz.y - kamY;
+      ctx.save();
+      ctx.globalAlpha = 0.24; ctx.fillStyle = '#5aa8ff';
+      ctx.beginPath(); ctx.arc(gxs, gys, gracz.r + 8, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.9; ctx.strokeStyle = '#8fd0ff'; ctx.lineWidth = 2;
+      ctx.setLineDash([4, 4]); ctx.lineDashOffset = Date.now() / 50;
+      ctx.beginPath(); ctx.arc(gxs, gys, gracz.r + 11, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+
     // Awans poziomu - rozchodzacy sie zloty pierscien
     if (blyskPoziomu > 0) {
       var pg = 1 - (blyskPoziomu / 1.4);
@@ -16770,7 +17339,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.restore();
     }
 
-    ctx.setTransform(1, 0, 0, 1, 0, 0);   // HUD i minimapa w skali 1:1
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);   // HUD i minimapa w skali 1:1
 
     // MINIMAPA w prawym gornym rogu - cala mapa w pomniejszeniu
     rysujMinimape();
@@ -16824,9 +17393,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     DEF_STATOW.forEach(function (d) {
       var w = document.createElement('div');
       w.className = 'staty-wiersz';
-      var tekstWart = Math.round(wartoscStatu(d.klucz));
+      var tekstWart = Math.round(wartoscStatu(d.klucz)) + (d.jednostka || '');
       var zysk = zyskZNastepnego(d.klucz);
-      var tekstZysku = sciezkaWiedzmy ? '' : ('+' + (zysk >= 4 ? Math.round(zysk) : zysk.toFixed(1)));
+      var tekstZysku = sciezkaWiedzmy ? '' : ('+' + (zysk >= 4 ? Math.round(zysk) : zysk.toFixed(1)) + (d.jednostka || ''));
       w.innerHTML = '<span class="staty-ikona">' + d.ikona + '</span>'
                   + '<span class="staty-nazwa">' + d.nazwa + '</span>'
                   + '<span class="staty-wartosc">' + tekstWart + '</span>'
@@ -16838,7 +17407,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         btn.addEventListener('click', function () {
           if (gracz.punkty <= 0) return;
           gracz.punkty--;
-          gracz.staty[d.klucz]++;
+          gracz.staty[d.klucz] = (gracz.staty[d.klucz] || 0) + 1;
           if (d.klucz === 'zdrowie') przeliczHpMax();
           ton(620, 0.05, 'triangle', 0.12);
           odswiezPanele(); odswiezHud();
@@ -16876,13 +17445,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         : '<span style="color:#e6543c">▼ gorsze</span>';
     }
 
-    function wierszPrzedmiotu(p, indeks, zalozony, etykietaSlotu) {
+    function wierszPrzedmiotu(p, indeks, zalozony, etykietaSlotu, slotKlucz) {
       var w = document.createElement('div');
       w.className = 'zalozone-wiersz';
       var kol = p ? (p.mityczna ? KOLOR_MITYCZNY : TIERY[p.tier].kolor) : '#555';
+      var plytka = slotKlucz
+        ? '<span class="plytka-slotu">' + ikonaSlotu(slotKlucz) + '<small>' + NAZWY_SLOTOW[slotKlucz] + '</small></span>'
+        : '';
       if (!p) {
-        w.innerHTML = '<span class="ikona" style="opacity:0.28">➖</span>'
-          + '<span class="opis"><span class="tytul" style="opacity:0.4">Puste: ' + etykietaSlotu + '</span></span>';
+        w.innerHTML = plytka + '<span class="ikona" style="opacity:0.28">➖</span>'
+          + '<span class="opis"><span class="tytul" style="opacity:0.45">Puste: ' + etykietaSlotu + '</span></span>';
         return w;
       }
       w.style.borderLeft = '3px solid ' + kol;
@@ -16891,11 +17463,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
            + ' · <b>' + Math.round(p.obr / p.tempo) + ' obr./s</b>')
         : ('<b style="color:#f0dfa8">' + p.obrona + ' obrony</b>');
       var slotP = p.slot || (p.kategoria === 'bron' ? 'bron' : null);
-      var znaczek = slotP
-        ? '<span class="slot-znaczek" title="' + (NAZWY_SLOTOW[slotP] || '') + '">'
-          + (IKONY_SLOTOW[slotP] || '') + '</span>'
+      // Na zalozonych rzeczach ikona siedzi na plytce slotu, w plecaku - na przedmiocie
+      var znaczek = (slotP && !zalozony)
+        ? '<span class="slot-znaczek" title="' + (NAZWY_SLOTOW[slotP] || '') + '">' + ikonaSlotu(slotP) + '</span>'
         : '';
-      w.innerHTML =
+      w.innerHTML = plytka +
         '<span class="ikona">' + p.ikona + znaczek + '</span>'
         + '<span class="opis">'
         +   '<span class="tytul" style="color:' + kol + '">' + p.nazwa + '</span> ' + gwiazdkiTieru(p)
@@ -16935,7 +17507,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // ---- ZALOZONE ----
     sekcjaEkw.appendChild(naglowekSekcji('⚔️ Założone', '#e6c15c'));
     [['bron','Broń'],['helm','Hełm'],['zbroja','Zbroja'],['buty','Buty'],['amulet','Amulet']].forEach(function (para) {
-      sekcjaEkw.appendChild(wierszPrzedmiotu(gracz.zalozone[para[0]], -1, true, para[1]));
+      sekcjaEkw.appendChild(wierszPrzedmiotu(gracz.zalozone[para[0]], -1, true, para[1], para[0]));
     });
 
     var btnPolacz = document.createElement('button');
@@ -17055,6 +17627,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // Wykonuje polaczenie: zachowany awansuje o tier, drugi i oplata znikaja
   function wykonajPolaczenie(zachowany, drugi, oplata) {
+    statLab('polaczenia');
     var wzor = zachowany.p;
     var nowy = wzor.kategoria === 'bron'
       ? stworzBron(wzor.tier + 1, wzor.rodzaj)
@@ -17473,7 +18046,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.x = (st.cx + 0.5) * KAFEL;
     gracz.y = (st.cy + 0.5) * KAFEL;
     gracz.hp = gracz.hpMax;
-    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
     zaludnijMape();
     odswiezHud(); odswiezPanele();
     dziennik('⚔️ Poziom ' + (poziomLabiryntu+1) + ': ' + DEFINICJE_BOSSOW[poziomLabiryntu].opis);
@@ -17507,7 +18080,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       pytanieOSekretnej = false; wSekretnej = true;
       gracz.x = (sekretnaKomnata.cx + 0.5) * KAFEL;
       gracz.y = (sekretnaKomnata.y + sekretnaKomnata.h - 1.5) * KAFEL;
-      kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+      kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
       if (!sekretnyBossZyje) {
         sekretnyBossZyje = true;
         wrogowie.push(stworzSekretnegoBossa((sekretnaKomnata.cx+0.5)*KAFEL, (sekretnaKomnata.y+1.5)*KAFEL));
@@ -17598,6 +18171,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Po smierci wraca SAMO PIETRO, a nie cala postac: poziom, statystyki
   // i ekwipunek zostaja. Inaczej kazda porazka kasowala godzine gry.
   function powtorzPietro() {
+    if (wiedzmaOczekuje) {
+      // Zginela od pocisku bossa, zanim wyszla z komnaty - rozdzka przepada
+      gracz.zalozone.bron = wiedzmaOczekuje.bron;
+      gracz.punkty = wiedzmaOczekuje.punkty;
+      sciezkaWiedzmy = wiedzmaOczekuje.sciezka;
+      wiedzmaOczekuje = null;
+      setTimeout(function () { dziennik('🌈 Różdżka Wiedźmy przepadła — trzeba przeżyć do wyjścia z komnaty.'); }, 400);
+    }
     nakladka.style.display = 'none';
     var bs = document.getElementById('btnNieWchodze'); if (bs) bs.style.display = 'none';
     var bz2 = document.getElementById('btnZakoncz'); if (bz2) bz2.style.display = 'none';
@@ -17617,9 +18198,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.mikstury = Math.max(gracz.mikstury, 1);
     gracz.cooldown = 0; gracz.rozpedzenie = 0; gracz.odOstatniegoCiosu = 0;
     gracz.niewrazliwosc = 0;
-    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
 
-    pociski = []; pociskiBossa = []; czastki = []; teksty = []; gazy = []; kulkiXp = [];
+    pociski = []; pociskiBossa = []; czastki = []; teksty = []; gazy = []; kulkiXp = []; blyskawice = []; scianyMagiczne = []; wiry = []; bomby = []; fale = [];
     bossPrzywolany = false; pytanieOBossa = false; arenaZamknieta = false;
     portal = null; cooldownSlug = 0;
     wyjscieSekretne = null; pytanieOSekretnej = false;
@@ -17648,8 +18229,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       // i gra by zniknela, zanim zdazysz wybrac tryb nieskonczony.
       // Etap zalicza sie po kliknieciu "Zakoncz" (albo po smierci w arenie).
       nakladkaTytul.textContent = '👑 Wszystkie trzy labirynty pokonane!';
-      nakladkaOpis.innerHTML = 'Etap zaliczony automatycznie!<br><br>Ukończono na poziomie postaci <b>' + gracz.poziom + '</b>.'
-        + '<br><br>Sprawdzisz, jak długo wytrzymasz w <b>trybie nieskończonym</b>?';
+      nakladkaOpis.innerHTML = 'Ukończono na poziomie postaci <b>' + gracz.poziom + '</b>.'
+        + '<br><br>Kliknij <b>„Zakończ”</b>, żeby zaliczyć etap — albo sprawdź, jak długo wytrzymasz '
+        + 'w <b>trybie nieskończonym</b>. Etap zaliczysz też po zakończeniu areny.';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = '♾️ Tryb nieskończony';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
@@ -17674,10 +18256,27 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       document.getElementById('btnZakoncz').style.display = 'inline-block';
     } else {
       dzwiekSmierciGracza();
+      statLab('smierci');
       if (trybNieskonczony) {
         nakladkaTytul.textContent = '♾️ Wytrzymałaś ' + czasAreny.toFixed(1) + 's!';
-        nakladkaOpis.innerHTML = 'Fala <b>' + (1 + Math.floor(czasAreny/12)) + '</b>, poziom postaci <b>' + gracz.poziom + '</b>.'
-          + '<br><br>Etap i tak jest już zaliczony.';
+        var stL = (window.statyDoWyslania ? window.statyDoWyslania().staty : {}) || {};
+        var wiersz = function (e, nz, v) {
+          return '<div style="display:flex;justify-content:space-between;gap:14px"><span>' + e + ' ' + nz + '</span><b style="color:#ffe08a">' + v + '</b></div>';
+        };
+        var czasTxt = stL.czas ? (Math.floor(stL.czas / 60) + ':' + ('0' + (stL.czas % 60)).slice(-2)) : '—';
+        nakladkaOpis.innerHTML =
+          '<div style="text-align:left;background:rgba(255,255,255,0.05);border:1px solid rgba(230,193,92,0.3);'
+          + 'border-radius:10px;padding:10px 12px;margin:2px 0 10px;font-size:13px;line-height:1.75">'
+          + '<div style="color:#e6c15c;font-weight:800">♾️ Arena</div>'
+          + wiersz('🌊', 'Fala', 1 + Math.floor(czasAreny / 12)) + wiersz('⭐', 'Poziom postaci', gracz.poziom)
+          + '<div style="color:#e6c15c;font-weight:800;margin-top:6px">🗺️ Przejście labiryntu</div>'
+          + wiersz('💀', 'Śmierci', stL.smierci || 0) + wiersz('⚔️', 'Zabici wrogowie', stL.zabici || 0)
+          + wiersz('💥', 'Zadane obrażenia', stL.zadane || 0) + wiersz('🩸', 'Przyjęte obrażenia', stL.przyjete || 0)
+          + wiersz('🟢', 'Kulki doświadczenia', stL.kulki || 0) + wiersz('🔗', 'Połączone przedmioty', stL.polaczenia || 0)
+          + wiersz('⏱️', 'Czas przejścia', czasTxt)
+          + '</div>'
+          + '<div style="font-size:12.5px;color:#cfc4ad;line-height:1.5">💡 Przy kolejnym podejściu do labiryntu czeka '
+          + 'na Ciebie mały dodatek na samym starcie — ukryte przejście w pierwszej komnacie. Z nim powinno pójść łatwiej.</div>';
         nakladkaBtn.style.display = 'inline-block';
         nakladkaBtn.textContent = '♾️ Spróbuj jeszcze raz';
         nakladkaBtn.onclick = function () { inicjujDzwiek(); uruchomTrybNieskonczony(); };
@@ -17689,12 +18288,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           bk.style.marginTop = '10px';
           bk.style.background = 'linear-gradient(135deg,#5a5a68,#3a3a44)';
           bk.style.color = '#f0e8d0';
-          bk.textContent = '✔ Zakończ';
+          bk.textContent = '✔ Zakończ i zalicz';
           bk.onclick = function () {
             inicjujDzwiek();
             nakladkaOpis.innerHTML = 'Etap zaliczony. Możesz wrócić do menu.';
             nakladkaBtn.style.display = 'none';
             bk.style.display = 'none';
+            // Wczesniej ten przycisk tylko PISAL "zaliczony", nic nie zglaszajac
+            zglosZaliczenie();
           };
           nakladkaBtn.parentNode.appendChild(bk);
         }
@@ -17732,7 +18333,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.x = (SIATKA/2) * KAFEL; gracz.y = (SIATKA/2) * KAFEL;
     gracz.hp = gracz.hpMax;
     wrogowie = []; pociski = []; lupyNaZiemi = []; skrzynie = []; czastki = []; teksty = [];
-    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
     nakladka.style.display = 'none';
     odswiezHud(); odswiezPanele();
     dziennik('♾️ Tryb nieskończony! Przetrwaj jak najdłużej.');
@@ -17784,7 +18385,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     gracz.hp = gracz.hpMax;
     pociski = []; czastki = []; teksty = [];
     bossPrzywolany = false; wygrana = false;
-    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+    kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
     zaludnijMape();
     odswiezHud(); odswiezPanele();
     nakladka.style.display = 'none';
@@ -17804,7 +18405,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   generujMape();
   gracz = nowyGracz();
   gracz.x = (komnaty[0].cx+0.5)*KAFEL; gracz.y = (komnaty[0].cy+0.5)*KAFEL;
-  kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA/2;
+  kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
   przeliczHpMax(); odswiezHud(); odswiezPanele(); rysuj();
 </script>
 
@@ -18469,7 +19070,11 @@ def zapisz_postep():
     st.query_params["j"] = st.session_state.jezyk
     if st.session_state.czas_startu:
         st.query_params["t"] = str(st.session_state.czas_startu)
+    if st.session_state.get("staty_gier"):
+        # W adresie, zeby przetrwaly ponowny skan QR i usypianie serwera
+        st.query_params["s"] = json.dumps(st.session_state.staty_gier, separators=(",", ":"))
     dane = {
+        "staty_gier": st.session_state.get("staty_gier", {}),
         "rozwiazane": list(st.session_state.rozwiazane),
         "nieudane": list(st.session_state.nieudane),
         "bledy_per_etap": st.session_state.bledy_per_etap,
@@ -18513,6 +19118,12 @@ def zainicjuj_stan():
     st.session_state.bledy_per_etap = bledy_polaczone
     st.session_state.jezyk = jezyk_url or jezyk_plik or "pl"
     st.session_state.czas_startu = czas_url or czas_plik
+    try:
+        staty_url = json.loads(st.query_params.get("s") or "{}")
+    except Exception:
+        staty_url = {}
+    st.session_state.staty_gier = dict(zapisane.get("staty_gier", {}))
+    st.session_state.staty_gier.update(staty_url if isinstance(staty_url, dict) else {})
 
     juz_zaczela = bool(
         jezyk_url or jezyk_plik
@@ -19215,17 +19826,22 @@ def pokaz_menu():
 
     # Kategorie: caly kafelek to przycisk. Pasek postepu rysujemy znakami,
     # bo do etykiety przycisku nie da sie wstrzyknac wlasnego HTML.
-    if przygody_odblokowane() and not st.session_state.get("ogloszono_przygody"):
-        st.session_state.ogloszono_przygody = True
-        st.success(t("przygody_odblokowane"))
+    # Oglaszamy tylko levele odblokowane W TEJ sesji - nie przy kazdym odswiezeniu
+    otwarte = {i for i, k in enumerate(KATEGORIE) if not _zablokowany_bez_testu(k)}
+    if "levele_na_starcie" not in st.session_state:
+        st.session_state.levele_na_starcie = set(otwarte)
+    ogloszone = st.session_state.setdefault("levele_ogloszone", set())
+    for nowy in sorted(otwarte - st.session_state.levele_na_starcie - ogloszone):
+        ogloszone.add(nowy)
+        st.success(t("level_odblokowany").format(n=nowy + 1))
         st.balloons()
 
     for kat in KATEGORIE:
         if _dostep_zablokowany(kat):
-            gotowe, wymagane = _postep_odblokowania()
+            gotowe, wymagane = _postep_odblokowania(kat)
             pelne_z = round(gotowe / wymagane * 10) if wymagane else 0
             st.button(
-                f"🔒\n\n**{tt(kat['nazwa'])}**\n\n{t('przygody_zablokowane')}\n\n"
+                f"🔒\n\n**{tt(kat['nazwa'])}**\n\n{t('level_zablokowany').format(n=KATEGORIE.index(kat))}\n\n"
                 f"{'▰' * pelne_z}{'▱' * (10 - pelne_z)}  {gotowe}/{wymagane}",
                 key=f"kat_{kat['id']}", use_container_width=True,
                 type="primary", disabled=True,
@@ -19429,7 +20045,8 @@ def pokaz_ekran_etapu(etap_dane):
             st.rerun()
 
     if _dostep_zablokowany(_kategoria_etapu(klucz)) and klucz not in st.session_state.rozwiazane:
-        st.info(t("przygody_zablokowane"))
+        kat_e = _kategoria_etapu(klucz)
+        st.info(t("level_zablokowany").format(n=KATEGORIE.index(kat_e)))
         return
 
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
@@ -19532,39 +20149,25 @@ def pokaz_ekran_etapu(etap_dane):
 # ---------------------------------------------------------------------------
 UKRYTA_WIADOMOSC = {
     "pl": (
-        "Nie umiem tego powiedzieć na głos tak, żeby zabrzmiało dobrze, "
-        "więc schowałem to tutaj i kazałem Ci po to przyjść.\n\n"
-        "Zależy mi na Tobie bardziej, niż to po mnie widać. "
-        "Nie chodzi o wielkie gesty, tylko o to, że codziennie chcę wiedzieć, jak Ci minął dzień.\n\n"
-        "Chcę z Tobą zwykłych rzeczy. Pójść na spacer bez celu. Znaleźć serial, "
-        "przy którym pierwszy raz nie zasnę. Zbudować z Tobą domek i farmę na wspólnym świecie, "
-        "a potem pokłócić się, gdzie postawić drzwi. Ugotować coś i udawać, że wyszło.\n\n"
-        "Chcę z Tobą odkładać pieniądze, żeby móc je później na Ciebie wydać. "
-        "Zapocić się z Tobą na treningu i narzekać razem przez resztę dnia.\n\n"
-        "Ale chcę też rzeczy, na które trzeba czekać latami. "
-        "Stanąć z Tobą pod zorzą i nie odezwać się ani słowem. Zmarznąć przy wodospadzie. "
-        "Wejść do lodowej jaskini. Wypłynąć w rejs, nad którym nie będzie zasięgu. "
-        "Pojechać nad jezioro, gdzie nie będzie nikogo poza nami.\n\n"
-        "Nie wiem, ile z tego się uda. Wiem tylko, że każdą z tych rzeczy chcę robić z Tobą "
-        "i z nikim innym.\n\n"
-        "Reszta jest w sejfie. Kod znajdziesz na końcu."
+        "Hej! Spędziłem dosyć sporo czasu, przygotowując te gry. Mam nadzieję, że Ci się podobały. "
+        "Myślę, że bywały denerwujące i nieraz można było nie wytrzymać. Zrobiłem to głównie po to, "
+        "żeby zachęcić Cię trochę do grania zamiast oglądania TikToków. Nie wiem, ile czasu "
+        "poświęciłaś na te gry, ale uwierz mi — ja poświęciłem więcej, pisząc je.\n\n"
+        "Bardzo Cię kocham i chciałbym zwiedzić z Tobą pół świata, zobaczyć fajne rzeczy, "
+        "zjeść fajne jedzonko. Chciałbym z Tobą ćwiczyć, grać, oglądać, chodzić na spacerki, "
+        "uczyć się nowych rzeczy — po prostu spędzać z Tobą czas. Sprawia mi to ogromną "
+        "przyjemność i frajdę.\n\n"
+        "I hej — całe życie przed nami."
     ),
     "en": (
-        "I can't say this out loud without it sounding wrong, "
-        "so I hid it here and made you come and get it.\n\n"
-        "You matter to me more than I show. "
-        "It's not about grand gestures — it's that every day I want to know how your day went.\n\n"
-        "I want ordinary things with you. A walk with no destination. A series I won't fall asleep to "
-        "for once. Building a house and a farm with you on a shared world, then arguing about the door. "
-        "Cooking something and pretending it worked.\n\n"
-        "I want to save money with you, so I can spend it on you later. "
-        "To sweat through a workout with you and complain about it for the rest of the day.\n\n"
-        "But I also want the things you wait years for. Standing under the northern lights with you "
-        "and saying nothing. Freezing by a waterfall. Walking into an ice cave. Sailing somewhere "
-        "with no signal. A lake with nobody but us.\n\n"
-        "I don't know how much of it will happen. I only know I want every single one of them "
-        "with you and no one else.\n\n"
-        "The rest is in the safe. You'll find the code at the end."
+        "Hey! I spent quite a lot of time preparing these games. I hope you enjoyed them. "
+        "I think they could be annoying, and more than once it was hard not to lose it. I made them "
+        "mainly to nudge you a little towards playing games instead of watching TikToks. I don't know "
+        "how much time you spent on these games, but believe me — I spent more writing them.\n\n"
+        "I love you very much, and I'd like to explore half the world with you, see cool things "
+        "and eat great food. I'd like to work out with you, play, watch things, go for walks, "
+        "learn new things — simply spend time with you. It brings me so much joy and fun.\n\n"
+        "And hey — we have our whole lives ahead of us."
     ),
 }
 
@@ -19611,6 +20214,20 @@ def frakcja_odslonieta(zrobione, wszystkie):
         return 1.0
     p = zrobione / wszystkie
     return max(MIN_ODSLONIETE, p ** KRZYWA_ODSLANIANIA)
+
+
+def pokaz_przycisk_kodu_pod_wiadomoscia():
+    # Kod do sejfu na samym dole wiadomosci - dostepny po ukonczeniu wszystkiego
+    st.markdown("<div style='margin-top:1.4rem'></div>", unsafe_allow_html=True)
+    if all(e["klucz"] in st.session_state.rozwiazane for e in ETAPY):
+        if st.button(tt({"pl": "🔓 Pokaż kod do sejfu", "en": "🔓 Show the safe code"}),
+                     key="kod_z_wiadomosci", use_container_width=True):
+            st.session_state.ekran = "final"
+            st.rerun()
+    else:
+        st.button(tt({"pl": "🔒 Kod do sejfu — odblokuje się po ukończeniu wszystkich gier",
+                      "en": "🔒 Safe code — unlocks once every game is done"}),
+                  key="kod_zablokowany", use_container_width=True, disabled=True)
 
 
 def pokaz_ukryta_wiadomosc():
@@ -19966,6 +20583,68 @@ SZABLON_SEJF = """<div id="sejfApp">
 """
 
 
+# Co pokazujemy w podsumowaniu dla kazdej gry: (licznik, emoji, PL, EN)
+OPISY_STATOW = {
+    "gra":       [("porazki", "🔁", "Podejścia", "Attempts")],
+    "dron":      [("podejscia", "🔁", "Podejścia", "Attempts")],
+    "zaba":      [("smierci", "💀", "Śmierci", "Deaths")],
+    "memory":    [("pomylki", "❌", "Pomyłki", "Mistakes"), ("czas", "⏱️", "Czas odkrywania", "Time")],
+    "simon":     [("podejscia", "🔁", "Podejścia", "Attempts")],
+    "piano":     [("pomylki", "❌", "Pomyłki", "Mistakes")],
+    "snake":     [("smierci", "💀", "Śmierci", "Deaths"), ("oliwki", "🫒", "Zjedzone oliwki", "Olives eaten")],
+    "bitwa":     [("smierci", "💀", "Śmierci", "Deaths")],
+    "blackjack": [("rozdania", "🃏", "Rozegrane rozdania", "Hands played")],
+    "samolot":   [("metry", "📏", "Najdalszy lot", "Best flight"),
+                  ("podejscia", "🔁", "Udało się za podejściem nr", "Made it on attempt no.")],
+    "odyseusz":  [("pudla", "🎯", "Spudłowane strzały", "Missed shots")],
+    "parkour":   [("skoki", "🦘", "Skoki", "Jumps")],
+    "minecraft": [("smierci", "💀", "Śmierci", "Deaths"), ("bloki", "⛏️", "Wykopane bloki", "Blocks mined"),
+                  ("potwory", "🧟", "Zabite potwory", "Monsters slain")],
+    "labirynt":  [("smierci", "💀", "Śmierci", "Deaths"), ("zabici", "⚔️", "Zabici wrogowie", "Enemies slain"),
+                  ("zadane", "💥", "Zadane obrażenia", "Damage dealt"), ("przyjete", "🩸", "Przyjęte obrażenia", "Damage taken"),
+                  ("kulki", "🟢", "Kulki doświadczenia", "XP orbs"), ("polaczenia", "🔗", "Połączone przedmioty", "Items merged"),
+                  ("czas", "⏱️", "Czas przejścia", "Time")],
+    "poziom_diabla": [("smierci", "💀", "Śmierci", "Deaths")],
+}
+
+
+def _wartosc_statu(klucz_gry, klucz, staty):
+    v = staty.get(klucz, 0)
+    if klucz_gry == "gra" and klucz == "porazki":
+        return str(int(v) + 1)                       # podejscia = porazki + 1
+    if klucz == "czas":
+        return f"{int(v) // 60}:{int(v) % 60:02d}"
+    if klucz == "metry":
+        return f"{int(v)} m"
+    return f"{int(v):,}".replace(",", " ")
+
+
+def pokaz_statystyki_gier():
+    """Podsumowanie wylacznie gier (Level 2 i 3) - zagadki nie maja statystyk."""
+    wszystkie = st.session_state.get("staty_gier", {})
+    karty = []
+    for kat in KATEGORIE[1:]:
+        for klucz in kat["etapy"]:
+            etap = next((e for e in ETAPY if e["klucz"] == klucz), None)
+            if not etap or klucz not in OPISY_STATOW:
+                continue
+            staty = wszystkie.get(klucz)
+            if staty:
+                wiersze = "".join(
+                    f"<div class='stat-wiersz'><span>{e} {tt({'pl': pl, 'en': en})}</span>"
+                    f"<b>{_wartosc_statu(klucz, k, staty)}</b></div>"
+                    for k, e, pl, en in OPISY_STATOW[klucz]
+                )
+            else:
+                wiersze = f"<div class='stat-wiersz brak'>{tt({'pl': 'brak danych', 'en': 'no data'})}</div>"
+            karty.append(f"<div class='stat-karta'><div class='stat-tytul'>{tt(etap['tytul'])}</div>{wiersze}</div>")
+    st.markdown(
+        "<div class='stat-naglowek'>" + tt({"pl": "📊 Twoje statystyki", "en": "📊 Your stats"}) + "</div>"
+        + "<div class='stat-siatka'>" + "".join(karty) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def pokaz_final():
     sejf = (SZABLON_SEJF
             .replace("__KOD__", str(KOD_SEJFU))
@@ -19983,7 +20662,7 @@ def pokaz_final():
         minuty = (time.time() - st.session_state.czas_startu) / 60
         st.caption(f"⏱️ {t('ukonczone_w')} {minuty:.1f} {t('min')}")
 
-    pokaz_rozpiske_bledow()
+    pokaz_statystyki_gier()
 
     if st.button(t("wroc_do_menu"), key="powrot_final"):
         st.session_state.ekran = "menu"
@@ -20009,26 +20688,24 @@ def pokaz_kategorie(kat):
     )
 
     etapy = etapy_kategorii(kat)
-    # Dwie kolumny z nazwami - wczesniej na telefonie byla to kolumna
-    # samotnych emoji, z ktorych nie dalo sie odczytac, co jest czym.
-    for wiersz in range(0, len(etapy), 2):
-        kolumny = st.columns(2)
-        for i, etap_dane in enumerate(etapy[wiersz:wiersz + 2]):
-            klucz = etap_dane["klucz"]
-            rozwiazany = klucz in st.session_state.rozwiazane
-            nieudany = klucz in st.session_state.nieudane
-            # Zamkniety etap mozna otworzyc - czeka tam test na czlowieka.
-            # Typ "primary" jest zarezerwowany dla duzych kafelkow kategorii.
-            nazwa = tt(etap_dane["tytul"])
-            etykieta = (nazwa + "  ✅") if rozwiazany else ((nazwa + "  🤖") if nieudany else nazwa)
-            with kolumny[i]:
-                if st.button(
-                    etykieta,
-                    key=f"menu_{klucz}",
-                    use_container_width=True,
-                ):
-                    st.session_state.ekran = f"etap:{klucz}"
-                    st.rerun()
+    # Lista BEZ kolumn. W kolumnach przycisk lapie regula gry z klodka na
+    # ekranie powitalnym (kwadrat, przezroczyste tlo, olbrzymia czcionka),
+    # a na telefonie kolumny i tak ukladaja sie jedna pod druga.
+    # Przedrostek klucza niesie stan etapu, zeby CSS mogl go pokolorowac.
+    for etap_dane in etapy:
+        klucz = etap_dane["klucz"]
+        rozwiazany = klucz in st.session_state.rozwiazane
+        nieudany = klucz in st.session_state.nieudane
+        nazwa = tt(etap_dane["tytul"])
+        if rozwiazany:
+            etykieta, przedrostek = nazwa + "  ✅", "menu_ok_"
+        elif nieudany:
+            etykieta, przedrostek = nazwa + "  🤖", "menu_rb_"
+        else:
+            etykieta, przedrostek = nazwa, "menu_"
+        if st.button(etykieta, key=przedrostek + klucz, use_container_width=True):
+            st.session_state.ekran = f"etap:{klucz}"
+            st.rerun()
 
     st.markdown("<div style='margin-top:1.4rem;'></div>", unsafe_allow_html=True)
     if st.button(t("powrot_kategorie"), key="powrot_do_kategorii"):
@@ -20046,11 +20723,23 @@ PRZYWRACANIE_Z_PRZEGLADARKI = True
 SKRYPT_PAMIECI = """<script>
 (function () {
   var K = 'escape_room_postep_v1';
-  var SWIEZY = __SWIEZY__, ZAPIS = __ZAPIS__;
+  var SWIEZY = __SWIEZY__, ZAPIS = __ZAPIS__, WYCZYSC = __WYCZYSC__;
   var okno = window.parent || window, pam = null, ses = null;
   try { pam = okno.localStorage; } catch (e) { try { pam = window.localStorage; } catch (e2) {} }
   try { ses = okno.sessionStorage; } catch (e) {}
   if (!pam) return;
+  // Po resecie: liczniki gier i "labirynt przeszly" z testow nie moga
+  // trafic do prawdziwej rozgrywki
+  if (WYCZYSC) {
+    try {
+      var doUsuniecia = [];
+      for (var i = 0; i < pam.length; i++) {
+        var kl = pam.key(i);
+        if (kl && (kl.indexOf('staty_gry_') === 0 || kl === 'labiryntPrzeszly')) doUsuniecia.push(kl);
+      }
+      doUsuniecia.forEach(function (kl) { pam.removeItem(kl); });
+    } catch (e) {}
+  }
   try {
     if (SWIEZY) {
       var stary = pam.getItem(K);
@@ -20073,10 +20762,14 @@ def pamiec_przegladarki(swiezy):
         return
     from urllib.parse import urlencode
     parametry = {k: st.query_params.get(k) for k in list(st.query_params) if k != "resetuj"}
+    wyczysc = bool(st.session_state.get("po_resecie")) and not st.session_state.get("wyczyszczono_lokalne")
+    if wyczysc:
+        st.session_state.wyczyszczono_lokalne = True
     zapis = urlencode(parametry)
     components.html(
         SKRYPT_PAMIECI.replace("__SWIEZY__", "true" if swiezy else "false")
-                      .replace("__ZAPIS__", json.dumps(zapis)),
+                      .replace("__ZAPIS__", json.dumps(zapis))
+                      .replace("__WYCZYSC__", "true" if wyczysc else "false"),
         height=0,
     )
 
@@ -20113,6 +20806,7 @@ def main():
         pokaz_final()
     elif ekran == "wiadomosc":
         pokaz_ukryta_wiadomosc()
+        pokaz_przycisk_kodu_pod_wiadomoscia()
     elif ekran.startswith("kategoria:"):
         kat_id = ekran.split(":", 1)[1]
         kat = next((k for k in KATEGORIE if k["id"] == kat_id), None)
