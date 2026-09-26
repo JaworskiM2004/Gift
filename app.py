@@ -790,7 +790,7 @@ KATEGORIE = [
         "opis": {"pl": "Gry · refleks, precyzja i zręczność", "en": "Games · reflexes, aim and skill"},
         "kolor": "#7ec98a",
         "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake",
-                  "bitwa", "blackjack", "samolot", "odyseusz", "parkour"],
+                  "bitwa", "blackjack", "samolot", "odyseusz", "parkour", "poziom_diabla"],
     },
     {
         "id": "przygody",
@@ -798,7 +798,7 @@ KATEGORIE = [
         "nazwa": {"pl": "Level 3", "en": "Level 3"},
         "opis": {"pl": "Wielkie przygody · całe światy", "en": "Big adventures · whole worlds"},
         "kolor": "#b98ae6",
-        "etapy": ["minecraft", "labirynt", "poziom_diabla"],
+        "etapy": ["minecraft", "labirynt"],
     },
 ]
 
@@ -5921,7 +5921,7 @@ SZABLON_BITWA = """
         <div class="wiersz">👑 <b>Boss</b> — częściowo blokuje łuk i oddaje 2 HP za miecz.</div>
         <div class="wiersz">🪄 <b>Czarodziej</b> — leczy innych. Pokonaj go najpierw.</div>
         <div class="wiersz">🧱 <b>Czołg</b> — dużo zdrowia, ale bije słabo.</div>
-        <div class="wiersz">W turze masz <b>2 akcje</b>. 🛡️ Obrona zmniejsza obrażenia, 🧪 fiolka leczy do pełna.</div>
+        <div class="wiersz">W turze masz <b>2 akcje</b>. 🛡️ Obrona (raz na turę) zmniejsza obrażenia, 🧪 fiolka leczy do pełna.</div>
         <div class="zamknij-podp">dotknij, żeby zamknąć</div>
       </div>
       <div id="graczOtoczenie">
@@ -6580,7 +6580,8 @@ SZABLON_BITWA = """
     var przyciski = siatkaAkcji.querySelectorAll('.btn-akcji');
     przyciski.forEach(function (btn) {
       var klucz = btn.dataset.akcja;
-      var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null;
+      var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null
+        || (klucz === 'blok' && blokAktywny);   // obrona raz na ture - druga nic nie zmienia
       if (klucz === 'fiolka' && (fiolkaUzyta || poziomIndeks < POZIOM_OD_FIOLKI)) zablokuj = true;
       btn.disabled = zablokuj;
       btn.classList.toggle('aktywny', akcjaOczekujacaTyp === klucz);
@@ -6591,6 +6592,7 @@ SZABLON_BITWA = """
     if (!trwa || akcjaWTurze >= 2) return;
     inicjujDzwiek();
     if (klucz === 'blok') {
+      if (blokAktywny) return;
       blokAktywny = true;
       akcjaWTurze++;
       pokazDziennik('🛡️ Podnosisz tarczę do obrony!', 1400);
@@ -7646,6 +7648,21 @@ SZABLON_MINECRAFT = """
     overflow-y: auto;
   }
   .btn-zamknij-panel { display: none !important; }
+  /* ===== UKLAD v3: ruch po lewej, narzedzia po prawej, reset w rogu ===== */
+  #sterowanie { grid-template-columns: 1fr auto !important; grid-template-areas: "ruch narz" !important;
+                align-items: start; column-gap: 12px; }
+  .grupa-ruch { grid-area: ruch; }
+  .grupa-ruch .btn-ruch { height: 92px !important; font-size: 34px; }
+  .grupa-narzedzi { grid-area: narz; display: flex; gap: 7px; flex-wrap: nowrap; }
+  /* Piec otwiera sie z panelu receptur - osobny przycisk mylil */
+  #btnPiecToggle { display: none !important; }
+  /* Nowy swiat w lewym gornym rogu planszy - daleko od kciukow */
+  #obszarSwiata #btnNowySwiat { position: absolute; left: 10px; top: 10px; z-index: 15;
+    width: 34px; height: 34px; font-size: 16px; opacity: 0.85; }
+  .btn-piec-z-receptur { width: 100%; margin: 0 0 8px; padding: 10px; border-radius: 10px; border: 1.5px solid #e6743c;
+    background: linear-gradient(135deg, #5a2a18, #3a1a10); color: #ffd8b0; font-weight: 800; font-size: 13px; }
+  .podp-piec { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(230,116,60,0.12);
+    color: #f0c8a8; font-size: 12px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -7657,6 +7674,7 @@ SZABLON_MINECRAFT = """
   <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
     <div id="obszarSwiata">
+      <button class="btn-narzedzie" id="btnNowySwiat" title="Nowy świat">🔄</button>
       <div id="pasekGloduOtoczka">
         <div class="mini-pasek-otoczka">
           <span>❤️</span>
@@ -7680,20 +7698,20 @@ SZABLON_MINECRAFT = """
     <!-- Pas sterowania jak w Labiryncie: narzedzia po lewej, ruch w srodku,
          sprawdzenie domu po prawej. Wszystko w zasiegu kciukow. -->
     <div id="sterowanie">
-      <div class="grupa-lewa">
-        <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
-        <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
-        <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
-      </div>
+      <!-- Ruch po lewej (kciuk), narzedzia po prawej u gory - pod nimi zostaje
+           miejsce na ikonki Streamlita w prawym dolnym rogu -->
       <div class="grupa-ruch">
         <button class="btn-ruch" id="btnLewo">⬅️</button>
         <button class="btn-ruch" id="btnPrawo">➡️</button>
       </div>
-      <div class="grupa-prawa">
+      <div class="grupa-narzedzi">
+        <button class="btn-narzedzie" id="btnEkwipunekToggle">🎒</button>
+        <button class="btn-narzedzie" id="btnRecepturyToggle">📖</button>
         <button class="btn-narzedzie akcja-dom" id="btnDom">🏠</button>
         <button class="btn-narzedzie" id="btnSpij" style="display:none;">🛏️</button>
-        <button class="btn-narzedzie" id="btnNowySwiat">🔄</button>
+        <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       </div>
+    </div>
     </div>
     <div id="ekwipunek"></div>
     <div id="panelReceptur"></div>
@@ -8884,7 +8902,7 @@ SZABLON_MINECRAFT = """
     var kratka = Math.min(wolnaW / WIDOCZNE_KOLUMNY, 64);
     var wiersze = Math.max(11, Math.min(22, Math.floor(wolnaH / kratka)));
     if (wiersze * kratka > wolnaH) kratka = wolnaH / wiersze;
-    if (wiersze !== WIDOCZNE_WIERSZE) {
+    if (wiersze !== WIDOCZNE_WIERSZE || canvas.height !== wiersze * KOMORKA) {
       WIDOCZNE_WIERSZE = wiersze;
       canvas.height = wiersze * KOMORKA;
       przeliczKamere();
@@ -8897,10 +8915,8 @@ SZABLON_MINECRAFT = """
   // Pelny ekran: gra wypelnia cale okno i sama sie dopasowuje, zamiast byc
   // tylko proporcjonalnie skalowana (stad byla pusta czarna przestrzen)
   window.__wlasneSkalowanie = true;
-  window.__dopasujGre = dopasujPlotno;
-  window.addEventListener('resize', dopasujPlotno);
-  try { if (window.ResizeObserver) new ResizeObserver(function () { dopasujPlotno(); }).observe(document.getElementById('gra')); } catch (e) {}
-  setTimeout(dopasujPlotno, 0);
+  try { if (window.ResizeObserver) new ResizeObserver(function () { dopasujWidokMc(); }).observe(document.getElementById('gra')); } catch (e) {}
+  setTimeout(function () { dopasujWidokMc(); }, 0);
 
   function pokazLatajaceObrazeniaSwiat(wx, wy, tekst, kolor) {
     var pos = pozycjaFlotujaca(wx, wy);
@@ -8924,11 +8940,11 @@ SZABLON_MINECRAFT = """
     var byloPoziomo = poziomoMc;
     poziomoMc = w > h * 1.15;
     WIDOCZNE_KOLUMNY = poziomoMc ? 17 : 10;
-    WIDOCZNE_WIERSZE = 10;
+    // Wczesniej ustawialo tu na sztywno 10 wierszy, nadpisujac dopasujPlotno -
+    // plansza miala 10 wierszy rozciagnietych na wysokosc 14, bloki nie byly kwadratowe
     canvas.width = WIDOCZNE_KOLUMNY * KOMORKA;
-    canvas.height = WIDOCZNE_WIERSZE * KOMORKA;
-    canvas.style.maxWidth = poziomoMc ? '96vw' : '372px';
-    canvas.style.aspectRatio = WIDOCZNE_KOLUMNY + ' / ' + WIDOCZNE_WIERSZE;
+    canvas.style.aspectRatio = 'auto';
+    dopasujPlotno();
     if (byloPoziomo !== poziomoMc) pokazDziennikMc(poziomoMc ? '🔄 Widok poziomy' : '🔄 Widok pionowy', 1200);
     rysuj();
   }
@@ -9234,11 +9250,29 @@ SZABLON_MINECRAFT = """
       btnEkwipunekToggle.classList.add('aktywne');
     }
   });
+  // Wejscie do pieca na gorze panelu receptur. Bez pieca nie ma szyb, a bez
+  // szyb domu - wiec funkcja musi zostac, tylko bez osobnego przycisku.
+  function dodajWejscieDoPieca() {
+    var el = document.createElement('div');
+    if (btnPiecToggle.classList.contains('widoczny')) {
+      el.innerHTML = '<button class="btn-piec-z-receptur">🔥 Piec obok ciebie — przetop piach na szkło</button>';
+      el.querySelector('button').addEventListener('click', function () {
+        schowajWszystkiePanele();
+        odswiezPanelPieca();
+        panelPieca.classList.add('widoczny');
+        btnRecepturyToggle.classList.add('aktywne');   // ten sam przycisk zamyka piec
+      });
+    } else {
+      el.innerHTML = '<div class="podp-piec">🔥 Szyby zrobisz w piecu: wytwórz piec, postaw go i podejdź bliżej — tu pojawi się przetapianie.</div>';
+    }
+    panelReceptur.insertBefore(el, panelReceptur.firstChild);
+  }
   btnRecepturyToggle.addEventListener('click', function () {
-    var otwarty = panelReceptur.classList.contains('widoczny');
+    var otwarty = panelReceptur.classList.contains('widoczny') || panelPieca.classList.contains('widoczny');
     schowajWszystkiePanele();
     if (!otwarty) {
       odswiezPanelReceptur();
+      dodajWejscieDoPieca();
       panelReceptur.classList.add('widoczny');
       btnRecepturyToggle.classList.add('aktywne');
     }
@@ -11238,7 +11272,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   <div id="paskKlikow"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">✈️ Lot papierowego samolotu</div>
-    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>12 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>2137 m</b>.</div>
+    <div id="nakladkaOpis">Przeciągnij, żeby wybrać <b>kąt i siłę</b> wyrzutu, i puść.<br><br>W locie masz <b>9 dotknięć</b> — każde podrywa samolot w górę. Rozkładaj je w czasie!<br><br>Odbijaj się od trampolin i łap bonusy w powietrzu. Cel: <b>2137 m</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -11271,9 +11305,9 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   // zamiast dodawac ciag wzdluz nosa. Dzieki temu nie oplaca sie juz
   // wystrzelic stromo i zuzyc wszystkich dotkniec od razu na starcie.
   var PODSKOK_VY=-225, PODSKOK_VX=26, ODSTEP_KLIKOW=0.55;
-  var TRAMP_ODB=1.03, TRAMP_DOD=240, MIN_V_TRAMP=150;
-  var ZIEM_ODB=0.42, ZIEM_TARCIE=0.45;
-  var START_KLIKOW=12;
+  var TRAMP_ODB=1.03, TRAMP_DOD=200, MIN_V_TRAMP=150;
+  var ZIEM_ODB=0.30, ZIEM_TARCIE=0.32;
+  var START_KLIKOW=9;
 
   var faza='celowanie';   // celowanie | lot | koniec
   var sx=0, sy=0, ax=0, ay=0, celuje=false;
@@ -11340,15 +11374,18 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
 
   function generujSwiat(){
     trampoliny=[]; bonusy=[];
-    // Trampoliny co ~600px, z lekkim rozrzutem
-    for(var i=1;i<340;i++){
-      trampoliny.push({ x: i*300 + losowo(-50,50), w: 150 });
+    // Kalibracja na PRAWDZIWYM kodzie gry (symulowane loty): przy bonusach
+    // co 190 px mediana pierwszego podejscia wynosila 7,7 km. Teraz: pierwsze
+    // podejscie ok. 1,4 km (cel wpada w ~12%), wprawny gracz ok. 2,4 km (~68%).
+    // Oba rodzaje generujemy na cala dlugosc swiata (13 km), zeby sie nie konczyly.
+    for(var i=1;i<Math.ceil(130000/650);i++){
+      trampoliny.push({ x: i*650 + losowo(-50,50), w: 150 });
     }
     // Bonusy w powietrzu, na roznych wysokosciach
-    for(var b=1;b<200;b++){
+    for(var b=1;b<Math.ceil(130000/800);b++){
       var t=TYPY_BONUSOW[Math.floor(Math.random()*TYPY_BONUSOW.length)];
       bonusy.push({
-        x: b*190 + losowo(-60,60),
+        x: b*800 + losowo(-60,60),
         y: -losowo(60, 380),
         typ:t.typ, ikona:t.ikona, kolor:t.kolor, opis:t.opis,
         zebrany:false, r:30,
@@ -15443,6 +15480,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     });
   }
   var fale = [];                   // fale uderzeniowe wybuchow
+  var odkrytePola = null, ostOdkrX = -1, ostOdkrY = -1;   // odwiedzone pola na minimapie
   var blyskawice = [];             // widoczne wyladowania rozdzki piorunow
   var ZASIEG_PIORUNA = 150;        // skok od wroga do wroga (wczesniej 92 od pocisku)
   var SKOKI_PIORUNA = 5;
@@ -15506,6 +15544,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // ---------- GENEROWANIE MAPY ----------
   function generujMape() {
     if (!labiryntPrzeszly && !trybNieskonczony && window.statStartCzasu) window.statStartCzasu();
+    odkrytePola = null;   // nowe pietro = czysta minimapa
     SIATKA = POZIOMY_SIATKI[poziomLabiryntu];
     var docelowoKomnat = POZIOMY_KOMNAT[poziomLabiryntu];
     mapa = [];
@@ -16341,6 +16380,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function aktualizuj(dt) {
     aktualizujKulkiXp(dt);
     if (blyskPoziomu > 0) blyskPoziomu -= dt;
+    // Odkrywanie minimapy: pola w promieniu 3 kafli wokol gracza
+    if (!odkrytePola || odkrytePola.length !== SIATKA * SIATKA) { odkrytePola = new Uint8Array(SIATKA * SIATKA); ostOdkrX = -1; }
+    var otx = Math.floor(gracz.x / KAFEL), oty = Math.floor(gracz.y / KAFEL);
+    if (otx !== ostOdkrX || oty !== ostOdkrY) {
+      ostOdkrX = otx; ostOdkrY = oty;
+      for (var oy = oty - 3; oy <= oty + 3; oy++) for (var ox = otx - 3; ox <= otx + 3; ox++) {
+        if (ox < 0 || oy < 0 || ox >= SIATKA || oy >= SIATKA) continue;
+        if ((ox - otx) * (ox - otx) + (oy - oty) * (oy - oty) <= 10) odkrytePola[oy * SIATKA + ox] = 1;
+      }
+    }
     for (var bi = blyskawice.length - 1; bi >= 0; bi--) {
       blyskawice[bi].zycie -= dt;
       if (blyskawice[bi].zycie <= 0) blyskawice.splice(bi, 1);
@@ -16939,7 +16988,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
   // Wieksza i odsunieta od gornej krawedzi - przycisk pelnego ekranu
   // siedzi w prawym gornym rogu i wczesniej ladowal na minimapie.
-  var MINI_BOK = 104, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
+  var MINI_BOK = 132, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
   function rysujMinimape() {
     var skala = MINI_BOK / (SIATKA * KAFEL);
     var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_ODSTEP_GORA;
@@ -16949,7 +16998,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // zeby kontur korytarzy odcinal sie od jasnej podlogi gry.
     // Tlo mocno przezroczyste (widac przez nie walke), ale sama mapa w pelnym
     // kolorze. Wczesniej cala minimapa, lacznie z kropka gracza, byla przygaszona.
-    ctx.globalAlpha = 0.36;
+    ctx.globalAlpha = 0.22;
     ctx.fillStyle = '#07060c';
     ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
     ctx.globalAlpha = 1;
@@ -16960,12 +17009,18 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     var kaflik = Math.max(1.5, KAFEL * skala);
     // Kafle wyrownane do pelnych pikseli - ostre krawedzie zamiast rozmycia
     var krokM = KAFEL * skala;
-    ctx.fillStyle = 'rgba(222,212,186,0.80)';
-    for (var my2 = 0; my2 < SIATKA; my2++) {
-      for (var mx2 = 0; mx2 < SIATKA; mx2++) {
-        if (mapa[my2][mx2] !== 1) continue;
-        var kx0 = Math.round(mx + mx2*krokM), ky0 = Math.round(my + my2*krokM);
-        ctx.fillRect(kx0, ky0, Math.round(mx + (mx2+1)*krokM) - kx0, Math.round(my + (my2+1)*krokM) - ky0);
+    // Dwie warstwy: nieodwiedzone korytarze ciemnoszare, odwiedzone jasne
+    // (na stale) - widac, gdzie juz sie bylo, a gdzie jeszcze nie
+    for (var warstwa = 0; warstwa < 2; warstwa++) {
+      ctx.fillStyle = warstwa ? 'rgba(236,226,200,0.72)' : 'rgba(96,92,108,0.42)';
+      for (var my2 = 0; my2 < SIATKA; my2++) {
+        for (var mx2 = 0; mx2 < SIATKA; mx2++) {
+          if (mapa[my2][mx2] !== 1) continue;
+          var byl = odkrytePola ? odkrytePola[my2 * SIATKA + mx2] : 1;
+          if ((warstwa === 1) !== !!byl) continue;
+          var kx0 = Math.round(mx + mx2*krokM), ky0 = Math.round(my + my2*krokM);
+          ctx.fillRect(kx0, ky0, Math.round(mx + (mx2+1)*krokM) - kx0, Math.round(my + (my2+1)*krokM) - ky0);
+        }
       }
     }
     // Sekretna komnata - widoczna tylko dopoki przejscie jest otwarte
@@ -17003,9 +17058,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.beginPath(); ctx.arc(mx + portal.x*skala, my + portal.y*skala, 3, 0, Math.PI*2); ctx.fill();
     }
 
-    // Gracz
+    // Gracz - z pulsujaca poswiata, zeby od razu bylo go widac
+    var gxm = mx + gracz.x*skala, gym = my + gracz.y*skala;
+    var poswiata = ctx.createRadialGradient(gxm, gym, 1, gxm, gym, 13);
+    poswiata.addColorStop(0, 'rgba(126,232,160,0.75)'); poswiata.addColorStop(1, 'rgba(126,232,160,0)');
+    ctx.fillStyle = poswiata;
+    ctx.beginPath(); ctx.arc(gxm, gym, 11 + Math.sin(Date.now() / 260) * 2, 0, Math.PI*2); ctx.fill();
     ctx.fillStyle = '#7ee8a0';
-    ctx.beginPath(); ctx.arc(mx + gracz.x*skala, my + gracz.y*skala, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gxm, gym, 3.2, 0, Math.PI*2); ctx.fill();
     ctx.strokeStyle = '#0a0810'; ctx.lineWidth = 1; ctx.stroke();
     ctx.restore();
   }
@@ -18071,6 +18131,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     nakladkaEkw.classList.add('widoczna');
     btnEkw.classList.add('aktywny');
     widzianePrzedmioty = gracz.ekwipunek.length;   // od teraz nic nie jest "nowe"
+    // Plecak zawsze otwiera sie na ekwipunku, nawet jesli ostatnio byl otwarty kreator laczenia
+    if (kreator && kreator.krok) kreator.krok = 0;
+    odswiezPanele();
     pokazZakladke('ekw');
     odswiezHud();
   });
@@ -18639,7 +18702,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'position:fixed;top:5px;right:150px;z-index:2147483647;width:34px;height:34px;' +   // na lewo od minimapy
     'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
     'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
@@ -20408,7 +20471,7 @@ def _kolejnosc_odslaniania(tekst, ziarno=20240214):
 # Nie kazdy etap wazy tyle samo. Trzy duze gry z "Wielkich przygod"
 # odslaniaja po trzy razy wiecej niz reszta - inaczej godzina w Labiryncie
 # liczylaby sie tyle samo co jedna krzyzowka.
-WAGI_ETAPOW = {"minecraft": 3.0, "labirynt": 3.0, "poziom_diabla": 3.0}
+WAGI_ETAPOW = {"minecraft": 3.0, "labirynt": 3.0}
 WAGA_DOMYSLNA = 1.0
 
 
