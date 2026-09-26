@@ -1079,6 +1079,29 @@ SZABLON_GRY = """
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <style>
+/* ---------- CZYTELNOSC PYTAN (Level 1) ----------
+   Etykiety pol, podpowiedzi, opcje i listy mialy domyslny ciemnoszary
+   kolor Streamlita - na ciemnym tle prawie niewidoczne */
+[data-testid="stWidgetLabel"], [data-testid="stWidgetLabel"] p, [data-testid="stWidgetLabel"] label {
+  color: #f3ead2 !important; font-weight: 700 !important; font-size: 1rem !important; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p {
+  color: #d9ceb2 !important; font-size: 0.93rem !important; opacity: 1 !important; }
+[data-testid="stMarkdownContainer"] p, [data-testid="stMarkdownContainer"] li { color: #f3ead2; }
+div[role="radiogroup"] label, div[role="radiogroup"] label p { color: #f3ead2 !important; }
+div[role="radiogroup"] > label {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(230,193,92,0.25);
+  border-radius: 10px; padding: 7px 10px !important; margin-bottom: 6px !important; }
+[data-baseweb="select"] > div { background: #1e1a2b !important; border: 1.5px solid rgba(230,193,92,0.45) !important; }
+[data-baseweb="select"] input, [data-baseweb="select"] span, [data-baseweb="select"] div { color: #f5ecd2 !important; }
+[data-baseweb="tag"] { background: linear-gradient(135deg, #ffe08a, #d4af37) !important; border-radius: 8px !important; }
+[data-baseweb="tag"] span, [data-baseweb="tag"] div { color: #16130a !important; font-weight: 700 !important; }
+[data-baseweb="tag"] svg { fill: #16130a !important; }
+[data-testid="stTextInput"] input, [data-testid="stTextArea"] textarea {
+  background: #1e1a2b !important; color: #f5ecd2 !important; border: 1.5px solid rgba(230,193,92,0.45) !important; }
+[data-testid="stTextInput"] input::placeholder { color: #9d9380 !important; }
+.zdanie-podglad { margin: -4px 0 12px; padding: 7px 12px; border-radius: 10px; background: rgba(230,193,92,0.1);
+  border: 1px dashed rgba(230,193,92,0.45); color: #ffe08a; font-weight: 700; }
+
 /* ---------- PODSUMOWANIE STATYSTYK ---------- */
 .stat-naglowek { color:#e6c15c; font-weight:800; font-size:1.1rem; margin:1.6rem 0 0.6rem; text-align:center; }
 .stat-siatka { display:grid; grid-template-columns:1fr; gap:10px; }
@@ -19455,17 +19478,23 @@ def renderuj_krzyzowka(etap_dane):
         typ_pytania = pytanie.get("typ", "tekst")
 
         if typ_pytania == "ulozanka":
+            # Jedno pole na cale zdanie zamiast osobnej listy na kazde slowo
+            # (bylo 13 list po 20 slow). Kolejnosc wyboru = kolejnosc w zdaniu.
             pula = pytanie.get("slowa_pula", pula_wspolna)
             liczba_slow = len(pytanie["odpowiedz"])
-            wybrane_slowa = []
-            for i in range(liczba_slow):
-                wybor = st.selectbox(
-                    f"{t('slowo')} {i + 1}:",
-                    [placeholder] + pula,
-                    key=f"{klucz}_pyt_{idx}_slowo_{i}",
+            wybrane_slowa = st.multiselect(
+                tt({"pl": f"Wybierz {liczba_slow} słowa po kolei:", "en": f"Pick {liczba_slow} words in order:"}),
+                pula,
+                key=f"{klucz}_pyt_{idx}_zdanie",
+                max_selections=liczba_slow,
+                placeholder=tt({"pl": "dotknij, żeby wybrać słowo…", "en": "tap to pick a word…"}),
+            )
+            if wybrane_slowa:
+                st.markdown(
+                    "<div class='zdanie-podglad'>➜ " + " ".join(wybrane_slowa) + "</div>",
+                    unsafe_allow_html=True,
                 )
-                wybrane_slowa.append(wybor)
-            odpowiedzi_uzytkownika.append(wybrane_slowa)
+            odpowiedzi_uzytkownika.append(list(wybrane_slowa))
         else:
             wpisane = st.text_input(
                 t("twoja_odpowiedz"), key=f"{klucz}_pyt_{idx}", label_visibility="collapsed"
@@ -19975,9 +20004,135 @@ def pokaz_przycisk_resetu():
             st.rerun()
 
 
+# Animacja otwarcia klodki po piatym dotknieciu - w stylu koncowego sejfu
+ANIMACJA_KLODKI = """<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+  html, body { margin:0; background:transparent; overflow:hidden; font-family:-apple-system,'Segoe UI',sans-serif; }
+  #scena { position:relative; height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+  #blask { position:absolute; left:50%; top:46%; width:420px; height:420px; margin:-210px 0 0 -210px; border-radius:50%;
+    background:radial-gradient(circle, rgba(255,224,138,0.95) 0%, rgba(230,193,92,0.35) 32%, rgba(230,193,92,0) 66%);
+    opacity:0; transform:scale(0.2); transition:opacity .9s ease, transform 1.3s cubic-bezier(.2,.9,.3,1); }
+  .blysk #blask { opacity:1; transform:scale(1); }
+  #klodka { position:relative; width:150px; height:196px; animation:wejscie .45s cubic-bezier(.2,1.5,.4,1); }
+  @keyframes wejscie { from { transform:scale(.4); opacity:0; } to { transform:none; opacity:1; } }
+  #palak { position:absolute; left:30px; top:4px; width:90px; height:98px; box-sizing:border-box;
+    border:17px solid #d4a93a; border-bottom:none; border-radius:50px 50px 0 0;
+    box-shadow: inset 0 3px 0 rgba(255,240,190,.55), 0 2px 6px rgba(0,0,0,.4);
+    transform-origin:100% 100%; }
+  .otwarta #palak { animation:odskok .7s cubic-bezier(.25,1.4,.45,1) forwards; }
+  @keyframes odskok { 0% { transform:none; } 45% { transform:translateY(-34px); } 100% { transform:translateY(-34px) rotate(-38deg); } }
+  #korpus { position:absolute; left:0; bottom:0; width:150px; height:120px; border-radius:22px;
+    background:linear-gradient(145deg,#fff0b0 0%,#e6c15c 38%,#b8912e 72%,#8a6a20 100%);
+    box-shadow:0 12px 30px rgba(0,0,0,.55), inset 0 3px 0 rgba(255,250,220,.7), inset 0 -6px 12px rgba(0,0,0,.25); }
+  .drga #korpus { animation:drganie .45s ease; }
+  @keyframes drganie { 0%,100% { transform:none; } 25% { transform:rotate(-4deg); } 50% { transform:rotate(3deg); } 75% { transform:rotate(-2deg); } }
+  #dziurka { position:absolute; left:50%; top:30px; width:22px; height:46px; margin-left:-11px;
+    transition:transform .4s cubic-bezier(.3,.1,.2,1.3); transform-origin:50% 11px; }
+  #dziurka::before { content:''; position:absolute; left:0; top:0; width:22px; height:22px; border-radius:50%; background:#2a1d06; }
+  #dziurka::after { content:''; position:absolute; left:6px; top:14px; width:10px; height:30px; background:#2a1d06; border-radius:0 0 3px 3px; }
+  .klucz #dziurka { transform:rotate(90deg); }
+  .klucz #dziurka::before, .klucz #dziurka::after { box-shadow:0 0 10px rgba(255,220,120,.9); }
+  #napis { margin-top:26px; font-size:26px; font-weight:900; color:#ffe08a; letter-spacing:.02em; opacity:0; transform:translateY(8px);
+    text-shadow:0 0 16px rgba(255,210,110,.75); transition:opacity .6s ease, transform .6s ease; }
+  .napis #napis { opacity:1; transform:none; }
+  #iskry { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; }
+</style></head><body>
+<div id="scena">
+  <div id="blask"></div>
+  <div id="klodka"><div id="palak"></div><div id="korpus"><div id="dziurka"></div></div></div>
+  <div id="napis">🔓 Otwarte!</div>
+  <canvas id="iskry"></canvas>
+</div>
+<script>
+(function () {
+  var scena = document.getElementById('scena'), cv = document.getElementById('iskry'), cx = cv.getContext('2d');
+  var cz = [];   // na poczatku - niezaleznie od kolejnosci krokow
+  // Dzwiek z kontekstu odblokowanego dotknieciami klodki (iPhone wymaga gestu)
+  var AC = null;
+  try { var g = window.parent; try { if (window.top.__wspolnyKontekstAudio) g = window.top; } catch (e) {}
+        AC = g.__wspolnyKontekstAudio || null; if (AC && AC.state === 'suspended') AC.resume(); } catch (e) { AC = null; }
+  function obw(gn, t, s, d) { gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(s, t + 0.006); gn.gain.exponentialRampToValueAtTime(0.0001, t + d); }
+  function ton(f1, f2, typ, s, d, za) {
+    if (!AC) return;
+    try { var t = AC.currentTime + (za || 0), o = AC.createOscillator(), gn = AC.createGain();
+      o.type = typ; o.frequency.setValueAtTime(f1, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d * 0.8);
+      obw(gn, t, s, d); o.connect(gn); gn.connect(AC.destination); o.start(t); o.stop(t + d + 0.02); } catch (e) {}
+  }
+  function krok(fn, ms) { setTimeout(fn, ms); }
+  // Obrot klucza: kilka cykniec
+  krok(function () { scena.classList.add('klucz'); for (var i = 0; i < 4; i++) ton(2600 + i * 180, 1800, 'square', 0.05, 0.03, i * 0.07); }, 250);
+  // Palak odskakuje: klunk + sprezyna
+  krok(function () {
+    scena.classList.add('otwarta', 'drga');
+    ton(160, 48, 'sine', 0.8, 0.3); ton(1700, 0, 'triangle', 0.14, 0.18);
+    ton(300, 620, 'triangle', 0.1, 0.35, 0.05);
+  }, 720);
+  // Rozblysk, iskry i dzwoneczki
+  krok(function () {
+    scena.classList.add('blysk');
+    [523.25, 659.25, 783.99, 1046.5, 1318.5].forEach(function (f, i) { ton(f, 0, 'sine', 0.16, 1.4, i * 0.09); ton(f * 2.01, 0, 'sine', 0.04, 1.0, i * 0.09); });
+    [261.63, 329.63, 392].forEach(function (f) { ton(f, 0, 'triangle', 0.07, 2.0, 0.55); });
+    wystrzel();
+  }, 900);
+  krok(function () { scena.classList.add('napis'); }, 1250);
+
+  function wystrzel() {
+    cv.width = cv.clientWidth; cv.height = cv.clientHeight;
+    var sx = cv.width / 2, sy = cv.height * 0.42, kol = ['#ffe08a', '#fff6d0', '#e6c15c', '#ffd24a', '#ff8aa8'];
+    for (var i = 0; i < 110; i++) {
+      var k = Math.random() * Math.PI * 2, v = 90 + Math.random() * 300;
+      cz.push({ x: sx, y: sy, vx: Math.cos(k) * v, vy: Math.sin(k) * v - 120, r: 1.5 + Math.random() * 3, k: kol[i % 5], z: 1.6 + Math.random() * 0.9 });
+    }
+    var ost = null;
+    requestAnimationFrame(function klatka(ts) {
+      var dt = ost ? Math.min(0.04, (ts - ost) / 1000) : 0.016; ost = ts;
+      cx.clearRect(0, 0, cv.width, cv.height);
+      for (var j = cz.length - 1; j >= 0; j--) {
+        var p = cz[j]; p.vy += 260 * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.z -= dt;
+        if (p.z <= 0) { cz.splice(j, 1); continue; }
+        cx.globalAlpha = Math.min(1, p.z); cx.fillStyle = p.k;
+        cx.beginPath(); cx.arc(p.x, p.y, p.r, 0, Math.PI * 2); cx.fill();
+      }
+      if (cz.length) requestAnimationFrame(klatka);
+    });
+  }
+})();
+</script></body></html>
+"""
+
+# Wykonywane W DOKUMENCIE STRONY przy dotknieciu klodki: tworzy wspolny kontekst
+# audio (iPhone wymaga gestu) i gra metaliczne klikniecie. Z tego samego
+# kontekstu korzysta potem animacja otwarcia i gry.
+KOD_KLIKNIECIA_ZAMKA = (
+    "try {"
+    " var g = window; try { if (window.top.document) g = window.top; } catch (e) {}"
+    " var C = g.AudioContext || g.webkitAudioContext;"
+    " if (!g.__wspolnyKontekstAudio && C) g.__wspolnyKontekstAudio = new C();"
+    " var c = g.__wspolnyKontekstAudio; if (!c) return;"
+    " if (c.state === 'suspended') c.resume();"
+    " var t = c.currentTime + 0.01, o = c.createOscillator(), gn = c.createGain();"
+    " o.type = 'triangle'; o.frequency.setValueAtTime(1500, t); o.frequency.exponentialRampToValueAtTime(650, t + 0.08);"
+    " gn.gain.setValueAtTime(0.0001, t); gn.gain.exponentialRampToValueAtTime(0.28, t + 0.005);"
+    " gn.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);"
+    " o.connect(gn); gn.connect(c.destination); o.start(t); o.stop(t + 0.14);"
+    "} catch (e) {}"
+)
+
+
 def pokaz_powitanie():
     if "zamek_proby" not in st.session_state:
         st.session_state.zamek_proby = 0
+
+    # Piate dotkniecie: animacja otwarcia, potem menu
+    if st.session_state.get("zamek_otwieranie"):
+        st.markdown("<div style='height:8vh;'></div>", unsafe_allow_html=True)
+        components.html(ANIMACJA_KLODKI, height=420, scrolling=False)
+        time.sleep(2.9)
+        st.session_state.zamek_otwieranie = False
+        st.session_state.ekran = "menu"
+        st.session_state.czas_startu = time.time()
+        zapisz_postep()
+        st.rerun()
+        return
 
     losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
     losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
@@ -20021,6 +20176,29 @@ def pokaz_powitanie():
               btn.style.boxShadow = 'none';
               btn.style.border = 'none';
 
+              // Postep: 5 kropek pod klodka + drgniecie po kazdym dotknieciu
+              var proby = {st.session_state.zamek_proby};
+              var postep = wrapper.querySelector('#postepZamka');
+              if (!postep) {{ postep = doc.createElement('div'); postep.id = 'postepZamka'; wrapper.appendChild(postep); }}
+              postep.style.cssText = 'display:flex;gap:9px;justify-content:center;margin-top:2px;pointer-events:none;';
+              var kropki = '';
+              for (var k = 0; k < 5; k++) {{
+                var pelna = k < proby;
+                kropki += '<span style="width:10px;height:10px;border-radius:50%;display:inline-block;background:'
+                  + (pelna ? '#ffd76a;box-shadow:0 0 9px rgba(255,215,106,0.85)' : 'rgba(230,193,92,0.22)') + '"></span>';
+              }}
+              postep.innerHTML = kropki;
+              if (proby > 0 && btn.animate) {{
+                btn.animate([{{transform:'rotate(0deg)'}}, {{transform:'rotate(-14deg) scale(1.08)'}},
+                             {{transform:'rotate(11deg)'}}, {{transform:'rotate(-6deg)'}}, {{transform:'rotate(0deg)'}}],
+                            {{duration: 450}});
+              }}
+              // Funkcja tworzona w oknie STRONY - przezyje zniszczenie tej ramki
+              if (!btn.dataset.dzwiek) {{
+                btn.dataset.dzwiek = '1';
+                btn.addEventListener('pointerdown', new window.parent.Function('ev', {json.dumps(KOD_KLIKNIECIA_ZAMKA)}));
+              }}
+
               var styl = doc.getElementById('styl-pulsowania-zamka');
               if (!styl) {{
                 styl = doc.createElement('style');
@@ -20043,14 +20221,7 @@ def pokaz_powitanie():
     if kliknieto:
         st.session_state.zamek_proby += 1
         if st.session_state.zamek_proby >= 5:
-            st.markdown(
-                "<div class='zamek-otwarty' style='font-size:4rem; margin-top:1rem;'>🔓</div>",
-                unsafe_allow_html=True,
-            )
-            time.sleep(0.7)
-            st.session_state.ekran = "menu"
-            st.session_state.czas_startu = time.time()
-            zapisz_postep()
+            st.session_state.zamek_otwieranie = True
         st.rerun()
 
 
