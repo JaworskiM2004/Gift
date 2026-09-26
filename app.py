@@ -469,7 +469,7 @@ ETAPY = [
             {"typ": "obraz", "dane": REBUS_OBRAZ_JAK},
             {"typ": "obraz", "dane": REBUS_OBRAZ_TUSK},
         ],
-        "odpowiedz": "lampa jak tusk",
+        "odpowiedz": "lampa jak skurwysyn",
     },
     {
         "klucz": "wordle",
@@ -806,7 +806,7 @@ KATEGORIE = [
 # ---------- TRYB TESTOWY ----------
 # Pokazuje nad kazdym etapem krzykliwy przycisk "ZALICZ", zeby dalo sie
 # przeklikac aplikacje bez grania. PRZED WRECZENIEM PREZENTU USTAW False.
-TRYB_TESTOWY = True
+TRYB_TESTOWY = False
 
 
 def _wymagane_przed(kat):
@@ -20134,6 +20134,15 @@ def pokaz_powitanie():
         st.rerun()
         return
 
+    proby = st.session_state.zamek_proby
+    kropki = "".join(
+        "<span style='width:10px;height:10px;border-radius:50%;display:inline-block;margin:0 4px;"
+        + ("background:#ffd76a;box-shadow:0 0 9px rgba(255,215,106,0.85)" if k < proby
+           else "background:rgba(230,193,92,0.22)") + "'></span>"
+        for k in range(5)
+    )
+    st.markdown(f"<div style='text-align:center;margin-top:0.4rem;'>{kropki}</div>", unsafe_allow_html=True)
+
     losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
     losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
 
@@ -20176,18 +20185,11 @@ def pokaz_powitanie():
               btn.style.boxShadow = 'none';
               btn.style.border = 'none';
 
-              // Postep: 5 kropek pod klodka + drgniecie po kazdym dotknieciu
+              // Drgniecie po kazdym dotknieciu (kropki postepu sa na gorze ekranu,
+              // nie pod klodka - pod nia zdradzaly, gdzie jej szukac)
               var proby = {st.session_state.zamek_proby};
-              var postep = wrapper.querySelector('#postepZamka');
-              if (!postep) {{ postep = doc.createElement('div'); postep.id = 'postepZamka'; wrapper.appendChild(postep); }}
-              postep.style.cssText = 'display:flex;gap:9px;justify-content:center;margin-top:2px;pointer-events:none;';
-              var kropki = '';
-              for (var k = 0; k < 5; k++) {{
-                var pelna = k < proby;
-                kropki += '<span style="width:10px;height:10px;border-radius:50%;display:inline-block;background:'
-                  + (pelna ? '#ffd76a;box-shadow:0 0 9px rgba(255,215,106,0.85)' : 'rgba(230,193,92,0.22)') + '"></span>';
-              }}
-              postep.innerHTML = kropki;
+              var staryPostep = wrapper.querySelector('#postepZamka');
+              if (staryPostep) staryPostep.remove();
               if (proby > 0 && btn.animate) {{
                 btn.animate([{{transform:'rotate(0deg)'}}, {{transform:'rotate(-14deg) scale(1.08)'}},
                              {{transform:'rotate(11deg)'}}, {{transform:'rotate(-6deg)'}}, {{transform:'rotate(0deg)'}}],
@@ -20288,11 +20290,13 @@ def pokaz_menu():
 
     for kat in KATEGORIE:
         if _dostep_zablokowany(kat):
-            gotowe, wymagane = _postep_odblokowania(kat)
-            pelne_z = round(gotowe / wymagane * 10) if wymagane else 0
+            # Licznik pokazuje WLASNE gry levelu - wczesniej byl tu postep
+            # wszystkich poprzednich leveli razem (np. "x/20" przy Level 3)
+            zrobione_z, ile_z = _postep_kategorii(kat)
             st.button(
-                f"🔒\n\n**{tt(kat['nazwa'])}**\n\n{t('level_zablokowany').format(n=KATEGORIE.index(kat))}\n\n"
-                f"{'▰' * pelne_z}{'▱' * (10 - pelne_z)}  {gotowe}/{wymagane}",
+                f"🔒\n\n**{tt(kat['nazwa'])}**\n\n{tt(kat['opis'])}\n\n"
+                f"{t('level_zablokowany').format(n=KATEGORIE.index(kat))}\n\n"
+                f"{'▱' * 10}  {zrobione_z}/{ile_z}",
                 key=f"kat_{kat['id']}", use_container_width=True,
                 type="primary", disabled=True,
             )
