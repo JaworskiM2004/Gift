@@ -310,15 +310,22 @@ def gra_z_wynikiem(html_gry, wysokosc, key):
         staty = wynik.get("staty") or {}
         if not staty and "porazki" in wynik:          # Bitwa liczy porazki sama
             staty = {"smierci": wynik.get("porazki", 0)}
-        # Zapamietujemy tylko PIERWSZE przejscie - powtorki nie nadpisuja wynikow
+        # Zapamietujemy tylko PIERWSZE przejscie - powtorki nie nadpisuja wynikow.
+        # Wyjatek: gra, ktora po progu toczy sie dalej ("dalej"), aktualizuje
+        # swoje statystyki az do konca tego samego podejscia (np. oliwki weza).
         powtorka = biezacy in st.session_state.get("tryb_powtorki", set())
         magazyn = st.session_state.setdefault("staty_gier", {})
-        if biezacy and staty and not powtorka and biezacy not in magazyn:
+        kontynuacja = wynik.get("dalej") and st.session_state.get("gra_dalej_klucz") == biezacy
+        if biezacy and staty and not powtorka and (biezacy not in magazyn or kontynuacja):
             magazyn[biezacy] = {k: v for k, v in staty.items() if isinstance(v, (int, float))}
         # Gra zaliczona, ale chce grac dalej (np. etap 3 w Geometry Dash):
         # zapisujemy zaliczenie, ale nie przeladowujemy ekranu - inaczej gra znika
         if wynik.get("dalej"):
             st.session_state.graj_dalej = True
+            # Gra zostaje na ekranie takze przy kolejnych przeladowaniach -
+            # do powrotu do menu (inaczej dron konczyl sie na 20 punktach)
+            if not powtorka:
+                st.session_state.gra_dalej_klucz = biezacy
         wynik = True if wynik.get("zaliczono") else None
     return wynik
 
@@ -409,8 +416,14 @@ ETAPY = [
         "tytul": {"pl": "🇬🇧 Krzyżówka", "en": "🇬🇧 Crossword"},
         "typ": "krzyzowka",
         "info": {
-            "pl": "Cztery polskie wyrażenia — ułóż z angielskich słów poniżej ich dosłowne (i trochę bez sensu) tłumaczenie.",
-            "en": "Four Polish expressions — arrange the English words below into their literal (and slightly nonsensical) translation.",
+            "pl": ("Cztery polskie powiedzonka — takie, które po polsku mają sens, ale przetłumaczone słowo w słowo "
+                   "na angielski brzmią kompletnie absurdalnie (i właśnie w tym cały urok 😄). Z angielskich słów ułóż "
+                   "ich dosłowne tłumaczenie. Na przykład „ni pies, ni wydra” to po angielsku „neither dog nor otter”. "
+                   "Podpowiedź przy każdym zdaniu mówi, co dane powiedzonko znaczy."),
+            "en": ("Four Polish sayings — they make sense in Polish, but translated word for word into English they "
+                   "sound completely absurd (and that's the fun 😄). Build their literal translation from the English "
+                   "words. For example, the Polish “ni pies, ni wydra” becomes “neither dog nor otter”. "
+                   "The hint next to each sentence says what the saying means."),
         },
         # Jedna wspolna, duza pula slow dla wszystkich 4 pytan (nie musisz
         # "zuzywac" slowa - to samo slowo moze byc uzyte w wiecej niz jednym
@@ -789,8 +802,13 @@ KATEGORIE = [
         "nazwa": {"pl": "Level 2", "en": "Level 2"},
         "opis": {"pl": "Gry · refleks, precyzja i zręczność", "en": "Games · reflexes, aim and skill"},
         "kolor": "#7ec98a",
-        "etapy": ["gra", "dron", "zaba", "memory", "simon", "piano", "snake",
-                  "bitwa", "blackjack", "samolot", "odyseusz", "parkour", "poziom_diabla"],
+        "etapy": [
+            # Od rozgrzewki do najtrudniejszych - kolejnosc = kolejnosc na liscie
+            "simon", "memory", "samolot", "blackjack", "dron",
+            "piano", "odyseusz", "bitwa",
+            "gra", "zaba", "poziom_diabla",
+            "snake", "parkour",
+        ],
     },
     {
         "id": "przygody",
@@ -1102,14 +1120,24 @@ div[role="radiogroup"] > label {
 .zdanie-podglad { margin: -4px 0 12px; padding: 7px 12px; border-radius: 10px; background: rgba(230,193,92,0.1);
   border: 1px dashed rgba(230,193,92,0.45); color: #ffe08a; font-weight: 700; }
 
+.info-etapu { margin: 0.2rem 0 1.1rem; padding: 12px 14px; border-radius: 12px;
+  background: rgba(230,193,92,0.10); border: 1px solid rgba(230,193,92,0.32); border-left: 4px solid #e6c15c;
+  color: #f3ead2; font-size: 0.96rem; line-height: 1.55; }
+
 /* ---------- PODSUMOWANIE STATYSTYK ---------- */
-.stat-naglowek { color:#e6c15c; font-weight:800; font-size:1.1rem; margin:1.6rem 0 0.6rem; text-align:center; }
-.stat-siatka { display:grid; grid-template-columns:1fr; gap:10px; }
-.stat-karta { background:linear-gradient(135deg,#221d33,#16131f); border:1px solid rgba(230,193,92,0.28);
-  border-radius:14px; padding:10px 14px; }
-.stat-tytul { color:#f0e6cc; font-weight:800; margin-bottom:5px; }
-.stat-wiersz { display:flex; justify-content:space-between; gap:12px; color:#cfc4ad; font-size:0.9rem; padding:2px 0; }
-.stat-wiersz b { color:#ffe08a; }
+.stat-naglowek { color:#ffe08a; font-weight:900; font-size:1.4rem; margin:2.4rem 0 0.2rem; text-align:center;
+  text-shadow:0 0 14px rgba(255,210,110,0.35); }
+.stat-podtytul { text-align:center; color:#cfc4ad; font-size:0.92rem; margin:0 0 1.1rem; }
+.stat-siatka { display:grid; grid-template-columns:1fr; gap:14px; }
+.stat-karta { background:linear-gradient(135deg,#261f3a,#16131f); border:1.5px solid rgba(230,193,92,0.34);
+  border-radius:16px; padding:14px 16px 10px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+.stat-tytul { color:#fff4d6; font-weight:900; font-size:1.08rem; margin-bottom:8px; padding-bottom:9px;
+  border-bottom:1px solid rgba(230,193,92,0.22); }
+.stat-wiersz { display:flex; justify-content:space-between; align-items:center; gap:14px;
+  color:#e8dec4; font-size:0.97rem; padding:8px 0; }
+.stat-wiersz + .stat-wiersz { border-top:1px dashed rgba(255,255,255,0.08); }
+.stat-wiersz b { color:#ffe08a; font-size:1.02rem; white-space:nowrap; min-width:48px; text-align:center;
+  padding:3px 11px; border-radius:999px; background:rgba(230,193,92,0.14); border:1px solid rgba(230,193,92,0.38); }
 .stat-wiersz.brak { color:#8a8070; font-style:italic; }
 
 /* ---------- LISTA ETAPOW W KATEGORII ---------- */
@@ -2429,6 +2457,8 @@ SZABLON_DRONA = """
   function zglosZaliczenieWLocie() {
     if (window.parent) {
       var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      // "dalej": zalicz, ale nie zamykaj gry - lot trwa, mozna bic rekord
+      if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
       window.postMessage(wiadomoscZaliczenia, '*');
       if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
     }
@@ -2451,8 +2481,13 @@ SZABLON_DRONA = """
     nakladka.style.display = 'flex';
     zatrzymajMuzyke();
     zagrajDzwiek('crash');
-    nakladkaTytul.textContent = '💥 Rozbity dron...';
-    nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+    if (celOsiagniety) {
+      nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ' + wynik;
+      nakladkaOpis.textContent = 'Cel to ' + CEL_WYNIK + ' — udało się! Spróbujesz pobić swój wynik?';
+    } else {
+      nakladkaTytul.textContent = '💥 Rozbity dron...';
+      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+    }
     nakladkaBtn.style.display = 'inline-block';
     nakladkaBtn.textContent = 'Jeszcze raz';
     nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
@@ -2927,6 +2962,16 @@ SZABLON_ZABY = """<!DOCTYPE html>
       if (teren[ks] - teren[ks - 1] < 2) continue;
       for (var kl = ks; kl < Math.min(dl, ks + 3); kl++) {
         if (nad[kl] === '^' && teren[kl] === teren[ks]) nad[kl] = '.';
+      }
+    }
+    // Start etapu: pierwsze 6 kafli bez kolcow - chwila na reakcje
+    for (var k0 = 0; k0 < Math.min(dl, 6); k0++) if (nad[k0] === '^') nad[k0] = '.';
+    // Kolec tuz przed sciana 2+: skok nad nim laduje u podnoza sciany i nie
+    // ma miejsca na drugi (poczatek etapu 3 - do przejscia tylko w 1 klatce)
+    for (var k2 = 1; k2 < dl; k2++) {
+      if (teren[k2] === null || teren[k2 - 1] === null || teren[k2] - teren[k2 - 1] < 2) continue;
+      for (var kp = Math.max(0, k2 - 4); kp < k2; kp++) {
+        if (nad[kp] === '^' && teren[kp] === teren[k2 - 1]) nad[kp] = '.';
       }
     }
     mapa = teren;
@@ -9849,6 +9894,9 @@ SZABLON_MINECRAFT = """
 </html>
 """
 
+# Glowa weza = twarz Ewki (120x120, kadr z plazy w Chalupach)
+GLOWA_WEZA_B64 = "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"
+
 SZABLON_SNAKE = """<!DOCTYPE html>
 <html>
 <head>
@@ -9996,6 +10044,18 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     box-shadow: 0 3px 10px rgba(0,0,0,0.4);
   }
   .gra-btn:active { transform: scale(0.96); }
+  /* Glowa weza = twarz: wieksza od segmentu, zeby ja bylo widac na telefonie */
+  .segment-glowa {
+    width: calc(var(--rozmiar-segmentu, 22px) * 1.6) !important;
+    height: calc(var(--rozmiar-segmentu, 22px) * 1.6) !important;
+    transform: translate(-18.75%, -18.75%);
+    border-radius: 50% !important;
+    background: #f3d9b0 url("data:image/jpeg;base64,__GLOWA_WEZA__") center / cover no-repeat !important;
+    border: 2px solid #3fae55 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.55), 0 0 10px rgba(143,232,154,0.6) !important;
+    z-index: 4 !important;
+  }
+  .segment-glowa .oko { display: none; }
 </style>
 </head>
 <body>
@@ -10032,10 +10092,10 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
   var KOMORKA = 24;           // przeliczane przy starcie z faktycznej szerokosci
   var SIATKA_N = 16;          // 16x16 pol
-  var CEL_WYNIK = 20;
+  var CEL_WYNIK = 15;   // minimum do zaliczenia - potem gra toczy sie do smierci
   var MARGINES_OD_SCIAN = 2;  // oliwki nie pojawiaja sie przy krawedziach
   var TICK_START = 260;
-  var TICK_PRZYROST = 5.5; // ms szybciej za kazda zjedzona oliwke
+  var TICK_PRZYROST = 3.5; // ms szybciej za kazda oliwke (bylo 5.5 - przyspieszal za szybko)
   var TICK_MIN = 160;
 
   // Cztery kierunki PO PRZEKATNEJ - gora/dol/lewo/prawo w klasycznym
@@ -10054,6 +10114,12 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   var trwa = false;
   var czasOstatni = null;
   var czasOdOstatniegoTicku = 0;
+  // Skret w pierwszej polowie kratki: stan sprzed biezacego ruchu
+  var migawkaPrzedTickiem = null, ruchZjadl = false, ostatniProg = TICK_START;
+  // Zderzenie konczy gre dopiero, gdy NARYSOWANA glowa dotknie przeszkody
+  var kolizjaOczekujaca = false;
+  // Tryb szefa (po przejsciu): kazda oliwka odwraca sterowanie do nastepnej
+  var trybSzefa = false, odwrocone = false, zaliczenieWyslaneWaz = false;
   var elementyWeza = [];
   var elJedzenia = null;
 
@@ -10149,6 +10215,17 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   // manewrowania tuz przy krawedzi.
   function losujJedzenie() {
     var parzystoscWeza = (waz[0].x + waz[0].y) % 2;
+    // Ostatnia oliwka zawsze w lewym dolnym rogu (na polu osiagalnym po skosie)
+    if (wynik === CEL_WYNIK - 1) {
+      var rx = 1, ry = SIATKA_N - 2;
+      var kand = [[rx, ry], [rx + 1, ry], [rx, ry - 1], [rx + 1, ry - 1], [rx + 2, ry], [rx, ry - 2], [rx + 2, ry - 1], [rx + 1, ry - 2], [rx + 3, ry], [rx, ry - 3]];
+      for (var q = 0; q < kand.length; q++) {
+        var kx = kand[q][0], ky = kand[q][1];
+        if (((kx + ky) % 2) !== parzystoscWeza) continue;
+        if (waz.some(function (s) { return s.x === kx && s.y === ky; })) continue;
+        return { x: kx, y: ky };
+      }
+    }
     var min = MARGINES_OD_SCIAN;
     var max = SIATKA_N - 1 - MARGINES_OD_SCIAN;
     var probyMax = 400;
@@ -10177,6 +10254,11 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     var bok = KOMORKA * SIATKA_N;
     plansza.style.width = bok + 'px';
     plansza.style.height = bok + 'px';
+    // Szachownica: waz po skosie jezdzi zawsze po polach jednego koloru,
+    // wiec od razu widac jego tor i miejsca skretu
+    plansza.style.backgroundImage = 'conic-gradient(#2c4c2a 25%, #1b331b 0 50%, #2c4c2a 0 75%, #1b331b 0)';
+    plansza.style.backgroundSize = (KOMORKA * 2) + 'px ' + (KOMORKA * 2) + 'px';
+    plansza.style.backgroundPosition = '0 0';
     document.documentElement.style.setProperty('--rozmiar-segmentu', (KOMORKA - 2) + 'px');
     document.documentElement.style.setProperty('--rozmiar-oliwki', (KOMORKA - 4) + 'px');
   }
@@ -10240,8 +10322,23 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   }
 
   function ustawKierunek(nowy) {
-    // Klasyczna zasada snake'a - nie mozna zawrocic o 180 stopni prosto
-    // we wlasna szyje.
+    // Tryb szefa: po zjedzeniu oliwki sterowanie jest odwrocone do nastepnej
+    if (trybSzefa && odwrocone) nowy = { dx: -nowy.dx, dy: -nowy.dy };
+    // Skret w pierwszej polowie kratki: cofamy biezacy ruch i wykonujemy go
+    // od razu w nowa strone (wczesniej skret dzialal dopiero od nastepnego pola)
+    var postep = czasOdOstatniegoTicku / (ostatniProg || TICK_START);
+    if (trwa && migawkaPrzedTickiem && postep < 0.5 && !ruchZjadl
+        && !(nowy.dx === kierunek.dx && nowy.dy === kierunek.dy)
+        && !(nowy.dx === -migawkaPrzedTickiem.kierunek.dx && nowy.dy === -migawkaPrzedTickiem.kierunek.dy)) {
+      waz = migawkaPrzedTickiem.waz;
+      kierunek = migawkaPrzedTickiem.kierunek;
+      usunietyOgon = migawkaPrzedTickiem.usunietyOgon;
+      nastepnyKierunek = nowy;
+      wykonajTick();
+      zagrajKlikniecie();
+      return;
+    }
+    // Klasyczna zasada snake'a - nie mozna zawrocic o 180 stopni prosto we wlasna szyje
     if (nowy.dx === -kierunek.dx && nowy.dy === -kierunek.dy) return;
     nastepnyKierunek = nowy;
     zagrajKlikniecie();
@@ -10253,20 +10350,27 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   btnPD.addEventListener('click', function () { inicjujDzwiek(); ustawKierunek(KIERUNEK_PD); });
 
   function wykonajTick() {
+    migawkaPrzedTickiem = {
+      waz: waz.map(function (s) { return { x: s.x, y: s.y }; }),
+      kierunek: kierunek, usunietyOgon: usunietyOgon
+    };
+    ruchZjadl = false;
     kierunek = nastepnyKierunek;
     var glowa = waz[0];
     var nx = glowa.x + kierunek.dx;
     var ny = glowa.y + kierunek.dy;
 
-    if (nx < 0 || nx >= SIATKA_N || ny < 0 || ny >= SIATKA_N) {
-      zakonczGre(false);
+    var wSciane = nx < 0 || nx >= SIATKA_N || ny < 0 || ny >= SIATKA_N;
+    var trafilSiebie = !wSciane && waz.some(function (s) { return s.x === nx && s.y === ny; });
+    if (wSciane || trafilSiebie) {
+      // Glowa jedzie dalej, a gra konczy sie w polowie kratki - tam, gdzie
+      // narysowana glowa dotyka przeszkody. Do tego momentu mozna skrecic.
+      waz.unshift({ x: nx, y: ny });
+      usunietyOgon = waz.pop();
+      kolizjaOczekujaca = true;
       return;
     }
-    var trafilSiebie = waz.some(function (s) { return s.x === nx && s.y === ny; });
-    if (trafilSiebie) {
-      zakonczGre(false);
-      return;
-    }
+    kolizjaOczekujaca = false;
 
     var nowaGlowa = { x: nx, y: ny };
     waz.unshift(nowaGlowa);
@@ -10277,11 +10381,11 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       wynik++;
       aktualizujWynik();
       zagrajChrupanie();
-      if (wynik >= CEL_WYNIK) {
-        rysujPlansze();
-        zakonczGre(true);
-        return;
-      }
+      // Po progu gra NIE konczy sie - zaliczamy i gramy dalej do smierci
+      if (wynik === CEL_WYNIK && !trybSzefa) zglosZaliczenieWeza(false);
+      if (wynik === CEL_WYNIK) pokazKomunikatWeza(trybSzefa ? '👑 ' + CEL_WYNIK + ' w trybie szefa!' : '✅ ' + CEL_WYNIK + ' oliwek — zaliczone! Graj dalej, ile dasz radę');
+      ruchZjadl = true;
+      if (trybSzefa) { odwrocone = !odwrocone; pokazOdwrocenie(); }
       jedzenie = losujJedzenie();
     } else {
       usunietyOgon = waz.pop();   // stad wyjedzie ogon w animacji
@@ -10304,10 +10408,17 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       wykonajTick();
       if (!trwa) return;
     }
+    ostatniProg = progTicku;
+    var postepR = czasOdOstatniegoTicku / progTicku;
+    if (kolizjaOczekujaca && postepR >= 0.5) {
+      rysujPlansze(0.5);
+      zakonczGre(false);
+      return;
+    }
 
     // Rysujemy KAZDA klatke, z postepem miedzy kratkami - waz plynie
     // zamiast przeskakiwac o cale pole.
-    rysujPlansze(czasOdOstatniegoTicku / progTicku);
+    rysujPlansze(postepR);
     requestAnimationFrame(petla);
   }
 
@@ -10319,6 +10430,9 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     jedzenie = losujJedzenie();
     czasOstatni = null;
     czasOdOstatniegoTicku = 0;
+    migawkaPrzedTickiem = null; ruchZjadl = false; kolizjaOczekujaca = false;
+    ostatniProg = TICK_START; odwrocone = false; pokazOdwrocenie();
+    var b2 = document.getElementById('btnDrugiWaz'); if (b2) b2.style.display = 'none';
     nakladka.style.display = 'none';
     trwa = true;
     rysujPlansze();
@@ -10331,20 +10445,103 @@ SZABLON_SNAKE = """<!DOCTYPE html>
 
     if (wygrana) {
       zagrajZwyciestwo();
-      nakladkaTytul.textContent = '🎉 Pełna paczka!';
-      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
-      nakladkaBtn.style.display = 'none';
-      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
-      window.postMessage(wiadomoscZaliczenia, '*');
-      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+      odwrocone = false; pokazOdwrocenie();
+      if (trybSzefa) {
+        nakladkaTytul.textContent = '👑 Prawdziwa szefowa!';
+        nakladkaOpis.textContent = 'Tryb szefa przechodzą tylko najwięksi. Szacunek.';
+      } else {
+        nakladkaTytul.textContent = '🎉 Pełna paczka!';
+        nakladkaOpis.textContent = 'Etap zaliczony! Chcesz więcej? W trybie dla największych szefów każda oliwka odwraca sterowanie — aż do następnej.';
+      }
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = trybSzefa ? '👑 Jeszcze raz (tryb szefa)' : '👑 Tryb dla największych szefów';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); trybSzefa = true; rozpocznijGre(); };
+      if (!zaliczenieWyslaneWaz) {
+        zaliczenieWyslaneWaz = true;
+        var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+        // "dalej": zalicz, ale nie zamykaj gry - czeka tryb szefa
+        if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
+        window.postMessage(wiadomoscZaliczenia, '*');
+        if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+      }
+    } else if (wynik >= CEL_WYNIK || trybSzefa) {
+      // Koniec podejscia po progu (albo w trybie szefa): wynik + dalsze opcje
+      zagrajZderzenie();
+      odwrocone = false; pokazOdwrocenie();
+      if (!trybSzefa) zglosZaliczenieWeza(true);   // aktualizacja statystyk o cala runde
+      nakladkaTytul.textContent = trybSzefa
+        ? '👑 Tryb szefa: ' + wynik + ' ' + odmianaOliwek(wynik)
+        : '🎉 Zaliczone — wynik: ' + wynik + ' ' + odmianaOliwek(wynik) + '!';
+      nakladkaOpis.textContent = trybSzefa
+        ? (wynik >= CEL_WYNIK ? 'Prawdziwa szefowa! 👑' : 'Minimum to ' + CEL_WYNIK + '. Spróbujesz jeszcze raz?')
+        : 'Chcesz więcej? W trybie dla największych szefów każda oliwka odwraca sterowanie — aż do następnej.';
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = trybSzefa ? '👑 Jeszcze raz (tryb szefa)' : '👑 Tryb dla największych szefów';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); trybSzefa = true; rozpocznijGre(); };
+      pokazDrugiPrzycisk(trybSzefa ? '↻ Zwykła gra' : '↻ Jeszcze raz', function () { trybSzefa = false; });
     } else {
       zagrajZderzenie();
       nakladkaTytul.textContent = '💥 Wąż się zaplątał...';
       nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
       nakladkaBtn.style.display = 'inline-block';
-      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.textContent = trybSzefa ? 'Jeszcze raz (tryb szefa)' : 'Jeszcze raz';
       nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
     }
+  }
+
+  // Zaliczenie weza: pierwsze przy osiagnieciu progu, drugie przy smierci -
+  // tylko po to, zeby statystyki objely cala runde. "dalej" = gra zostaje.
+  function odmianaOliwek(n) {
+    var d = n % 10, s = n % 100;
+    if (n === 1) return 'oliwka';
+    if (d >= 2 && d <= 4 && (s < 12 || s > 14)) return 'oliwki';
+    return 'oliwek';
+  }
+  function zglosZaliczenieWeza(aktualizacja) {
+    if (aktualizacja ? !zaliczenieWyslaneWaz : zaliczenieWyslaneWaz) return;
+    zaliczenieWyslaneWaz = true;
+    var w = { type: 'streamlit-child:zaliczono', wartosc: true };
+    if (w.wartosc && typeof w.wartosc === 'object') w.wartosc.dalej = true;
+    window.postMessage(w, '*');
+    if (window.parent && window.parent !== window) { window.parent.postMessage(w, '*'); }
+  }
+  function pokazKomunikatWeza(tekst) {
+    var el = document.getElementById('komunikatWeza');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'komunikatWeza';
+      el.style.cssText = 'position:absolute;left:50%;bottom:8px;transform:translateX(-50%);z-index:6;padding:6px 12px;'
+        + 'border-radius:10px;background:rgba(20,60,20,0.92);border:1px solid #7ec98a;color:#dcffd4;font-weight:800;'
+        + 'font-size:12.5px;text-align:center;pointer-events:none;transition:opacity .5s;max-width:92%;';
+      plansza.appendChild(el);
+    }
+    el.textContent = tekst; el.style.opacity = '1';
+    clearTimeout(pokazKomunikatWeza._t);
+    pokazKomunikatWeza._t = setTimeout(function () { el.style.opacity = '0'; }, 3200);
+  }
+  function pokazDrugiPrzycisk(tekst, przed) {
+    var b2 = document.getElementById('btnDrugiWaz');
+    if (!b2) {
+      b2 = document.createElement('button'); b2.id = 'btnDrugiWaz';
+      b2.className = nakladkaBtn.className; b2.style.marginTop = '8px';
+      nakladkaBtn.parentNode.appendChild(b2);
+    }
+    b2.textContent = tekst; b2.style.display = 'inline-block';
+    b2.onclick = function () { inicjujDzwiek(); przed(); b2.style.display = 'none'; rozpocznijGre(); };
+  }
+
+  // Znacznik trybu szefa: napis na planszy i czerwona ramka przy odwroceniu
+  function pokazOdwrocenie() {
+    var el = document.getElementById('banerSzefa');
+    if (!el) {
+      el = document.createElement('div'); el.id = 'banerSzefa';
+      el.style.cssText = 'position:absolute;left:50%;top:6px;transform:translateX(-50%);z-index:5;padding:4px 12px;'
+        + 'border-radius:10px;background:rgba(120,20,20,0.85);color:#ffe0e0;font-weight:800;font-size:13px;'
+        + 'pointer-events:none;display:none;white-space:nowrap;';
+      el.textContent = '🔄 Sterowanie odwrócone!';
+      plansza.appendChild(el);
+    }
+    el.style.display = (trybSzefa && odwrocone) ? 'block' : 'none';
+    plansza.style.borderColor = (trybSzefa && odwrocone) ? '#e05252' : (trybSzefa ? '#d4af37' : '');
   }
 
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
@@ -13173,6 +13370,16 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
 </html>
 """
 
+# Parkour: skacze twarz z arbuzowym helmem, na szczycie czeka Ewka-ksiezniczka
+TWARZ_SKOCZKA_B64 = "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"
+TWARZ_KSIEZNICZKI_B64 = "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"
+
+
+def _szablon_parkour():
+    return (SZABLON_PARKOUR.replace("__TWARZ_SKOCZKA__", TWARZ_SKOCZKA_B64)
+                           .replace("__TWARZ_KSIEZNICZKI__", TWARZ_KSIEZNICZKI_B64))
+
+
 SZABLON_PARKOUR = """<!DOCTYPE html>
 <html>
 <head>
@@ -13543,25 +13750,81 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     ctx.restore();
   }
 
-  function narysujMete() {
-    var top = PLATFORMY[PLATFORMY.length - 1];
-    var y = swiatDoEkranuY(top.y);
-    ctx.font = '26px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('🏁', top.x, y - 10);
+  // Twarze ze zdjec
+  var imgSkoczek = new Image(); imgSkoczek.src = 'data:image/jpeg;base64,__TWARZ_SKOCZKA__';
+  var imgKsiezniczka = new Image(); imgKsiezniczka.src = 'data:image/jpeg;base64,__TWARZ_KSIEZNICZKI__';
+  function twarzWKole(img, cx, cy, r, obwodka) {
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.closePath();
+    if (img.complete && img.naturalWidth) {
+      ctx.save(); ctx.clip(); ctx.drawImage(img, cx - r, cy - r, r * 2, r * 2); ctx.restore();
+    } else { ctx.fillStyle = '#e0b48a'; ctx.fill(); }
+    ctx.lineWidth = 2; ctx.strokeStyle = obwodka;
+    ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
   }
 
+  // Na szczycie czeka ksiezniczka: rozowa suknia, korona, machanie i serduszka
+  function narysujMete() {
+    var top = PLATFORMY[PLATFORMY.length - 1];
+    var y = swiatDoEkranuY(top.y), x = top.x, t = Date.now() / 1000;
+    ctx.save();
+    var gr = ctx.createLinearGradient(x, y - 24, x, y);
+    gr.addColorStop(0, '#ffa6cc'); gr.addColorStop(1, '#d9488f');
+    ctx.fillStyle = gr;
+    ctx.beginPath(); ctx.moveTo(x - 5, y - 23); ctx.lineTo(x + 5, y - 23); ctx.lineTo(x + 13, y); ctx.lineTo(x - 13, y); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x - 10, y - 6); ctx.lineTo(x + 10, y - 6); ctx.stroke();
+    ctx.strokeStyle = '#f0c8a8'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(x - 5, y - 20); ctx.lineTo(x - 11, y - 12); ctx.stroke();
+    var mach = Math.sin(t * 5) * 0.6;                       // macha do skoczka
+    ctx.beginPath(); ctx.moveTo(x + 5, y - 20); ctx.lineTo(x + 11 + Math.cos(mach) * 2, y - 29 + Math.sin(mach) * 3); ctx.stroke();
+    ctx.restore();
+    var gy = y - 23 - 12;
+    twarzWKole(imgKsiezniczka, x, gy, 13, '#ffd76a');
+    ctx.save();                                            // korona
+    ctx.fillStyle = '#ffd24a'; ctx.strokeStyle = '#a07400'; ctx.lineWidth = 1;
+    var ky = gy - 12;
+    ctx.beginPath(); ctx.moveTo(x - 9, ky + 2); ctx.lineTo(x - 9, ky - 6); ctx.lineTo(x - 4.5, ky - 1); ctx.lineTo(x, ky - 8);
+    ctx.lineTo(x + 4.5, ky - 1); ctx.lineTo(x + 9, ky - 6); ctx.lineTo(x + 9, ky + 2); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#e0457b'; ctx.beginPath(); ctx.arc(x, ky - 1, 1.6, 0, Math.PI * 2); ctx.fill();
+    ctx.font = '11px sans-serif'; ctx.textAlign = 'center';
+    for (var i = 0; i < 3; i++) {                          // unoszace sie serduszka
+      var f = (t * 0.55 + i / 3) % 1;
+      ctx.globalAlpha = 1 - f;
+      ctx.fillText('💗', x + (i - 1) * 12 + Math.sin(t * 2 + i) * 4, ky - 10 - f * 28);
+    }
+    ctx.restore();
+  }
+
+  // Skoczek: nogi, tulow, rece i glowa - twarz z arbuzowym helmem.
+  // Przy ladowaniu skoku kuca (im mocniej, tym nizej), przy pelnej mocy
+  // drzy, w locie w gore lekko sie wydluza.
   function narysujPostac() {
     var x = postacX;
     var y = swiatDoEkranuY(postacY);
-    ctx.fillStyle = '#c9483a';
+    var k = ladowanie ? Math.min(1, czasLadowania / MAX_LADOWANIE_S) : 0;
+    var sy = 1 - 0.32 * k, sx = 1 + 0.16 * k;
+    if (!naZiemi && postacVY * GRAWITACJA < 0) { sy = 1.08; sx = 0.94; }
+    var drg = k >= 1 ? (Math.random() - 0.5) * 1.8 : 0;
+    ctx.save();
+    ctx.translate(x + drg, y);
+    ctx.scale(sx, sy);
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#2a2233'; ctx.lineWidth = 3.2;       // nogi - przy kucaniu rozstawione
     ctx.beginPath();
-    ctx.arc(x, y - POSTAC_R, POSTAC_R, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#e0b48a';
+    ctx.moveTo(-3.5 - k * 2, 0); ctx.lineTo(-2.5, -7);
+    ctx.moveTo(3.5 + k * 2, 0); ctx.lineTo(2.5, -7);
+    ctx.stroke();
+    ctx.fillStyle = '#6b6f78';                              // szara koszulka jak na zdjeciu
+    ctx.beginPath(); ctx.moveTo(-6, -7); ctx.lineTo(6, -7); ctx.lineTo(5, -17); ctx.lineTo(-5, -17); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = '#e0b48a'; ctx.lineWidth = 2.6;       // rece - przy kucaniu odchylone w tyl
     ctx.beginPath();
-    ctx.arc(x, y - POSTAC_R * 2.1, 6, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.moveTo(-5, -15); ctx.lineTo(-8 - k * 3, -9 + k * 4);
+    ctx.moveTo(5, -15); ctx.lineTo(8 + k * 3, -9 + k * 4);
+    ctx.stroke();
+    ctx.restore();
+    twarzWKole(imgSkoczek, x + drg, y - 17 * sy - 10, 11, '#9bd36b');
   }
 
   function rysujWszystko() {
@@ -19465,8 +19728,190 @@ def renderuj_haslo(etap_dane):
     return None
 
 
+# Krzyzowka jako dotykowy ekran: slowa to zetony do stukania. Wczesniej pole
+# wielokrotnego wyboru Streamlita otwieralo na telefonie klawiature i
+# rozwijana liste, ktora zaslaniala pytania.
+SZABLON_KRZYZOWKI = """<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin:0; background:transparent; font-family:-apple-system,'Segoe UI',sans-serif; color:#f3ead2;
+    -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+  #gra { padding:4px 2px 10px; }
+  .karta { background:linear-gradient(135deg,#221d33,#16131f); border:1.5px solid rgba(230,193,92,0.28);
+    border-radius:14px; padding:10px 12px 12px; margin-bottom:10px; transition:border-color .2s, box-shadow .2s; }
+  .karta.aktywna { border-color:#e6c15c; box-shadow:0 0 0 3px rgba(230,193,92,0.16); }
+  .karta.zle { border-color:#f87171; box-shadow:0 0 0 3px rgba(248,113,113,0.18); animation:drgnij .4s; }
+  .karta.dobrze { border-color:#7ec98a; }
+  @keyframes drgnij { 0%,100% { transform:none; } 25% { transform:translateX(-6px); } 75% { transform:translateX(6px); } }
+  .wsk { font-size:15px; font-weight:700; line-height:1.35; }
+  .wsk b { color:#ffe08a; margin-right:4px; }
+  .podp { font-size:12.5px; color:#cfc4ad; margin-top:3px; }
+  .zdanie { display:flex; flex-wrap:wrap; gap:7px; margin-top:9px; min-height:40px; }
+  .miejsce { min-width:62px; height:38px; border-radius:10px; border:1.5px dashed rgba(230,193,92,0.4);
+    display:flex; align-items:center; justify-content:center; color:rgba(230,193,92,0.45); font-size:13px; }
+  .zeton { height:38px; padding:0 13px; border-radius:10px; border:none; font-size:15.5px; font-weight:800;
+    display:inline-flex; align-items:center; cursor:pointer; font-family:inherit; }
+  .zdanie .zeton { background:linear-gradient(135deg,#ffe08a,#d4af37); color:#16130a; box-shadow:0 2px 6px rgba(0,0,0,.4);
+    animation:wskok .18s ease-out; }
+  @keyframes wskok { from { transform:scale(.7); opacity:.4; } to { transform:none; opacity:1; } }
+  #pula { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; padding:12px 8px 6px; margin-top:10px;
+    border-top:1px solid rgba(230,193,92,0.2); }
+  #pula .zeton { background:#2c2640; color:#f3ead2; border:1.5px solid rgba(230,193,92,0.35); }
+  #pula .zeton:active { transform:scale(.94); }
+  #pula .zeton.uzyte { opacity:.28; pointer-events:none; }
+  .podpowiedz-puli { width:100%; text-align:center; font-size:11.5px; color:#a89f8a; margin-bottom:2px; }
+  #btnSprawdz { display:block; width:100%; margin-top:6px; padding:14px; border:none; border-radius:14px;
+    background:linear-gradient(135deg,#ffe08a,#d4af37); color:#16130a; font-size:16px; font-weight:900; font-family:inherit; cursor:pointer; }
+  #btnSprawdz.gotowy { animation:puls 1.4s ease-in-out infinite; }
+  @keyframes puls { 0%,100% { box-shadow:0 0 0 0 rgba(230,193,92,.6); } 50% { box-shadow:0 0 0 9px rgba(230,193,92,0); } }
+  #wynik { text-align:center; font-weight:800; margin-top:10px; min-height:22px; font-size:14px; }
+  #wynik.zle { color:#fca5a5; } #wynik.dobrze { color:#9be8a8; }
+</style></head><body>
+<div id="gra"></div>
+<script>
+(function () {
+  var D = __DANE__;
+  var gra = document.getElementById('gra');
+  // Kazde zdanie to stale miejsca (null = luka). Wyjete slowo zostawia luke
+  // w TYM SAMYM miejscu, a nastepne slowo wskakuje w pierwsza luke.
+  var uklad = D.pytania.map(function (p) { var a = []; for (var q = 0; q < p.dl; q++) a.push(null); return a; });
+  function pelne(i) { return uklad[i].indexOf(null) < 0; }
+  var aktywne = 0, zaliczone = false;
+  var ACCENTY = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
+  function norm(s) { return String(s || '').toLowerCase().normalize('NFD').replace(ACCENTY, '').replace(/ł/g, 'l').replace(/ +/g, ' ').trim(); }
+
+  function klik(wys) {   // cichy "tik" z kontekstu odblokowanego na starcie
+    try {
+      var c = null; try { c = window.top.__wspolnyKontekstAudio; } catch (e) {}
+      c = c || window.__ostatniKontekst; if (!c) return;
+      var t = c.currentTime + 0.005, o = c.createOscillator(), g = c.createGain();
+      o.type = 'triangle'; o.frequency.setValueAtTime(wys || 900, t);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.12, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.07);
+      o.connect(g); g.connect(c.destination); o.start(t); o.stop(t + 0.08);
+    } catch (e) {}
+  }
+
+  var karty = [], pula = document.createElement('div');
+  pula.id = 'pula';
+  D.pytania.forEach(function (p, i) {
+    var k = document.createElement('div'); k.className = 'karta';
+    k.innerHTML = '<div class="wsk"><b>' + (i + 1) + '.</b>' + p.wskazowka + '</div>'
+      + (p.podpowiedz ? '<div class="podp">' + p.podpowiedz + '</div>' : '')
+      + '<div class="zdanie"></div>';
+    k.addEventListener('click', function (ev) {
+      if (ev.target.closest && ev.target.closest('#pula')) return;
+      if (aktywne !== i) { aktywne = i; klik(620); rysuj(); }
+    });
+    gra.appendChild(k); karty.push(k);
+  });
+  var btn = document.createElement('button'); btn.id = 'btnSprawdz'; btn.textContent = D.t.sprawdz;
+  var wynik = document.createElement('div'); wynik.id = 'wynik';
+  gra.appendChild(btn); gra.appendChild(wynik);
+
+  function rysuj() {
+    karty.forEach(function (k, i) {
+      var p = D.pytania[i], z = k.querySelector('.zdanie');
+      k.classList.toggle('aktywna', i === aktywne && !zaliczone);
+      z.innerHTML = '';
+      uklad[i].forEach(function (slowo, j) {
+        if (slowo === null) {
+          var puste = document.createElement('div'); puste.className = 'miejsce'; puste.textContent = '___';
+          z.appendChild(puste); return;
+        }
+        var b = document.createElement('button'); b.className = 'zeton'; b.textContent = slowo;
+        b.addEventListener('click', function (ev) {      // wyjecie slowa - zostaje luka
+          ev.stopPropagation(); if (zaliczone) return;
+          uklad[i][j] = null; aktywne = i; k.classList.remove('zle', 'dobrze'); klik(520); rysuj();
+        });
+        z.appendChild(b);
+      });
+    });
+    // Pula slow pod aktywnym zdaniem
+    pula.innerHTML = '<div class="podpowiedz-puli">' + D.t.podp + '</div>';
+    D.pula.forEach(function (slowo) {
+      var b = document.createElement('button'); b.className = 'zeton'; b.textContent = slowo;
+      // Kazde slowo mozna uzyc tylko raz - w calej krzyzowce
+      var uzyte = uklad.some(function (u) { return u.indexOf(slowo) >= 0; });
+      if (uzyte) b.classList.add('uzyte');
+      b.addEventListener('click', function (ev) {
+        ev.stopPropagation(); if (zaliczone) return;
+        var p = D.pytania[aktywne];
+        var wolne = uklad[aktywne].indexOf(null);
+        if (wolne < 0 || uzyte) return;
+        uklad[aktywne][wolne] = slowo; karty[aktywne].classList.remove('zle', 'dobrze'); klik(980);
+        // Pelne zdanie -> pula przechodzi do nastepnego niepelnego
+        if (pelne(aktywne)) {
+          for (var s = 1; s <= D.pytania.length; s++) {
+            var n = (aktywne + s) % D.pytania.length;
+            if (!pelne(n)) { aktywne = n; break; }
+          }
+        }
+        rysuj();
+      });
+      pula.appendChild(b);
+    });
+    var wszystkiePelne = uklad.every(function (u, i) { return pelne(i); });
+    pula.style.display = zaliczone ? 'none' : 'flex';
+    if (!zaliczone) karty[aktywne].appendChild(pula);
+    btn.classList.toggle('gotowy', wszystkiePelne && !zaliczone);
+  }
+
+  btn.addEventListener('click', function () {
+    if (zaliczone) return;
+    var zle = 0;
+    D.pytania.forEach(function (p, i) {
+      var ok = pelne(i) && uklad[i].every(function (s, j) { return norm(s) === norm(p.odp[j]); });
+      karty[i].classList.remove('zle', 'dobrze'); void karty[i].offsetWidth;
+      karty[i].classList.add(ok ? 'dobrze' : 'zle');
+      if (!ok) zle++;
+    });
+    if (zle) {
+      var dobre = D.pytania.length - zle;
+      wynik.className = 'zle';
+      wynik.textContent = D.t.zle.replace('{n}', dobre).replace('{m}', D.pytania.length);
+      if (window.sfxPorazka) window.sfxPozniej(window.sfxPorazka, 120);
+      return;
+    }
+    zaliczone = true; rysuj();
+    wynik.className = 'dobrze'; wynik.textContent = D.t.dobrze;
+    var w = { type:'streamlit-child:zaliczono', wartosc:true };
+    try { window.parent.postMessage(w, '*'); } catch (e) {}
+    try { window.postMessage(w, '*'); } catch (e) {}
+  });
+  rysuj();
+})();
+</script></body></html>
+"""
+
+
 def renderuj_krzyzowka(etap_dane):
     klucz = etap_dane["klucz"]
+    if _KOMPONENT_WYNIKU is not None and all(p.get("typ") == "ulozanka" for p in etap_dane["pytania"]):
+        dane = {
+            "pytania": [
+                {
+                    "wskazowka": tt(p["wskazowka"]),
+                    "podpowiedz": tt(p["podpowiedz"]) if p.get("podpowiedz") else "",
+                    "dl": len(p["odpowiedz"]),
+                    "odp": p["odpowiedz"],
+                }
+                for p in etap_dane["pytania"]
+            ],
+            "pula": etap_dane.get("slowa_pula", []),
+            "t": {
+                "sprawdz": tt({"pl": "✔ Sprawdź", "en": "✔ Check"}),
+                "podp": tt({"pl": "dotknij słowa, żeby wstawić je do zaznaczonego zdania",
+                            "en": "tap a word to put it into the highlighted sentence"}),
+                "zle": tt({"pl": "{n}/{m} dobrze — zdania na czerwono się nie zgadzają. Dotknij słowa, żeby je wyjąć.",
+                           "en": "{n}/{m} correct — the red sentences are wrong. Tap a word to take it out."}),
+                "dobrze": tt({"pl": "✨ Wszystko się zgadza!", "en": "✨ All correct!"}),
+            },
+        }
+        html = SZABLON_KRZYZOWKI.replace("__DANE__", json.dumps(dane, ensure_ascii=False).replace("</", "<\\/"))
+        wynik = gra_z_wynikiem(html, 900, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    # Zapas, gdy most do gier jest niedostepny - dotychczasowa wersja
 
     placeholder = t("wybierz")
     pula_wspolna = etap_dane.get("slowa_pula", [])
@@ -19733,11 +20178,11 @@ def renderuj_snake(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_SNAKE, 620, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(SZABLON_SNAKE.replace("__GLOWA_WEZA__", GLOWA_WEZA_B64), 620, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
-    components.html(SZABLON_SNAKE, height=680, scrolling=False)
+    components.html(SZABLON_SNAKE.replace("__GLOWA_WEZA__", GLOWA_WEZA_B64), height=680, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_snake"), etykieta_bledow=t("bledy_etykieta_snake"))
 
 
@@ -19781,11 +20226,11 @@ def renderuj_parkour(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_PARKOUR, 560, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(_szablon_parkour(), 560, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
-    components.html(SZABLON_PARKOUR, height=620, scrolling=False)
+    components.html(_szablon_parkour(), height=620, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_parkour"), etykieta_bledow=t("bledy_etykieta_parkour"))
 
 
@@ -19853,6 +20298,45 @@ def pobierz_dzisiejszy_wordle():
     return None
 
 
+# ---------- LOLDLE ----------
+# Loldle nie ma publicznego API (dzisiejsza postac podaja tylko blogi z
+# odpowiedziami, niezgodne nawet co do godziny zmiany), wiec sprawdzamy, czy
+# wpisano PRAWDZIWA postac z League of Legends. Nowsza postac niz ta lista
+# mozna potwierdzic recznie - zeby nic nie zablokowalo gry.
+POSTACIE_LOL = [
+    "Aatrox", "Ahri", "Akali", "Akshan", "Alistar", "Ambessa", "Amumu", "Anivia", "Annie", "Aphelios", "Ashe",
+    "Aurelion Sol", "Aurora", "Azir", "Bard", "Bel'Veth", "Blitzcrank", "Brand", "Braum", "Briar", "Caitlyn",
+    "Camille", "Cassiopeia", "Cho'Gath", "Corki", "Darius", "Diana", "Dr. Mundo", "Draven", "Ekko", "Elise",
+    "Evelynn", "Ezreal", "Fiddlesticks", "Fiora", "Fizz", "Galio", "Gangplank", "Garen", "Gnar", "Gragas",
+    "Graves", "Gwen", "Hecarim", "Heimerdinger", "Hwei", "Illaoi", "Irelia", "Ivern", "Janna", "Jarvan IV",
+    "Jax", "Jayce", "Jhin", "Jinx", "K'Sante", "Kai'Sa", "Kalista", "Karma", "Karthus", "Kassadin", "Katarina",
+    "Kayle", "Kayn", "Kennen", "Kha'Zix", "Kindred", "Kled", "Kog'Maw", "LeBlanc", "Lee Sin", "Leona", "Lillia",
+    "Lissandra", "Lucian", "Lulu", "Lux", "Malphite", "Malzahar", "Maokai", "Master Yi", "Mel", "Milio",
+    "Miss Fortune", "Mordekaiser", "Morgana", "Naafiri", "Nami", "Nasus", "Nautilus", "Neeko", "Nidalee",
+    "Nilah", "Nocturne", "Nunu & Willump", "Olaf", "Orianna", "Ornn", "Pantheon", "Poppy", "Pyke", "Qiyana",
+    "Quinn", "Rakan", "Rammus", "Rek'Sai", "Rell", "Renata Glasc", "Renekton", "Rengar", "Riven", "Rumble",
+    "Ryze", "Samira", "Sejuani", "Senna", "Seraphine", "Sett", "Shaco", "Shen", "Shyvana", "Singed", "Sion",
+    "Sivir", "Skarner", "Smolder", "Sona", "Soraka", "Swain", "Sylas", "Syndra", "Tahm Kench", "Taliyah",
+    "Talon", "Taric", "Teemo", "Thresh", "Tristana", "Trundle", "Tryndamere", "Twisted Fate", "Twitch", "Udyr",
+    "Urgot", "Varus", "Vayne", "Veigar", "Vel'Koz", "Vex", "Vi", "Viego", "Viktor", "Vladimir", "Volibear",
+    "Warwick", "Wukong", "Xayah", "Xerath", "Xin Zhao", "Yasuo", "Yone", "Yorick", "Yunara", "Yuumi", "Zaahen",
+    "Zac", "Zed", "Zeri", "Ziggs", "Zilean", "Zoe", "Zyra",
+]
+_ALIASY_LOL = {"nunu": "nunuwillump", "mundo": "drmundo", "monkeyking": "wukong", "renata": "renataglasc",
+               "jarvan": "jarvaniv", "j4": "jarvaniv", "tf": "twistedfate", "mf": "missfortune", "yi": "masteryi",
+               "asol": "aurelionsol", "tahm": "tahmkench", "xin": "xinzhao", "lee": "leesin"}
+
+
+def _klucz_postaci(tekst):
+    import unicodedata
+    t_ = unicodedata.normalize("NFD", str(tekst or "").lower())
+    t_ = "".join(c for c in t_ if c.isalnum())
+    return _ALIASY_LOL.get(t_, t_)
+
+
+_ZNANE_POSTACIE = {_klucz_postaci(p): p for p in POSTACIE_LOL}
+
+
 def renderuj_wordle(etap_dane):
     klucz = etap_dane["klucz"]
     st.markdown(
@@ -19873,7 +20357,24 @@ def renderuj_wordle(etap_dane):
             st.rerun()
 
     wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
+    # Druga czesc: dzisiejsza postac z Loldle
+    st.markdown(tt({"pl": "🎮 A teraz **[Loldle](https://loldle.net/classic)** — tryb *Classic*. Jaka postać wyszła dzisiaj?",
+                    "en": "🎮 And now **[Loldle](https://loldle.net/classic)** — *Classic* mode. Which champion was today's?"}))
+    postac = st.text_input(tt({"pl": "Dzisiejsza postać z Loldle", "en": "Today's Loldle champion"}), key=f"loldle_{klucz}")
+    potwierdzona = False
+    if postac.strip() and _klucz_postaci(postac) not in _ZNANE_POSTACIE:
+        st.caption(tt({"pl": "Nie znam takiej postaci — sprawdź pisownię. Jeśli to nowa postać, potwierdź poniżej.",
+                       "en": "I don't know that champion — check the spelling. If it's a new one, confirm below."}))
+        potwierdzona = st.checkbox(tt({"pl": "To na pewno dzisiejsza postać", "en": "This is definitely today's champion"}),
+                                   key=f"loldle_ok_{klucz}")
     if st.button(t("sprawdz"), key=f"btn_{klucz}"):
+        if not postac.strip():
+            st.error(tt({"pl": "Wpisz jeszcze dzisiejszą postać z Loldle.", "en": "Also enter today's Loldle champion."}))
+            return None
+        if _klucz_postaci(postac) not in _ZNANE_POSTACIE and not potwierdzona:
+            st.error(tt({"pl": "Takiej postaci nie ma w League of Legends — sprawdź pisownię.",
+                         "en": "There's no such League of Legends champion — check the spelling."}))
+            return None
         cel = dzisiejsze_slowo
         if not cel:
             zapasowa = str(etap_dane.get("odpowiedz", "")).strip().lower()
@@ -20141,7 +20642,13 @@ def pokaz_powitanie():
            else "background:rgba(230,193,92,0.22)") + "'></span>"
         for k in range(5)
     )
-    st.markdown(f"<div style='text-align:center;margin-top:0.4rem;'>{kropki}</div>", unsafe_allow_html=True)
+    napis = tt({"pl": "🔍 Znajdź i otwórz 5 kłódek", "en": "🔍 Find and open 5 padlocks"})
+    st.markdown(
+        f"<div style='text-align:center;margin-top:0.4rem;color:#ffe08a;font-weight:800;font-size:1.05rem;"
+        f"letter-spacing:0.02em;text-shadow:0 0 12px rgba(255,210,110,0.35);'>{napis}</div>"
+        f"<div style='text-align:center;margin-top:0.45rem;'>{kropki}</div>",
+        unsafe_allow_html=True,
+    )
 
     losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
     losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
@@ -20234,6 +20741,7 @@ def _postep_kategorii(kat):
 
 
 def pokaz_menu():
+    st.session_state.pop("gra_dalej_klucz", None)
     if TRYB_TESTOWY:
         st.markdown(
             "<div class='baner-testowy'>🧪 TRYB TESTOWY WŁĄCZONY — "
@@ -20487,6 +20995,7 @@ def pokaz_ekran_etapu(etap_dane):
     if st.button(t("wroc_do_menu"), key=f"powrot_{klucz}"):
         # Wyjscie z etapu konczy tryb powtorki - po powrocie widac status
         st.session_state.setdefault("tryb_powtorki", set()).discard(klucz)
+        st.session_state.pop("gra_dalej_klucz", None)   # koniec gry "po progu"
         st.session_state.ekran = "menu"
         st.rerun()
 
@@ -20504,9 +21013,14 @@ def pokaz_ekran_etapu(etap_dane):
         return
 
     st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
+    # Instrukcja etapu (krzyzowka, rebus) - byla w danych, ale nigdzie sie nie wyswietlala
+    if etap_dane.get("info"):
+        st.markdown(f"<div class='info-etapu'>💡 {tt(etap_dane['info'])}</div>", unsafe_allow_html=True)
 
     powtorka = klucz in st.session_state.get("tryb_powtorki", set())
-    if klucz in st.session_state.rozwiazane and not powtorka:
+    # Gra, ktora po progu toczy sie dalej, zostaje na ekranie zamiast "Rozwiazane"
+    kontynuuje = st.session_state.get("gra_dalej_klucz") == klucz
+    if klucz in st.session_state.rozwiazane and not powtorka and not kontynuuje:
         st.success(t("rozwiazane_status"))
         pokaz_karte_statystyk(klucz)
         st.caption(t("powtorka_info"))
@@ -20585,9 +21099,11 @@ def pokaz_ekran_etapu(etap_dane):
         return
 
     if wynik is True:
+        nowe = klucz not in st.session_state.rozwiazane
         st.session_state.rozwiazane.add(klucz)
         zapisz_postep()
-        st.balloons()
+        if nowe:
+            st.balloons()
         if st.session_state.pop("graj_dalej", False):
             st.success(tt({"pl": "✅ Gra zaliczona! Możesz grać dalej albo wrócić do menu.",
                            "en": "✅ Game completed! Keep playing or go back to the menu."}))
@@ -21044,28 +21560,28 @@ SZABLON_SEJF = """<div id="sejfApp">
 
 # Co pokazujemy w podsumowaniu dla kazdej gry: (licznik, emoji, PL, EN)
 OPISY_STATOW = {
-    "gra":       [("porazki", "🔁", "Podejścia", "Attempts")],
-    "dron":      [("podejscia", "🔁", "Podejścia", "Attempts")],
-    "zaba":      [("smierci", "💀", "Śmierci", "Deaths")],
-    "memory":    [("pomylki", "❌", "Pomyłki", "Mistakes"), ("czas", "⏱️", "Czas odkrywania", "Time")],
-    "simon":     [("podejscia", "🔁", "Podejścia", "Attempts")],
-    "piano":     [("pomylki", "❌", "Pomyłki", "Mistakes")],
-    "snake":     [("smierci", "💀", "Śmierci", "Deaths"), ("oliwki", "🫒", "Zjedzone oliwki", "Olives eaten")],
-    "bitwa":     [("smierci", "💀", "Śmierci", "Deaths")],
+    "gra":       [("porazki", "🔁", "Liczba podejść", "Attempts")],
+    "dron":      [("podejscia", "🔁", "Liczba podejść", "Attempts")],
+    "zaba":      [("smierci", "💀", "Liczba śmierci", "Deaths")],
+    "memory":    [("pomylki", "❌", "Pomyłki przy odkrywaniu", "Mismatched pairs"), ("czas", "⏱️", "Czas odkrywania zdjęć", "Time to uncover")],
+    "simon":     [("podejscia", "🔁", "Liczba podejść", "Attempts")],
+    "piano":     [("pomylki", "❌", "Pomyłki (zły klawisz)", "Wrong keys")],
+    "snake":     [("smierci", "💀", "Liczba zderzeń", "Crashes"), ("oliwki", "🫒", "Zjedzone oliwki", "Olives eaten")],
+    "bitwa":     [("smierci", "💀", "Przegrane walki", "Battles lost")],
     "blackjack": [("rozdania", "🃏", "Rozegrane rozdania", "Hands played")],
     "samolot":   [("metry", "📏", "Najdalszy lot", "Best flight"),
                   ("podejscia", "🔁", "Udało się za podejściem nr", "Made it on attempt no.")],
-    "odyseusz":  [("pudla", "🎯", "Spudłowane strzały", "Missed shots")],
-    "parkour":   [("skoki", "🦘", "Skoki", "Jumps")],
-    "minecraft": [("smierci", "💀", "Śmierci", "Deaths"), ("bloki", "⛏️", "Wykopane bloki", "Blocks mined"),
-                  ("potwory", "🧟", "Zabite potwory", "Monsters slain")],
-    "labirynt":  [("smierci", "💀", "Śmierci", "Deaths"), ("zabici", "⚔️", "Zabici wrogowie", "Enemies slain"),
+    "odyseusz":  [("pudla", "🎯", "Chybione strzały", "Missed shots")],
+    "parkour":   [("skoki", "🦘", "Wykonane skoki", "Jumps made")],
+    "minecraft": [("smierci", "💀", "Liczba śmierci", "Deaths"), ("bloki", "⛏️", "Wykopane bloki", "Blocks mined"),
+                  ("potwory", "🧟", "Pokonane potwory", "Monsters slain")],
+    "labirynt":  [("smierci", "💀", "Liczba śmierci", "Deaths"), ("zabici", "⚔️", "Zabici wrogowie", "Enemies slain"),
                   ("zadane", "💥", "Zadane obrażenia", "Damage dealt"), ("przyjete", "🩸", "Przyjęte obrażenia", "Damage taken"),
                   ("kulki", "🟢", "Kulki doświadczenia", "XP orbs"), ("polaczenia", "🔗", "Połączone przedmioty", "Items merged"),
-                  ("czas", "⏱️", "Czas przejścia", "Time"),
+                  ("czas", "⏱️", "Czas przejścia labiryntu", "Time to beat the maze"),
                   ("fala", "🌊", "Fala w trybie nieskończonym", "Infinite-mode wave"),
                   ("arena", "♾️", "Przetrwane w trybie nieskończonym", "Survived in infinite mode")],
-    "poziom_diabla": [("smierci", "💀", "Śmierci", "Deaths")],
+    "poziom_diabla": [("smierci", "💀", "Liczba śmierci", "Deaths")],
 }
 
 
@@ -21113,7 +21629,9 @@ def pokaz_statystyki_gier():
                 continue
             karty.append(_karta_statystyk_html(klucz))
     st.markdown(
-        "<div class='stat-naglowek'>" + tt({"pl": "📊 Twoje statystyki", "en": "📊 Your stats"}) + "</div>"
+        "<div class='stat-naglowek'>" + tt({"pl": "📊 Statystyki z gier", "en": "📊 Game stats"}) + "</div>"
+        + "<div class='stat-podtytul'>" + tt({"pl": "Tak poszło Ci w każdej grze — liczone przy pierwszym przejściu.",
+                                             "en": "How each game went — counted on your first completion."}) + "</div>"
         + "<div class='stat-siatka'>" + "".join(karty) + "</div>",
         unsafe_allow_html=True,
     )
