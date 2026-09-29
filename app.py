@@ -947,7 +947,7 @@ TEKST = {
         "napewno_bitwa": "Na pewno pokonałaś bossa? Jeśli nie, wróć do gry.",
         "bledy_etykieta_gra": "Ile razy złapałaś czarną kulkę albo upuściłaś serduszko?",
         "bledy_etykieta_dron": "Ile razy się rozbiłaś?",
-        "bledy_etykieta_bungee": "Ile razy straciłaś wszystkie życia?",
+        "bledy_etykieta_bungee": "Ile razy skończyły Ci się życia w etapie?",
         "bledy_etykieta_snake": "Ile razy wąż się zaplątał?",
         "bledy_etykieta_blackjack": "Ile rozdań przegrałaś z krupierem?",
         "bledy_etykieta_samolot": "Ile prób potrzebowałaś?",
@@ -966,7 +966,7 @@ TEKST = {
         "jeszcze_nie": "Jeszcze nie",
         "tak_ukonczylam": "Tak, ukończyłam!",
         "napewno_dron": "Na pewno ukończyłaś cały lot bez rozbicia?",
-        "napewno_bungee": "Na pewno zebrałaś 20 gwiazdek?",
+        "napewno_bungee": "Na pewno przeszłaś wszystkie 3 etapy skoku?",
         "napewno_snake": "Na pewno wąż zjadł wszystkie 20 oliwek?",
         "napewno_blackjack": "Na pewno pokonałaś krupiera 3 razy?",
         "napewno_samolot": "Na pewno samolot doleciał co najmniej 300 m?",
@@ -1032,7 +1032,7 @@ TEKST = {
         "napewno_bitwa": "Are you sure you defeated the boss? If not, go back to the game.",
         "bledy_etykieta_gra": "How many times did you catch a black ball or drop a heart?",
         "bledy_etykieta_dron": "How many times did you crash?",
-        "bledy_etykieta_bungee": "How many times did you lose all lives?",
+        "bledy_etykieta_bungee": "How many times did you run out of lives in a stage?",
         "bledy_etykieta_snake": "How many times did the snake tangle itself up?",
         "bledy_etykieta_blackjack": "How many hands did you lose to the dealer?",
         "bledy_etykieta_samolot": "How many attempts did you need?",
@@ -1051,7 +1051,7 @@ TEKST = {
         "jeszcze_nie": "Not yet",
         "tak_ukonczylam": "Yes, I completed it!",
         "napewno_dron": "Are you sure you finished the whole flight without crashing?",
-        "napewno_bungee": "Are you sure you collected 20 stars?",
+        "napewno_bungee": "Are you sure you completed all 3 jump stages?",
         "napewno_snake": "Are you sure the snake ate all 20 olives?",
         "napewno_blackjack": "Are you sure you beat the dealer 3 times?",
         "napewno_samolot": "Are you sure the plane flew at least 300 m?",
@@ -2753,17 +2753,17 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     background: linear-gradient(135deg, #221d33, #16131f); border: 1px solid rgba(230,193,92,0.35);
     border-radius: 12px 12px 0 0; color: #f3ead2; font-weight: 800; font-size: 14px; }
   #zycia { letter-spacing: 1px; }
-  #wynikEl { color: #ffe08a; }
-  #skokEl { color: #cfc4ad; font-size: 12.5px; margin-left: auto; }
-  #plotnoOslona { position: relative; width: 100%; aspect-ratio: 2 / 3; border-radius: 0 0 12px 12px; overflow: hidden;
+  #etapEl { color: #ffe08a; }
+  #belkiEl { color: #cfc4ad; font-size: 12.5px; margin-left: auto; }
+  #plotnoOslona { position: relative; width: 100%; aspect-ratio: 2 / 3; overflow: hidden;
     border: 1px solid rgba(230,193,92,0.35); border-top: none; background: #9ec9ef; }
-  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  canvas#plotno { display: block; width: 100%; height: 100%; touch-action: none; }
   #nakladka { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(14,11,24,0.8); color: #f3ead2; text-align: center; padding: 20px; }
+    background: rgba(14,11,24,0.82); color: #f3ead2; text-align: center; padding: 20px; }
   #nakladka h2 { margin: 0 0 10px; color: #ffe08a; font-size: 22px; }
   #nakladka p { margin: 0 0 16px; font-size: 14.5px; line-height: 1.55; max-width: 320px; }
   #karta { position: absolute; left: 12px; right: 12px; bottom: 14px; display: none; flex-direction: column; align-items: center;
-    padding: 14px 14px 16px; border-radius: 16px; background: rgba(20,16,32,0.9); border: 1.5px solid rgba(255,224,138,0.55);
+    padding: 14px 14px 16px; border-radius: 16px; background: rgba(20,16,32,0.92); border: 1.5px solid rgba(255,224,138,0.55);
     color: #f3ead2; text-align: center; box-shadow: 0 6px 20px rgba(0,0,0,0.45); }
   #kartaTytul { color: #ffe08a; font-weight: 900; font-size: 19px; margin-bottom: 6px; }
   #kartaPodsum { font-size: 14px; margin-bottom: 6px; color: #fff4d6; }
@@ -2775,32 +2775,58 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   #toast { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); padding: 6px 12px; border-radius: 10px;
     background: rgba(20,16,32,0.88); border: 1px solid rgba(255,224,138,0.6); color: #ffe08a; font-weight: 800; font-size: 13px;
     white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .35s; max-width: 94%; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ---- Podzialka pod ekranem: steruje belkami ---- */
+  #suwakBox { margin-top: 8px; padding: 8px 10px 10px; border-radius: 14px; transition: opacity .25s;
+    background: linear-gradient(135deg, #221d33, #16131f); border: 1px solid rgba(230,193,92,0.35); }
+  #suwakBox.wylaczony { opacity: 0.4; }
+  #suwakNapis { text-align: center; color: #cfc4ad; font-size: 12px; margin-bottom: 7px; letter-spacing: 0.02em; }
+  #suwak { position: relative; height: 56px; border-radius: 11px; overflow: hidden; touch-action: none; cursor: grab;
+    background: linear-gradient(180deg, #0c0a14, #171325); border: 1px solid rgba(255,255,255,0.14); }
+  #linijka { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+  #znacznik { position: absolute; top: 0; bottom: 0; width: 4px; margin-left: -2px; display: none; z-index: 1;
+    background: #4ade80; box-shadow: 0 0 10px 2px rgba(74,222,128,0.75); border-radius: 2px; }
+  #uchwyt { position: absolute; top: 4px; bottom: 4px; left: 0; width: 64px; border-radius: 10px; z-index: 2; pointer-events: none;
+    background: linear-gradient(180deg, #ffe08a, #e0a92c); box-shadow: 0 3px 9px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.65); }
+  #uchwyt::before { content: ''; position: absolute; top: 6px; bottom: 6px; left: 50%; width: 2px; margin-left: -1px; background: rgba(70,40,0,0.8); }
+  #uchwyt::after { content: ''; position: absolute; top: 10px; bottom: 10px; left: 9px; right: 9px; opacity: 0.55;
+    background: repeating-linear-gradient(90deg, rgba(80,48,0,0.55) 0 2px, transparent 2px 7px);
+    -webkit-mask: linear-gradient(90deg, #000 0 32%, transparent 32% 68%, #000 68% 100%); mask: linear-gradient(90deg, #000 0 32%, transparent 32% 68%, #000 68% 100%); }
+  #suwak.chwycony #uchwyt { background: linear-gradient(180deg, #fff0b8, #f2b93a); }
 </style>
 </head>
 <body>
 <div id="gra">
   <div id="hud">
     <span id="zycia">❤️❤️❤️</span>
-    <span id="wynikEl">⭐ 0 / 20</span>
-    <span id="skokEl">Skok 1</span>
+    <span id="etapEl">Etap 1 / 3</span>
+    <span id="belkiEl">Belki 0 / 0</span>
   </div>
   <div id="plotnoOslona">
     <canvas id="plotno"></canvas>
     <div id="toast"></div>
     <div id="karta">
-      <div id="kartaTytul">Skok 1</div>
+      <div id="kartaTytul">Etap 1</div>
       <div id="kartaPodsum"></div>
       <div id="kartaWskaz"></div>
       <button id="btnSkacz" class="przycisk">Skacz! 🪢</button>
     </div>
     <div id="nakladka">
       <h2 id="nakladkaTytul">🪢 Skok na bungee</h2>
-      <p id="nakladkaOpis">Skaczesz z dźwigu na bungee!<br>
-        <b>Przesuwaj palcem w lewo i prawo</b> — skoczek leci za nim.<br>
-        Zbieraj ⭐ i przelatuj przez szczeliny w belkach.<br>
-        Na dole celuj w koło 🛟 na wodzie (+3 ⭐).<br>
-        Masz 3 życia ❤️. <b>Cel: 20 ⭐</b></p>
+      <p id="nakladkaOpis">Skaczesz z dźwigu prosto w dół. Skoczek się nie rusza —<br>
+        <b>to Ty przesuwasz belki!</b><br>
+        Przeciągaj uchwyt <b>podziałki pod ekranem</b>: belki jadą razem z nim.<br>
+        Ustaw szczelinę na wprost skoczka, zanim do niej doleci.<br>
+        3 etapy, w każdym 3 życia ❤️. Cel: dolecieć do wody!</p>
       <button id="nakladkaBtn" class="przycisk">Zaczynamy</button>
+    </div>
+  </div>
+  <div id="suwakBox" class="wylaczony">
+    <div id="suwakNapis">↔ Przeciągaj uchwyt — belki jadą razem z nim</div>
+    <div id="suwak">
+      <canvas id="linijka"></canvas>
+      <div id="znacznik"></div>
+      <div id="uchwyt"></div>
     </div>
   </div>
 </div>
@@ -2808,14 +2834,16 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
 (function () {
   // ======================= USTAWIENIA =======================
   var W = 360, H = 540;
-  var CEL_WYNIK = 20;
-  var GRAW = 620, V_MAX = 300;          // spokojne spadanie
-  var SPREZ = 4.5, TLUMIENIE = 0.25;    // lina: sztywnosc i tlumienie (tylko w dol)
-  var GRAW_ODBICIA = 260;               // lekki lot w gore po odbiciu
-  var PREDKOSC_BOK = 220;               // maks. predkosc w bok
-  var KOTWICA_X = 196, PLATFORMA_Y = -62;
-  var R_GRACZA = 13;
-  var SYL = { tulowX: 0.526, tulowY: 0.454, stopyX: 0.117, stopyY: 0.87, os: -0.782, szer: 74 };
+  var P = 180;              // stala pozycja skoczka w poziomie
+  var PY = 128;             // skoczek jest wysoko na ekranie: widac ok. 410 px trasy przed nim
+  var S = 150;              // zakres przesuwania belek (+-)
+  var HW = 14;              // polowa szerokosci trafienia skoczka
+  var GRAW = 620;           // rozpedzanie do predkosci etapu
+  var VB = 650;             // maks. predkosc, z jaka jada belki (px/s)
+  var D_LINY = 250;         // o tyle lina sie rozciaga, zanim skoczek dotknie wody
+  var PLATFORMA_Y = -62, KOTWICA_X = 180;
+  var SYL = { tulowX: 0.526, tulowY: 0.454, stopyX: 0.117, stopyY: 0.87, os: -0.782, szer: 64 };
+  var ETAPY = [{"v":300,"hw":70,"belki":[[430,90],[730,-60],[1030,80],[1330,-30],[1630,100],[1930,-90],[2230,40],[2530,-100],[2830,10]],"nazwa":"Pierwszy skok","znacznik":true,"wskazowka":"Mało belek i szerokie szczeliny. Przeciągaj uchwyt podziałki pod ekranem — belki jadą razem z nim. Ustaw szczelinę na wprost skoczka (linia kropkowana). Zielony znacznik na podziałce pokazuje, gdzie ustawić uchwyt."},{"v":340,"hw":60,"belki":[[440,100],[710,-50],[980,80],[1250,-80],[1520,40],[1790,110],[2060,-60],[2330,60],[2600,-100],[2870,50],[3140,-40],[3410,100],[3680,-70],[3950,30],[4220,90]],"nazwa":"Robi się gęsto","znacznik":false,"wskazowka":"Więcej belek, węższe szczeliny i większa prędkość. Zielony znacznik znika — patrz na belki i przewiduj. Szczelina zapala się na zielono, gdy jest dobrze ustawiona."},{"v":380,"hw":48,"belki":[[450,-100],[690,-50],[930,0],[1170,50],[1410,100],[1650,140],[1925,-60],[2165,40],[2405,-120],[2680,110],[2920,-30],[3160,-130],[3400,20],[3640,130],[3880,60],[4120,-80],[4360,0],[4600,100],[4875,-110],[5150,90],[5390,-20],[5630,-140],[5870,50]],"nazwa":"Finał","znacznik":false,"wskazowka":"Najwięcej belek, najwęższe szczeliny i największa prędkość. Trasa jest zawsze taka sama — pierwsze belki i długie zwroty da się wyćwiczyć."}];
 
   var plotno = document.getElementById('plotno');
   var ctx = plotno.getContext('2d');
@@ -2826,22 +2854,25 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   var karta = document.getElementById('karta'), kartaTytul = document.getElementById('kartaTytul');
   var kartaPodsum = document.getElementById('kartaPodsum'), kartaWskaz = document.getElementById('kartaWskaz');
   var btnSkacz = document.getElementById('btnSkacz');
-  var zyciaEl = document.getElementById('zycia'), wynikEl = document.getElementById('wynikEl');
-  var skokEl = document.getElementById('skokEl'), toastEl = document.getElementById('toast');
+  var zyciaEl = document.getElementById('zycia'), etapEl = document.getElementById('etapEl'), belkiEl = document.getElementById('belkiEl');
+  var toastEl = document.getElementById('toast');
+  var suwakBox = document.getElementById('suwakBox'), suwak = document.getElementById('suwak');
+  var linijka = document.getElementById('linijka'), uchwyt = document.getElementById('uchwyt'), znacznik = document.getElementById('znacznik');
 
   var obrazSyl = new Image();
   obrazSyl.src = 'data:image/png;base64,__SYLWETKA__';
+  var KAT_GORA = -Math.PI / 2 - SYL.os, KAT_DOL = Math.PI / 2 - SYL.os;
 
   // ======================= STAN =======================
-  var stan = 'menu';        // 'menu' | 'platforma' | 'lot' | 'wciaganie' | 'koniec'
-  var gracz, kamY, dlugoscLiny, poziomWody, przeszkody, znajdzki, czastki, napisy, chmury;
-  var wynik = 0, zycia = 3, skok = 1, niezniszczalny = 0, trzesienie = 0, czas = 0;
-  var celOsiagniety = false, zanurzony = false, bylNapiety = false, odbicie = false, wciaganie = null;
-  var celX = KOTWICA_X, dotyk = false, klawLewo = false, klawPrawo = false;
-  var ostatniCzas = null, rekord = 0, bojaX = 180, gwiazdkiSkoku = 0, bonusWody = 0;
+  var stan = 'menu';   // menu | platforma | lot | lina | dno | wciaganie | porazka | koniec
+  var etapNr = 0, gracz, kamY = 0, yKoniec = 0, poziomWody = 0, belki = [], czastki = [], napisy = [], chmury = [];
+  var zycia = 3, uderzeniaEtapu = 0, uderzeniaRazem = 0, przeszlo = 0, seria = 0, czas = 0, trzesienie = 0, mignij = 0;
+  var u = 0.5, sAkt = 0, przeciaga = false, uchwytOffset = 0, klawL = false, klawR = false;
+  var lina = null, wciaganie = null, pauza = 0, zaliczenieWyslane = false, ostatniCzas = null;
+  var poprzedniEtapUderzen = 0, ostatniaSzerokosc = 0, licznikRozmiaru = 0, ostatniaWygrana = false;
 
-  function losowa(a, b) { return a + Math.random() * (b - a); }
   function ogranicz(v, a, b) { return v < a ? a : (v > b ? b : v); }
+  function stala(i) { var x = Math.sin(i * 12.9898 + 78.233) * 43758.5453; return x - Math.floor(x); }   // "losowosc" zawsze taka sama
 
   // ======================= DZWIEK =======================
   var audioCtx = null, glowny = null, wiatrGain = null, wiatrFiltr = null;
@@ -2863,11 +2894,11 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
         var bufor = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
         var d = bufor.getChannelData(0);
         for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-        var szum = audioCtx.createBufferSource(); szum.buffer = bufor; szum.loop = true;
+        var szumB = audioCtx.createBufferSource(); szumB.buffer = bufor; szumB.loop = true;
         wiatrFiltr = audioCtx.createBiquadFilter(); wiatrFiltr.type = 'bandpass'; wiatrFiltr.frequency.value = 500; wiatrFiltr.Q.value = 0.7;
         wiatrGain = audioCtx.createGain(); wiatrGain.gain.value = 0;
-        szum.connect(wiatrFiltr); wiatrFiltr.connect(wiatrGain); wiatrGain.connect(glowny);
-        szum.start();
+        szumB.connect(wiatrFiltr); wiatrFiltr.connect(wiatrGain); wiatrGain.connect(glowny);
+        szumB.start();
       }
       if (!harmonogram) { nastepnyTakt = audioCtx.currentTime + 0.05; harmonogram = setInterval(zaplanujMuzyke, 30); }
     } catch (e) { audioCtx = null; }
@@ -2892,16 +2923,16 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     var g = audioCtx.createGain(); g.gain.value = gl;
     s.connect(f); f.connect(g); g.connect(glowny); s.start(t);
   }
-  function dzwiekGwiazdy() { if (!audioCtx) return; var t = audioCtx.currentTime; ton(988, 0.1, 'sine', 0.11, t); ton(1319, 0.16, 'sine', 0.09, t + 0.07); }
+  function dzwiekPrzejscia() { ton(520 + Math.min(seria, 10) * 45, 0.09, 'sine', 0.07); }
   function dzwiekUderzenia() { ton(140, 0.3, 'sawtooth', 0.15, null, 50); szum(0.2, 0.18, 'lowpass', 700); }
-  function dzwiekLiny() { ton(210, 0.5, 'triangle', 0.12, null, 90); }
-  function dzwiekPlusku() { szum(0.55, 0.25, 'lowpass', 1800); ton(420, 0.22, 'sine', 0.06, null, 200); }
+  function dzwiekLiny() { ton(210, 0.55, 'triangle', 0.12, null, 90); }
+  function dzwiekPlusku() { szum(0.6, 0.25, 'lowpass', 1800); ton(420, 0.22, 'sine', 0.06, null, 200); }
   function dzwiekSkoku() { if (!audioCtx) return; var t = audioCtx.currentTime; [523, 659, 784].forEach(function (f, i) { ton(f, 0.16, 'square', 0.05, t + i * 0.08); }); }
-  // Muzyka w tle: spokojne Am-F-C-G (bas, arpeggio, delikatny rytm)
+  // Muzyka w tle: Am-F-C-G (bas, arpeggio, delikatny rytm); z kazdym etapem odrobine szybciej
   var AKORDY = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
   function zaplanujMuzyke() {
     if (!audioCtx) return;
-    var tempo = 0.5 * 60 / (100 + Math.min(skok - 1, 4) * 3);
+    var tempo = 0.5 * 60 / (100 + etapNr * 8);
     while (nastepnyTakt < audioCtx.currentTime + 0.12) {
       var t = nastepnyTakt, k = krokMuzyki % 32, akord = AKORDY[Math.floor(k / 8)];
       if (k % 4 === 0) ton(akord[0] / 2, tempo * 1.8, 'triangle', 0.12, t);
@@ -2912,88 +2943,13 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     }
   }
 
-  // ======================= SWIAT =======================
-  var WSKAZOWKI = [
-    'Przesuwaj palcem w lewo i prawo. Zbieraj ⭐, przelatuj przez szczeliny w belkach, a na dole celuj w 🛟.',
-    'Nowość: pojawiają się ptaki 🐦 — omijaj je. Lina jest trochę dłuższa.',
-    'Szczeliny w belkach są węższe, a ptaków więcej. Spokojnie!',
-    'Belki zaczynają się przesuwać! Powodzenia 😈'
-  ];
-  function zbudujSkok() {
-    dlugoscLiny = Math.min(2200, 1300 + (skok - 1) * 150);
-    poziomWody = dlugoscLiny + 280;   // lina rozciaga sie ok. 304 px - woda musi byc w zasiegu
-    bojaX = losowa(70, W - 70);
-    przeszkody = []; znajdzki = [];
-    var y = 300, odstep = Math.max(200, 290 - skok * 15);
-    while (y < dlugoscLiny - 60) {
-      var ptak = skok >= 2 && Math.random() < Math.min(0.5, 0.25 + skok * 0.06);
-      if (!ptak) {
-        var szer = Math.max(112, 164 - skok * 9);
-        var luka = losowa(24 + szer / 2, W - 24 - szer / 2);
-        przeszkody.push({ typ: 'belka', y: y, luka: luka, szer: szer, v: skok >= 4 ? losowa(25, 45) * (Math.random() < 0.5 ? -1 : 1) : 0 });
-        znajdzki.push({ x: luka, y: y - 2 });
-      } else {
-        var o = { typ: 'ptak', y: y, x: losowa(40, W - 40), v: (Math.random() < 0.5 ? -1 : 1) * (45 + skok * 12), r: 14 };
-        przeszkody.push(o);
-        znajdzki.push({ x: o.x < W / 2 ? losowa(W * 0.6, W - 30) : losowa(30, W * 0.4), y: y + losowa(-8, 8) });
-      }
-      // Dodatkowa gwiazdka miedzy przeszkodami
-      if (Math.random() < 0.6) znajdzki.push({ x: losowa(30, W - 30), y: y + odstep * 0.5 });
-      y += odstep * losowa(0.9, 1.15);
-    }
-    chmury = [];
-    for (var i = 0; i < 12; i++) chmury.push({ x: losowa(-40, W + 40), y: losowa(-300, poziomWody), s: losowa(0.6, 1.4), p: losowa(0.25, 0.6) });
+  // ======================= EKRAN I STAN =======================
+  function ustawStan(s) {
+    stan = s;
+    suwakBox.classList.toggle('wylaczony', s !== 'lot');
+    if (s !== 'lot') { przeciaga = false; suwak.classList.remove('chwycony'); }
+    if (s !== 'lot' && s !== 'lina' && wiatrGain) wiatrGain.gain.value = 0;
   }
-  function nowaGra() {
-    wynik = 0; zycia = 3; skok = 1; celOsiagniety = false; czas = 0;
-    window.stat && window.stat('podejscia');
-    naPlatforme(true);
-    aktualizujHud();
-  }
-  // Przerywnik: skoczek stoi na dzwigu, podsumowanie i przycisk "Skacz!"
-  function naPlatforme(pierwszy) {
-    zbudujSkok();
-    gracz = { x: KOTWICA_X, y: PLATFORMA_Y, vx: 0, vy: 0, kat: -Math.PI / 2 - SYL.os };
-    czastki = []; napisy = [];
-    stan = 'platforma';
-    kartaTytul.textContent = 'Skok ' + skok;
-    if (pierwszy) kartaPodsum.textContent = '';
-    else kartaPodsum.innerHTML = '✅ Zebrane w skoku: <b>⭐ ' + gwiazdkiSkoku + '</b>' + (bonusWody ? ' (w tym 🛟 +3)' : '') + ' · Razem: <b>' + wynik + (celOsiagniety ? '' : ' / ' + CEL_WYNIK) + '</b>';
-    kartaWskaz.textContent = WSKAZOWKI[Math.min(skok, WSKAZOWKI.length) - 1];
-    btnSkacz.textContent = pierwszy ? 'Skacz! 🪢' : 'Skacz dalej! 🪢';
-    karta.style.display = 'flex';
-    aktualizujHud();
-  }
-  function skocz() {
-    karta.style.display = 'none';
-    gwiazdkiSkoku = 0; bonusWody = 0;
-    zanurzony = false; bylNapiety = false; odbicie = false; niezniszczalny = 0.6;
-    gracz.vy = -170; gracz.vx = 25; celX = KOTWICA_X;
-    stan = 'lot';
-    window.stat && window.stat('skoki');
-    dzwiekSkoku();
-  }
-
-  // ======================= STEROWANIE =======================
-  function punktNaPlotnie(e) {
-    var r = plotno.getBoundingClientRect();
-    return (e.clientX - r.left) * W / r.width;
-  }
-  plotno.addEventListener('pointerdown', function (e) { e.preventDefault(); inicjujDzwiek(); dotyk = true; celX = punktNaPlotnie(e); });
-  plotno.addEventListener('pointermove', function (e) { if (dotyk || e.pointerType === 'mouse') celX = punktNaPlotnie(e); });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { plotno.addEventListener(ev, function () { dotyk = false; }); });
-  window.addEventListener('keydown', function (e) {
-    if (e.key === 'ArrowLeft') klawLewo = true;
-    if (e.key === 'ArrowRight') klawPrawo = true;
-    if ((e.key === ' ' || e.key === 'Enter') && stan === 'platforma') { inicjujDzwiek(); skocz(); }
-  });
-  window.addEventListener('keyup', function (e) {
-    if (e.key === 'ArrowLeft') klawLewo = false;
-    if (e.key === 'ArrowRight') klawPrawo = false;
-  });
-  btnSkacz.addEventListener('click', function () { inicjujDzwiek(); if (stan === 'platforma') skocz(); });
-
-  // ======================= LOGIKA =======================
   function pokazToast(tekst, ms) {
     toastEl.textContent = tekst; toastEl.style.opacity = '1';
     clearTimeout(pokazToast._t);
@@ -3002,144 +2958,203 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   function aktualizujHud() {
     var s = ''; for (var i = 0; i < 3; i++) s += i < zycia ? '❤️' : '🖤';
     zyciaEl.textContent = s;
-    wynikEl.textContent = '⭐ ' + wynik + (celOsiagniety ? '' : ' / ' + CEL_WYNIK);
-    skokEl.textContent = 'Skok ' + skok;
+    etapEl.textContent = 'Etap ' + (etapNr + 1) + ' / ' + ETAPY.length;
+    belkiEl.textContent = 'Belki ' + przeszlo + ' / ' + belki.length;
   }
-  function dodajPunkty(ile, x, y, tekst) {
-    wynik += ile; gwiazdkiSkoku += ile;
-    napisy.push({ x: x, y: y, t: tekst || ('+' + ile), zycie: 0.9 });
+  function zbudujEtap() {
+    var E = ETAPY[etapNr];
+    belki = E.belki.map(function (b) { return { y: b[0], d: b[1], hw: E.hw, st: 0 }; });
+    yKoniec = belki[belki.length - 1].y + 330;
+    poziomWody = yKoniec + D_LINY + 8;
+    chmury = [];
+    for (var i = 0; i < 16; i++) chmury.push({ x: -40 + stala(i * 3 + 1) * (W + 80), y: -300 + stala(i * 3 + 2) * (poziomWody + 300), s: 0.6 + stala(i * 3 + 3) * 0.8, p: 0.25 + stala(i + 50) * 0.35 });
+  }
+  function nowaGra() {
+    etapNr = 0; uderzeniaRazem = 0;
+    naPlatforme('start');
+  }
+  // Przerywnik: skoczek stoi na dzwigu, podsumowanie i przycisk "Skacz!"
+  function naPlatforme(tryb) {
+    zbudujEtap();
+    zycia = 3; uderzeniaEtapu = 0; przeszlo = 0; seria = 0; mignij = 0; trzesienie = 0;
+    u = 0.5; sAkt = 0; odswiezUchwyt();
+    gracz = { x: P, y: PLATFORMA_Y, vx: 0, vy: 0, kat: KAT_GORA };
+    kamY = PLATFORMA_Y - H * 0.42; czastki = []; napisy = [];
+    var E = ETAPY[etapNr];
+    kartaTytul.textContent = 'Etap ' + (etapNr + 1) + ' / ' + ETAPY.length + ' — ' + E.nazwa;
+    if (tryb === 'nastepny') kartaPodsum.innerHTML = '✅ Etap ' + etapNr + ' ukończony! Uderzenia w belki: <b>' + poprzedniEtapUderzen + '</b>';
+    else if (tryb === 'powtorka') kartaPodsum.innerHTML = 'Trasa jest zawsze taka sama — teraz pójdzie lepiej 💪';
+    else kartaPodsum.innerHTML = '';
+    kartaWskaz.textContent = E.wskazowka;
+    btnSkacz.textContent = tryb === 'start' ? 'Skacz! 🪢' : (tryb === 'powtorka' ? 'Skacz jeszcze raz! 🪢' : 'Skacz dalej! 🪢');
+    karta.style.display = 'flex';
+    ustawStan('platforma');
     aktualizujHud();
-    if (!celOsiagniety && wynik >= CEL_WYNIK) {
-      celOsiagniety = true;
-      aktualizujHud();
-      pokazToast('✅ 20 ⭐ — zaliczone! Skacz dalej, ile dasz radę', 3200);
-      zglosZaliczenie();
-    }
+    znacznik.style.display = 'none';
   }
+  function skocz() {
+    karta.style.display = 'none';
+    gracz.vy = -130;
+    ustawStan('lot');
+    window.stat && window.stat('skoki');
+    dzwiekSkoku();
+  }
+
+  // ======================= PODZIALKA (STEROWANIE) =======================
+  function odswiezUchwyt() {
+    var zakres = Math.max(0, suwak.offsetWidth - uchwyt.offsetWidth);
+    uchwyt.style.left = (u * zakres) + 'px';
+  }
+  function ustawZPunktu(clientX) {
+    var r = suwak.getBoundingClientRect();
+    if (!r.width) return;
+    var uw = uchwyt.offsetWidth / suwak.offsetWidth;                  // udzial uchwytu (niezalezny od skali)
+    var frac = (clientX - r.left) / r.width - uchwytOffset;           // srodek uchwytu jako ulamek szerokosci
+    u = ogranicz((frac - uw / 2) / (1 - uw), 0, 1);
+    odswiezUchwyt();
+  }
+  suwak.addEventListener('pointerdown', function (e) {
+    e.preventDefault(); inicjujDzwiek();
+    if (stan !== 'lot') return;
+    przeciaga = true; suwak.classList.add('chwycony');
+    try { suwak.setPointerCapture(e.pointerId); } catch (x) {}
+    var r = suwak.getBoundingClientRect(), uw = uchwyt.offsetWidth / suwak.offsetWidth;
+    var frac = (e.clientX - r.left) / r.width, srodek = uw / 2 + u * (1 - uw);
+    uchwytOffset = Math.abs(frac - srodek) <= uw / 2 ? frac - srodek : 0;   // zlapany uchwyt nie "skacze" pod palec
+    ustawZPunktu(e.clientX);
+  });
+  suwak.addEventListener('pointermove', function (e) { if (przeciaga) { e.preventDefault(); ustawZPunktu(e.clientX); } });
+  ['pointerup', 'pointercancel'].forEach(function (ev) {
+    suwak.addEventListener(ev, function () { przeciaga = false; suwak.classList.remove('chwycony'); });
+  });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') klawL = true;
+    if (e.key === 'ArrowRight') klawR = true;
+    if ((e.key === ' ' || e.key === 'Enter') && stan === 'platforma') { inicjujDzwiek(); skocz(); }
+  });
+  window.addEventListener('keyup', function (e) {
+    if (e.key === 'ArrowLeft') klawL = false;
+    if (e.key === 'ArrowRight') klawR = false;
+  });
+  btnSkacz.addEventListener('click', function () { inicjujDzwiek(); if (stan === 'platforma') skocz(); });
+
+  // ======================= LOGIKA =======================
   function zglosZaliczenie() {
+    if (zaliczenieWyslane) return;
+    zaliczenieWyslane = true;
     var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
-    // "dalej": zalicz, ale nie zamykaj gry - skacze sie do utraty zyc
+    // "dalej": zalicz, ale zostaw gre na ekranie z podsumowaniem
     if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
     window.postMessage(wiadomoscZaliczenia, '*');
     if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
   }
-  function trafiony(opis) {
-    if (niezniszczalny > 0) return;
-    zycia--; niezniszczalny = 1.6; trzesienie = 0.35;
+  function trafiony() {
+    zycia--; uderzeniaEtapu++; uderzeniaRazem++; seria = 0; trzesienie = 0.35; mignij = 0.6;
+    window.stat && window.stat('uderzenia');
     dzwiekUderzenia();
-    napisy.push({ x: gracz.x, y: gracz.y - 24, t: opis, zycie: 1.2, zly: true });
-    for (var i = 0; i < 12; i++) czastki.push({ x: gracz.x, y: gracz.y, vx: losowa(-140, 140), vy: losowa(-140, 60), zycie: 0.6, kolor: '#f87171' });
+    napisy.push({ x: P, y: gracz.y - 26, t: '💥 −1 ❤️', zycie: 1.2, zly: true });
+    for (var i = 0; i < 12; i++) czastki.push({ x: P, y: gracz.y + 10, vx: (stala(i + przeszlo) - 0.5) * 300, vy: -60 - stala(i + 9) * 120, zycie: 0.6, kolor: '#f87171' });
     aktualizujHud();
-    if (zycia <= 0) zakonczGre(celOsiagniety);
+    if (zycia <= 0) { ustawStan('porazka'); pauza = 0.7; }
   }
   function zakonczGre(wygrana) {
-    stan = 'koniec';
+    ustawStan('koniec'); ostatniaWygrana = !!wygrana;
     karta.style.display = 'none';
-    if (wiatrGain) wiatrGain.gain.value = 0;
-    rekord = Math.max(rekord, wynik);
     if (wygrana) {
-      nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ⭐ ' + wynik;
-      nakladkaOpis.innerHTML = 'Skoków: ' + skok + ' · Rekord: ' + rekord + '<br>Spróbujesz pobić swój wynik?';
+      nakladkaTytul.textContent = '🎉 Zaliczone!';
+      nakladkaOpis.innerHTML = 'Wszystkie ' + ETAPY.length + ' etapy za Tobą — doleciałaś do wody!<br>Uderzenia w belki: <b>' + uderzeniaRazem + '</b>' + (uderzeniaRazem === 0 ? ' — bezbłędnie! 🏆' : '');
+      nakladkaBtn.textContent = 'Skacz jeszcze raz 🪢';
     } else {
-      nakladkaTytul.textContent = '💥 Koniec skakania';
-      nakladkaOpis.innerHTML = 'Zebrane: ⭐ ' + wynik + ' / ' + CEL_WYNIK + ' · Skok ' + skok + '<br>Spróbuj jeszcze raz!';
+      nakladkaTytul.textContent = '💥 Rozbity!';
+      nakladkaOpis.innerHTML = 'Skończyły się życia w etapie ' + (etapNr + 1) + '.<br>Belki są zawsze w tych samych miejscach — możesz nauczyć się trasy.';
+      nakladkaBtn.textContent = 'Spróbuj ponownie 🪢';
     }
-    nakladkaBtn.textContent = 'Jeszcze raz 🪢';
     nakladka.style.display = 'flex';
   }
 
   function aktualizuj(dt) {
     czas += dt;
-    if (niezniszczalny > 0) niezniszczalny -= dt;
     if (trzesienie > 0) trzesienie -= dt;
-    przeszkody.forEach(function (o) {
-      if (o.typ === 'ptak') { o.x += o.v * dt; if (o.x < 18 || o.x > W - 18) { o.v = -o.v; o.x = ogranicz(o.x, 18, W - 18); } }
-      else if (o.v) { o.luka += o.v * dt; if (o.luka < 24 + o.szer / 2 || o.luka > W - 24 - o.szer / 2) o.v = -o.v; }
-    });
-
+    if (mignij > 0) mignij -= dt;
     if (stan === 'platforma') {
       kamY += ((PLATFORMA_Y - H * 0.42) - kamY) * Math.min(1, dt * 4);
-      aktualizujCzastki(dt);
-      return;
+      aktualizujCzastki(dt); return;
     }
     if (stan === 'wciaganie') {
       wciaganie.t += dt;
-      var p = Math.min(1, wciaganie.t / 1.6), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      var p = Math.min(1, wciaganie.t / 2.2), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
       gracz.y = wciaganie.odY + (PLATFORMA_Y - wciaganie.odY) * e;
-      gracz.x = wciaganie.odX + (KOTWICA_X - wciaganie.odX) * e;
-      gracz.vy = -200;
       kamY += ((gracz.y - H * 0.45) - kamY) * Math.min(1, dt * 5);
-      if (p >= 1) { skok++; naPlatforme(false); }
-      aktualizujCzastki(dt);
-      return;
+      if (p >= 1) { poprzedniEtapUderzen = uderzeniaEtapu; etapNr++; naPlatforme('nastepny'); }
+      aktualizujCzastki(dt); return;
     }
-    if (stan !== 'lot') return;
-
-    // --- Sterowanie poziome: skoczek podaza za palcem ---
-    if (klawLewo) celX = gracz.x - 80;
-    if (klawPrawo) celX = gracz.x + 80;
-    var steruje = dotyk || klawLewo || klawPrawo;
-    var docelowaVx = steruje ? ogranicz((celX - gracz.x) * 5, -PREDKOSC_BOK, PREDKOSC_BOK) : gracz.vx * 0.9;
-    gracz.vx += (docelowaVx - gracz.vx) * Math.min(1, dt * 8);
-    gracz.x = ogranicz(gracz.x + gracz.vx * dt, 14, W - 14);
-
-    // --- Pion: swobodny spadek, lina, lekkie odbicie w gore ---
-    var rozciag = gracz.y - dlugoscLiny;
-    var wGore = bylNapiety && gracz.vy < 0;
-    var a = wGore ? GRAW_ODBICIA : GRAW;
-    if (rozciag > 0) {
-      if (!bylNapiety) { bylNapiety = true; dzwiekLiny(); }
-      a = (wGore ? GRAW_ODBICIA : GRAW) - SPREZ * rozciag - (wGore ? 0 : TLUMIENIE * gracz.vy);
+    if (stan === 'porazka') {
+      pauza -= dt; kamY += ((gracz.y - PY) - kamY) * Math.min(1, dt * 8);
+      if (pauza <= 0) zakonczGre(false);
+      aktualizujCzastki(dt); return;
     }
-    gracz.vy += a * dt;
-    if (rozciag <= 0 && gracz.vy > V_MAX) gracz.vy = V_MAX;
-    gracz.y += gracz.vy * dt;
+    if (stan === 'dno') {
+      pauza -= dt;
+      if (pauza <= 0) {
+        if (etapNr === ETAPY.length - 1) { zglosZaliczenie(); zakonczGre(true); }
+        else { wciaganie = { t: 0, odY: gracz.y }; ustawStan('wciaganie'); }
+      }
+      aktualizujCzastki(dt); return;
+    }
+    if (stan !== 'lot' && stan !== 'lina') return;
 
-    // --- Dotkniecie wody ---
-    if (!zanurzony && gracz.y >= poziomWody - 6) {
-      zanurzony = true;
-      dzwiekPlusku();
-      for (var i = 0; i < 22; i++) czastki.push({ x: gracz.x, y: poziomWody, vx: losowa(-150, 150), vy: losowa(-300, -80), zycie: 0.8, kolor: '#bfe6ff' });
-      if (Math.abs(gracz.x - bojaX) < 38) { bonusWody = 3; dodajPunkty(3, gracz.x, poziomWody - 30, '🛟 +3 idealnie!'); }
-      else napisy.push({ x: gracz.x, y: poziomWody - 30, t: '💦 obok koła', zycie: 1.2 });
+    var E = ETAPY[etapNr];
+    // --- Belki jada za podzialka (z ograniczona predkoscia) ---
+    if (stan === 'lot') {
+      if (klawL) { u = Math.max(0, u - 0.9 * dt); odswiezUchwyt(); }
+      if (klawR) { u = Math.min(1, u + 0.9 * dt); odswiezUchwyt(); }
+      var sCel = (u - 0.5) * 2 * S;
+      sAkt += ogranicz((sCel - sAkt) * 16 * dt, -VB * dt, VB * dt);
     }
 
-    // --- Koniec skoku: pierwszy szczyt po odbiciu od dna ---
-    if (bylNapiety && gracz.vy < -40) odbicie = true;
-    if (odbicie && gracz.vy >= 0) {
-      stan = 'wciaganie';
-      wciaganie = { t: 0, odY: gracz.y, odX: gracz.x };
-      przeszkody = []; znajdzki = [];
-      if (wiatrGain) wiatrGain.gain.value = 0;
-      return;
+    // --- Pion ---
+    if (stan === 'lot') {
+      gracz.vy = Math.min(E.v, gracz.vy + GRAW * dt);
+      gracz.y += gracz.vy * dt;
+      if (gracz.y >= yKoniec) {
+        lina = { a: gracz.vy * gracz.vy / (2 * D_LINY), yDno: gracz.y + D_LINY };   // rowne hamowanie na drodze D_LINY
+        ustawStan('lina'); dzwiekLiny();
+      }
+    } else {   // lina hamuje rownomiernie i zatrzymuje skoczka tuz nad woda
+      gracz.vy -= lina.a * dt;
+      if (gracz.vy <= 0) {
+        gracz.vy = 0; gracz.y = lina.yDno;
+        ustawStan('dno'); pauza = etapNr === ETAPY.length - 1 ? 1.1 : 0.7;
+        dzwiekPlusku();
+        for (var i = 0; i < 26; i++) czastki.push({ x: P, y: poziomWody, vx: (stala(i) - 0.5) * 320, vy: -80 - stala(i + 40) * 300, zycie: 0.9, kolor: '#bfe6ff' });
+      } else gracz.y += gracz.vy * dt;
     }
 
-    // --- Kolizje i gwiazdki ---
-    for (var k = 0; k < przeszkody.length; k++) {
-      var o = przeszkody[k];
-      if (o.typ === 'belka') {
-        if (Math.abs(gracz.y - o.y) < 7 + R_GRACZA - 4 && Math.abs(gracz.x - o.luka) > o.szer / 2 - R_GRACZA + 5) trafiony('💥 Belka!');
-      } else {
-        var dx = gracz.x - o.x, dy = gracz.y - o.y;
-        if (dx * dx + dy * dy < Math.pow(o.r + R_GRACZA - 4, 2)) trafiony('🐦 Ptak!');
+    // --- Belki: trafienie albo czyste przejscie ---
+    if (stan === 'lot') {
+      var glowa = gracz.y + 18, ogon = gracz.y - 6;
+      for (var k = 0; k < belki.length; k++) {
+        var b = belki[k];
+        if (b.lic) continue;                                   // belka juz rozliczona
+        if (b.st === 0 && glowa >= b.y - 7 && ogon <= b.y + 7) {
+          var c = P + b.d + sAkt;
+          if (Math.abs(P - c) > b.hw - HW) { b.st = 2; trafiony(); }   // uderzenie liczy sie raz na belke
+        }
+        if (ogon > b.y + 7) {
+          b.lic = true; przeszlo++;
+          if (b.st === 0) { b.st = 1; seria++; dzwiekPrzejscia(); }
+          aktualizujHud();
+        }
+        if (stan !== 'lot') break;
       }
     }
-    for (var z = znajdzki.length - 1; z >= 0; z--) {
-      var zn = znajdzki[z], ddx = gracz.x - zn.x, ddy = gracz.y - zn.y;
-      if (ddx * ddx + ddy * ddy < 26 * 26) {
-        znajdzki.splice(z, 1);
-        dodajPunkty(1, zn.x, zn.y, '+1 ⭐'); dzwiekGwiazdy();
-        for (var c = 0; c < 8; c++) czastki.push({ x: zn.x, y: zn.y, vx: losowa(-90, 90), vy: losowa(-90, 90), zycie: 0.5, kolor: '#ffe08a' });
-      }
-    }
 
-    // --- Kamera ---
-    var celKam = gracz.y - (gracz.vy >= 0 ? H * 0.36 : H * 0.6);
-    celKam = Math.min(celKam, poziomWody + 60 - H);
-    kamY += (celKam - kamY) * Math.min(1, dt * 4);
+    // --- Kamera: skoczek stale wysoko na ekranie ---
+    var celKam = Math.min(gracz.y - PY, poziomWody + 60 - H);
+    kamY += (celKam - kamY) * Math.min(1, dt * 8);
 
     if (wiatrGain && audioCtx) {
-      var sz = Math.min(1, Math.abs(gracz.vy) / V_MAX);
+      var sz = Math.min(1, Math.abs(gracz.vy) / 400);
       wiatrGain.gain.setTargetAtTime(0.08 * sz * sz, audioCtx.currentTime, 0.1);
       wiatrFiltr.frequency.setTargetAtTime(350 + sz * 700, audioCtx.currentTime, 0.1);
     }
@@ -3171,7 +3186,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     }
     chmury.forEach(function (c) {
       var y = c.y - kamY * c.p; y = ((y % (H + 200)) + H + 200) % (H + 200) - 100;
-      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
       ctx.beginPath();
       ctx.ellipse(c.x, y, 34 * c.s, 12 * c.s, 0, 0, Math.PI * 2);
       ctx.ellipse(c.x + 20 * c.s, y - 7 * c.s, 22 * c.s, 11 * c.s, 0, 0, Math.PI * 2);
@@ -3204,7 +3219,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     if (doY > od) rysujKratownice(24, od - kamY, 24, doY - kamY, 18);
     if (y0 < -120 || y0 > H + 80) return;
     rysujKratownice(10, y0 - 44, KOTWICA_X + 18, y0 - 44, 14);
-    ctx.fillStyle = '#5a4630'; ctx.fillRect(KOTWICA_X - 22, y0 - 34, 44, 7);
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(KOTWICA_X - 24, y0 - 34, 48, 7);
     ctx.fillStyle = '#c94a3a'; ctx.fillRect(4, y0 - 70, 44, 22);
   }
   function rysujWode() {
@@ -3221,73 +3236,69 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
       var yy = wy + 14 + r * 18;
       ctx.beginPath(); ctx.moveTo(20 + r * 30, yy); ctx.lineTo(90 + r * 30 + Math.sin(czas + r) * 10, yy); ctx.stroke();
     }
-    ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,0.75)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
-    ctx.beginPath(); ctx.ellipse(bojaX, wy + 2, 38, 9, 0, 0, Math.PI * 2); ctx.stroke();
-    ctx.restore();
-    ctx.font = '24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#ff6b3d';
-    ctx.fillText('🛟', bojaX, wy - 2 + Math.sin(czas * 2) * 2);
   }
-  function rysujPrzeszkody() {
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    przeszkody.forEach(function (o) {
-      var y = o.y - kamY;
-      if (y < -40 || y > H + 40) return;
-      if (o.typ === 'belka') {
-        var l = o.luka - o.szer / 2, p = o.luka + o.szer / 2;
-        rysujKratownice(0, y - 7, l, y - 7, 14);
-        rysujKratownice(p, y - 7, W, y - 7, 14);
-        ctx.fillStyle = 'rgba(255,224,138,0.16)'; ctx.fillRect(l, y - 8, o.szer, 16);
-      } else {
-        ctx.font = '28px sans-serif'; ctx.fillStyle = '#3a3346';
-        ctx.save(); ctx.translate(o.x, y);
-        if (o.v > 0) ctx.scale(-1, 1);
-        ctx.fillText('🐦', 0, 0); ctx.restore();
-      }
-    });
-    ctx.font = '21px sans-serif'; ctx.fillStyle = '#ffc93c'; ctx.globalAlpha = 1;
-    znajdzki.forEach(function (z) {
-      var y = z.y - kamY + Math.sin(czas * 3 + z.x) * 3;
-      if (y < -30 || y > H + 30) return;
-      ctx.fillText('⭐', z.x, y);
-    });
-  }
-  function rysujLineIGracza() {
-    var gx = gracz.x, gy = gracz.y - kamY;
-    var katDol = Math.PI / 2 - SYL.os, katGora = -Math.PI / 2 - SYL.os, docelowy;
-    if (stan === 'platforma') docelowy = katGora;
-    else {
-      var t = ogranicz((gracz.vy + 180) / 360, 0, 1);
-      docelowy = katGora + (katDol - katGora) * t + Math.sin(czas * 3) * 0.05;
+  // Belka = kratownica ze szczelina; wzor "jedzie" razem z nia (zakotwiczony w srodku szczeliny)
+  function rysujBelke(b, celna) {
+    var y = b.y - kamY;
+    if (y < -20 || y > H + 20) return;
+    var c = P + b.d + sAkt, lewy = c - b.hw, prawy = c + b.hw, g = 14, z = 7;
+    var kolor = b.st === 2 ? '#e0574a' : '#e3b23c';
+    ctx.fillStyle = 'rgba(96,66,14,0.55)';
+    ctx.fillRect(-30, y - z, lewy + 30, 2 * z);
+    ctx.fillRect(prawy, y - z, W + 30 - prawy, 2 * z);
+    ctx.strokeStyle = kolor; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.moveTo(-30, y - z); ctx.lineTo(lewy, y - z); ctx.moveTo(-30, y + z); ctx.lineTo(lewy, y + z);
+    ctx.moveTo(prawy, y - z); ctx.lineTo(W + 30, y - z); ctx.moveTo(prawy, y + z); ctx.lineTo(W + 30, y + z);
+    var k0 = Math.floor((-30 - c) / g), k1 = Math.ceil((W + 30 - c) / g);
+    for (var k = k0; k < k1; k++) {
+      var x = c + k * g;
+      if (x + g <= lewy + 0.5 || x >= prawy - 0.5) { ctx.moveTo(x, y + z); ctx.lineTo(x + g / 2, y - z); ctx.lineTo(x + g, y + z); }
     }
+    ctx.stroke();
+    ctx.fillStyle = kolor; ctx.fillRect(lewy - 3, y - z - 3, 3, 2 * z + 6); ctx.fillRect(prawy, y - z - 3, 3, 2 * z + 6);
+    ctx.fillStyle = celna ? 'rgba(96,220,130,0.34)' : 'rgba(255,224,138,0.10)';
+    ctx.fillRect(lewy, y - z, prawy - lewy, 2 * z);
+  }
+  function rysujBelki() {
+    if (stan === 'wciaganie') return;                  // wyciag w gore jedzie nad trasa
+    belki.forEach(function (b) {
+      var c = P + b.d + sAkt;
+      var blisko = b.st === 0 && b.y > gracz.y - 30 && b.y - gracz.y < 360;
+      rysujBelke(b, blisko && Math.abs(P - c) <= b.hw - HW - 2);
+    });
+  }
+  function rysujSkoczka() {
+    var gx = gracz.x, gy = gracz.y - kamY;
+    var docelowy = (stan === 'platforma' || stan === 'wciaganie') ? KAT_GORA : KAT_DOL + Math.sin(czas * 3) * 0.05;
     gracz.kat += (docelowy - gracz.kat) * 0.12;
     var szer = SYL.szer, wys = szer * (obrazSyl.naturalHeight && obrazSyl.naturalWidth ? obrazSyl.naturalHeight / obrazSyl.naturalWidth : 1);
     var sx = (SYL.stopyX - SYL.tulowX) * szer, sy = (SYL.stopyY - SYL.tulowY) * wys;
     var cs = Math.cos(gracz.kat), sn = Math.sin(gracz.kat);
     var stopyX = gx + sx * cs - sy * sn, stopyY = gy + sx * sn + sy * cs;
-    var kx = KOTWICA_X, ky = -kamY - 30;
+    var kx = KOTWICA_X, ky = -kamY - 44;
     ctx.lineCap = 'round';
-    if (stan !== 'lot' || gracz.y < dlugoscLiny) {
-      var dyst = Math.hypot(stopyX - kx, stopyY - ky), luz = stan === 'lot' ? Math.max(0, (dlugoscLiny - gracz.y) / dlugoscLiny) : 0.4;
-      var zwis = Math.min(60, dyst * 0.3) * luz;
-      ctx.strokeStyle = '#2d2438'; ctx.lineWidth = 2.6;
-      ctx.beginPath(); ctx.moveTo(kx, ky);
-      ctx.quadraticCurveTo((kx + stopyX) / 2 + zwis + Math.sin(czas * 2) * 6 * luz, (ky + stopyY) / 2 + zwis, stopyX, stopyY);
-      ctx.stroke();
+    var napiecie = (stan === 'lina' || stan === 'dno') ? ogranicz((gracz.y - yKoniec) / D_LINY, 0, 1) : 0;
+    var luz = (stan === 'platforma' || stan === 'wciaganie') ? 0.35 : 0;
+    if (luz > 0) {
+      var zwis = Math.min(60, Math.hypot(stopyX - kx, stopyY - ky) * 0.3) * luz;
+      ctx.strokeStyle = '#2d2438'; ctx.lineWidth = 2.6; ctx.beginPath(); ctx.moveTo(kx, ky);
+      ctx.quadraticCurveTo((kx + stopyX) / 2 + zwis + Math.sin(czas * 2) * 5, (ky + stopyY) / 2 + zwis, stopyX, stopyY); ctx.stroke();
     } else {
-      var napiecie = ogranicz((gracz.y - dlugoscLiny) / 330, 0, 1);
-      ctx.strokeStyle = mieszaj([45, 36, 56], [200, 60, 60], napiecie); ctx.lineWidth = 2.6 - napiecie * 1.2;
+      ctx.strokeStyle = mieszaj([45, 36, 56], [200, 60, 60], napiecie); ctx.lineWidth = 2.6 - napiecie * 1.0;
       ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(stopyX, stopyY); ctx.stroke();
     }
-    if (niezniszczalny > 0 && stan === 'lot' && Math.floor(czas * 12) % 2 === 0) return;
+    if (mignij > 0 && Math.floor(czas * 16) % 2 === 0) return;
     ctx.save(); ctx.translate(gx, gy); ctx.rotate(gracz.kat);
     if (obrazSyl.complete && obrazSyl.naturalWidth) {
       ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 6;
       ctx.drawImage(obrazSyl, -SYL.tulowX * szer, -SYL.tulowY * wys, szer, wys);
-    } else {
-      ctx.fillStyle = '#1d1a2b'; ctx.beginPath(); ctx.arc(0, 0, R_GRACZA, 0, Math.PI * 2); ctx.fill();
-    }
+    } else { ctx.fillStyle = '#1d1a2b'; ctx.beginPath(); ctx.arc(0, 0, HW, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
+  }
+  function rysujLinieSpadku() {
+    if (stan !== 'lot') return;
+    ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,0.45)'; ctx.lineWidth = 1.5; ctx.setLineDash([3, 8]);
+    ctx.beginPath(); ctx.moveTo(P, gracz.y - kamY + 24); ctx.lineTo(P, H); ctx.stroke(); ctx.restore();
   }
   function rysujEfekty() {
     czastki.forEach(function (c) { ctx.globalAlpha = Math.max(0, c.zycie / 0.8); ctx.fillStyle = c.kolor; ctx.fillRect(c.x - 2, c.y - kamY - 2, 4, 4); });
@@ -3299,17 +3310,58 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
       ctx.fillStyle = n.zly ? '#ff8a8a' : '#fff1b8'; ctx.fillText(n.t, n.x, n.y - kamY);
     });
     ctx.globalAlpha = 1;
-    if (stan === 'lot') {   // wskaznik glebokosci
-      var post = ogranicz(gracz.y / poziomWody, 0, 1);
+    if (stan === 'lot' || stan === 'lina') {   // wskaznik postepu po prawej
+      var post = ogranicz(gracz.y / (poziomWody - 8), 0, 1);
       ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(W - 7, 14, 3, H - 28);
       ctx.fillStyle = '#ffe08a'; ctx.fillRect(W - 9, 14 + (H - 28) * post - 3, 7, 6);
+    }
+    if (mignij > 0) {   // czerwona ramka po uderzeniu
+      ctx.strokeStyle = 'rgba(230,60,60,' + Math.min(0.75, mignij * 1.4) + ')'; ctx.lineWidth = 14; ctx.strokeRect(0, 0, W, H);
     }
   }
   function rysuj() {
     ctx.save();
-    if (trzesienie > 0) ctx.translate(losowa(-4, 4) * trzesienie * 3, losowa(-4, 4) * trzesienie * 3);
-    rysujTlo(); rysujDzwig(); rysujWode(); rysujPrzeszkody(); rysujLineIGracza(); rysujEfekty();
+    if (trzesienie > 0) ctx.translate((stala(czas * 60) - 0.5) * 8 * trzesienie * 3, (stala(czas * 60 + 7) - 0.5) * 8 * trzesienie * 3);
+    rysujTlo(); rysujDzwig(); rysujWode(); rysujLinieSpadku(); rysujSkoczka(); rysujBelki(); rysujEfekty();
     ctx.restore();
+    odswiezZnacznik();
+  }
+
+  // Zielony znacznik na podzialce (tylko w etapie 1): tu ustaw uchwyt dla najblizszej belki
+  function odswiezZnacznik() {
+    var E = ETAPY[etapNr];
+    var cel = null;
+    if (E && E.znacznik && stan === 'lot') {
+      for (var k = 0; k < belki.length; k++) {
+        if (belki[k].st === 0) { cel = belki[k]; break; }
+      }
+    }
+    if (!cel || cel.y - gracz.y > 420) { znacznik.style.display = 'none'; return; }
+    var uCel = ogranicz(0.5 - cel.d / (2 * S), 0, 1);
+    var uw = uchwyt.offsetWidth, zakres = suwak.offsetWidth - uw;
+    znacznik.style.display = 'block';
+    znacznik.style.left = (uw / 2 + uCel * zakres) + 'px';
+  }
+  function rysujLinijke() {
+    var cw = suwak.offsetWidth, ch = suwak.offsetHeight;
+    if (!cw || !ch) return;
+    var r = suwak.getBoundingClientRect(), skala = (r.width / cw) || 1, dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    linijka.width = Math.round(cw * skala * dpr); linijka.height = Math.round(ch * skala * dpr);
+    var c = linijka.getContext('2d');
+    c.setTransform(linijka.width / cw, 0, 0, linijka.height / ch, 0, 0);
+    c.clearRect(0, 0, cw, ch);
+    var uw = uchwyt.offsetWidth || 64, x0 = uw / 2, szer = cw - uw;
+    for (var i = 0; i <= 40; i++) {
+      var x = x0 + szer * i / 40, wielka = i % 5 === 0, srodek = i === 20;
+      c.strokeStyle = srodek ? '#ffd76a' : (wielka ? 'rgba(255,255,255,0.62)' : 'rgba(255,255,255,0.28)');
+      c.lineWidth = srodek ? 2 : 1;
+      var dl = srodek ? ch * 0.62 : (wielka ? ch * 0.44 : ch * 0.26);
+      c.beginPath(); c.moveTo(x, ch); c.lineTo(x, ch - dl); c.stroke();
+      c.beginPath(); c.moveTo(x, 0); c.lineTo(x, dl * 0.5); c.stroke();
+    }
+    c.fillStyle = 'rgba(255,255,255,0.28)'; c.font = 'bold 13px sans-serif'; c.textBaseline = 'middle';
+    c.textAlign = 'left'; c.fillText('◀', 6, ch / 2); c.textAlign = 'right'; c.fillText('▶', cw - 6, ch / 2);
+    odswiezUchwyt();
   }
 
   // ======================= PETLA I START =======================
@@ -3318,24 +3370,32 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     var w = Math.max(200, r.width || 360), h = w * H / W;
     plotno.width = Math.round(w * dpr); plotno.height = Math.round(h * dpr);
     ctx.setTransform(plotno.width / W, 0, 0, plotno.height / H, 0, 0);
+    ostatniaSzerokosc = r.width; rysujLinijke();
+  }
+  function dopasujGdyTrzeba() {   // pelny ekran skaluje blok gry - odswiezamy rozdzielczosc
+    var r = plotno.getBoundingClientRect();
+    if (Math.abs(r.width - ostatniaSzerokosc) > 1) dopasujPlotno();
   }
   window.addEventListener('resize', function () { setTimeout(dopasujPlotno, 50); });
   function petla(tt) {
     if (ostatniCzas === null) ostatniCzas = tt;
     var dt = Math.min(0.033, (tt - ostatniCzas) / 1000); ostatniCzas = tt;
-    if (stan === 'lot' || stan === 'wciaganie' || stan === 'platforma') aktualizuj(dt);
-    else { czas += dt; aktualizujCzastki(dt); }
+    if (++licznikRozmiaru % 20 === 0) dopasujGdyTrzeba();
+    if (stan === 'menu' || stan === 'koniec') { czas += dt; aktualizujCzastki(dt); }
+    else aktualizuj(dt);
     rysuj();
     requestAnimationFrame(petla);
   }
   nakladkaBtn.addEventListener('click', function () {
     inicjujDzwiek();
     nakladka.style.display = 'none';
-    nowaGra();
+    if (stan === 'koniec' && !ostatniaWygrana) naPlatforme('powtorka');   // po porazce: ten sam etap
+    else nowaGra();                                                        // start albo po wygranej: od poczatku
   });
-  zbudujSkok();
-  gracz = { x: KOTWICA_X, y: PLATFORMA_Y, vx: 0, vy: 0, kat: -Math.PI / 2 - SYL.os };
-  kamY = PLATFORMA_Y - H * 0.42; czastki = []; napisy = [];
+  zbudujEtap();
+  gracz = { x: P, y: PLATFORMA_Y, vx: 0, vy: 0, kat: KAT_GORA };
+  kamY = PLATFORMA_Y - H * 0.42;
+  aktualizujHud();
   dopasujPlotno();
   requestAnimationFrame(petla);
 })();
@@ -21024,9 +21084,9 @@ def renderuj_dron(etap_dane):
 def renderuj_bungee(etap_dane):
     klucz = etap_dane["klucz"]
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(_szablon_bungee(), 650, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(_szablon_bungee(), 790, key=f"kmp_{klucz}")
         return True if wynik else None
-    components.html(_szablon_bungee(), height=700, scrolling=False)
+    components.html(_szablon_bungee(), height=790, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_bungee"), etykieta_bledow=t("bledy_etykieta_bungee"))
 
 
@@ -22524,7 +22584,8 @@ SZABLON_SEJF = """<div id="sejfApp">
 OPISY_STATOW = {
     "gra":       [("porazki", "🔁", "Liczba podejść", "Attempts")],
     "dron":      [("podejscia", "🔁", "Liczba podejść", "Attempts")],
-    "bungee":    [("podejscia", "🔁", "Liczba podejść", "Attempts"), ("skoki", "🪢", "Wykonane skoki", "Jumps made")],
+    "bungee":    [("skoki", "🪢", "Wykonane skoki (3 = bez powtórek)", "Jumps made (3 = no retries)"),
+                  ("uderzenia", "💥", "Uderzenia w belki", "Beam hits")],
     "zaba":      [("smierci", "💀", "Liczba śmierci", "Deaths")],
     "memory":    [("pomylki", "❌", "Pomyłki przy odkrywaniu", "Mismatched pairs"), ("czas", "⏱️", "Czas odkrywania zdjęć", "Time to uncover")],
     "simon":     [("podejscia", "🔁", "Liczba podejść", "Attempts")],
