@@ -554,9 +554,9 @@ ETAPY = [
         "odpowiedz": ["qe6", "nf7", "nh6", "qg8", "nf7"],
     },
     {
-        "klucz": "dron",
-        "emoji": "🚁",
-        "tytul": {"pl": "🚁 Dron", "en": "🚁 Drone"},
+        "klucz": "dron",   # klucz bez zmian - zachowuje postep i statystyki
+        "emoji": "🪢",
+        "tytul": {"pl": "🪢 Skok na bungee", "en": "🪢 Bungee jump"},
         "typ": "dron",
     },
     {
@@ -2023,202 +2023,106 @@ button[data-testid="stBaseButton-primary"]:active,
 # przeglądarki) — koniecznie zagraj sam i dostrój liczby, jeśli trzeba.
 # ======================================================================
 
-SZABLON_DRONA = """
-<!DOCTYPE html>
-<html>
+# Skok na bungee (dawniej "Dron"): skacze sylwetka ze zdjecia z dzwigu
+SYLWETKA_BUNGEE_B64 = "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"
+
+
+def _szablon_bungee():
+    return SZABLON_BUNGEE.replace("__SYLWETKA__", SYLWETKA_BUNGEE_B64)
+
+
+SZABLON_BUNGEE = """<!DOCTYPE html>
+<html lang="pl">
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
-  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; touch-action: manipulation; }
-  html {
-    background: #0d0d0d;
-    height: 100%;
-  }
-  body {
-    margin: 0;
-    min-height: 100%;
-    font-family: -apple-system, 'Poppins', sans-serif;
-    background: #0d0d0d;
-    overflow: hidden;
-  }
-  /* Informacje na zywo (poziom / pary / czas / postep) - lekka nakladka
-     WEWNATRZ pola gry, zamiast osobnego czarnego paska nad nia. */
-  #panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 6;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 7px 14px;
-    color: #f5f5f0;
-    font-size: 15px;
-    font-weight: 600;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.85);
-    pointer-events: none;
-  }
-  #gra {
-    position: relative;
-    width: 100%;
-    height: 420px;
-    overflow: hidden;
-    border-radius: 16px;
-    border: 2px solid #d4af37;
-    cursor: pointer;
-  }
-  #dron {
-    position: absolute;
-    width: 34px;
-    height: 34px;
-    z-index: 5;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    /* left/top (pozycja) sa OSOBNE od transform (tylko obrot + stale
-       centrowanie) - to przejscie wyglodzi WYLACZNIE zmiane kata przy
-       podskoku, bez najmniejszego opoznienia w ruchu/kolizjach. */
-    /* Bez CSS-owego przejscia: obrot wygladzam w JS, zeby kazda klatka
-       nie przerywala poprzedniej animacji (to powodowalo zacinanie). */
-  }
-  .smiglo {
-    /* Smigla kreca sie CIAGLE i niezaleznie od przechylu drona - ich
-       animacja nigdy nie jest resetowana przy kliknieciu. */
-    transform-box: view-box;
-    animation: kreciSmiglo 0.22s linear infinite;
-  }
-  .smiglo-b { animation-duration: 0.19s; animation-direction: reverse; }
-  @keyframes kreciSmiglo {
-    from { transform: rotate(0deg); }
-    to   { transform: rotate(360deg); }
-  }
-  #wynikNaEkranie {
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 32px;
-    font-weight: 700;
-    color: #fff;
-    text-shadow: 0 2px 6px rgba(0,0,0,0.6);
-    z-index: 4;
-    pointer-events: none;
-  }
-  .przeszkoda {
-    position: absolute;
-    width: 50px;
-    background: linear-gradient(180deg, #3a3050, #241b3a);
-    border-left: 2px solid #d4af37;
-    border-right: 2px solid #d4af37;
-  }
-  .przeszkoda-gora {
-    top: 0;
-    border-bottom: 5px solid #f0dfa8;
-  }
-  .przeszkoda-dol {
-    border-top: 5px solid #f0dfa8;
-  }
-  #nakladka {
-    position: absolute;
-    inset: 0;
-    z-index: 10;
-    background: rgba(13,13,13,0.95);
-    color: #e6c15c;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 24px;
-  }
-  #nakladka h2 { font-size: 22px; margin: 0 0 8px; }
-  #nakladka p { margin: 0 0 6px; font-size: 14px; opacity: 0.85; }
-  #kodWygrany {
-    font-size: 28px;
-    letter-spacing: 4px;
-    color: #fff;
-    background: #1a1a2e;
-    padding: 8px 18px;
-    border-radius: 10px;
-    border: 1px solid #d4af37;
-    margin: 10px 0;
-  }
-  button.gra-btn {
-    background: linear-gradient(135deg,#e6c15c,#d4af37);
-    border: none;
-    padding: 10px 26px;
-    border-radius: 30px;
-    font-weight: 700;
-    color: #1a1a1a;
-    cursor: pointer;
-    font-size: 15px;
-    margin-top: 10px;
-  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; background: transparent; font-family: -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-user-select: none; user-select: none; overflow: hidden; }
+  #gra { position: relative; width: 100%; max-width: 400px; margin: 0 auto; }
+  #hud { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 6px 8px;
+    background: linear-gradient(135deg, #221d33, #16131f); border: 1px solid rgba(230,193,92,0.35);
+    border-radius: 12px 12px 0 0; color: #f3ead2; font-weight: 800; font-size: 14px; }
+  #zycia { letter-spacing: 1px; min-width: 64px; }
+  #wynikEl { color: #ffe08a; }
+  #skokEl { color: #cfc4ad; font-size: 12.5px; }
+  #btnDzwiek { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.18); color: #fff;
+    border-radius: 8px; font-size: 14px; padding: 2px 7px; cursor: pointer; }
+  #plotnoOslona { position: relative; width: 100%; aspect-ratio: 2 / 3; border-radius: 0 0 12px 12px; overflow: hidden;
+    border: 1px solid rgba(230,193,92,0.35); border-top: none; background: #9ec9ef; }
+  canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  #nakladka { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: rgba(14,11,24,0.78); color: #f3ead2; text-align: center; padding: 18px; }
+  #nakladka h2 { margin: 0 0 8px; color: #ffe08a; font-size: 22px; }
+  #nakladka p { margin: 0 0 14px; font-size: 14px; line-height: 1.5; max-width: 320px; }
+  .przycisk { background: linear-gradient(135deg, #f0c24b, #d9941e); color: #2a1a05; border: none; border-radius: 12px;
+    font-weight: 900; font-size: 16px; padding: 11px 22px; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.45); }
+  #toast { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); padding: 6px 12px; border-radius: 10px;
+    background: rgba(20,16,32,0.88); border: 1px solid rgba(255,224,138,0.6); color: #ffe08a; font-weight: 800; font-size: 13px;
+    white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .35s; max-width: 94%; overflow: hidden; text-overflow: ellipsis; }
 </style>
 </head>
 <body>
-  <!-- Element <audio> (NIE Web Audio API) do "odblokowania" dzwieku
-       na iOS, gdy fizyczny przelacznik wyciszenia jest wlaczony.
-       Udokumentowane zachowanie WebKit: Web Audio API respektuje ten
-       przelacznik, ale element <audio> - NIE. Odtworzenie cichego,
-       zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
-  <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
-  <div id="gra">
-    <div id="wynikNaEkranie">0</div>
-    <svg id="dron" viewBox="0 0 34 34">
-      <line x1="6" y1="6" x2="28" y2="28" stroke="#9a9a9a" stroke-width="2"/>
-      <line x1="28" y1="6" x2="6" y2="28" stroke="#9a9a9a" stroke-width="2"/>
-      <circle cx="6" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo" style="transform-origin:6px 6px"><rect x="1.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="28" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo smiglo-b" style="transform-origin:28px 6px"><rect x="23.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="6" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo smiglo-b" style="transform-origin:6px 28px"><rect x="1.5" y="27.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="28" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <rect x="11" y="11" width="12" height="12" rx="3" fill="#1a1a1a" stroke="#e6c15c" stroke-width="1.5"/>
-      <circle cx="17" cy="17" r="1.6" fill="#ff4d4d"/>
-    </svg>
+<div id="gra">
+  <div id="hud">
+    <span id="zycia">❤️❤️❤️</span>
+    <span id="wynikEl">⭐ 0 / 20</span>
+    <span id="skokEl">Skok 1</span>
+    <button id="btnDzwiek">🔊</button>
+  </div>
+  <div id="plotnoOslona">
+    <canvas id="plotno"></canvas>
+    <div id="toast"></div>
     <div id="nakladka">
-      <h2 id="nakladkaTytul">Dron</h2>
-      <p id="nakladkaOpis"></p>
-      <button class="gra-btn" id="nakladkaBtn">Graj ▶</button>
+      <h2 id="nakladkaTytul">🪢 Skok na bungee</h2>
+      <p id="nakladkaOpis">Skacz z dźwigu! Przytrzymaj palec na ekranie i przesuwaj — skoczek leci za nim.<br>
+        Zbieraj ❤️ (+1) i ⭐ (+3), omijaj ptaki, balony i belki dźwigów.<br>
+        Na dole wceluj w koło 🛟 na wodzie (+3). Masz 3 życia, a każdy skok jest trudniejszy.<br><b>Cel: 20 punktów.</b></p>
+      <button id="nakladkaBtn" class="przycisk">Skacz! 🪢</button>
     </div>
   </div>
-
+</div>
 <script>
-  var gra = document.getElementById('gra');
-  var dron = document.getElementById('dron');
-  var wynikNaEkranie = document.getElementById('wynikNaEkranie');
+(function () {
+  // ======================= USTAWIENIA =======================
+  var W = 360, H = 540;                 // logiczny rozmiar planszy
+  var CEL_WYNIK = 20;
+  var GRAW = 1100, V_MAX = 560;         // grawitacja i predkosc graniczna spadania
+  var SPREZ = 9, TLUMIENIE = 0.3;       // lina: sztywnosc i tlumienie (tylko w dol)
+  var GRAW_ODBICIA = 430;               // lzejszy lot w gore po odbiciu
+  var KOTWICA_X = 196;                  // koniec wysiegnika dzwigu
+  var R_GRACZA = 13;                    // promien trafienia (tulow)
+  // Sylwetka ze zdjecia: punkty w ulamkach obrazka i os stopy->glowa
+  var SYL = { tulowX: 0.526, tulowY: 0.454, stopyX: 0.117, stopyY: 0.87, os: -0.782, szer: 74 };
+
+  var plotno = document.getElementById('plotno');
+  var ctx = plotno.getContext('2d');
   var nakladka = document.getElementById('nakladka');
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
+  var zyciaEl = document.getElementById('zycia'), wynikEl = document.getElementById('wynikEl');
+  var skokEl = document.getElementById('skokEl'), toastEl = document.getElementById('toast');
+  var btnDzwiek = document.getElementById('btnDzwiek');
 
-  var DRON_X = 0.25;
-  var DRON_R = 14;
-  var GRAWITACJA = 1400;
-  var SILA_SKOKU = -380;
-  var PREDKOSC_START = 150;
-  var ODSTEP_SPAWN_START = 1.7;
-  var SZEROKOSC_PRZESZKODY = 50;
-  var LUKA_START = 145;
-  var LUKA_MIN = 105;
-  var CEL_WYNIK = 20;
-  var celOsiagniety = false; // sygnal zaliczenia wysylamy TYLKO RAZ, gra leci dalej
-  var MARGINES = 60;
+  var obrazSyl = new Image();
+  obrazSyl.src = 'data:image/png;base64,__SYLWETKA__';
 
-  var dronY = 0;
-  var dronVY = 0;
-  var przeszkody = [];
-  var wynik = 0;
-  var trwa = false;
-  var czasOstatni = null;
-  var czasOdSpawnu = 0;
-  var obrotWygladzony = 0;
+  // ======================= STAN =======================
+  var stan = 'menu';        // 'menu' | 'lot' | 'wciaganie' | 'koniec'
+  var gracz, kamY, dlugoscLiny, poziomWody, przeszkody, znajdzki, czastki, napisy, chmury;
+  var wynik = 0, zycia = 3, skok = 1, niezniszczalny = 0, trzesienie = 0, czas = 0;
+  var celOsiagniety = false, zanurzony = false, bylNapiety = false, odbicie = false, wciaganie = null;
+  var celX = KOTWICA_X, dotyk = false, klawLewo = false, klawPrawo = false;
+  var ostatniCzas = null, rekord = 0, bojaX = 180, pokazanoDron = false;
 
-  var audioCtx = null;
+  function losowa(a, b) { return a + Math.random() * (b - a); }
+  function ogranicz(v, a, b) { return v < a ? a : (v > b ? b : v); }
 
-  function losowo(min, max) { return Math.random() * (max - min) + min; }
-
+  // ======================= DZWIEK =======================
+  var audioCtx = null, glowny = null, wiatrGain = null, wiatrFiltr = null, muzykaWl = true;
+  var nastepnyTakt = 0, krokMuzyki = 0, harmonogram = null;
   function inicjujDzwiek() {
     try {
       var oknoNadrzedne;
@@ -2229,491 +2133,540 @@ SZABLON_DRONA = """
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         try { oknoNadrzedne.__wspolnyKontekstAudio = audioCtx; } catch (ePrzypisania) {}
       }
-      if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (!glowny) {
+        glowny = audioCtx.createGain(); glowny.gain.value = 0.9;
+        glowny.connect(audioCtx.destination);
+        // Szum wiatru: petla szumu przez filtr, glosnosc zalezy od predkosci
+        var bufor = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+        var d = bufor.getChannelData(0);
+        for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+        var szum = audioCtx.createBufferSource(); szum.buffer = bufor; szum.loop = true;
+        wiatrFiltr = audioCtx.createBiquadFilter(); wiatrFiltr.type = 'bandpass'; wiatrFiltr.frequency.value = 500; wiatrFiltr.Q.value = 0.7;
+        wiatrGain = audioCtx.createGain(); wiatrGain.gain.value = 0;
+        szum.connect(wiatrFiltr); wiatrFiltr.connect(wiatrGain); wiatrGain.connect(glowny);
+        szum.start();
       }
-      // "Odmutowanie" Web Audio na iOS mimo wlaczonego przelacznika ciszy -
-      // patrz komentarz przy elemencie <audio id="odblokowanieDzwiekuIOS">.
-      var elOdmutowania = document.getElementById('odblokowanieDzwiekuIOS');
-      if (elOdmutowania && !elOdmutowania.src) {
-        elOdmutowania.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA==';
-        elOdmutowania.play().catch(function () {});
-      }
-      // odblokowanie Web Audio na iOS Safari - trzeba realnie cos zagrac
-      // (nawet cisza) w tym samym, synchronicznym gescie dotyku
-      var cichyBufor = audioCtx.createBuffer(1, 1, 22050);
-      var cicheZrodlo = audioCtx.createBufferSource();
-      cicheZrodlo.buffer = cichyBufor;
-      cicheZrodlo.connect(audioCtx.destination);
-      cicheZrodlo.start(0);
-    } catch (e) {
-      audioCtx = null;
+    } catch (e) { audioCtx = null; }
+  }
+  function ton(f, dl, typ, gl, kiedy, fKon) {
+    if (!audioCtx || !glowny || !muzykaWl) return;
+    var t = kiedy || audioCtx.currentTime;
+    var o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = typ || 'sine'; o.frequency.setValueAtTime(f, t);
+    if (fKon) o.frequency.exponentialRampToValueAtTime(fKon, t + dl);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gl || 0.1, t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dl);
+    o.connect(g); g.connect(glowny); o.start(t); o.stop(t + dl + 0.03);
+  }
+  function szumPlusk(dl, gl, fr) {
+    if (!audioCtx || !glowny || !muzykaWl) return;
+    var t = audioCtx.currentTime, n = Math.floor(audioCtx.sampleRate * dl);
+    var b = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    var s = audioCtx.createBufferSource(); s.buffer = b;
+    var f = audioCtx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = fr || 1400;
+    var g = audioCtx.createGain(); g.gain.value = gl || 0.2;
+    s.connect(f); f.connect(g); g.connect(glowny); s.start(t);
+  }
+  function dzwiekSerca() { ton(880, 0.09, 'sine', 0.12); ton(1320, 0.14, 'sine', 0.1, audioCtx && audioCtx.currentTime + 0.07); }
+  function dzwiekGwiazdy() { if (!audioCtx) return; var t = audioCtx.currentTime; [784, 988, 1175, 1568].forEach(function (f, i) { ton(f, 0.12, 'triangle', 0.1, t + i * 0.06); }); }
+  function dzwiekUderzenia() { ton(140, 0.28, 'sawtooth', 0.16, null, 50); szumPlusk(0.18, 0.18, 700); }
+  function dzwiekLiny() { ton(210, 0.45, 'triangle', 0.12, null, 90); }
+  function dzwiekPlusku() { szumPlusk(0.5, 0.26, 1800); ton(420, 0.2, 'sine', 0.06, null, 200); }
+  function dzwiekSkoku() { if (!audioCtx) return; var t = audioCtx.currentTime; [523, 659, 784].forEach(function (f, i) { ton(f, 0.16, 'square', 0.05, t + i * 0.08); }); }
+
+  // Muzyka: Am-F-C-G, bas + arpeggio + stopa + hi-hat; z kolejnymi skokami gesciej
+  var AKORDY = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
+  function zaplanujMuzyke() {
+    if (!audioCtx || !muzykaWl) return;
+    var tempo = 0.5 * 60 / (116 + Math.min(skok - 1, 5) * 4);   // osemka
+    while (nastepnyTakt < audioCtx.currentTime + 0.12) {
+      var t = nastepnyTakt, k = krokMuzyki % 32, akord = AKORDY[Math.floor(k / 8)];
+      if (k % 4 === 0) ton(akord[0] / 2, tempo * 1.8, 'triangle', 0.14, t);                  // bas
+      if (k % 4 === 0) ton(120, 0.12, 'sine', 0.2, t, 45);                                  // stopa
+      if (k % 2 === 1 && stan === 'lot') szumPluskMuz(t, skok > 2 ? 0.05 : 0.035);           // hi-hat
+      var nuta = akord[[0, 1, 2, 1, 2, 0, 1, 2][k % 8]] * 2;
+      ton(nuta, tempo * 0.9, 'square', stan === 'lot' ? 0.028 : 0.018, t);                  // arpeggio
+      if (skok >= 3 && k % 8 === 6) ton(akord[2] * 4, tempo * 1.5, 'sine', 0.03, t);         // blysk w wyzszych skokach
+      nastepnyTakt += tempo; krokMuzyki++;
     }
   }
-
-  ['pointerdown', 'touchstart', 'click'].forEach(function (nazwaZdarzenia) {
-    document.addEventListener(nazwaZdarzenia, function () {
-      if (!audioCtx || audioCtx.state === 'suspended') { inicjujDzwiek(); }
-    }, { passive: true });
+  function szumPluskMuz(t, gl) {
+    var n = Math.floor(audioCtx.sampleRate * 0.04);
+    var b = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = b.getChannelData(0);
+    for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n);
+    var s = audioCtx.createBufferSource(); s.buffer = b;
+    var f = audioCtx.createBiquadFilter(); f.type = 'highpass'; f.frequency.value = 7000;
+    var g = audioCtx.createGain(); g.gain.value = gl;
+    s.connect(f); f.connect(g); g.connect(glowny); s.start(t);
+  }
+  function wlaczMuzyke() {
+    if (!audioCtx) return;
+    if (harmonogram) clearInterval(harmonogram);
+    nastepnyTakt = audioCtx.currentTime + 0.05;
+    harmonogram = setInterval(zaplanujMuzyke, 30);
+  }
+  btnDzwiek.addEventListener('click', function () {
+    inicjujDzwiek();
+    muzykaWl = !muzykaWl;
+    btnDzwiek.textContent = muzykaWl ? '🔊' : '🔇';
+    if (wiatrGain) wiatrGain.gain.value = 0;
+    if (muzykaWl) wlaczMuzyke(); else if (harmonogram) { clearInterval(harmonogram); harmonogram = null; }
   });
 
-  function zagrajTon(czestotliwosc, czasTrwania, typ) {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-    try {
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = typ;
-      osc.frequency.value = czestotliwosc;
-      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.18, audioCtx.currentTime + 0.01);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + czasTrwania);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + czasTrwania);
-    } catch (e) {
-      // dzwiek to dodatek - jego brak nie moze zepsuc gry
-    }
-  }
-
-  function zagrajDzwiek(typ) {
-    if (typ === 'skok') zagrajSmiglo();
-    else if (typ === 'punkt') zagrajTon(800, 0.12, 'sine');
-    else if (typ === 'crash') zagrajTon(120, 0.35, 'sawtooth');
-  }
-
-  // Krotkie "vrrm" - buczenie obracajacego sie smigla przy kazdym unosieniu
-  function zagrajSmiglo() {
-    if (!audioCtx) return;
-    try {
-      if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(90, audioCtx.currentTime);
-      osc.frequency.linearRampToValueAtTime(260, audioCtx.currentTime + 0.06);
-      osc.frequency.linearRampToValueAtTime(140, audioCtx.currentTime + 0.14);
-      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.16, audioCtx.currentTime + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.15);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.16);
-    } catch (e) {}
-  }
-
-  var interwalMuzyki = null;
-  var NUTY_MUZYKI = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63];
-  function startMuzyke() {
-    zatrzymajMuzyke();
-    var i = 0;
-    interwalMuzyki = setInterval(function () {
-      zagrajTon(NUTY_MUZYKI[i % NUTY_MUZYKI.length], 0.22, 'triangle');
-      i++;
-    }, 340);
-  }
-  function zatrzymajMuzyke() {
-    if (interwalMuzyki) {
-      clearInterval(interwalMuzyki);
-      interwalMuzyki = null;
-    }
-  }
-
-  function skok() {
-    if (!trwa) return;
-    dronVY = SILA_SKOKU;
-    zagrajDzwiek('skok');
-  }
-
-  function usunPrzeszkode(p) {
-    if (p.elGora.parentNode) p.elGora.remove();
-    if (p.elDol.parentNode) p.elDol.remove();
-  }
-
-  function stworzPrzeszkode(szer, wys, gapY, gapH) {
-    var gora = document.createElement('div');
-    gora.className = 'przeszkoda przeszkoda-gora';
-    gora.style.height = (gapY - gapH / 2) + 'px';
-
-    var dol = document.createElement('div');
-    dol.className = 'przeszkoda przeszkoda-dol';
-    dol.style.top = (gapY + gapH / 2) + 'px';
-    dol.style.height = (wys - (gapY + gapH / 2)) + 'px';
-
-    gra.appendChild(gora);
-    gra.appendChild(dol);
-
-    return { x: szer + 10, gapY: gapY, gapH: gapH, minieta: false, elGora: gora, elDol: dol };
-  }
-
-  function aktualizujWynik() {
-    wynikNaEkranie.textContent = wynik;
-  }
-
-  function rysuj() {
-    dron.style.left = (gra.clientWidth * DRON_X) + 'px';
-    dron.style.top = dronY + 'px';
-    var obrotCel = Math.max(-25, Math.min(70, dronVY / 8));
-    obrotWygladzony += (obrotCel - obrotWygladzony) * 0.22;
-    dron.style.transform = 'translate(-50%, -50%) rotate(' + obrotWygladzony.toFixed(2) + 'deg)';
-
-    for (var i = 0; i < przeszkody.length; i++) {
-      przeszkody[i].elGora.style.left = przeszkody[i].x + 'px';
-      przeszkody[i].elDol.style.left = przeszkody[i].x + 'px';
-    }
-  }
-
-  function petla(czas) {
-    if (!trwa) { czasOstatni = null; return; }
-    if (czasOstatni === null) czasOstatni = czas;
-    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
-    czasOstatni = czas;
-
-    var szer = gra.clientWidth;
-    var wys = gra.clientHeight;
-
-    dronVY += GRAWITACJA * dt;
-    dronY += dronVY * dt;
-
-    var mnoznik = 1 + Math.min(wynik, 100) * 0.03; // rosnie dalej w nieskonczonym trybie
-    var predkoscAktualna = PREDKOSC_START * mnoznik;
-    var lukaAktualna = Math.max(LUKA_MIN, LUKA_START - wynik * 2);
-
-    czasOdSpawnu += dt;
-    var odstepAktualny = ODSTEP_SPAWN_START / mnoznik;
-    if (czasOdSpawnu >= odstepAktualny) {
-      czasOdSpawnu = 0;
-      var gapYMin = MARGINES + lukaAktualna / 2;
-      var gapYMax = wys - MARGINES - lukaAktualna / 2;
-      var gapY = losowo(gapYMin, gapYMax);
-      przeszkody.push(stworzPrzeszkode(szer, wys, gapY, lukaAktualna));
-    }
-
-    var dronXpx = szer * DRON_X;
-
-    for (var i = przeszkody.length - 1; i >= 0; i--) {
-      var p = przeszkody[i];
-      p.x -= predkoscAktualna * dt;
-
-      if (p.x < dronXpx + DRON_R && p.x + SZEROKOSC_PRZESZKODY > dronXpx - DRON_R) {
-        var krawedzGornej = p.gapY - p.gapH / 2;
-        var krawedzDolnej = p.gapY + p.gapH / 2;
-        if (dronY - DRON_R < krawedzGornej || dronY + DRON_R > krawedzDolnej) {
-          zakonczGre();
-          return;
-        }
-      }
-
-      if (!p.minieta && p.x + SZEROKOSC_PRZESZKODY < dronXpx - DRON_R) {
-        p.minieta = true;
-        wynik += 1;
-        zagrajDzwiek('punkt');
-        aktualizujWynik();
-        // Gra jest NIESKONCZONA - po osiagnieciu celu wysylamy zaliczenie
-        // TYLKO RAZ, ale lot trwa dalej (bez zatrzymywania).
-        if (wynik >= CEL_WYNIK && !celOsiagniety) {
-          celOsiagniety = true;
-          zglosZaliczenieWLocie();
-        }
-      }
-
-      if (p.x < -SZEROKOSC_PRZESZKODY) {
-        usunPrzeszkode(p);
-        przeszkody.splice(i, 1);
-      }
-    }
-
-    if (dronY - DRON_R < 0 || dronY + DRON_R > wys) {
-      zakonczGre();
-      return;
-    }
-
-    rysuj();
-    requestAnimationFrame(petla);
-  }
-
-  function rozpocznijGre() {
-    window.stat && window.stat('podejscia');
-    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
-    przeszkody = [];
-    wynik = 0;
-    celOsiagniety = false;
-    aktualizujWynik();
-    dronY = gra.clientHeight / 2;
-    dronVY = 0;
-    czasOdSpawnu = 0;
-    obrotWygladzony = 0;
-    czasOstatni = null;
-    nakladka.style.display = 'none';
-    trwa = true;
-    rysuj();
-    requestAnimationFrame(petla);
-    startMuzyke();
-  }
-
-  // Wysyla sygnal zaliczenia BEZ zatrzymywania lotu - gra jest
-  // nieskonczona, wiec po osiagnieciu celu leci sie dalej. Krotki
-  // dzwiekowy i wizualny akcent daje znac, ze cel zostal osiagniety.
-  function zglosZaliczenieWLocie() {
-    if (window.parent) {
-      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
-      // "dalej": zalicz, ale nie zamykaj gry - lot trwa, mozna bic rekord
-      if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
-      window.postMessage(wiadomoscZaliczenia, '*');
-      if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
-    }
-    zagrajTon(1046.50, 0.15, 'triangle');
-    setTimeout(function () { zagrajTon(1318.51, 0.2, 'triangle'); }, 130);
-    wynikNaEkranie.style.color = '#ffd700';
-    wynikNaEkranie.style.textShadow = '0 0 10px rgba(255,215,0,0.9), 0 2px 6px rgba(0,0,0,0.6)';
-    setTimeout(function () {
-      wynikNaEkranie.style.color = '#fff';
-      wynikNaEkranie.style.textShadow = '0 2px 6px rgba(0,0,0,0.6)';
-    }, 1600);
-  }
-
-  // Gra konczy sie TERAZ tylko przez rozbicie - nie ma juz oddzielnego
-  // "zwyciestwa" ktore zatrzymywalo lot (patrz zglosZaliczenieWLocie).
-  function zakonczGre() {
-    trwa = false;
-    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
-    przeszkody = [];
-    nakladka.style.display = 'flex';
-    zatrzymajMuzyke();
-    zagrajDzwiek('crash');
-    if (celOsiagniety) {
-      nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ' + wynik;
-      nakladkaOpis.textContent = 'Cel to ' + CEL_WYNIK + ' — udało się! Spróbujesz pobić swój wynik?';
-    } else {
-      nakladkaTytul.textContent = '💥 Rozbity dron...';
-      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-    }
-    nakladkaBtn.style.display = 'inline-block';
-    nakladkaBtn.textContent = 'Jeszcze raz';
-    nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
-  }
-
-  var pominDrugiSkok = false;
-  gra.addEventListener('click', function () {
-    if (pominDrugiSkok) return;
-    if (nakladka.style.display !== 'none') return;
-    skok();
-  });
-  gra.addEventListener('touchstart', function (e) {
-    if (nakladka.style.display !== 'none') return;
-    e.preventDefault();
-    pominDrugiSkok = true;
-    skok();
-    setTimeout(function () { pominDrugiSkok = false; }, 500);
-  }, { passive: false });
-
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
-</script>
-
-<script>
-/* ---------- PELNY EKRAN ----------
-   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
-   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
-   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
-   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
-   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
-(function () {
-  var korzen = document.getElementById('gra');
-  if (!korzen) return;
-
-  var ramka = null;
-  try { ramka = window.frameElement; } catch (e) { ramka = null; }
-
-  var przycisk = document.createElement('button');
-  przycisk.textContent = '⛶';
-  przycisk.style.cssText =
-    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
-    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
-    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
-    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
-  document.body.appendChild(przycisk);
-
-  var wlaczony = false, styleRamki = '', styleRodzica = '';
-  var natW = 0, natH = 0;
-
-  function przelicz() {
-    if (!wlaczony) {
-      korzen.style.transform = '';
-      korzen.style.position = '';
-      korzen.style.left = '';
-      korzen.style.top = '';
-      korzen.style.width = '';
-      korzen.style.height = '';
-      korzen.style.transformOrigin = '';
-      document.body.style.overflow = '';
-      return;
-    }
-    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
-    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
-    if (window.__wlasneSkalowanie) {
-      korzen.style.transform = '';
-      korzen.style.position = 'absolute';
-      korzen.style.left = '0px';
-      korzen.style.top = '0px';
-      korzen.style.width = window.innerWidth + 'px';
-      korzen.style.height = window.innerHeight + 'px';
-      document.body.style.overflow = 'hidden';
-      document.body.style.background = '#0d0d0d';
-      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
-      return;
-    }
-    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
-    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
-    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
-    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
-    korzen.style.width = natW + 'px';
-    korzen.style.height = natH + 'px';
-    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
-    korzen.style.transformOrigin = 'top left';
-    korzen.style.transform = 'scale(' + s + ')';
-    korzen.style.position = 'absolute';
-    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
-    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
-    document.body.style.overflow = 'hidden';
-    document.body.style.background = '#0d0d0d';
-  }
-
-  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
-  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
-  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
-  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
-  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
-  var prawdziwyPelny = false;
-
-  function sprobujPrawdziwegoPelnego() {
-    if (!ramka) return false;
-    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
-         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
-    if (!f) return false;
-    try {
-      var wynik = f.call(ramka);
-      if (wynik && typeof wynik.catch === 'function') {
-        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
-      }
-      prawdziwyPelny = true;
-      return true;
-    } catch (e) { return false; }
-  }
-
-  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
-  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
-  var ukryteElementy = [];
-  function schowajInterfejsStrony() {
-    if (!ramka) return;
-    try {
-      var d = ramka.ownerDocument;
-      var doUkrycia = d.querySelectorAll(
-        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
-      );
-      for (var i = 0; i < doUkrycia.length; i++) {
-        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
-        doUkrycia[i].style.display = 'none';
-      }
-      styleRodzica = d.body.getAttribute('style') || '';
-      d.body.style.overflow = 'hidden';
-      d.body.style.margin = '0';
-      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
-      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
-      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
-    } catch (e) {}
-  }
-  function przywrocInterfejsStrony() {
-    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
-    ukryteElementy = [];
-    if (!ramka) return;
-    try {
-      var d = ramka.ownerDocument;
-      d.body.setAttribute('style', styleRodzica);
-      if (d.documentElement) d.documentElement.style.overflow = '';
-    } catch (e) {}
-  }
-
-  function zapasowyPelny() {
-    if (!ramka) return;
-    styleRamki = ramka.getAttribute('style') || '';
-    ramka.style.cssText =
-      'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
-      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
-    schowajInterfejsStrony();
-    setTimeout(przelicz, 60);
-    setTimeout(przelicz, 260);
-  }
-
-  function wlacz() {
-    var r = korzen.getBoundingClientRect();
-    natW = r.width || 380;
-    natH = r.height || 560;
-    wlaczony = true;
-    przycisk.textContent = '✕';
-
-    if (ramka) {
-      styleRamki = ramka.getAttribute('style') || '';
-      if (sprobujPrawdziwegoPelnego()) {
-        // Ramka wypełnia teraz cały ekran urządzenia
-        ramka.style.width = '100%';
-        ramka.style.height = '100%';
-        ramka.style.maxWidth = 'none';
-        ramka.style.border = '0';
+  // ======================= SWIAT =======================
+  function zbudujSkok() {
+    dlugoscLiny = Math.min(2500, 1650 + (skok - 1) * 170);
+    poziomWody = dlugoscLiny + 290;
+    bojaX = losowa(60, W - 60);
+    przeszkody = []; znajdzki = [];
+    var y = 330, odstep = Math.max(118, 190 - skok * 13);
+    while (y < dlugoscLiny - 40) {
+      var r = Math.random(), typ;
+      if (skok >= 2 && r < 0.16) typ = 'wiatr';
+      else if (skok >= 2 && r < 0.36) typ = 'dron';
+      else if (r < 0.58) typ = 'belka';
+      else if (r < 0.82) typ = 'ptak';
+      else typ = 'balon';
+      if (typ === 'belka') {
+        var szer = Math.max(86, 132 - skok * 8);
+        var luka = losowa(20 + szer / 2, W - 20 - szer / 2);
+        przeszkody.push({ typ: 'belka', y: y, luka: luka, szer: szer, v: skok >= 4 ? losowa(-40, 40) : 0 });
+        znajdzki.push({ typ: Math.random() < 0.25 && skok >= 2 ? 'gwiazda' : 'serce', x: luka, y: y - 2 });
+      } else if (typ === 'wiatr') {
+        przeszkody.push({ typ: 'wiatr', y: y, wys: 90, sila: (Math.random() < 0.5 ? -1 : 1) * (120 + skok * 12) });
+        znajdzki.push({ typ: 'serce', x: losowa(40, W - 40), y: y + 45 });
       } else {
-        zapasowyPelny();
+        var o = { typ: typ, y: y, x: losowa(40, W - 40), bazX: 0, v: 0, faza: losowa(0, 6.28), r: typ === 'dron' ? 16 : 14 };
+        o.bazX = o.x;
+        if (typ === 'ptak') o.v = (Math.random() < 0.5 ? -1 : 1) * (70 + skok * 18);
+        przeszkody.push(o);
+        // Serduszko obok przeszkody - kusi, zeby podleciec blisko
+        var strona = o.x < W / 2 ? 1 : -1;
+        znajdzki.push({ typ: Math.random() < 0.18 && skok >= 2 ? 'gwiazda' : 'serce', x: ogranicz(o.x + strona * losowa(46, 80), 24, W - 24), y: y + losowa(-10, 10) });
       }
-      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(function () {});
+      y += odstep * losowa(0.85, 1.2);
+    }
+    chmury = [];
+    for (var i = 0; i < 14; i++) chmury.push({ x: losowa(-40, W + 40), y: losowa(-300, poziomWody), s: losowa(0.6, 1.4), p: losowa(0.25, 0.6) });
+  }
+  function nowaGra() {
+    wynik = 0; zycia = 3; skok = 1; celOsiagniety = false; pokazanoDron = false; czas = 0;
+    window.stat && window.stat('podejscia');
+    zacznijSkok();
+    aktualizujHud();
+  }
+  function zacznijSkok() {
+    zbudujSkok();
+    gracz = { x: KOTWICA_X, y: -6, vx: 0, vy: -150, kat: 0 };
+    kamY = gracz.y - H * 0.38; celX = KOTWICA_X;
+    czastki = []; napisy = []; zanurzony = false; bylNapiety = false; odbicie = false; niezniszczalny = 0.8;
+    stan = 'lot';
+    dzwiekSkoku();
+    pokazToast('Skok ' + skok + (skok === 1 ? ' — powodzenia! 🪢' : ' — lina dłuższa, trudniej! 😈'), 1800);
+  }
+
+  // ======================= STEROWANIE =======================
+  function punktNaPlotnie(e) {
+    var r = plotno.getBoundingClientRect();
+    return (e.clientX - r.left) * W / r.width;
+  }
+  plotno.addEventListener('pointerdown', function (e) { e.preventDefault(); inicjujDzwiek(); dotyk = true; celX = punktNaPlotnie(e); });
+  plotno.addEventListener('pointermove', function (e) { if (dotyk || e.pointerType === 'mouse') celX = punktNaPlotnie(e); });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { plotno.addEventListener(ev, function () { dotyk = false; }); });
+  window.addEventListener('keydown', function (e) {
+    if (e.key === 'ArrowLeft') klawLewo = true;
+    if (e.key === 'ArrowRight') klawPrawo = true;
+  });
+  window.addEventListener('keyup', function (e) {
+    if (e.key === 'ArrowLeft') klawLewo = false;
+    if (e.key === 'ArrowRight') klawPrawo = false;
+  });
+
+  // ======================= LOGIKA =======================
+  function pokazToast(tekst, ms) {
+    toastEl.textContent = tekst; toastEl.style.opacity = '1';
+    clearTimeout(pokazToast._t);
+    pokazToast._t = setTimeout(function () { toastEl.style.opacity = '0'; }, ms || 1600);
+  }
+  function aktualizujHud() {
+    var s = ''; for (var i = 0; i < 3; i++) s += i < zycia ? '❤️' : '🖤';
+    zyciaEl.textContent = s;
+    wynikEl.textContent = '⭐ ' + wynik + (celOsiagniety ? '' : ' / ' + CEL_WYNIK);
+    skokEl.textContent = 'Skok ' + skok;
+  }
+  function dodajPunkty(ile, x, y, tekst) {
+    wynik += ile;
+    napisy.push({ x: x, y: y, t: tekst || ('+' + ile), zycie: 0.9 });
+    aktualizujHud();
+    if (!celOsiagniety && wynik >= CEL_WYNIK) {
+      celOsiagniety = true;
+      aktualizujHud();
+      pokazToast('✅ ' + CEL_WYNIK + ' punktów — zaliczone! Skacz dalej, ile dasz radę', 3200);
+      zglosZaliczenie();
+    }
+  }
+  function zglosZaliczenie() {
+    var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+    // "dalej": zalicz, ale nie zamykaj gry - skacze sie do utraty zyc
+    if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
+    window.postMessage(wiadomoscZaliczenia, '*');
+    if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
+  }
+  function trafiony(opis) {
+    if (niezniszczalny > 0) return;
+    zycia--; niezniszczalny = 1.4; trzesienie = 0.35;
+    dzwiekUderzenia();
+    napisy.push({ x: gracz.x, y: gracz.y - 20, t: opis, zycie: 1.1, zly: true });
+    for (var i = 0; i < 12; i++) czastki.push({ x: gracz.x, y: gracz.y, vx: losowa(-160, 160), vy: losowa(-160, 60), zycie: 0.6, kolor: '#f87171' });
+    aktualizujHud();
+    if (zycia <= 0) zakonczGre(celOsiagniety);
+  }
+  function zakonczGre(wygrana) {
+    stan = 'koniec';
+    if (wiatrGain) wiatrGain.gain.value = 0;
+    rekord = Math.max(rekord, wynik);
+    if (wygrana) {
+      nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ' + wynik;
+      nakladkaOpis.innerHTML = 'Skoków: ' + skok + ' · Rekord: ' + rekord + '<br>Spróbujesz pobić swój wynik?';
+      nakladkaBtn.textContent = 'Skacz jeszcze raz 🪢';
+    } else {
+      nakladkaTytul.textContent = '💥 Koniec skakania';
+      nakladkaOpis.innerHTML = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + ' · Skok ' + skok + '<br>Spróbuj jeszcze raz!';
+      nakladkaBtn.textContent = 'Jeszcze raz 🪢';
+    }
+    nakladka.style.display = 'flex';
+  }
+
+  function aktualizuj(dt) {
+    czas += dt;
+    if (niezniszczalny > 0) niezniszczalny -= dt;
+    if (trzesienie > 0) trzesienie -= dt;
+
+    // Przeszkody zyja caly czas (ptaki lataja, drony kolysza sie)
+    przeszkody.forEach(function (o) {
+      if (o.typ === 'ptak') { o.x += o.v * dt; if (o.x < 18 || o.x > W - 18) { o.v = -o.v; o.x = ogranicz(o.x, 18, W - 18); } }
+      else if (o.typ === 'dron') { o.x = ogranicz(o.bazX + Math.sin(czas * 1.7 + o.faza) * 90, 20, W - 20); }
+      else if (o.typ === 'balon') { o.x = o.bazX + Math.sin(czas * 0.9 + o.faza) * 10; }
+      else if (o.typ === 'belka' && o.v) { o.luka += o.v * dt; if (o.luka < 20 + o.szer / 2 || o.luka > W - 20 - o.szer / 2) o.v = -o.v; }
+    });
+
+    if (stan === 'wciaganie') {
+      // Wyciagarka: plynny powrot na dzwig
+      wciaganie.t += dt;
+      var p = Math.min(1, wciaganie.t / 1.3), e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+      gracz.y = wciaganie.odY + (-6 - wciaganie.odY) * e;
+      gracz.x = wciaganie.odX + (KOTWICA_X - wciaganie.odX) * e;
+      gracz.vy = -300;
+      kamY += ((gracz.y - H * 0.45) - kamY) * Math.min(1, dt * 6);
+      if (p >= 1) { skok++; aktualizujHud(); zacznijSkok(); }
+      aktualizujCzastki(dt);
+      return;
+    }
+    if (stan !== 'lot') return;
+
+    // --- Sterowanie poziome: skoczek podaza za palcem ---
+    if (klawLewo) celX = gracz.x - 80;
+    if (klawPrawo) celX = gracz.x + 80;
+    var docelowaVx = (dotyk || klawLewo || klawPrawo) ? ogranicz((celX - gracz.x) * 7, -330, 330) : gracz.vx * 0.9;
+    gracz.vx += (docelowaVx - gracz.vx) * Math.min(1, dt * 10);
+    // Wiatr
+    przeszkody.forEach(function (o) {
+      if (o.typ === 'wiatr' && gracz.y > o.y && gracz.y < o.y + o.wys) gracz.vx += o.sila * dt * 3.2;
+    });
+    gracz.x = ogranicz(gracz.x + gracz.vx * dt, 14, W - 14);
+
+    // --- Pion: swobodny spadek, potem lina ---
+    var rozciag = gracz.y - dlugoscLiny;
+    // Po odbiciu od dna lot w gore jest lzejszy (slabsza grawitacja, lina nie
+    // tlumi) - dzieki temu odbicie jest wysokie i znowu mija sie przeszkody
+    var wGore = bylNapiety && gracz.vy < 0;
+    var a = wGore ? GRAW_ODBICIA : GRAW;
+    if (rozciag > 0) {
+      if (!bylNapiety) { bylNapiety = true; dzwiekLiny(); }
+      a = (wGore ? GRAW_ODBICIA : GRAW) - SPREZ * rozciag - (wGore ? 0 : TLUMIENIE * gracz.vy);
+    }
+    gracz.vy += a * dt;
+    if (rozciag <= 0 && gracz.vy > V_MAX) gracz.vy = V_MAX;
+    gracz.y += gracz.vy * dt;
+
+    // --- Dotkniecie wody na samym dole ---
+    if (!zanurzony && gracz.y >= poziomWody - 6) {
+      zanurzony = true;
+      dzwiekPlusku();
+      for (var i = 0; i < 22; i++) czastki.push({ x: gracz.x, y: poziomWody, vx: losowa(-150, 150), vy: losowa(-320, -80), zycie: 0.8, kolor: '#bfe6ff' });
+      if (Math.abs(gracz.x - bojaX) < 34) dodajPunkty(3, gracz.x, poziomWody - 30, '💦 +3 idealnie!');
+      else napisy.push({ x: gracz.x, y: poziomWody - 30, t: '💦 pudło — celuj w 🛟', zycie: 1.2 });
+    }
+
+    // --- Koniec skoku: pierwszy szczyt po odbiciu od dna ---
+    if (bylNapiety && gracz.vy < -40) odbicie = true;
+    if (odbicie && gracz.vy >= 0) {
+      stan = 'wciaganie';
+      wciaganie = { t: 0, odY: gracz.y, odX: gracz.x };
+      pokazToast('✅ Skok ' + skok + ' za Tobą — wyciągarka w górę!', 1500);
+      przeszkody = przeszkody.filter(function (o) { return o.typ === 'wiatr'; }); znajdzki = [];
+      return;
+    }
+
+    // --- Kolizje ---
+    for (var k = 0; k < przeszkody.length; k++) {
+      var o = przeszkody[k];
+      if (o.typ === 'belka') {
+        if (Math.abs(gracz.y - o.y) < 7 + R_GRACZA - 4 && Math.abs(gracz.x - o.luka) > o.szer / 2 - R_GRACZA + 5) { trafiony('💥 Belka!'); }
+      } else if (o.typ !== 'wiatr') {
+        var dx = gracz.x - o.x, dy = gracz.y - o.y;
+        if (dx * dx + dy * dy < Math.pow(o.r + R_GRACZA - 4, 2)) {
+          trafiony(o.typ === 'ptak' ? '🐦 Ptak!' : o.typ === 'dron' ? '🚁 Dron się mści!' : '🎈 Bum!');
         }
-      } catch (e) {}
-    } else {
-      var el = document.documentElement;
-      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
-      if (f2) { try { f2.call(el); } catch (err) {} }
-    }
-    setTimeout(przelicz, 60);
-    setTimeout(przelicz, 260);
-    setTimeout(przelicz, 700);
-  }
-
-  function wylacz() {
-    wlaczony = false;
-    przycisk.textContent = '⛶';
-    if (ramka) {
-      if (prawdziwyPelny) {
-        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
-        try {
-          var dd = ramka.ownerDocument;
-          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
-          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
-          else if (g2) g2.call(document);
-        } catch (e) {}
-        prawdziwyPelny = false;
       }
-      przywrocInterfejsStrony();
-      ramka.setAttribute('style', styleRamki);
-    } else {
-      var g = document.exitFullscreen || document.webkitExitFullscreen;
-      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
-        try { g.call(document); } catch (err) {}
+      if (o.typ === 'dron' && !pokazanoDron && Math.abs(o.y - gracz.y) < 260) { pokazanoDron = true; pokazToast('🚁 Stary dron wraca i chce zemsty!', 1900); }
+    }
+    for (var z = znajdzki.length - 1; z >= 0; z--) {
+      var zn = znajdzki[z];
+      var ddx = gracz.x - zn.x, ddy = gracz.y - zn.y;
+      if (ddx * ddx + ddy * ddy < 26 * 26) {
+        znajdzki.splice(z, 1);
+        if (zn.typ === 'gwiazda') { dodajPunkty(3, zn.x, zn.y, '⭐ +3'); dzwiekGwiazdy(); }
+        else { dodajPunkty(1, zn.x, zn.y, '+1'); dzwiekSerca(); }
+        for (var c = 0; c < 8; c++) czastki.push({ x: zn.x, y: zn.y, vx: losowa(-90, 90), vy: losowa(-90, 90), zycie: 0.5, kolor: zn.typ === 'gwiazda' ? '#ffe08a' : '#ff8fb1' });
       }
     }
-    przelicz();
+
+    // --- Kamera: przy spadaniu widac wiecej w dole, przy odbiciu w gorze ---
+    var celKam = gracz.y - (gracz.vy >= 0 ? H * 0.36 : H * 0.62);
+    celKam = Math.min(celKam, poziomWody + 60 - H);
+    kamY += (celKam - kamY) * Math.min(1, dt * 5);
+
+    // --- Szum wiatru ---
+    if (wiatrGain && audioCtx && muzykaWl) {
+      var sz = Math.min(1, Math.abs(gracz.vy) / V_MAX);
+      wiatrGain.gain.setTargetAtTime(0.11 * sz * sz, audioCtx.currentTime, 0.08);
+      wiatrFiltr.frequency.setTargetAtTime(350 + sz * 900, audioCtx.currentTime, 0.1);
+    }
+    aktualizujCzastki(dt);
+  }
+  function aktualizujCzastki(dt) {
+    for (var i = czastki.length - 1; i >= 0; i--) {
+      var c = czastki[i]; c.zycie -= dt; c.vy += 500 * dt; c.x += c.vx * dt; c.y += c.vy * dt;
+      if (c.zycie <= 0) czastki.splice(i, 1);
+    }
+    for (var n = napisy.length - 1; n >= 0; n--) { napisy[n].zycie -= dt; napisy[n].y -= 40 * dt; if (napisy[n].zycie <= 0) napisy.splice(n, 1); }
   }
 
-  przycisk.addEventListener('click', function (e) {
-    e.preventDefault();
-    e.stopPropagation();
-    if (wlaczony) wylacz(); else wlacz();
-  });
+  // ======================= RYSOWANIE =======================
+  function mieszaj(k1, k2, t) {
+    return 'rgb(' + Math.round(k1[0] + (k2[0] - k1[0]) * t) + ',' + Math.round(k1[1] + (k2[1] - k1[1]) * t) + ',' + Math.round(k1[2] + (k2[2] - k1[2]) * t) + ')';
+  }
+  function rysujTlo() {
+    // Niebo: od blekitu przy dzwigu do cieplego zachodu przy wodzie
+    var f = ogranicz((kamY + 300) / (poziomWody + 300), 0, 1);
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, mieszaj([150, 196, 238], [247, 186, 140], f * 0.9));
+    g.addColorStop(1, mieszaj([196, 222, 246], [255, 214, 160], f));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    if (f > 0.55) {   // slonce przy wodzie
+      var sy = poziomWody - kamY - 40;
+      var sg = ctx.createRadialGradient(W * 0.72, sy, 4, W * 0.72, sy, 120);
+      sg.addColorStop(0, 'rgba(255,240,190,' + (0.9 * (f - 0.55) / 0.45) + ')'); sg.addColorStop(1, 'rgba(255,240,190,0)');
+      ctx.fillStyle = sg; ctx.fillRect(0, 0, W, H);
+    }
+    // Chmury (paralaksa)
+    chmury.forEach(function (c) {
+      var y = c.y - kamY * c.p; y = ((y % (H + 200)) + H + 200) % (H + 200) - 100;
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.beginPath();
+      ctx.ellipse(c.x, y, 34 * c.s, 12 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(c.x + 20 * c.s, y - 7 * c.s, 22 * c.s, 11 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(c.x - 18 * c.s, y - 4 * c.s, 18 * c.s, 9 * c.s, 0, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    // Wzgorza na horyzoncie nad woda
+    var wy = poziomWody - kamY;
+    if (wy < H + 160) {
+      ctx.fillStyle = 'rgba(92,70,110,0.55)';
+      ctx.beginPath(); ctx.moveTo(0, wy);
+      for (var x = 0; x <= W; x += 20) ctx.lineTo(x, wy - 38 - Math.sin(x * 0.03) * 18 - Math.sin(x * 0.011 + 1) * 22);
+      ctx.lineTo(W, wy); ctx.closePath(); ctx.fill();
+    }
+  }
+  function rysujKratownice(x1, y1, x2, y2, grub) {
+    ctx.strokeStyle = '#e3b23c'; ctx.lineWidth = 2;
+    var dx = x2 - x1, dy = y2 - y1, dl = Math.hypot(dx, dy), nx = -dy / dl * grub, ny = dx / dl * grub;
+    ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.moveTo(x1 + nx, y1 + ny); ctx.lineTo(x2 + nx, y2 + ny);
+    var kroki = Math.max(2, Math.floor(dl / grub));
+    for (var i = 0; i < kroki; i++) {
+      var t1 = i / kroki, t2 = (i + 1) / kroki;
+      ctx.moveTo(x1 + dx * t1, y1 + dy * t1); ctx.lineTo(x1 + dx * t2 + nx, y1 + dy * t2 + ny);
+      ctx.moveTo(x1 + dx * t2, y1 + dy * t2); ctx.lineTo(x1 + dx * t2 + nx, y1 + dy * t2 + ny);
+    }
+    ctx.stroke();
+  }
+  function rysujDzwig() {
+    var y0 = -kamY;
+    // Wieza stoi w jeziorze - rysujemy tylko widoczny kawalek, wyrownany do siatki
+    var od = Math.max(-60, Math.floor((kamY - 20) / 18) * 18), doY = Math.min(poziomWody, kamY + H + 20);
+    if (doY > od) rysujKratownice(24, od - kamY, 24, doY - kamY, 18);
+    if (y0 < -120 || y0 > H + 80) return;
+    rysujKratownice(10, y0 - 44, KOTWICA_X + 18, y0 - 44, 14); // wysiegnik
+    ctx.fillStyle = '#5a4630'; ctx.fillRect(KOTWICA_X - 16, y0 - 34, 36, 7);   // platforma
+    ctx.fillStyle = '#c94a3a'; ctx.fillRect(4, y0 - 70, 44, 22);             // kabina
+  }
+  function rysujWode() {
+    var wy = poziomWody - kamY;
+    if (wy > H + 10) return;
+    var g = ctx.createLinearGradient(0, wy, 0, wy + 140);
+    g.addColorStop(0, '#4d8fc7'); g.addColorStop(1, '#1f4e7a');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.moveTo(0, H + 10);
+    for (var x = 0; x <= W; x += 10) ctx.lineTo(x, wy + Math.sin(x * 0.05 + czas * 2.4) * 3);
+    ctx.lineTo(W, H + 10); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 1.5;
+    for (var r = 0; r < 4; r++) {
+      var yy = wy + 14 + r * 18;
+      ctx.beginPath(); ctx.moveTo(20 + r * 30, yy); ctx.lineTo(90 + r * 30 + Math.sin(czas + r) * 10, yy); ctx.stroke();
+    }
+    // Cel na wodzie
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.7)'; ctx.setLineDash([4, 4]); ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(bojaX, wy + 2, 34, 8, 0, 0, Math.PI * 2); ctx.stroke();
+    ctx.restore();
+    ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('🛟', bojaX, wy - 2 + Math.sin(czas * 2) * 2);
+  }
+  function rysujPrzeszkody() {
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    przeszkody.forEach(function (o) {
+      var y = o.y - kamY;
+      if (o.typ === 'wiatr') {
+        if (y < -100 || y > H + 10) return;
+        ctx.fillStyle = 'rgba(255,255,255,0.10)'; ctx.fillRect(0, y, W, o.wys);
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)'; ctx.lineWidth = 1.5;
+        for (var i = 0; i < 7; i++) {
+          var px = ((i * 61 + czas * o.sila * 0.9) % (W + 60) + W + 60) % (W + 60) - 30, py = y + 10 + (i * 29) % (o.wys - 20);
+          ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(px - Math.sign(o.sila) * 26, py); ctx.stroke();
+        }
+        ctx.font = '15px sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.fillText(o.sila > 0 ? '💨 →' : '← 💨', W / 2, y + o.wys / 2);
+        return;
+      }
+      if (y < -40 || y > H + 40) return;
+      if (o.typ === 'belka') {
+        var l = o.luka - o.szer / 2, p = o.luka + o.szer / 2;
+        rysujKratownice(0, y - 7, l, y - 7, 14);
+        rysujKratownice(p, y - 7, W, y - 7, 14);
+        ctx.fillStyle = '#ffe08a'; ctx.globalAlpha = 0.18; ctx.fillRect(l, y - 8, o.szer, 16); ctx.globalAlpha = 1;
+      } else {
+        ctx.font = (o.typ === 'dron' ? 28 : 26) + 'px sans-serif';
+        var em = o.typ === 'ptak' ? '🐦' : o.typ === 'dron' ? '🚁' : '🎈';
+        ctx.save(); ctx.translate(o.x, y);
+        if (o.typ === 'ptak' && o.v > 0) ctx.scale(-1, 1);
+        ctx.fillText(em, 0, 0); ctx.restore();
+      }
+    });
+    znajdzki.forEach(function (z) {
+      var y = z.y - kamY + Math.sin(czas * 3 + z.x) * 3;
+      if (y < -30 || y > H + 30) return;
+      ctx.font = (z.typ === 'gwiazda' ? 22 : 18) + 'px sans-serif';
+      ctx.fillText(z.typ === 'gwiazda' ? '⭐' : '❤️', z.x, y);
+    });
+  }
+  function rysujLineIGracza() {
+    var gx = gracz.x, gy = gracz.y - kamY;
+    // Kat: przy spadaniu glowa w dol, przy odbiciu glowa w gore
+    var t = ogranicz((gracz.vy + 220) / 440, 0, 1);
+    var katDol = Math.PI / 2 - SYL.os, katGora = -Math.PI / 2 - SYL.os;
+    var docelowy = katGora + (katDol - katGora) * t + Math.sin(czas * 3) * 0.06;
+    gracz.kat += (docelowy - gracz.kat) * 0.15;
+    var szer = SYL.szer, wys = szer * (obrazSyl.naturalHeight && obrazSyl.naturalWidth ? obrazSyl.naturalHeight / obrazSyl.naturalWidth : 1);
+    var sx = (SYL.stopyX - SYL.tulowX) * szer, sy = (SYL.stopyY - SYL.tulowY) * wys;
+    var cs = Math.cos(gracz.kat), sn = Math.sin(gracz.kat);
+    var stopyX = gx + sx * cs - sy * sn, stopyY = gy + sx * sn + sy * cs;
+    // Lina: luzna (zwisa lukiem) albo napieta (prosta, czerwienieje)
+    var kx = KOTWICA_X, ky = -kamY - 30;
+    var luz = Math.max(0, (dlugoscLiny - gracz.y) / dlugoscLiny);
+    ctx.lineCap = 'round';
+    if (stan === 'wciaganie' || luz > 0) {
+      ctx.strokeStyle = '#2d2438'; ctx.lineWidth = 2.6;
+      ctx.beginPath(); ctx.moveTo(kx, ky);
+      ctx.quadraticCurveTo((kx + stopyX) / 2 + 50 * luz + Math.sin(czas * 2) * 8 * luz, (ky + stopyY) / 2 + 60 * luz, stopyX, stopyY);
+      ctx.stroke();
+    } else {
+      var napiecie = ogranicz((gracz.y - dlugoscLiny) / 320, 0, 1);
+      ctx.strokeStyle = mieszaj([45, 36, 56], [200, 60, 60], napiecie); ctx.lineWidth = 2.6 - napiecie * 1.2;
+      ctx.beginPath(); ctx.moveTo(kx, ky); ctx.lineTo(stopyX, stopyY); ctx.stroke();
+    }
+    // Skoczek
+    if (niezniszczalny > 0 && Math.floor(czas * 14) % 2 === 0) return;
+    ctx.save(); ctx.translate(gx, gy); ctx.rotate(gracz.kat);
+    if (obrazSyl.complete && obrazSyl.naturalWidth) {
+      ctx.shadowColor = 'rgba(0,0,0,0.25)'; ctx.shadowBlur = 6;
+      ctx.drawImage(obrazSyl, -SYL.tulowX * szer, -SYL.tulowY * wys, szer, wys);
+    } else {
+      ctx.fillStyle = '#1d1a2b'; ctx.beginPath(); ctx.arc(0, 0, R_GRACZA, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+  function rysujEfekty() {
+    // Smugi predkosci przy szybkim spadaniu
+    var sz = Math.abs(gracz.vy) / V_MAX;
+    if (stan === 'lot' && sz > 0.7) {
+      ctx.strokeStyle = 'rgba(255,255,255,' + (0.25 * (sz - 0.7) / 0.3) + ')'; ctx.lineWidth = 1.2;
+      for (var i = 0; i < 9; i++) {
+        var x = (i * 43 + 17) % W, y = ((i * 97 + czas * 900) % (H + 80)) - 40;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y - 34 * sz); ctx.stroke();
+      }
+    }
+    czastki.forEach(function (c) { ctx.globalAlpha = Math.max(0, c.zycie / 0.8); ctx.fillStyle = c.kolor; ctx.fillRect(c.x - 2, c.y - kamY - 2, 4, 4); });
+    ctx.globalAlpha = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = 'bold 15px sans-serif';
+    napisy.forEach(function (n) {
+      ctx.globalAlpha = Math.min(1, n.zycie * 1.6);
+      ctx.lineWidth = 3; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.strokeText(n.t, n.x, n.y - kamY);
+      ctx.fillStyle = n.zly ? '#ff8a8a' : '#fff1b8'; ctx.fillText(n.t, n.x, n.y - kamY);
+    });
+    ctx.globalAlpha = 1;
+    // Wskaznik glebokosci po prawej
+    var post = ogranicz(gracz.y / poziomWody, 0, 1);
+    ctx.fillStyle = 'rgba(0,0,0,0.18)'; ctx.fillRect(W - 7, 14, 3, H - 28);
+    ctx.fillStyle = '#ffe08a'; ctx.fillRect(W - 9, 14 + (H - 28) * post - 3, 7, 6);
+  }
+  function rysuj() {
+    ctx.save();
+    if (trzesienie > 0) ctx.translate(losowa(-4, 4) * trzesienie * 3, losowa(-4, 4) * trzesienie * 3);
+    rysujTlo(); rysujDzwig(); rysujWode(); rysujPrzeszkody(); rysujLineIGracza(); rysujEfekty();
+    ctx.restore();
+  }
 
-  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
-  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
-    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  // ======================= PETLA I START =======================
+  function dopasujPlotno() {
+    var r = plotno.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2.5);
+    var w = Math.max(200, r.width || 360), h = w * H / W;
+    plotno.width = Math.round(w * dpr); plotno.height = Math.round(h * dpr);
+    ctx.setTransform(plotno.width / W, 0, 0, plotno.height / H, 0, 0);
+  }
+  window.addEventListener('resize', dopasujPlotno);
+  function petla(tt) {
+    if (ostatniCzas === null) ostatniCzas = tt;
+    var dt = Math.min(0.033, (tt - ostatniCzas) / 1000); ostatniCzas = tt;
+    if (stan === 'lot' || stan === 'wciaganie') aktualizuj(dt);
+    else { czas += dt; aktualizujCzastki(dt); }
+    rysuj();
+    requestAnimationFrame(petla);
+  }
+  nakladkaBtn.addEventListener('click', function () {
+    inicjujDzwiek();
+    if (muzykaWl && !harmonogram) wlaczMuzyke();
+    nakladka.style.display = 'none';
+    nowaGra();
   });
+  // Ekran startowy: pierwszy skok w tle jako widok
+  zbudujSkok();
+  gracz = { x: KOTWICA_X, y: -6, vx: 0, vy: 0, kat: 0 };
+  kamY = -H * 0.45; czastki = []; napisy = [];
+  dopasujPlotno();
+  requestAnimationFrame(petla);
 })();
 </script>
 </body>
@@ -7983,6 +7936,9 @@ SZABLON_MINECRAFT = """
     diament: 'Diament', pioro: 'Pióro', nici: 'Nici', strzala: 'Strzała',
     kilofDrewniany: 'Kilof drewniany', kilofKamienny: 'Kilof kamienny',
     kilofZelazny: 'Kilof żelazny',
+    siekieraDrewniana: 'Siekiera drewniana', siekieraKamienna: 'Siekiera kamienna', siekieraZelazna: 'Siekiera żelazna',
+    stekPieczony: 'Pieczony stek', szynkaPieczona: 'Pieczona szynka', kurczakPieczony: 'Pieczony kurczak',
+    baraninaPieczona: 'Pieczona baranina', zloteJablko: 'Złote jabłko',
     mieczDrewniany: 'Miecz drewniany', mieczKamienny: 'Miecz kamienny',
     mieczZelazny: 'Miecz żelazny', mieczDiamentowy: 'Miecz diamentowy',
     luk: 'Łuk', drewnoBrzozy: 'Drewno brzozy',
@@ -8008,6 +7964,7 @@ SZABLON_MINECRAFT = """
     luk: '🏹', zbrojaZelazna: '🥋', zbrojaDiamentowa: '🦺',
     welna: '🧶', korona: '👑', zlotoStopione: '🟨',
     stek: '🥩', szynka: '🍖', mieso_kurczaka: '🍗', baranina: '🍖',
+    stekPieczony: '🥓', szynkaPieczona: '🍢', kurczakPieczony: '🍲', baraninaPieczona: '🥘', zloteJablko: '🍎',
   };
 
   // Poziomy narzedzi maja WLASNY kolor (jak w prawdziwym Minecrafcie) -
@@ -8016,6 +7973,7 @@ SZABLON_MINECRAFT = """
     kilofDrewniany: { typ: 'kilof', poziom: 1 },
     kilofKamienny: { typ: 'kilof', poziom: 2 },
     kilofZelazny: { typ: 'kilof', poziom: 3 },
+    siekieraDrewniana: { typ: 'siekiera', poziom: 1 }, siekieraKamienna: { typ: 'siekiera', poziom: 2 }, siekieraZelazna: { typ: 'siekiera', poziom: 3 },
     mieczDrewniany: { typ: 'miecz', poziom: 1 },
     mieczKamienny: { typ: 'miecz', poziom: 2 },
     mieczZelazny: { typ: 'miecz', poziom: 3 },
@@ -8043,6 +8001,24 @@ SZABLON_MINECRAFT = """
       ctx.moveTo(-w * 0.3, -h * 0.36);
       ctx.lineTo(w * 0.3, -h * 0.36);
       ctx.lineTo(0, -h * 0.14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.restore();
+    } else if (typNarzedzia === 'siekiera') {
+      // Siekiera: trzonek + ostrze z jednej strony, w kolorze tieru
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(-0.45);
+      ctx.fillStyle = '#6b4a2a';
+      ctx.fillRect(-1.5, -h * 0.38, 3, h * 0.78);
+      ctx.fillStyle = kolor;
+      ctx.beginPath();
+      ctx.moveTo(1.5, -h * 0.36);
+      ctx.quadraticCurveTo(w * 0.38, -h * 0.36, w * 0.34, -h * 0.06);
+      ctx.lineTo(1.5, -h * 0.12);
       ctx.closePath();
       ctx.fill();
       ctx.strokeStyle = 'rgba(0,0,0,0.35)';
@@ -8107,6 +8083,13 @@ SZABLON_MINECRAFT = """
   // ---------- POZIOMY NARZEDZI ----------
   // 0 = gole rece, 1 = drewniany, 2 = kamienny, 3 = zelazny
   var POZIOM_KILOFA = { kilofDrewniany: 1, kilofKamienny: 2, kilofZelazny: 3 };
+  // Siekiera: z kazdego pnia wiecej drewna (drewniana x2, kamienna x3, zelazna x4)
+  var POZIOM_SIEKIERY = { siekieraDrewniana: 1, siekieraKamienna: 2, siekieraZelazna: 3 };
+  function najlepszaSiekiera() {
+    var p = 0;
+    Object.keys(POZIOM_SIEKIERY).forEach(function (k) { if ((ekwipunek[k] || 0) > 0) p = Math.max(p, POZIOM_SIEKIERY[k]); });
+    return p;
+  }
   var WYMAGANY_POZIOM_KILOFA = { kamien: 1, wegiel: 1, zloto: 3, rudaZelaza: 2, diament: 3, twardyKamien: 3 };
   function najlepszyPoziomKilofa() {
     var poziom = 0;
@@ -8152,7 +8135,12 @@ SZABLON_MINECRAFT = """
     { id: 'zbrojaZelazna', wyjscie: 'zbrojaZelazna', ileWyjscia: 1, skladniki: { zelazo: 5 } },
     { id: 'mieczDiamentowy', wyjscie: 'mieczDiamentowy', ileWyjscia: 1, skladniki: { patyk: 1, diament: 2 } },
     { id: 'zbrojaDiamentowa', wyjscie: 'zbrojaDiamentowa', ileWyjscia: 1, skladniki: { diament: 5 } },
-    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zlotoStopione: 5 } },
+    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zlotoStopione: 5 }, etykieta: 'Korona (👑 2× szybsze leczenie)' },
+    { id: 'zloteJablko', wyjscie: 'zloteJablko', ileWyjscia: 1, skladniki: { jezyny: 3, zlotoStopione: 2 }, etykieta: 'Złote jabłko (leczy do pełna)' },
+    { id: 'siekieraDrewniana', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Siekiera drewniana (🪓 2× drewna)' },
+    { id: 'siekieraDrewnianaBrzoza', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Siekiera drewniana z brzozy (🪓 2×)' },
+    { id: 'siekieraKamienna', wyjscie: 'siekieraKamienna', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 }, etykieta: 'Siekiera kamienna (🪓 3× drewna)' },
+    { id: 'siekieraZelazna', wyjscie: 'siekieraZelazna', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 }, etykieta: 'Siekiera żelazna (🪓 4× drewna)' },
   ];
 ;
 
@@ -8166,8 +8154,13 @@ SZABLON_MINECRAFT = """
 
   var zwierzeta = []; // {x, y, typ: 'krowa'/'swinka'/'kurczak', kierunek: 1/-1}
   var GLOD_MAX = 10;
-  var LISTA_JEDZENIA = ['stek', 'szynka', 'mieso_kurczaka', 'baranina', 'jezyny'];
-  var WARTOSC_GLODOWA_JEDZENIA = { stek: 5, szynka: 5, mieso_kurczaka: 3, baranina: 4, jezyny: 2 };
+  var LISTA_JEDZENIA = ['zloteJablko', 'stekPieczony', 'szynkaPieczona', 'kurczakPieczony', 'baraninaPieczona',
+                        'stek', 'szynka', 'mieso_kurczaka', 'baranina', 'jezyny'];
+  // Surowe mieso daje malo - upieczone w piecu duzo wiecej i do tego leczy
+  var WARTOSC_GLODOWA_JEDZENIA = { stek: 3, szynka: 3, mieso_kurczaka: 2, baranina: 2, jezyny: 2,
+    stekPieczony: 8, szynkaPieczona: 8, kurczakPieczony: 6, baraninaPieczona: 7, zloteJablko: 6 };
+  var LECZENIE_JEDZENIA = { stekPieczony: 4, szynkaPieczona: 4, kurczakPieczony: 3, baraninaPieczona: 3, zloteJablko: 999 };
+  var SUROWE_MIESO = { stek: 1, szynka: 1, mieso_kurczaka: 1, baranina: 1 };
   var graczGlod = GLOD_MAX;
   var probyDomu = 0;
 
@@ -8502,16 +8495,22 @@ SZABLON_MINECRAFT = """
 
   function zjedzJedzenie(klucz) {
     if ((ekwipunek[klucz] || 0) <= 0) return;
-    if (graczGlod >= GLOD_MAX) {
+    var leczy = LECZENIE_JEDZENIA[klucz] || 0;
+    // Pelny zoladek nie blokuje jedzenia, ktore leczy - jesli brakuje zdrowia
+    if (graczGlod >= GLOD_MAX && (!leczy || graczHp >= GRACZ_HP_MAX)) {
       pokazDziennikMc('😊 Nie jesteś głodna!', 1200);
       return;
     }
     ekwipunek[klucz]--;
     var przywrocone = WARTOSC_GLODOWA_JEDZENIA[klucz] || 3;
     graczGlod = Math.min(GLOD_MAX, graczGlod + przywrocone);
+    var hpPrzed = graczHp;
+    if (leczy) { graczHp = Math.min(GRACZ_HP_MAX, graczHp + leczy); aktualizujPasekHp(); }
     aktualizujPasekGlodu();
     odswiezEkwipunek();
-    pokazDziennikMc('😋 Zjedzono: ' + NAZWY_BLOKOW[klucz] + '! +' + przywrocone + ' głodu.', 1400);
+    pokazDziennikMc('😋 Zjedzono: ' + NAZWY_BLOKOW[klucz] + '! +' + przywrocone + ' głodu'
+      + (graczHp > hpPrzed ? ', +' + (graczHp - hpPrzed) + ' ❤️' : '')
+      + (SUROWE_MIESO[klucz] ? ' — na surowo… w piecu byłoby dużo lepsze! 🔥' : '.'), SUROWE_MIESO[klucz] ? 2600 : 1600);
     zagrajTon(500, 0.08, 'square');
     setTimeout(function () { zagrajTon(650, 0.1, 'square'); }, 90);
   }
@@ -8664,6 +8663,10 @@ SZABLON_MINECRAFT = """
     { id: 'szyby', surowiec: 'piach', ikonaSurowca: '🏖️', wyjscie: 'szyby' },
     { id: 'zelazo', surowiec: 'rudaZelaza', ikonaSurowca: '🪨', wyjscie: 'zelazo' },
     { id: 'zlotoStopione', surowiec: 'zloto', ikonaSurowca: '💛', wyjscie: 'zlotoStopione' },
+    { id: 'stekPieczony', surowiec: 'stek', ikonaSurowca: '🥩', wyjscie: 'stekPieczony' },
+    { id: 'szynkaPieczona', surowiec: 'szynka', ikonaSurowca: '🍖', wyjscie: 'szynkaPieczona' },
+    { id: 'kurczakPieczony', surowiec: 'mieso_kurczaka', ikonaSurowca: '🍗', wyjscie: 'kurczakPieczony' },
+    { id: 'baraninaPieczona', surowiec: 'baranina', ikonaSurowca: '🍖', wyjscie: 'baraninaPieczona' },
   ];
 
   function przetop(przepis) {
@@ -9175,7 +9178,10 @@ SZABLON_MINECRAFT = """
       }
       window.stat && window.stat('bloki');
       dodajDoEkwipunku(blok, 1);
-      pokazDziennikMc('⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
+      var bonusDrewna = (blok === 'drewno' || blok === 'drewnoBrzozy') ? najlepszaSiekiera() : 0;
+      if (bonusDrewna) dodajDoEkwipunku(blok, bonusDrewna);
+      pokazDziennikMc(bonusDrewna ? '🪓 Ścięto: ' + NAZWY_BLOKOW[blok] + ' ×' + (1 + bonusDrewna) + '!'
+                                  : '⛏️ Wykopano: ' + NAZWY_BLOKOW[blok], 1000);
       dzwiekKopania(blok);
       zastosujGrawitacje();
       odswiezPiecWZasiegu();
@@ -9386,8 +9392,10 @@ SZABLON_MINECRAFT = """
   // mechanizmu w ogole nie bylo - jedzenie tylko zatrzymywalo utrate HP.
   setInterval(function () {
     if (!trwa) return;
-    if (graczGlod >= 7 && graczHp > 0 && graczHp < GRACZ_HP_MAX) {
-      graczHp = Math.min(GRACZ_HP_MAX, graczHp + 1);
+    // Korona: leczenie 2x szybsze i juz przy srednim najedzeniu
+    var maKorone = (ekwipunek.korona || 0) > 0;
+    if ((graczGlod >= 7 || (maKorone && graczGlod >= 4)) && graczHp > 0 && graczHp < GRACZ_HP_MAX) {
+      graczHp = Math.min(GRACZ_HP_MAX, graczHp + (maKorone ? 2 : 1));
       aktualizujPasekHp();
     }
   }, 3500);
@@ -14542,6 +14550,72 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         { typ:'przesunDrzwi', strefa:[15,10,2,2], nowe:[18,11], tekst:'' },
         { typ:'laser', strefa:[3,8,2,4], kol:9,  cykl:1.15, aktywny:0.52, tekst:'' },
         { typ:'pociskBoczny', strefa:[7,8,2,4], zPrawej:true, wiersz:11, tempo:1.0, ile:7, tekst:'' },
+      ] },
+
+    { nazwa:'Schody do nieba',
+      siatka:['...................','...................','...................','...................',
+              '...................','...............D...','.............####..','...................',
+              '.........###.......','...................','.....###...........','..S................',
+              '###################','...................','...................'],
+      pulapki:[
+        // Pierwszy stopien znika za plecami - nie ma odwrotu
+        { typ:'zapadnia', strefa:[9,5,3,3], kafle:[[5,10],[6,10],[7,10]], tekst:'' },
+        // Na szczycie drzwi uciekaja na sam dol, na start
+        { typ:'przesunDrzwi', strefa:[13,3,2,3], nowe:[2,11], tekst:'Nie ta droga.' },
+        // W drodze powrotnej z podlogi wyrasta kolec - 3 kafle przed graczem
+        { typ:'kolce', strefa:[11,9,2,3], kafle:[[8,11]], tekst:'' },
+      ] },
+
+    { nazwa:'Laserowy taniec',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'laser', strefa:[2,8,2,4], kol:6,  cykl:1.4, aktywny:0.55, przesuniecie:0.0,  tekst:'' },
+        { typ:'laser', strefa:[2,8,2,4], kol:10, cykl:1.4, aktywny:0.55, przesuniecie:0.47, tekst:'' },
+        { typ:'laser', strefa:[2,8,2,4], kol:14, cykl:1.4, aktywny:0.55, przesuniecie:0.93, tekst:'' },
+        // Dziura miedzy laserami: skok w rytm
+        { typ:'zapadnia', strefa:[7,8,2,4], kafle:[[12,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Deszcz',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        // Kolec spada ok. 0,67 s, a gracz biegnie ok. 8,75 kafla/s - strefa 6 kafli
+        // przed kolumna sprawia, ze kolec laduje DOKLADNIE tam, gdzie dobiega
+        // gracz. Trzeba zwolnic albo wyczuc skok. Po wyladowaniu zostaje na podlodze.
+        { typ:'spadajaceKolce', strefa:[2,8,1,4],  kolumny:[8],  tekst:'Pada.' },
+        { typ:'spadajaceKolce', strefa:[6,8,1,4],  kolumny:[12], tekst:'' },
+        { typ:'spadajaceKolce', strefa:[9,8,1,4],  kolumny:[15], tekst:'' },
+      ] },
+
+    { nazwa:'Prasa i mur',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'prasa', strefa:[3,8,2,4], odKol:4, doKol:15, tekst:'Biegnij.' },
+        // Mur na dwa kafle wyrasta 4 kafle przed graczem
+        { typ:'bloki', strefa:[6,8,2,4], kafle:[[11,11],[11,10]], tekst:'' },
+        { typ:'zapadnia', strefa:[12,8,1,4], kafle:[[15,12]], tekst:'' },
+      ] },
+
+    { nazwa:'Pod prąd',
+      siatka:['...................','...................','...................','...................',
+              '...................','...................','...................','...................',
+              '...................','...................','...................','..S.............D..',
+              '###################','...................','...................'],
+      pulapki:[
+        { typ:'pociskBoczny', strefa:[3,8,2,4], zPrawej:true, wiersz:11, tempo:0.9, ile:6, tekst:'Pod prąd!' },
+        { typ:'blokSpadajacy', strefa:[7,8,2,4], kolumna:11, tekst:'' },
+        // Na koniec drzwi wskakuja na nowo zbudowana polke
+        { typ:'bloki', strefa:[13,8,1,4], kafle:[[15,10],[16,10],[17,10]], tekst:'' },
+        { typ:'przesunDrzwi', strefa:[13,8,1,4], nowe:[16,9], tekst:'Wyżej!' },
       ] },
 
     { nazwa:'Ostatni żart',
@@ -20061,12 +20135,12 @@ def renderuj_dron(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_DRONA, 428, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(_szablon_bungee(), 650, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby plik components/gra_wynik/index.html jeszcze nie
     # istniał w repozytorium - stary, sprawdzony recznyy przycisk.
-    components.html(SZABLON_DRONA, height=520, scrolling=False)
+    components.html(_szablon_bungee(), height=700, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_dron"), etykieta_bledow=t("bledy_etykieta_dron"))
 
 
