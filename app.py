@@ -827,10 +827,199 @@ KATEGORIE = [
 ]
 
 
-# ---------- TRYB TESTOWY ----------
-# Pokazuje nad kazdym etapem krzykliwy przycisk "ZALICZ", zeby dalo sie
-# przeklikac aplikacje bez grania. PRZED WRECZENIEM PREZENTU USTAW False.
-TRYB_TESTOWY = False
+# ---------- WERSJA TESTOWA ----------
+# Wlaczona: baner "wersja testowa" na ekranie glownym i w menu, wszystkie
+# levele odblokowane, a nad kazdym etapem przycisk "Pomin" (gdy cos jest za
+# trudne). PRZED WRECZENIEM PREZENTU USTAW False.
+# Adres z ?test=tak wlacza tryb, a ?test=nie wylacza go (np. zeby samemu
+# zobaczyc prawdziwa wersje, gdy stala jest jeszcze True). Nie zapisuje sie w
+# pamieci telefonu. Gdy stala jest False i nie chcesz zadnej furtki - usun
+# wywolanie _odczytaj_tryb_testowy() w main().
+TRYB_TESTOWY = True
+
+
+def tryb_testowy():
+    return bool(st.session_state.get("tryb_testowy", TRYB_TESTOWY))
+
+
+def _odczytaj_tryb_testowy():
+    wartosc = str(st.query_params.get("test", "")).strip().lower()
+    if wartosc in ("tak", "1", "true", "on"):
+        st.session_state.tryb_testowy = True
+    elif wartosc in ("nie", "0", "false", "off"):
+        st.session_state.tryb_testowy = False
+    elif "tryb_testowy" not in st.session_state:
+        st.session_state.tryb_testowy = TRYB_TESTOWY
+
+
+def pokaz_baner_testowy():
+    if not tryb_testowy():
+        return
+    st.markdown(
+        "<div class='baner-testowy'><b>🧪 " + tt({"pl": "Wersja testowa", "en": "Test version"}) + "</b><br>"
+        + tt({
+            "pl": ("Jeśli masz ochotę, możesz przetestować każde pytanie i każdą grę. "
+                   "Wszystkie poziomy są odblokowane, a gdy coś jest za trudne, "
+                   "nad etapem znajdziesz przycisk „Pomiń”. "
+                   "Postęp zapisuje się tylko na tym urządzeniu."),
+            "en": ("Feel free to try every question and every game. "
+                   "All levels are unlocked, and if something is too hard "
+                   "there is a “Skip” button above the stage. "
+                   "Progress is saved on this device only."),
+        }) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+
+# ---------- SAMOUCZEK (raz, po kłódkach) ----------
+# Trzy karty: 1) cel to zabawa i dozwolona pomoc, 2) ukryta wiadomosc + levele,
+# 3) pelny ekran i powtorki. Po trzecim "Dalej" znika na stale (?w=1 w adresie
+# i w pamieci telefonu). ?samouczek=tak pokazuje go ponownie (do ogladania).
+OBRAZ_SAMOUCZEK_B64 = "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAUEBAQEAwUEBAQGBQUGCA0ICAcHCBALDAkNExAUExIQEhIUFx0ZFBYcFhISGiMaHB4fISEhFBkkJyQgJh0gISD/2wBDAQUGBggHCA8ICA8gFRIVICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICD/wAARCAHWAwwDASIAAhEBAxEB/8QAHQABAAICAwEBAAAAAAAAAAAAAAIIAQMGBwkFBP/EAFEQAAIBAgQCBggCBAsFBQkBAAABAgMEBQYREgchCBMxQVFhGCJGZoSlw+MUgTJCcZEVIzY3UnR1obKzwRYXM2JyJURzgrEkNDU4ZIOFosLR/8QAGwEBAAMBAQEBAAAAAAAAAAAAAAECBQQGAwf/xAA6EQEAAQICBQYNBQEBAQEAAAAAAQIDBBEFITGBoRIUFVLB0QYTMzRBQkNRU2GCsbIicZHh8DIjNfH/2gAMAwEAAhEDEQA/AKjnJ8nZHx3O2JfhcJoKNCm/466q6qlSXm+9+CXP8uZLImTbzO+aKWFW8nRt4Lrbmvp/wqafPTxb10S/0TO1uInEGzyVh6yDkKNO0nbw6u4uqT50H3xi++o/1pdq1/pdmTi8Zci5GGw0Z3J/imPfPZDptWqZp8Zc/wCfu/RPK/CLhpQhHNFzHG8XS3OlOLqSf7KSe2Kfdvf5n5Z8e8vYfVdPBMixVvDlBurC3en/AExhJL950FUqTq1JVas5TnNuUpSerk32tsifKNEW7mvFVzcn5zMRuiNi84qqnVbiKYWA9JH3M+Y/aHpI+5nzH7RX8E9B4D4fGrvRzy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4QsB6SPuZ8x+0PSR9zPmP2iv4HQeA+Hxq7znl7rcIWA9JH3M+Y/aHpI+5nzH7RX8DoPAfD41d5zy91uELAekj7mfMftD0kfcz5j9or+B0HgPh8au855e63CFgPSR9zPmP2h6SPuZ8x+0V/A6DwHw+NXec8vdbhCwHpI+5nzH7Q9JH3M+Y/aK/gdB4D4fGrvOeXutwhYD0kfcz5j9oekj7mfMftFfwOg8B8PjV3nPL3W4Q7/fSP19jfmP2jVLpDyqeyGn/wCQ+0dDJas/XQoubXIjoXAR7PjV3p53en1uEO6v9+c6/stt1/8Artfpn6KXFipXf8ndvxev/wDBxLIfDjH87X7oYRarqaW3rrmo9tOkm9Ob732vRavRPlyLYZY4f5K4X4PWxevKFSvQiqlbE7yMXOn6u1qmkvUT3NbVrJ7tG5cjJxlGj8L+mmjOr3RM97qs+Pu65nKHA8v4bnvHpxf+xc8MouThKtiFy6Ci1HX9Bw3tPktVFrV+T059Z8PrudpCV/iFGhcvXfToRdWC58tJPa3y0/VX+pxvH+PGGW+6jl3DKl5NSlHr7p9XT0TWkoxWspJrXt2tcuXajh93x1zLXrKdKFG0io6bKKi034+vGT1/PuM3meJva6aIojf/AG6fG2qNUzm7Yr8Paqt6krfE4VKyi3ThUpOEZS05JyTbS179Hp4M4LmDAc8YNSlVjlOni9vGKlKdhd9a03LTbscFNvsb0i1o+3k9OPW3HPM1K4jUqOncxWutOrGCjLl37Yp/uZyrBePtCcpxzBgsoR0bjUsZKT15aJwm15893gtO8nmWKta5pir+f6PG2q9UTk6sucayZiFxUsMz5d/g+5hOVOr1tDR05J6OLlHSaevJ8locdzDwohXs3iuT72N9byTmreU1Jtf8k1yl+x8/NlqcWy7kTi1l+N3rC6juVOF/bRVO4pOLb2ayjql6z9WS00luS7GV0x/K+c+D2NfikvxmC1qrhCtH/g3HLXSUdW6c9PHwejkkztwmJmZysVTTXHq1bJ/b/ZvhdtZRnXGce+HQ1WlUo1Z0qsJQnBuMoyWji12po1nd+d8u4fnLLizll6KV5Tg5XNJLR1El6ya/px/vXjyOk3B6nqcJiqcRRnllMapj3SzLluaJy9CwmWZUuGnAKvmeEEsYxdKVJyXPdLVUkvFRjrPTv1ZXmpUqVqs6tWcqlSbcpSk9XJvtbfid9cdpVcOybk7A4y20VGTlBdmtKnCMf3Kcv3nQRwaIjl268VO2uZndE5RG59sVOVUW42UwAA23IA20qMqurT0S7zbK0aWsZ6vw0A/KDJgDaqM3T6xabe01H7av8XaKPfokfiAA/TC1lKKcpbfLQjVtpU47k9yXaBoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMpasDdRhukjl+U8uXmYswWGC2FPdc3lWNKPqtqOvbKWib2xWrb05JNnHLOlukuRbbo35Up2mCYhm24pTjcXUnZ27lCUV1UdJTlF66SUp6Ls5Om+fNoydI4vm1ma/T6P3dWHteMril2VZUMucKOHlKhWr7LS0XOaglUuqz58ku2T7tXyS5vRNlas754xLN2Myv7+XVUKesba1jLWFCD7l4yei1l3+SSS+/wAXs23GO5yubH9CywmpUtqEHBKW9NKpJvV66yjy8kuSeuvTuIXujfMyNHYL29zXXVr/AJdmIvepTsh+i5xLa3oz5k8Tev6R9DJ+CWma8xVrDEcSqYfaULSteVa9On1jjCnHc/V158kzGZ8MyBY4Oq+Wc53WMX/WRi7erh86CUNHrLc/Dly8z0dNqI1M+apfPhib1/SPo22J6tas+Pl2ywHEZ3Cx7M/8BxpqLpP8HO461vXVeo+WnLt8T72a8q0MrYfgWJ2OOrF7LGaVStRqq3lQ0UJKPNSbfa/LsJqtRsIqlyjLGacSy5jNHFsJuOrr0+Uoy5wqxfbCa74v/wDxrRpNWjwnGMu8U8jXlpOGlO4pdReWktsqltJrk1qtHo1uhPTtjryaaVI8PveaWp2VkLN1xlTM9ti1L1qEv4m6pqCk50XJOSWrXrck1zXNLXlqn5/SOA8ZHLo1Vxsd2Hv8n9M7JfqscJxDhxxOuspYhV660u9OqrbHCFXVawqJPx5waWq3JrV7Tq/POXqeCZwu7W2httqmlaitOyMu5eSeq/It7xqy7/CmTKWO20ajxDAq0bmk6cZSbpuUVUWieiS0jNyaeipvsTbOqcyZdhi2J07mdJTcaShq15t/6nJg8fHKi/O2Yyq/eMtf8L3rGqaI9Gxx/pI+y3xX0Sv5YDpI+y3xX0Sv5taD8wt7/wApceM8tVu+wADacj90PUs9VyemprtZydRxcm1przJ0dKts4a81yM0KDpScpNPlpyA/NXWleS/MjSjuqxXmZqy31ZSXZqbLSOtVy8EBK7lzjH8z8puuJbq8vLkalpuWvYB+6UXXoLT1W+fMxPWla7XrJ6aama8akqa6p/uYSlG2aqvV6PtA/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAATgtZEDZT/SREj7mG09ZIvng1i8m8H7WzjCOH3Vjhu6cZTU1C5lHdLm2026sny5rV6LloUSwzTci+/ED+QOJf8A2v8ANgeS01M1XLNqdkz3d7Wweqmur3QpliFXbBnD7+s3J8zlOJ67WcNvNd7PQ4eHBXL9mX8x3OXL69urahSryu7KvYyVTXSMasHByWnek+R8M5PljJ9xmfCsx4hRvadvHArF31SE4tuqk9Nq07GcYO+MnxDleYc4LH8q5WwJYd+G/gG3q0Ou67f1++alrt2rbppppqzih9DFMFxPBfwLxO26j8fawvbf14y6yjPXbL1W9NdHyej8iZiBssqzU1zOYYbW3JLU4Pa670cwwtvSJw4iNT7USurlCVtj/DmjYX1SF3TlRqWVxTjLRqHOKg9ujT6tx8Ho0+/U66r29S3uKlCtHbUpycJLXXRp6NHL+En8m8U/tF/5FE4/jOn8P4j/AFmp/iZ+e3I5OIuUxszbsa7dMunekj7LfFfRK/lgOkj7LfFfRK/ns9B+YW9/5SxsZ5ard9gAG05EoylB6xbTJSrVJLSU3oawAP2W22NKUm0tWfjAGW9ZNvv5mAANkK1SC0jLl4MxOrOp+lLVeBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACdN6SIEovRkSPv4bPSSL607yOcOElPEJQpXVa+w1V5U7Vtx69Q3OMdG3rGotNureq0feef1lV2yRcLo65ppYjk+6yzXudbrDarq0actq/iJvV7dOctKm5ttct8VrzSXl9OWp5FN6nbTP+7Gngqo5U0T6Vd8QpOUGcOvqTU3yO8OJ+U7jLmcr2H4bq7C8qSuLScKahTcJPVwik9Fsb26cuST0SaOqMQs3q+RqYS/TXTFdOyXPdommZiW/ImdrLJ1PHrXEsBnjNnjVl+CrUoXf4Zxi3q2pbJHysy4plPEYWqyzlS4wKVNy651sSd31qem3TWEdumj8ddfI+XXtnGT5H5XTafYasZZ5uafc5llDDeGl5hVepnTMeK4XfKs40qVlaKrCVPatJNvseu5aeSNvEzGMu4xjOCUcrXlxeYdheEUMPjWuaXVzm6cp82v2NHB1Tfgfpo27k1yE5ROeY3WdJua5HMcMpNJHxsPs3qnodg5PyxfZlx+1wexpzbqyTq1Yx3KhT1W6o+aWiT8Vq9EubRnYm7TTEzM6ofe3TMzlC0mQ7a1wjIdK8rxVmq3WXdzUrScVp2Kb3cktkI8+S0Wvfqdf3V1O6vK11UUVOtOVSSj2Jt6vQ5LxjzFbZY4Z3Fjb1I29ziKVlb0qahyp8us9V9kdmsdUuTnHs11XD9WeCymrO/PrTP8AuLbmYjKiPQ606SPst8V9Er+WA6SPst8V9Er+e00H5hb3/lLGxnlqt32AAbTkAAABkyosCIJ7PMbPMJyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBPZ5jZ5gyQBJxZgIYAAAAAAAABlJsls8ychAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmNnmMhAE9nmcty1wyz3m+lGtl/LN7dW04SqQuZxVGhNRlte2rUcYSafLRNvk+XJ6fO5XTbjlVzER89SaaZqnKmM3F6NTbJHPch5xxDKGZ7PGrCrNOlJKtSjParilqt9OWqa0aXbo9Ho1zSO5Ms9FG3hTjWzhmipOo4SUrbCoKKhPd6rVWonuW3tXVx5vt5c+9crZAydkpVXlnAbewqVdVOtrKrVae3WPWTblt9WL266arXTU8zjdM4TkzRTHLz3R/P9NKzg7ucVTqfjxjBMC4n5Mo1KlOtbTlvdvWq0tlezqpuM4Si/CUXGUex7e3VJqrWaMrYllzGa2E4tb9VXp84yjzhVg+ycH3xen9zT0aaXfeZqN5wprY/nnDsdoTwvEbunVngFzTelWtOUVUlSquprGo11k+UWtFzi1Facjtb3InF3LVXqHC8jTioS3Q2XNlKaUuTa1i9Uua1jJxa1kk0Y2FxFeFjl051Wp4T7uP7T6HZctxdnkzqq+6mN1hurekT5k8Nev6JZzG+Al5R31sFxZXkNzcaFWmoVFHVbVu3bZPTtfq9nJc9DheIcKcew+4jQuMPv5zlHenbWU7iOmrXOVPck+XZrr+89JZ0lZrj9NcM+vD10zrh0tDDZa/on0bbDGmvVO07Lhdjl7dwtaOHYlGpPXR18PqUYLRa85z0iuzvfkcvwjgLi9zulieJ08NitUl1Sqzb5d0Z6advfry7O8m7pGzRH6q4KMPXOyHUeC4HeYniVvhuG2s7m7uJbKdKC5t/wCiS1bb5JJt8i0+TcmYPw3y1dYpiFWFS9hQlWvr1RclTpxW6UILTXatNezWTWrXYlutcLyLwoy9LELmrTs6W7q531zHrK9VyaagnGOrXqr1YrTSLk1ybK28T+M2K5zjWwmzj/B+BKruhRX/ABa6Wm11Xro9GtyiuSbWu5xUjEqqvaTq5FqMrfpn3/73fy7IijDRyqtdT43FDiFcZ3zVVvlOvSw2j/F2VrVkv4qGi1ei5bpNavt7lq1FHdqpNoqFc3LlJ8y6Ebf1ewvpm3Th7dqiiMo19j54WqblVVUunekj7LfFfRK/lgOkj7LfFfRK/m3oPzC3v/KXHjPLVbvsAA2nIGUtR2s2JaLQJiBJIABYAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADSYAGtrQwbWtVoa+xhWYYAAQE1HxMRXeTLRCAAEoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAW06N2VMmYtkqGZq+V7eeO4fe1LR3tecq29xcKsKkYS9WnKO6MU4rX1NdfWaO/cVxrBsCtI3eN4tZYXbTmqcat5XhRhKbTainJpa6JvTyZ595Q4i5ryJaYjRytfU7GpiE6Mq1Z0IVZ6U1USilNOKT6xt8tfVWjXPXsvg7wuxziPmWlnvONxcXOD0K0Z9bfPrqmKVKbSUP4zXdSW1Rk3qmlsXPVw8ZpHRn/rXicRdyo9G2Z/aM9ny+0Q2cPif0027dOv8A2tbnBsXsMfwW1xnC6lSrY3cOso1KlGdFzg+yW2aUtH2p6c001qmmfvPwYzjOF5fwW6xrGr2nZYfaQ6ytWqPlFdi5Lm220klq22kk2z9VtVnXtKNarbVLWpUhGUqNVxc6Ta1cZOLcdV2PRteDZ5CqPWiNTWifRO1XrpT4zcWuB5YwaEKf4e7ua11OTT3qVKMYxSeumjVaWvLuXZz1rlhOPX2F3lO9w+9r2d1T12VqFR05x1Wj0knqtU2vzOedJPF/4R403Fn+H6r+CrOhabt+7rdU627TTl/xtunP9HXv0XT0ajR+j6Lw0U4KimqNsZ/zr+zzuJuZ3qpj0dixmXekZmyxnGGN0bXGqLm5ScoKhV026KMZQW1JPnzg3za17NOw7HpI5Tq2VOeIYNilvdPXfToKnWhHm9NJOUW+Wn6q8OfaU3hcyXebleyXefK7obC3Jz5OX7av6Woxl2n0ri3HSQyZC2qytsJxepXUG6cKlOlCMpack5KbaWvfo9PBnAcxdJHMV5TlRwHDrXBoSgl1s3+JqxkpatxckoaNaLRwffz7NK7zvZdupondSfeVtaFw1uc+Tn+61WMuVRtcozDmzF8w4jPEcZxKvfXUtVvrT12ptvbFdkY6t6RWiWvJHGK9y5t8z80qrfeam2zZt2qaIyiHHVVM65SlJtl8lSWhQov9oeR8J5y8V9XY09Hetu7XQPSR9lvivolfywHSR9lvivolfza0H5hb3/lLkxnlqt32AAbTkSiuZMjDvJBaAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABCS5kyM+4IlAABVsS0RkAuqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHMuHfDvHOI+ZY4VhUeotaWk7y+nHWna02+1/0pPR7Y66tp9iUpL53LlFqia65yiFqaZqnk07X2eE3CbFOJWNOpUdSyy9aTSvL1LnJ9vVUteTm01z5qKer11jGV6/8As/B8J/7vh+HWNH/lpUrelCP5KMYxXkkkfgytlrC8n5VsMt4NCpGxsoOMHVnvnJuTlKUn4uUpN6aLnySWiK08e+NNxe3d/wAP8rValvaUJztsUu9HGdeabjOhDvUE01J/r80vV13+Cu3L2mcVFFGqiOEe+fnP+97dopowdrlVbZflzvxMuOMXEbB+H2AfjaWUrjEKVGvK2i1XvYKa31mmnthCKlKMWuW3fNapKFuTzTy/mDF8rY/bY9gN3+DxG13dVW6uNTbui4S9WSafqya5rvO1aPST4gSy9c4PiUbK7de2r0Px9KEre6hOcJKFSMoNQi4OUWtILVR01Te41NIaGuVxRbw0Ryaf5znbPCHNh8ZTTNVVzbLq/NeK2+O52x3G7SFSFtiGIXF1SjVSU4wnUlJKSTa10a10bPjAHq6aYppimPQypnOc5DOrMAtkgerRr1NhqKzCYAAQkPQA8/z0APFeFHsfq7Gto71t3ar/ANJH2W+K+iV/LAdJH2W+K+iV/NvQfmFvf+UuTGeWq3fYABtOROHeSIw7yQWgAASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARn3EiM+4IlAABVtABdUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADbbW1xeXdG0tKFS4ua8406VKlFynUm3ooxS5tttJJDYl9TK2WsUzhmqwy3g0Kcr69m4wdWeyEUouUpSfgoxk3pq+XJN6Ivrw74d4Hw4y1HCsKj191V0neX046VLqou9/0YrV7Y66JN9rcpP43CbhNhfDXBXUqOne5hu4JXl6lyiu3qqWvNQTS58nJrV6aRjH8HG7ip/u8y1Czwa4t5ZkxDlQpz9aVtS5p13HRp6NbYqWibbfrKEkeD0hjbmkr8YXDf8/f5z8o/tuYezThqJu3Nri/H7jFeZW1yVlet1OLXFFTu76nUW60py10hDR6xqyXPV6OMZRceclKNQTbc3NxeXda7u69S4ua85VKtWrJynUm3q5Sb5tttttmo9bgcFRg7UW6dvpn3yyr96q9VypAAd7nAAAAAA1G01ESmAAFUh6AHn+egB4rwo9j9XY1tHetu7Vf+kj7LfFfRK/lgOkj7LfFfRK/m3oPzC3v/KXJjPLVbvsAA2nInDvJEYd5ILQAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIz7iRGfcESgAAq2gAuqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABc3gNwit8qYLb5tzBYVI5mvISdOlcwSeH0nqkktXpOUecm9JJS2aR9fdxfo8cIrf8JQ4g5osKjuXPfhVtXglCMNE1c6a6ttt7NUtNN611hKPfubs3YHkjLVxj+P3XUWtL1YwjzqV6j1206cf1pPR+SSbbSTa8XpjSVV6rmeG1+icvT8o7Wzg8NFEeOuf75vjcTeIeF8Osn18Tuq9N4nXhOnh1rJbnXractYpp7Itpyeq0XLXc4p0FxnGcUzBjV1jWNXtS9xC7n1latUfOT7FyXJJJJJLRJJJJJH1M7ZvxTPOcL7MWKVajdebVCjOe5W1HVuFKLSS0in26LV6yfNs44bei9G04K3nVrrnb3R/tbixWIm9Vq2QAA2XGAAAAAAAAGo2moiUwAAqkPQA8/z0APFeFHsfq7Gto71t3ar/wBJH2W+K+iV/LAdJH2W+K+iV/NvQfmFvf8AlLkxnlqt32AAbTkTh3kiMO8kFoAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEZ9xIjPuCJQAAVbQAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO+OAPCT/arFlmzM+F9bl211/DU6z0je11JLnHT16UdJa80nJKPrJTS4vwd4V4hxDzLSurm36vLdhWi76vU3KNbRpuhBppuUl2tNbE9XzcVK83/AGfg+E/93w/DrGj/AMtKlb0oR/JRjGK8kkjy+mtKeJjm1mf1Ttn3f21MHhuXPjK9jVjOM4Xl/BbrGsavadlh9pDrK1ao+UV2LkubbbSSWrbaSTbKFcVOIl5xHzrWxTdcUcJofxWH2daSfUU9FrJqPJSm1ufa1yjuaijkfHDizDiJjVDDMFVSnl7DJydGcnKLvKj5OrKD5JJJqCa3JSk3pu2x6gPpobRfNqfH3Y/XPo90d/8A+e9XGYrxk8inZ9wAHpGaAAAAAAAAAAAajaaiJTAACqQ9ADz/AD0APFeFHsfq7Gto71t3ar/0kfZb4r6JX8sB0kfZb4r6JX829B+YW9/5S5MZ5ard9gAG05E4d5IjDvJBaAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGfcSIz7giUAAFW0AF1QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA5lw74d45xHzLHCsKj1FrS0neX04607Wm32v8ApSej2x11bT7EpSXy8o5RxzO+ZbfAMAtevuqvrSnLlToU01uqVJfqxWq822kk20nfXh5kPC+HWT6OX8Mq1Lhubr3NzU5OvWaSlPbq1FaRilFdiS1bereHpbScYOjk0f8Ac7Pl8+53YXDTeqzn/mH2cvYDh+WMtYfl/CqfV2dhRjRp6qKlLTtnLaknKT1lJ6LVtvvKtceeNNvmOlcZGypVp18HjOP46/SUldThJSUKT/oKUU96/Sa5eqtZ8y488abjLlW4yNlSrUoYxKEfx1+k4u1hOKkoUn/TcZJ71+iny9Z6wqMZWhtGTVPPMRGudcd89n8+51YzExEeJt7+4AB7FjgAAAAAAAAAAAAAajaaiJTAACqQ9ADz/PQA8V4Uex+rsa2jvW3dqv8A0kfZb4r6JX8sB0kfZb4r6JX829B+YW9/5S5MZ5ard9gAG05E4d5IjDvJBaAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGfcSIz7giUAAFW0AF1QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP1Ydh95i2LWeFYfR668va0LehT3KO+pOSjFatpLVtc29D8pdfgtwWt8iWlPMOYaVO4zRXhyjqpQw+DXOEH2ObT0lNecY8tXPN0hj6MFa5dW2dke/wDr3unD2Kr1WUbPS+9wm4TYXw1wV1Kjp3uYbuCV5epcort6qlrzUE0ufJya1emkYx+Xxw4sz4d4LQwzBVTqZhxOEnRnJxkrOmuTqyg+bbbagmtrcZN67dsuR8VOIlnw4yVWxTdb1sWr/wAVh9nWk119TVayajzcYJ7n2J8o7k5IoVjOM4pmDGrrGsaval7iF3PrK1ao+cn2LkuSSSSSWiSSSSSPL6MwNzSF2cXiddOf8z3R/XvaeJv02KPFWtv2flubm4vLutd3depcXNecqlWrVk5TqTb1cpN822222zUAe62MQAAQAAAAAAAAAAAAABqNpqIlMAAKpD0APP8APQA8V4Uex+rsa2jvW3dqv/SR9lvivolfywHSR9lvivolfzb0H5hb3/lLkxnlqt32AAbTkTh3kiMO8kFoAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEZ9xIjPuCJQAAVbQAXVAAAAAAAAAAAAAAAAAAAAAAAAAAAAO/ej/wit81Xc835psKlTBbSaVlb1YLqr6qm9zlq9ZQg0k1ptlJ6NtRlF8uKxNvC2pu3Nkcfk+tq1Vdqiily3o+8HbOnYWPETMtHr7qr/G4ZZ1abUaCT9WvJSXrSem6Hck1JNtrZ3nnbN+F5GyffZixSrTSoQaoUZz2u5raNwpRaTesmu3R6LWT5Jn1MZxnC8v4LdY1jV7TssPtIdZWrVHyiuxclzbbaSS1bbSSbZQXibxDxTiLnCvid1XqLDKE508OtZLaqFHXlrFNrfJJOT1er5a7VFLxOGsXdMYmbt3VRH290f75tq5XRhLcUU7f9rfGzdm7HM75luMfx+66+6q+rGEeVOhTTe2nTj+rFavzbbbbbbfwQD31FFNFMU0xlEMKZmZzkABZUAAAAAAAAAAAAAAAANRtNREpgABVIegB5/noAeK8KPY/V2NbR3rbu1X/pI+y3xX0Sv5YDpI+y3xX0Sv5t6D8wt7/ylyYzy1W77AANpyJw7yRGHeSC0AACQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACM+4kRn3BEoAAKtoALqgAAAAAAAAAAAAAAAAAAAAAAAABzLh3w7xziPmWOFYVHqLWlpO8vpx1p2tNvtf9KT0e2OurafYlKS+dy5Raomuucohammap5NO1yPgtwsuOIOaqd3iVlUeV7Get7V3un109usaMGlq224uWmmkW+cW463h/7PwfCf8Au+H4dY0f+WlSt6UI/koxjFeSSRqwbBsLy/gtrguC2VOyw+0h1dGjTXKK7XzfNttttvVtttttlUOP3GKzzTrkrK9brsJt6ynd31Oo9t3UjrpCGj0lSi+er1UpRi48oqUvBV13tM4qKadVEcI98/Of9sb1MUYO1nOuZcX43cVP94eZYWeDXFxHLeH8qFOfqxuaurTruOia1T2xUtWkm/Vc5I6lAPdYexRh7cWrcaoYdyuq5VNVW0AB93zAAAAAAAAAAAAAAAAAAANRtNREpgABVIegB5/noAeK8KPY/V2NbR3rbu1X/pI+y3xX0Sv5YDpI+y3xX0Sv5t6D8wt7/wApcmM8tVu+wADacicO8kRh3kgtAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjPuJEZ9wRKAACraAC6oAAAAAAAAAAAAAAAAAAAAAAH78GwbFMwY1a4LgtlUvcQu59XRo01zk+183ySSTbb0SSbbSREzFMZzsTEZ6ofvyjlHHM75lt8AwC16+6q+tKcuVOhTTW6pUl+rFarzbaSTbSd+sg5Lw/IGSrPLeH1Ov6nWde5dOMJXFWT1lOSX5JattRjFavTU+Nwm4bW/DTJ7w6dend4reTVe+uYQSTnpoqcXopOEeem7vlJ6R3bVxfjTxpt8iWlTL2XqtO4zRXhzlopQw+DXKc12ObT1jB+UpctFPwePxd3Sl+MNh4/THH5z8m7YtU4ajxlzb/ALU4vx74029laX/D/K1WncXdeE7bFLvRShQg04zoQ7nNptSf6nNL1tdlUDbc3NxeXda7u69S4ua85VKtWrJynUm3q5Sb5tttttmo9fgcFbwdqLdG+ffLIvXqr1XKqAAdz4AAAAAAAAAAAAAAAAAAAAAAajaaiJTAACqQ9ADz/PQA8V4Uex+rsa2jvW3dqv8A0kfZb4r6JX8sB0kfZb4r6JX829B+YW9/5S5MZ5ard9gAG05E4d5IjDvJBaAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABGfcSIz7giUAAFW0AF1QAAAAAAAAAAAAAAAAAAAABttra4vLujaWlCpcXNecadKlSi5TqTb0UYpc222kki6/BHg9/u9sJ45jc+szJf0eqqU4T1p2lJtS6pacpybjFylzWqSjyTlKufA3F8j4NxKtbrOlv4Kwu6s1+HtK+vKdSLX7pt6QfNrsnC5Gfs6YfkDJV5mTEKfX9TpChbKpGErirJ6RhFv829E2oxk9HpoeR07ib9VdODtROVXH5R29zWwNuiIm9VOzg+Dxb4o2fDLLVKvG3/GYxiG+FhbyT6tuOm6dRr9WO6PJPWTaS0Wso0UxnGcUzBjV1jWNXtS9xC7n1latUfOT7FyXJJJJJLRJJJJJH783ZuxzO+ZbjH8fuuvuqvqxhHlToU03tp04/qxWr822222238E19GaOpwVvXrrnbPZHy+7kxOIm9Vq2AANdyAAAAAAAAAAAAAAAAAAAAAAAABqNpqIlMAAKpD0APP8APQA8V4Uex+rsa2jvW3dqv/SR9lvivolfywHSR9lvivolfzb0H5hb3/lLkxnlqt32AAbTkTh3kiMO8kFoAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEZ9xIjPuCJQAAVbQAXVAAAAAAAAAAAAAAAAAAAAAA+pieYccxmwwywxXFLi8tcKou3s6VWe6NCm3rov7lr26RjHsjFL5YImmJmJmNic5gABKAAAAAAAAAAAAAAAAAAAAAAAAAAADUbTURKYAAVSHoAef56AHivCj2P1djW0d627tV/6SPst8V9Er+WA6SPst8V9Er+beg/MLe/8pcmM8tVu+wADacicO8kRh3kgtAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjPuJEZ9wRKAACraAC6oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGo2moiUwAAqkPQA8/z0APFeFHsfq7Gto71t3ar/ANJH2W+K+iV/LAdJH2W+K+iV/NvQfmFvf+UuTGeWq3fYABtOROHeSIw7yQWgAASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD9NlYX2JXUbTDrKveXEucaVCm6k3+xJan3KuQM80aCr1cn41Gm+ersanL9vq8vzPnVcopnKqYhaKZnZDjQMyjKE3CcXGUXo01o0zufg/whwvPeD3mO45fXFK0o13bUqFrKMZSkoxk5SbT0WklotNf9fniMRbw9ublydS1u3Vcq5NLpcHYvFrh3Q4e5ktrawval1YXtJ1aPXadZDR6SjLRJPu0ei7ezkddFrN6i9bi5RslFdM0VTTIRn3EiM+4+z5ygAAq2gAuqAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABqNpqIlMAAKpD0APP8APQA8V4Uex+rsa2jvW3dqv/SR9lvivolfywHSR9lvivolfzb0H5hb3/lLkxnlqt32AAbTkTh3kiMO8kFoAAEgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABOnTnVqwpU47pzajFeLZAlCcqdSNSEnGcWmmu5gXvyTkrBciZZo2Vlb0Y3EaSd3d7fXrTS1k2+3TXXRdiR8DK/GvJ+bM1xy7h8L6jcVXJUKtelGNOttTb00k2uSbWqX7+R9jIPEPAs+4JTr2denSxGMF+KsZSW+lLv0X60fB/v0eqOEZu6POWcaqVLzLlzPArqbcnSUesoSflHXWP5PReB+dUU2pu1046ZiqfT7p+bfmauTE2cphDj1kHC8Qyfc5tsbOnQxWwcZ1qlOO13FJtRalp2tap6vnomjrTgxHifTs8RucizsKtiqsY3Ftfy9R1NvKSXJp6d6a17+xHC87cOMz5CuKaxq3p1LWs9tK7t5OdKb8NWk09O5peWp3j0ZP5KY9/XIf4DeuRzbR05VxcjOMs41Ze7a4af/S/rjky6d4tU870850v9u69CpiFS1jUowt5J06dJyklGKXZzjLz8z6ttwC4g3VpRuqVCw6utCNSOt0k9GtV3H1ukr/Odh39k0/86sWiwP8Ak5hn9Vpf4EUv6Ru4fC2a7cRHKifRq3LUWKbl2uKvQpxl3gtn7MmG0sStsNpWdpWipUql5VVN1Ivsajzlp5tcz4+cOGmcMlU4XGN4ZpZye1XVCaqUtX3NrnF/tS17jvHFeknh1hmOtYWOWql5htCq6TufxKhKaT0cow2taeCb58uw7po1MIzZlelWlRhe4ViltGfV1oaqdOcdUmn+38it3SmNw9VNd+3EUT/vft/cpw1m5E00Va4UvynwjzvnGxWIYZhsKFjL9C5u6nVQqf8ASuba80tPM15p4T55yhZyv8VwjrLGL0lc2s1VhHzlpzivNpI70zf0gcOynmi4y3hOWvx9HDp/h6tT8QqEVKPJwhFQfKPZry7Hy05nbOWcwYZnPKNpjllTcrK/pvWlWim1o3GcJLsejTXgxd0pjbOV65biKJ2f7PbuRThrNedFNX6oefxyrKnD3NudJOWA4TOrbxltndVGqdKL8Nz7X5LVnIK+Qbe56QNXI1s3Ssp4g+SfOFDb1rSfioapFscZxXA+H+SKt/UoK2wvDKMYU6FFLV9kYwivFtpf3s0cfpSbMUU2Kc6q4iY37HPYwsV8qa5yiFYbzo8cQ7W0deisNvZpa9TQuWp/s9eMVr+Z1dieF4jg2I1cOxWyrWV3Sek6NaDjJfk+7zLO5O6QtpmHNlvguLYEsMpXtRUre4hcdYozb0jGacV2vlqu9rl3nIuOGTrLMfDy9xVUYrEsHpSuaNbTR9XHnUg33ram/wBqXmc1rSeKsX6bONpiOV6Y/wBk+lWGtV0TXZnYrVk/hhmrPOGV8RwGnbSoUK3UTdatse7an2aeDR+qrwez7DNDy7SwmNzdxpQr1KlKouqpQk2lum9En6r5dvLlqd19Gf8AkFi/9pP/ACoH3eKXFy34d31phlphUcQxK6p9fNTqdXGnT1cYttJttuL5eRF3SWL53XhrNMT7v71ppw1rxUXK5ydDYrwI4i4XZTu1htC/hCO6ULOupzS8ovRyfktTrKcJ06kqdSEoTg3GUZLRprtTRd3hhxJtuI2DXdwrH8BfWU4wr0FPfHSSbjJPRcnpLl3aHQfSIwG3wriPRxK0oqlDFbZVqunZKrGTjJ/mtj/a2+8++A0jfrxE4XE0xFUe587+HoptxdtzqdOAA9CzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADUbTURKYAAVSHoAef56AHivCj2P1djW0d627tV/6SPst8V9Er+WA6SPst8V9Er+beg/MLe/8AKXJjPLVbvsAA2nInDvJEYd5ILQAAJAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACdOKnVhCU1BSkk5S7I+bIADvil0b85WlSN1aZkw2nXp+tCdKVWMk/JqPI08M+J3ESjn7D8q4rVucWoVbhW1xQuobq1utdsp79N3q9r3arRPs7T7fDnpAWNjgltgmdKdwp20FSp4hSj1m+C5LrI9uqXetde/nzfZT408LKdOVzHMlLdLt22lbfL8tmv7zyF+5jP1WsTZ8Z7piNnz1R3NWim1qqt18l9Hiva2d3wkzHC9jFwp2kqsHLuqR9aGnnuSX5nXPRk/kpj39ch/gOCcWeM8c52Dy7l+3q22DuanXq1tFUuWnqltWu2KaT7dXouzTR/T4F8QcoZNy/i1rmTF/wADWuLmNSnH8PVqboqOmusIvTn4lIwN+3o2uiqmeVMxOW2fQmb1FWIiYnVEbX4Okr/Odh39k0/86sWiwP8Ak5hn9Vpf4EVC44ZrwDOGerLE8u3/AONtKWHQoTqdVOnpNVakmtJpPslHn2czvrCuNnDG2wWxt62ZtlWlb04Tj+CuHo1FJrlTKY3DXqsHYppomZjPPVOrYmzcoi7XMzCmpezhb/NLln+owKJlsMhcX+HWCcO8CwnFMw/h7y1tYU6tP8JXltku1axg0/yZqads3LtmmLdMzr9EZ+hzYOummuZqnJWvPP8AOPmf+1Lr/OkWv4A/zM4Z/wCNX/zZFSM1XttiWdcdxGyq9ba3V/Xr0Z7XHdCVSTi9HzWqa7SwfCDinkPK/DKxwbHcd/CX1KrVlOl+FrT0UptrnGDXY/EaWtXLmDopopmZzjVEfKUYWumm9MzPvfL/AIRt8N6ZdSrcyjGnWrq33PulO1UY/vk0vzO2+MOXcQzPwvxHD8KpyrXlOULiFGPbV2S1cV4vTXRd7SKq8Ssfscb4qYtj+A3sqtrVq06lvcQjKm9Y04LVKSUk00+7uO68jdIjCK+H0bDO0KlneU4qLvqVN1KdXRfpSjH1oyfkmv2dhyYvB4iKbGJtU5zTTTnHp1fL7vravW5mu3XOqZl0xkDJOYccz9hdrSwy6oU6FzCrcVqlKUI0YRknJttcny5LvbRbriPiNvhXC/Ml3cyiouwq0Y7uxznFwivzlJI+HdccOGVtbSrRzH+IklqqdG2quUvLnFJfm0V84p8XrzP7p4ZYW08PwSjPeqU5a1K8u6U9OS07orXx1fLSs28VpLEUVXLfIpp9/wDaYqtYa3MU1ZzLtjoz/wAgsX/tJ/5UDrfpG/zq0f7Opf46h93gbxEydk7KOI2GY8Y/A3Fa9daEPw9WprHq4rXWEWu1M4TxqzRgebeIFPFMvX342zjZU6TqdVOn6ylNtaTSfeu46sPZuxpSu5NM8nXry1ej0vlcrpnC00xOtz/owf8Avmaf+i2/9app6Tv/AMay3/4Fb/FE+HwHzvlfJlzj88y4n+BjdwoKi+pqVN7i57v0IvT9JdviauO2dMs5yxPBK2W8S/HU7WjVjVfU1Ke1uUWv04rXsfYIs3el/G8meT78tX/PvOXTzTk56/7dOgA9OzAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADUbTURKYAAVSHoAef56AHivCj2P1djW0d627tV/6SPst8V9Er+WA6SPst8V9Er+beg/MLe/8pcmM8tVu+wADacicO8kRh3kgtAAAkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAjPuJEZ9wRKAACraAC6oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGo2moiUwAAqkPQA8/z0APFeFHsfq7Gto71t3ar/ANJH2W+K+iV/LAdJH2W+K+iV/NvQfmFvf+UuTGeWq3fYABtOROHeSIQ7SYWgAASAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARn3EiE+0IlEABVtAXYC6oAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGo2vsNREpgABVIegB5/noAeK8KPY/V2NbR3rbu1X/pI+y3xX0Sv5YDpI+y3xX0Sv5t6D8wt7/wApcmM8tVu+wADacjKej1NhqJRlpyYTEpgALAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGtvV6mZS15IiFZkAAQnF9xI19hNPUtEoZABKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAw3oBiT7iBntMFZWAAQB6AHn+egB4rwo9j9XY1tHetu7Vf+kj7LfFfRK/lgOkj7LfFfRK/m3oPzC3v/AClyYzy1W77AANpyAAAypNEt67yACc2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM2zcvEbl4msAzbNy8RuXiawDNs3LxG5eJrAM0967iLk2YAMwABAAABkwAJKXiS3I1gnMbNy8RuXiawM0ZNm5eI3LxNYGZk2bl4jcvE1gZmTZuXiNy8TWBmZNm5eI3LxNYGZk2bl4jcvE1gZmTZuXiNy8TWBmZNm5eI3LxNYGZk2bl4jcvE1gZmTZuXiNy8TWBmZNm5eI3LxNYGZk2bl4jcvE1gZmTZuXiNy8TWBmZNm5eI3LxNYGZk2bl4jcvE1gZmTZuXiNy8TWBmZNm5eI3LxNYGZk2bl4jcjWBmZJOXgYMAhIAAAAAHoAef56AHivCj2P1djW0d627tV/6SPst8V9Er+WA6SPst8V9Er+beg/MLe/8pcmM8tVu+wADacgAAAMpNklFd4EAbNq8BtXgEZtYNm1eA2rwBm1g2bV4DavAGbWDZtXgNq8AZtYNm1eA2rwBm1g2bV4DavAGbWDZtXgNq8AZtYNm1eA2rwBm1g2bV4DavAGbWDZtXgNq8AZtYNm1eA2rwBm1g2bV4DavAGbWDZtXgNq8AZtYNm1eA2rwBm1g2bV4HPeGHDm6z/mPqZqpQwi10leXMeTS7oRb5bn/ctX5P5XbtFmiblycoheima6opp2vj5QyDmfPF46OA4e6lGElGrdVXso0v2y8fJavyLFZX6O2U8MoU62ZK1bG7ztlBSdKgn4JRe5/tb5+CO28HwbDMv4Rb4Tg9nTs7K3jthTgv3tvtbfe3zZ+88LjNNX70zFqeTT8tv89zbs4OiiM6tcvjWGVcs4VShSw7L+HWsYLl1dtBP9+mrPrpKMVGKSS7Eu4yYMOquqqc6pzdsREbAwDBRIYAIAwDBAGAYIAwDDZANkWw2YISGAYCWi5srO7jtu7SjcLwq01L/1OIY7wqyHj8ZO6y/QtqzXKtZrqJLz9XRP80zmxg+lu/dtTnbqmP2lSqimrVVGaruc+AONYT1l7lWtLGLNc/w89I3EF5d0/wAtH5HTFWlUo1p0a1OVOpCTjKE1o4tdqa7mehB1JxY4VWmaLGvj2CWyp49SjulGHJXcV3Nf09Ox9/Y+7T1ejtPVcqLWK2e/v72ZiMFGXKt/wqeDfKlsnKE4OMovRxfJp+BHZHwPZ5snJqBt2R8Bsj4DMyagbdkfAbI+AzMmoG3ZHwGyPgMzJqBt2R8Bsj4DMyagbdkfAbI+AzMmoG3ZHwGyPgMzJqBt2R8Bsj4DMyagbdkfAbI+AzMmoG3ZHwGyPgMzJqBt2R8Bsj4DMyagbdkfAbI+AzMmoG3ZHwGyPgMzJqBt2R8Bsj4DMyagbdkfAbI+AzMmoE3DwIkoYAAAAAD0APP89ADxXhR7H6uxraO9bd2q/wDSR9lvivolfywHSR9lvivolfzb0H5hb3/lLkxnlqt32AAbTkCUY682YS1ehsCAABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA/RY2VziOIW+H2VGVa5uakaVKnHtlKT0S/ey9uSMq2uTMm2OA2yjKdGG6vViv+LVfOcv38l4JJdxWHgFgSxfilRvasdaOFUJ3T17HP9CC/fLX/wApcE8Z4QYmZrpw8bI1z+/++7ZwFvKmbkhgGDyrUDAMEAYB1zxC4q4bkevTw2haPEsWqRU/w8Z7Y0ovscno+b7kl+7kfWzYuX64t2ozlSuumiOVVOp2MYOh6vFHizbWjxO44fwp4fFb5N21ZSjHt1b3clp36aHYmQOIOG59wqrXtqMrS9tmlcWspbtmvZJPlrF6PuXYdN7R9+zR4yrKYjblMTl+750X6K55MbXMzAIqUZLWMk12apmc+7JggqtKU3TjUi5rtinzR8XNdPMtXL9SGU7i3t8U3x2TuEnBR19btT7vItRTyqopzyz96JnKM33GyLZ8vL8Map5etIZirUa2KqL/ABE6K0g3q9NOS7tO445m3iPhWS8wWGHYxbVvw95SdT8TS9bq2pac49rXmufkfSixXcuTatxyp17PTl7kTXTTTyqtTmxg/BhWM4VjljG+wi/o3tvL9elLXR+DXan5PmfuPhVTNM5VRlK8TE64ADBRIYBgAYBggVl485NWFY/SzTY0VGzxJ7LhRWihXS7f/Mlr+1SfedMFz+J+CrHuGeM2cYbq1Kj+JpeO6n63L9qTX5lMD9F0Hipv4bk1badW70d25g4y3yLmcekABvOIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAw4pmQBpa0ejMGya5amstCoACQPQA8/wA9ADxXhR7H6uxraO9bd2q/9JH2W+K+iV/LAdJH2W+K+iV/NvQfmFvf+UuTGeWq3fYABtORKHaTIw7yQQAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFhOjJRi8RzNcNrdClbwS8m6jf+FFkyrfRrxCnRzjjGHTntldWaqQT/AFnCa/0m/wC8tGfnmm4mMbVM/L7PQ4Kf/GAwDBiOwMAEAVtyzRhjXSjxStiKVR2l3czpxnz1dPWEP3JJr9hZEr7n/LmZcmcTY8Q8s2M721qz62tCnFz6uTjtnGaXPbJavd3N92iNnRVUZ3LWeVVVMxH7+7e5MTE/pqy1ROt2pnbP2DZEoWVXGLa8rxvJTjBWsIS02pa67pR8UcY4dZ04f4vjtfCMpZcr4XczpSr1Kk7alDelJapyjNt85cl2HxZ8f8u3NtCE8r39e97FQkqbipeClrr/APqaOFeAZjuuI+LZ5xPBZYRZXtOr1dGrrGTc5xklGLSeiS7Wl3aH3jBxZwtfj6ZpnLrbZ9Gp85vcu5HInOP22b3F42mL43x5zDl6wxSrY0r6rXo160ZNunR1Up7Vr2vbt/8AMdi43kq5y3wt/wBnMEzbSwi0VeVS4vb6fVuUJc9ilHs1fhzemneziWUf/mhx3/quf9D9nSHtcUq2eB3VKnVqYZRlVVZwT2wm9u1y/atUn+3xOy5NdzFWMPFURE00zsjblP8AofGmIpt115ZznLgmZ8IyVl3LmHYllHNsrrMdvVh10qFd+s3F7pw0Sa0lppz7HzOys+4zd4t0d7HGKtRwurmFtOpKHq6y1W5rTs1epw/OeI4DmvIzpZCyiqFrh2y5vbuNpGm6SXqqmmucn625+UdeZ+nE8fw/GOjTCys5TdfDZW9C4UoNKMt3LR9/Ja/mdFVNVzxNdcTMxXrzyziJ9+Wz5KRMU8uI2THodr8LJzqcK8CnUm5ydKWrk9W/4yR1N0h/5Q4J/VZ/4ztfhV/NRgP/AIMv8yR1R0h/5Q4J/VZ/4zN0d/8AWq/ertdF/wA1j9odR4RjeLYDfxvsHxCtZXC/WpS03Lwa7GvJ8ju3KfHyMurtM32Wx9n421jy/bKH+sf3HRdjYX2J3sLLDrStd3NR6RpUYOUn+SO5Mp8Br656u7zbd/g6Xb+Dt5KVR+Updkfy1/I9FpSnAzRni8s/R1t3+ycGGm9n/wCX9O+sLxfC8bsY32E39G9t5dk6U1JLyfg/Jn7T5OB5cwTLVj+DwTDqVnSem5wWsptd8pPnJ/tZ9U/OLnI5U+Lzy9Ge1v055fq2hgGD5rABggaLylG4sLihN6RqU5QbfcmtCgxenM19DDMo4viFSahG3tKtTXzUHp/foUWPaeDUTybs+jV2sjSE66Y/cAB7BlgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADD5po0m80FoRIACUB6AHn+egB4rwo9j9XY1tHetu7Vf8ApI+y3xX0Sv5YDpI+y3xX0Sv5t6D8wt7/AMpcmM8tVu+wADacicO8kRh3kggAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOUcP8xxypxBwjHKspK3oVttfatf4uScZ8u/RNv8i9dOpTrUoVqU4zpzipRlF6qSfY0edhaDgTxIo4nhVHJWL1lDELSGllUk/+PSX6n/VFfvivJnltPYOblMYiiNdOqf2/pqYG9FMzbn0u9DAB4lshgGCAMAwQIdXTVR1FTipvtlpz/eSBhsA2Rlo001qn3MNmCqUYU6dKGynCMI+EVojqnixhGdswUrfLWXMEt62D1owq1rjfCEo1FKXq85LRabX2c9TtcwdGHxE4e5F2IiZj3qXLcV08mXwsn4JVy3kzC8Er1Y1a1rRUakofouTbb08tWzjuduGtrnjMOHX2I4hUt7OzouEqVGK31G5a/pPlFfkzn5gUYq7Rdm9ROVU56/32k26aqeRManyMCy1gWWbL8JgmG0bODXrSitZz85SfN/mz6wMHPXXVXPKqnOV4iIjKAwDBRIAYIAwD5+M4xh+A4Nc4tilwqFpbQ3zk/wC5Jd7b5Jd7YppmqYpp2yiZyjOXWPHrMdLDskwwGnV/9rxSotYrtVKDUm3+2SivPn4FXjkeds13Wcs2XONXEXSpy0p0KOuvVU1+jH9va35tnHD9Q0Xg+aYaLc7Z1z+7zuIu+NuTVGwABqOcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQbzQTCJAAWQHoAef56AHivCj2P1djW0d627tV/6SPst8V9Er+Abeg/MLe/8pcmM8tVu+wADacicO8kAEAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAANttc3Fnd0ru0rzoXFGSnTq05OMoST1TTXYwBMZ6pStVwg4s3WcZf7P43bSlitCm5q7ppKFaK75L9WX7Fo/I7jAPzTS1miziqqLcZQ9Fha6q7UTVLBgAyXUwYAIGGRYBCYYMABIYAKjBgADBgAgYABAwYAIH4MYxShguC3eLXUKk6FrTdWcaaTk0vDVpf3lRM+8RsYzzfaV27TC6UtaFlCWqX/ADSf60vPu7u/UD1/g5Yt1TXcqjOY2fJl4+uqIimJ1S4UAD2zIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADQATCJAAWQHoAAeK8KPY/V2NbR3rbu1/9k="
+
+
+def rozpocznij_samouczek():
+    wymuszony = st.session_state.get("samouczek_wymuszony")
+    if wymuszony or (not st.session_state.get("samouczek_zrobiony") and not st.session_state.get("rozwiazane")):
+        st.session_state.samouczek_krok = 1
+        if wymuszony:
+            st.session_state.samouczek_zrobiony = False
+
+
+def _samouczek_krok():
+    wymuszony = st.session_state.get("samouczek_wymuszony")
+    if not wymuszony:
+        if st.session_state.get("samouczek_zrobiony") or st.session_state.get("rozwiazane"):
+            return 0
+    return st.session_state.get("samouczek_krok", 0)
+
+
+def _odczytaj_samouczek_param():
+    if str(st.query_params.get("samouczek", "")).strip().lower() in ("tak", "1") \
+            and not st.session_state.get("samouczek_wymuszony"):
+        st.session_state.samouczek_wymuszony = True
+        st.session_state.samouczek_zrobiony = False
+        st.session_state.samouczek_krok = 1
+
+
+def _samouczek_dalej():
+    krok = st.session_state.get("samouczek_krok", 1)
+    if krok >= 3:
+        st.session_state.samouczek_krok = 0
+        st.session_state.samouczek_zrobiony = True
+        zapisz_postep()
+    else:
+        st.session_state.samouczek_krok = krok + 1
+    st.rerun()
+
+
+def pokaz_przycisk_wiadomosci():
+    proc_wiad = int(frakcja_odslonieta(waga_zrobiona(), waga_calkowita()) * 100)
+    if st.button(
+        f"📜  {t('wiadomosc_tytul')} · {proc_wiad}%",
+        key="otworz_wiadomosc",
+        use_container_width=True,
+    ):
+        st.session_state.ekran = "wiadomosc"
+        st.rerun()
+    st.markdown(f"<p class='zwoj-pod'>{t('wiadomosc_pod')}</p>", unsafe_allow_html=True)
+
+
+_CSS_SWIECENIA_WIADOMOSCI = """
+.st-key-otworz_wiadomosc { margin-bottom: 18px; }
+.st-key-otworz_wiadomosc button { border: 2px solid #ffd76a !important; animation: samouczekSwiec 1.5s ease-in-out infinite; }
+@keyframes samouczekSwiec {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(255,215,106,0), 0 0 14px 2px rgba(255,215,106,0.45); }
+  50% { box-shadow: 0 0 0 6px rgba(255,215,106,0.25), 0 0 30px 10px rgba(255,215,106,0.75); }
+}
+"""
+
+
+def pokaz_samouczek(krok):
+    kropki = (
+        "<div class='samouczek-kroki'>"
+        + "".join(f"<span class='samouczek-kropka{' akt' if i == krok else ''}'></span>" for i in (1, 2, 3))
+        + "</div>"
+    )
+    if krok == 1:
+        kola = "".join(
+            f"<span class='samouczek-kolo'>{x}</span>"
+            for x in tt({
+                "pl": ["👥 Zapytaj kogoś", "🔎 Szukaj w internecie", "🤖 Poproś AI o pomoc"],
+                "en": ["👥 Ask someone", "🔎 Search the internet", "🤖 Ask an AI"],
+            })
+        )
+        st.markdown(
+            "<div class='samouczek'>" + kropki
+            + "<h2>" + tt({"pl": "🎯 Zanim zaczniesz", "en": "🎯 Before you start"}) + "</h2>"
+            + "<div class='samouczek-wazne'>" + tt({
+                "pl": "Najważniejsze: celem jest <b>dobra zabawa</b> 🎉",
+                "en": "Most important: the goal is to <b>have fun</b> 🎉"}) + "</div>"
+            + "<p>" + tt({
+                "pl": "Dlatego każda pomoc w granicach rozsądku jest jak najbardziej w porządku. "
+                      "Jeśli coś okaże się za trudne, korzystaj z kół ratunkowych:",
+                "en": "So any help within reason is totally fine. "
+                      "If something turns out too hard, use your lifelines:"}) + "</p>"
+            + "<div class='samouczek-kola'>" + kola + "</div>"
+            + "<p>" + tt({"pl": "…albo czegokolwiek innego, co przyjdzie Ci do głowy 😉",
+                          "en": "…or anything else you can think of 😉"}) + "</p>"
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+    elif krok == 2:
+        st.markdown(f"<style>{_CSS_SWIECENIA_WIADOMOSCI}</style>", unsafe_allow_html=True)
+        st.markdown(
+            "<div class='samouczek'>" + kropki
+            + "<h2>" + tt({"pl": "📜 Tu jest Twój postęp", "en": "📜 Here is your progress"}) + "</h2>"
+            + "<p>" + tt({
+                "pl": "Świecący przycisk poniżej to <b>ukryta wiadomość</b>. "
+                      "Z każdą rozwiązaną grą odkrywa się coraz bardziej.",
+                "en": "The glowing button below is the <b>hidden message</b>. "
+                      "It reveals a little more with every game you solve."}) + "</p></div>"
+            + "<div class='samouczek-strzalka'>👇</div>",
+            unsafe_allow_html=True,
+        )
+        pokaz_przycisk_wiadomosci()
+        sciezka = "<span class='strz'> → </span>".join(
+            f"{k['emoji']} {tt(k['nazwa'])}" for k in KATEGORIE
+        )
+        st.markdown(
+            "<div class='samouczek'>"
+            + "<h3>" + tt({"pl": "🏰 Trzy levele", "en": "🏰 Three levels"}) + "</h3>"
+            + "<p>" + tt({
+                "pl": "Gry są podzielone na <b>3 levele</b>. Gdy skończysz cały level, "
+                      "odkrywa się następny — z innymi rodzajami gier.",
+                "en": "The games are split into <b>3 levels</b>. Once you finish a whole level, "
+                      "the next one opens — with different kinds of games."}) + "</p>"
+            + f"<div class='samouczek-sciezka'>{sciezka}</div></div>",
+            unsafe_allow_html=True,
+        )
+    else:
+        st.markdown(
+            "<div class='samouczek'>" + kropki
+            + "<h2>" + tt({"pl": "⛶ Pełny ekran i powtórki", "en": "⛶ Full screen and replays"}) + "</h2>"
+            + "<p>" + tt({
+                "pl": "Każda gra ma w prawym górnym rogu taką ikonkę. <b>Zazwyczaj pomaga:</b> "
+                      "powiększa grę, a ekran przestaje się przewijać pod palcem.",
+                "en": "Every game has this icon in its top-right corner. <b>It usually helps:</b> "
+                      "it enlarges the game and stops the page from scrolling under your finger."}) + "</p>"
+            + f"<img class='samouczek-obraz' src='data:image/jpeg;base64,{OBRAZ_SAMOUCZEK_B64}' alt='⛶' />"
+            + "<div class='samouczek-wazne'>" + tt({
+                "pl": "✅ <b>Zaliczona gra jest zaliczona na stałe</b> — nie musisz przechodzić jej drugi raz. "
+                      "Jeśli będziesz miała ochotę albo zechcesz dać komuś pograć, użyj przycisku "
+                      "„🔁 Zagraj jeszcze raz” — postępu to nie zmienia.",
+                "en": "✅ <b>A finished game stays finished</b> — no need to beat it twice. "
+                      "If you feel like it, or want to let someone else play, use “🔁 Play again” — "
+                      "it doesn't affect your progress."}) + "</div>"
+            + "</div>",
+            unsafe_allow_html=True,
+        )
+    etykieta = tt({"pl": "Gotowe — gramy! 🎮", "en": "Ready — let's play! 🎮"}) if krok >= 3 \
+        else tt({"pl": "Dalej →", "en": "Next →"})
+    if st.button(etykieta, key="samouczek_dalej", use_container_width=True):
+        _samouczek_dalej()
+
 
 
 def _wymagane_przed(kat):
@@ -858,7 +1047,7 @@ def _kategoria_etapu(klucz):
 
 def _dostep_zablokowany(kat):
     # Level N otwiera sie dopiero, gdy wszystkie poprzednie sa zaliczone
-    if not kat or st.session_state.get("test_obejscie"):
+    if not kat or st.session_state.get("test_obejscie") or tryb_testowy():
         return False
     return _zablokowany_bez_testu(kat)
 
@@ -1130,25 +1319,6 @@ div[role="radiogroup"] > label {
 .zdanie-podglad { margin: -4px 0 12px; padding: 7px 12px; border-radius: 10px; background: rgba(230,193,92,0.1);
   border: 1px dashed rgba(230,193,92,0.45); color: #ffe08a; font-weight: 700; }
 
-.info-etapu { margin: 0.2rem 0 1.1rem; padding: 12px 14px; border-radius: 12px;
-  background: rgba(230,193,92,0.10); border: 1px solid rgba(230,193,92,0.32); border-left: 4px solid #e6c15c;
-  color: #f3ead2; font-size: 0.96rem; line-height: 1.55; }
-
-/* ---------- PODSUMOWANIE STATYSTYK ---------- */
-.stat-naglowek { color:#ffe08a; font-weight:900; font-size:1.4rem; margin:2.4rem 0 0.2rem; text-align:center;
-  text-shadow:0 0 14px rgba(255,210,110,0.35); }
-.stat-podtytul { text-align:center; color:#cfc4ad; font-size:0.92rem; margin:0 0 1.1rem; }
-.stat-siatka { display:grid; grid-template-columns:1fr; gap:14px; }
-.stat-karta { background:linear-gradient(135deg,#261f3a,#16131f); border:1.5px solid rgba(230,193,92,0.34);
-  border-radius:16px; padding:14px 16px 10px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
-.stat-tytul { color:#fff4d6; font-weight:900; font-size:1.08rem; margin-bottom:8px; padding-bottom:9px;
-  border-bottom:1px solid rgba(230,193,92,0.22); }
-.stat-wiersz { display:flex; justify-content:space-between; align-items:center; gap:14px;
-  color:#e8dec4; font-size:0.97rem; padding:8px 0; }
-.stat-wiersz + .stat-wiersz { border-top:1px dashed rgba(255,255,255,0.08); }
-.stat-wiersz b { color:#ffe08a; font-size:1.02rem; white-space:nowrap; min-width:48px; text-align:center;
-  padding:3px 11px; border-radius:999px; background:rgba(230,193,92,0.14); border:1px solid rgba(230,193,92,0.38); }
-.stat-wiersz.brak { color:#8a8070; font-style:italic; }
 
 /* ---------- LISTA ETAPOW W KATEGORII ---------- */
 [class*="st-key-menu_"] button {
@@ -1188,39 +1358,7 @@ div[role="radiogroup"] > label {
   border-style: dashed !important;
 }
 
-/* ---------- TRYB TESTOWY: celowo nie pasuje do niczego ---------- */
-[class*="st-key-zalicz_test"] button {
-  background: repeating-linear-gradient(45deg, #ff00ff 0 12px, #39ff14 12px 24px) !important;
-  color: #000 !important;
-  font-family: "Comic Sans MS", "Comic Sans", cursive !important;
-  font-weight: 900 !important;
-  font-size: 1.05rem !important;
-  border: 4px dashed #ffff00 !important;
-  border-radius: 0 !important;
-  text-shadow: 1px 1px 0 #fff, -1px -1px 0 #fff;
-  box-shadow: 0 0 0 3px #ff0000 !important;
-}
-.baner-testowy {
-  background: #ffff00; color: #d0006f; border: 3px dashed #ff00ff;
-  font-family: "Comic Sans MS", cursive; font-weight: 900;
-  text-align: center; padding: 8px; margin-bottom: 10px; font-size: 0.85rem;
-}
-
 /* ---------- MENU ---------- */
-.pasek-globalny {
-  height: 6px; border-radius: 4px; overflow: hidden; margin: 2px 0 7px;
-  background: rgba(255,255,255,0.07);
-}
-.pasek-globalny-wyp {
-  height: 100%; border-radius: 4px;
-  background: linear-gradient(90deg, #7ea8e6, #e6c15c 55%, #b48ce6);
-  box-shadow: 0 0 10px rgba(230,193,92,0.4);
-  transition: width 0.6s ease;
-}
-.zwoj-pod {
-  text-align: center; color: #a8946a; font-size: 0.74rem;
-  margin: -6px 0 16px; letter-spacing: 0.03em;
-}
 
 /* Kafelki kategorii = przyciski "primary". Celujemy w typ przycisku,
    a nie w opakowanie, bo Streamlit nie pozwala owijac ich wlasnym divem. */
@@ -1842,6 +1980,7 @@ button[data-testid="stBaseButton-primary"]:active,
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -1920,6 +2059,7 @@ button[data-testid="stBaseButton-primary"]:active,
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -1935,6 +2075,7 @@ button[data-testid="stBaseButton-primary"]:active,
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -1943,7 +2084,7 @@ button[data-testid="stBaseButton-primary"]:active,
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -2008,6 +2149,58 @@ button[data-testid="stBaseButton-primary"]:active,
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -2547,6 +2740,7 @@ SZABLON_DRONA = """
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -2625,6 +2819,7 @@ SZABLON_DRONA = """
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -2640,6 +2835,7 @@ SZABLON_DRONA = """
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -2648,7 +2844,7 @@ SZABLON_DRONA = """
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -2713,6 +2909,58 @@ SZABLON_DRONA = """
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -3427,6 +3675,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -3505,6 +3754,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -3520,6 +3770,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -3528,7 +3779,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -3593,6 +3844,58 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -4286,6 +4589,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -4364,6 +4668,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -4379,6 +4684,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -4387,7 +4693,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -4452,6 +4758,58 @@ SZABLON_ZABY = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -4955,6 +5313,7 @@ SZABLON_MEMORY = """
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -5033,6 +5392,7 @@ SZABLON_MEMORY = """
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -5048,6 +5408,7 @@ SZABLON_MEMORY = """
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -5056,7 +5417,7 @@ SZABLON_MEMORY = """
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -5121,6 +5482,58 @@ SZABLON_MEMORY = """
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -5518,6 +5931,7 @@ SZABLON_SIMON = """
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -5596,6 +6010,7 @@ SZABLON_SIMON = """
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -5611,6 +6026,7 @@ SZABLON_SIMON = """
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -5619,7 +6035,7 @@ SZABLON_SIMON = """
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -5684,6 +6100,58 @@ SZABLON_SIMON = """
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -6359,6 +6827,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -6437,6 +6906,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -6452,6 +6922,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -6460,7 +6931,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -6525,6 +6996,58 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -7879,6 +8402,7 @@ SZABLON_BITWA = """
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -7957,6 +8481,7 @@ SZABLON_BITWA = """
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -7972,6 +8497,7 @@ SZABLON_BITWA = """
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -7980,7 +8506,7 @@ SZABLON_BITWA = """
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -8045,6 +8571,58 @@ SZABLON_BITWA = """
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -10656,6 +11234,7 @@ SZABLON_MINECRAFT = """
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -10734,6 +11313,7 @@ SZABLON_MINECRAFT = """
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -10749,6 +11329,7 @@ SZABLON_MINECRAFT = """
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -10757,7 +11338,7 @@ SZABLON_MINECRAFT = """
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -10822,6 +11403,58 @@ SZABLON_MINECRAFT = """
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -11519,6 +12152,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -11597,6 +12231,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -11612,6 +12247,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -11620,7 +12256,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -11685,6 +12321,58 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -12221,6 +12909,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -12299,6 +12988,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -12314,6 +13004,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -12322,7 +13013,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -12387,6 +13078,58 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -13212,6 +13955,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -13290,6 +14034,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -13305,6 +14050,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -13313,7 +14059,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -13378,6 +14124,58 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -14132,6 +14930,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -14210,6 +15009,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -14225,6 +15025,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -14233,7 +15034,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -14298,6 +15099,58 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -14982,6 +15835,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -15060,6 +15914,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -15075,6 +15930,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -15083,7 +15939,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -15148,6 +16004,58 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -16180,6 +17088,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -16258,6 +17167,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -16273,6 +17183,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -16281,7 +17192,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -16346,6 +17257,58 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -20009,6 +20972,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var natW = 0, natH = 0;
 
   function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
     if (!wlaczony) {
       korzen.style.transform = '';
       korzen.style.position = '';
@@ -20087,6 +21051,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         doUkrycia[i].style.display = 'none';
       }
       styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
       d.body.style.overflow = 'hidden';
       d.body.style.margin = '0';
       if (d.documentElement) d.documentElement.style.overflow = 'hidden';
@@ -20102,6 +21067,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var d = ramka.ownerDocument;
       d.body.setAttribute('style', styleRodzica);
       if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
     } catch (e) {}
   }
 
@@ -20110,7 +21076,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     styleRamki = ramka.getAttribute('style') || '';
     ramka.style.cssText =
       'position:fixed !important;top:0 !important;left:0 !important;' +
-      'width:100vw !important;height:100vh !important;max-width:none !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
       'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
     schowajInterfejsStrony();
     setTimeout(przelicz, 60);
@@ -20175,6 +21141,58 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
     przelicz();
   }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -20592,6 +21610,106 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child
     width: auto !important;
     min-width: 56px !important;
 }
+
+/* ===== Style funkcji dodanych pozniej: statystyki, wersja testowa, samouczek, pasek postepu ===== */
+/* ---------- PODSUMOWANIE STATYSTYK ---------- */
+.stat-naglowek { color:#ffe08a; font-weight:900; font-size:1.4rem; margin:2.4rem 0 0.2rem; text-align:center;
+  text-shadow:0 0 14px rgba(255,210,110,0.35); }
+.stat-podtytul { text-align:center; color:#cfc4ad; font-size:0.92rem; margin:0 0 1.1rem; }
+.stat-siatka { display:grid; grid-template-columns:1fr; gap:14px; }
+.stat-karta { background:linear-gradient(135deg,#261f3a,#16131f); border:1.5px solid rgba(230,193,92,0.34);
+  border-radius:16px; padding:14px 16px 10px; box-shadow:0 4px 14px rgba(0,0,0,0.4); }
+.stat-tytul { color:#fff4d6; font-weight:900; font-size:1.08rem; margin-bottom:8px; padding-bottom:9px;
+  border-bottom:1px solid rgba(230,193,92,0.22); }
+.stat-wiersz { display:flex; justify-content:space-between; align-items:center; gap:14px;
+  color:#e8dec4; font-size:0.97rem; padding:8px 0; }
+.stat-wiersz + .stat-wiersz { border-top:1px dashed rgba(255,255,255,0.08); }
+.stat-wiersz b { color:#ffe08a; font-size:1.02rem; white-space:nowrap; min-width:48px; text-align:center;
+  padding:3px 11px; border-radius:999px; background:rgba(230,193,92,0.14); border:1px solid rgba(230,193,92,0.38); }
+.stat-wiersz.brak { color:#8a8070; font-style:italic; }
+
+/* ---------- WERSJA TESTOWA ---------- */
+[class*="st-key-zalicz_test"] button {
+  background: rgba(230,193,92,0.10) !important;
+  color: #ffe08a !important;
+  font-weight: 800 !important;
+  border: 2px dashed #e6c15c !important;
+  border-radius: 12px !important;
+}
+[class*="st-key-zalicz_test"] button:hover { background: rgba(230,193,92,0.20) !important; }
+.baner-testowy {
+  background: rgba(230,193,92,0.10); color: #f3ead2; border: 2px dashed #e6c15c;
+  border-radius: 14px; text-align: center; padding: 10px 14px; margin: 4px 0 12px;
+  font-size: 0.92rem; line-height: 1.5;
+}
+.baner-testowy b { color: #ffe08a; font-size: 1.05rem; }
+
+/* ---------- SAMOUCZEK ---------- */
+.samouczek {
+  margin: 6px 0 14px; padding: 18px 16px 14px; border-radius: 20px;
+  background: linear-gradient(150deg, #2b2343 0%, #181420 100%);
+  border: 1.5px solid rgba(230,193,92,0.6);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 0 4px rgba(230,193,92,0.07);
+  animation: samouczekWjazd .45s ease-out;
+}
+@keyframes samouczekWjazd { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.samouczek-kroki { display: flex; justify-content: center; gap: 8px; margin: 0 0 12px; }
+.samouczek-kropka { width: 9px; height: 9px; border-radius: 6px; background: rgba(230,193,92,0.25); }
+.samouczek-kropka.akt { width: 26px; background: #ffd76a; box-shadow: 0 0 10px rgba(255,215,106,0.8); }
+.samouczek h2 { margin: 0 0 10px; text-align: center; color: #ffe08a; font-size: 1.4rem; font-weight: 900; padding: 0; }
+.samouczek h3 { margin: 0 0 8px; text-align: center; color: #ffe08a; font-size: 1.2rem; font-weight: 800; padding: 0; }
+.samouczek p { margin: 0 0 10px; color: #f0e7d0; font-size: 1rem; line-height: 1.6; text-align: center; }
+.samouczek b { color: #fff4d6; }
+.samouczek-wazne {
+  margin: 10px 0; padding: 12px; border-radius: 14px; text-align: center;
+  background: rgba(230,193,92,0.10); border: 1px solid rgba(230,193,92,0.38);
+  color: #fff4d6; font-size: 1.04rem; font-weight: 700; line-height: 1.55;
+}
+.samouczek-kola { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin: 12px 0 10px; }
+.samouczek-kolo {
+  padding: 9px 14px; border-radius: 999px; white-space: nowrap; font-weight: 800; font-size: 0.95rem;
+  background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.18); color: #fff4d6;
+}
+.samouczek-sciezka {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 6px 4px; margin: 8px 0 2px; font-weight: 800; color: #fff4d6; font-size: 0.98rem;
+}
+.samouczek-sciezka .strz { color: #e6c15c; }
+.samouczek-obraz {
+  display: block; width: 100%; max-width: 340px; margin: 6px auto 12px; border-radius: 14px;
+  border: 1.5px solid rgba(230,193,92,0.5); box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+}
+.samouczek-strzalka { text-align: center; font-size: 1.9rem; line-height: 1; margin: -4px 0 4px; animation: samouczekSkok 1s ease-in-out infinite; }
+@keyframes samouczekSkok { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(6px); } }
+/* "Dalej" ma byc oczywiste: duzy, zloty, delikatnie pulsujacy */
+[class*="st-key-samouczek_dalej"] button {
+  min-height: 3.5rem !important; border: none !important; border-radius: 16px !important;
+  background: linear-gradient(135deg, #ffe08a, #e0a92c) !important;
+  animation: samouczekPuls 1.7s ease-in-out infinite;
+}
+[class*="st-key-samouczek_dalej"] button p { color: #2a1a05 !important; font-weight: 900 !important; font-size: 1.2rem !important; }
+@keyframes samouczekPuls {
+  0%, 100% { transform: scale(1); box-shadow: 0 6px 18px rgba(0,0,0,0.5), 0 0 0 0 rgba(255,215,106,0.65); }
+  50% { transform: scale(1.025); box-shadow: 0 6px 18px rgba(0,0,0,0.5), 0 0 0 10px rgba(255,215,106,0); }
+}
+
+.info-etapu { margin: 0.2rem 0 1.1rem; padding: 12px 14px; border-radius: 12px;
+  background: rgba(230,193,92,0.10); border: 1px solid rgba(230,193,92,0.32); border-left: 4px solid #e6c15c;
+  color: #f3ead2; font-size: 0.96rem; line-height: 1.55; }
+.pasek-globalny {
+  height: 6px; border-radius: 4px; overflow: hidden; margin: 2px 0 7px;
+  background: rgba(255,255,255,0.07);
+}
+.pasek-globalny-wyp {
+  height: 100%; border-radius: 4px;
+  background: linear-gradient(90deg, #7ea8e6, #e6c15c 55%, #b48ce6);
+  box-shadow: 0 0 10px rgba(230,193,92,0.4);
+  transition: width 0.6s ease;
+}
+.zwoj-pod {
+  text-align: center; color: #a8946a; font-size: 0.74rem;
+  margin: -6px 0 16px; letter-spacing: 0.03em;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -20643,6 +21761,8 @@ def zapisz_postep():
     st.query_params["j"] = st.session_state.jezyk
     if st.session_state.czas_startu:
         st.query_params["t"] = str(st.session_state.czas_startu)
+    if st.session_state.get("samouczek_zrobiony"):
+        st.query_params["w"] = "1"
     if st.session_state.get("staty_gier"):
         # W adresie, zeby przetrwaly ponowny skan QR i usypianie serwera
         st.query_params["s"] = json.dumps(st.session_state.staty_gier, separators=(",", ":"))
@@ -20653,6 +21773,7 @@ def zapisz_postep():
         "bledy_per_etap": st.session_state.bledy_per_etap,
         "jezyk": st.session_state.jezyk,
         "czas_startu": st.session_state.czas_startu,
+        "samouczek_zrobiony": bool(st.session_state.get("samouczek_zrobiony")),
     }
     try:
         with open(sciezka_stanu(), "w", encoding="utf-8") as f:
@@ -20707,6 +21828,9 @@ def zainicjuj_stan():
         or st.session_state.bledy_per_etap
     )
     st.session_state.ekran = "menu" if juz_zaczela else "powitanie"
+    st.session_state.samouczek_zrobiony = (st.query_params.get("w") == "1") or bool(zapisane.get("samouczek_zrobiony"))
+    if juz_zaczela and not st.session_state.samouczek_zrobiony and not st.session_state.rozwiazane:
+        st.session_state.samouczek_krok = 1     # po kłódkach, ale przed zakonczeniem samouczka
 
     if juz_zaczela:
         zapisz_postep()
@@ -21651,9 +22775,20 @@ def pokaz_powitanie():
         st.session_state.zamek_otwieranie = False
         st.session_state.ekran = "menu"
         st.session_state.czas_startu = time.time()
+        rozpocznij_samouczek()
         zapisz_postep()
         st.rerun()
         return
+
+    pokaz_baner_testowy()
+    if tryb_testowy():
+        if st.button(tt({"pl": "⏭️ Pomiń kłódki (wersja testowa)", "en": "⏭️ Skip the padlocks (test version)"}),
+                     key="zalicz_test_klodki", use_container_width=True):
+            st.session_state.ekran = "menu"
+            st.session_state.czas_startu = time.time()
+            rozpocznij_samouczek()
+            zapisz_postep()
+            st.rerun()
 
     proby = st.session_state.zamek_proby
     kropki = "".join(
@@ -21762,12 +22897,7 @@ def _postep_kategorii(kat):
 
 def pokaz_menu():
     st.session_state.pop("gra_dalej_klucz", None)
-    if TRYB_TESTOWY:
-        st.markdown(
-            "<div class='baner-testowy'>🧪 TRYB TESTOWY WŁĄCZONY — "
-            "przed wręczeniem ustaw TRYB_TESTOWY = False 🧪</div>",
-            unsafe_allow_html=True,
-        )
+    pokaz_baner_testowy()
     st.markdown(f"<h1 class='tytul'>{t('menu_tytul')}</h1>", unsafe_allow_html=True)
 
     zrobione_lacznie = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
@@ -21790,19 +22920,7 @@ def pokaz_menu():
         unsafe_allow_html=True,
     )
 
-    if zrobione_lacznie > 0:
-        proc_wiad = int(frakcja_odslonieta(waga_zrobiona(), waga_calkowita()) * 100)
-        if st.button(
-            f"📜  {t('wiadomosc_tytul')} · {proc_wiad}%",
-            key="otworz_wiadomosc",
-            use_container_width=True,
-        ):
-            st.session_state.ekran = "wiadomosc"
-            st.rerun()
-        st.markdown(
-            f"<p class='zwoj-pod'>{t('wiadomosc_pod')}</p>",
-            unsafe_allow_html=True,
-        )
+    pokaz_przycisk_wiadomosci()
 
     # Kategorie: caly kafelek to przycisk. Pasek postepu rysujemy znakami,
     # bo do etykiety przycisku nie da sie wstrzyknac wlasnego HTML.
@@ -21828,8 +22946,8 @@ def pokaz_menu():
                 key=f"kat_{kat['id']}", use_container_width=True,
                 type="primary", disabled=True,
             )
-            if TRYB_TESTOWY:
-                if st.button("🧪 [TEST] OTWÓRZ MIMO BLOKADY 🧪",
+            if tryb_testowy():
+                if st.button("🧪 Otwórz mimo blokady (wersja testowa)",
                              key=f"zalicz_test_otworz_{kat['id']}", use_container_width=True):
                     st.session_state.test_obejscie = True
                     st.session_state.ekran = f"kategoria:{kat['id']}"
@@ -22019,8 +23137,8 @@ def pokaz_ekran_etapu(etap_dane):
         st.session_state.ekran = "menu"
         st.rerun()
 
-    if TRYB_TESTOWY and klucz not in st.session_state.rozwiazane:
-        if st.button("🧪🧪 [TEST] ZALICZ TEN ETAP NATYCHMIAST 🧪🧪",
+    if tryb_testowy() and klucz not in st.session_state.rozwiazane:
+        if st.button(tt({"pl": "⏭️ Pomiń ten etap (wersja testowa)", "en": "⏭️ Skip this stage (test version)"}),
                      key=f"zalicz_test_{klucz}", use_container_width=True):
             st.session_state.nieudane.discard(klucz)
             st.session_state.rozwiazane.add(klucz)
@@ -22763,7 +23881,8 @@ SKRYPT_PAMIECI = """<script>
       // Najwyzej jedno przekierowanie na karte - zadnej szansy na petle
       if (stary && stary.indexOf('u=') >= 0 && !juz) {
         if (ses) ses.setItem(K + '_raz', '1');
-        okno.location.replace(okno.location.pathname + '?' + stary);
+        var biezace = new URLSearchParams(okno.location.search), tst = biezace.get('test');
+        okno.location.replace(okno.location.pathname + '?' + stary + (tst ? '&test=' + encodeURIComponent(tst) : ''));
       }
     } else if (ZAPIS && ZAPIS.indexOf('u=') >= 0) {
       pam.setItem(K, ZAPIS);
@@ -22777,7 +23896,7 @@ def pamiec_przegladarki(swiezy):
     if not PRZYWRACANIE_Z_PRZEGLADARKI:
         return
     from urllib.parse import urlencode
-    parametry = {k: st.query_params.get(k) for k in list(st.query_params) if k != "resetuj"}
+    parametry = {k: st.query_params.get(k) for k in list(st.query_params) if k not in ("resetuj", "test", "samouczek")}
     wyczysc = bool(st.session_state.get("po_resecie")) and not st.session_state.get("wyczyszczono_lokalne")
     if wyczysc:
         st.session_state.wyczyszczono_lokalne = True
@@ -22812,11 +23931,16 @@ def main():
     # ?u= - skrypt w przegladarce widzialby juz nowy adres i nic nie przywrocil.
     swiezy = ("u" not in st.query_params) and not st.session_state.get("po_resecie")
 
+    _odczytaj_tryb_testowy()
     zainicjuj_stan()
+    _odczytaj_samouczek_param()
 
     ekran = st.session_state.ekran
+    krok_samouczka = _samouczek_krok()
 
-    if ekran == "powitanie":
+    if krok_samouczka and ekran == "menu":
+        pokaz_samouczek(krok_samouczka)
+    elif ekran == "powitanie":
         pokaz_powitanie()
     elif ekran == "final":
         pokaz_final()
