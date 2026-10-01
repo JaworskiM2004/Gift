@@ -17840,6 +17840,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   var WID = 380, WYS = 470;
   var WYS_BAZOWE = WYS;   // wysokosc planszy poza pelnym ekranem
+  var swiatlaPochodni = [];                                   // pochodnie widoczne w tej klatce
+  var ciemnosc = document.createElement('canvas'), ciemnoscCtx = ciemnosc.getContext('2d');
+  var drobinki = [];                                          // kurz unoszacy sie w swietle
   // Twarze znajomych dla wybranych przeciwnikow (rysowane w kolku zamiast emoji)
   var OBRAZY_TWARZY = {};
   [['ania', '__TWARZ_ANI__'], ['patryk', '__TWARZ_PATRYKA__']].forEach(function (p) {
@@ -17991,7 +17994,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var wiry = [];                   // wiry czarodzieja - przyciagaja gracza
   var bomby = [];                  // bomby z tlacym sie lontem (po smierci bombiarza)
   var PROMIEN_WYBUCHU = 150;       // bylo 104
-  var PROMIEN_OGNIA = 62;          // maly wybuch kuli ognia - kilku wrogow naraz
+  var PROMIEN_OGNIA = 62;
+  var PROMIEN_WYBUCHU_OGNIA = Math.round(PROMIEN_OGNIA * 1.4);   // ogien: szerszy wybuch          // maly wybuch kuli ognia - kilku wrogow naraz
   // Graczowi, z pominieciem pancerza: 30% maks. zdrowia + staly dodatek,
   // rosnacy z kazdym labiryntem (1.: +0, 2.: +50, 3.: +100).
   var DODATEK_WYBUCHU = [0, 50, 100];
@@ -18377,9 +18381,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return {
       kategoria:'bron', rodzaj:rodzaj, tier:tier,
       nazwa: TIERY[tier].nazwa + ' ' + d.nazwa,
-      // Rozdzki: na najnizszym poziomie 80% obrazen, +13 pkt % za kazdy wyzszy; strzelaja o 20% wolniej
-      ikona: d.ikona, obr: Math.round(d.obr * m * (d.magiczna ? 0.8 + 0.13 * tier : 1)), zasieg: d.zasieg,
-      tempo: d.magiczna ? Math.round(d.tempo * 1.2 * 100) / 100 : d.tempo,
+      // Rozdzki: na najnizszym poziomie 80% obrazen, +16 pkt % za kazdy wyzszy; strzelaja o 40% wolniej
+      ikona: d.ikona, obr: Math.round(d.obr * m * (d.magiczna ? 0.8 + 0.16 * tier : 1)), zasieg: d.zasieg,
+      tempo: d.magiczna ? Math.round(d.tempo * 1.4 * 100) / 100 : d.tempo,
       magiczna: d.magiczna, pocisk: d.pocisk || false,
       efekt: d.efekt || null, efektBroni: d.efektBroni || null, opis: d.opis || null,
     };
@@ -18469,7 +18473,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (!p) return;
       zPancerza += (p[klucz] || 0);      // obrona / obrazenia / predkosc / zdrowie
     });
-    return baza + zPunktow + zPancerza;
+    // Bron wrecz (nie rozdzka, nie luk/kusza): +30 zdrowia, +10 pancerza, +10 predkosci
+    var bronG = gracz.zalozone && gracz.zalozone.bron;
+    var bonusWrecz = (bronG && !bronG.magiczna && !bronG.pocisk) ? ({ zdrowie: 30, obrona: 10, predkosc: 10 }[klucz] || 0) : 0;
+    return baza + zPunktow + zPancerza + bonusWrecz;
   }
 
   // Bonusowe doswiadczenie z zalozonych przedmiotow
@@ -18570,9 +18577,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:75,  atak:25, pancerz:3,  predkosc:168, xp:28, r:16, kolor:'#e6743c', wybuchowy:true },
     kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:16, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
-    okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:30,  atak:7,  pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
+    okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:34,  atak:8,  pancerz:5,  predkosc:130, xp:18, r:16, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
-    trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:17, kolor:'#6a9a4a',
+    trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:60,  atak:9,  pancerz:6,  predkosc:104, xp:22, r:17, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
     jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:18, kolor:'#8a5a3a',
                 zachowanie:'szarzaBoki' },
@@ -18625,7 +18632,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // Trzy bossy o ROZNYCH mechanikach - kazdy wymaga innego sposobu gry.
   var DEFINICJE_BOSSOW = [
-    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:1100, atak:44, pancerz:70,  predkosc:92, r:34,
+    { nazwa:'Władca Labiryntu', ikona:'😈', kolor:'#c0392b', hp:1100, atak:54, pancerz:70,  predkosc:92, r:34,
       wzorzec:'goniacy', opis:'Goni cię i szarżuje — nie daj się osaczyć.' },
     { nazwa:'Wiedźma Otchłani', ikona:'🧝', kolor:'#8a5ac4', hp:1700, atak:34, pancerz:95,  predkosc:46, r:35,
       wzorzec:'salwy',   opis:'Gęste salwy pocisków i groźni pomocnicy.' },
@@ -18689,7 +18696,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     w.migotanie = 0.14;
     w.czuwa = true;                      // trafiony wrog zawsze sie budzi
     // Czarodziej RAZ na zycie znika i pojawia sie kilka kratek dalej
-    if (w.teleportuje && !w.juzSieTeleportowal && w.hp > 0 && w.hp <= w.hpMax * 0.5) {
+    if ((w.teleportuje || w.typ === 'mag') && !w.juzSieTeleportowal && w.hp > 0 && w.hp <= w.hpMax * 0.5) {
       var udany = false;
       for (var pr = 0; pr < 22 && !udany; pr++) {
         var kat = losowo(0, Math.PI * 2), odl = losowo(110, 190);
@@ -19147,8 +19154,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         w.tykOgnia = (w.tykOgnia || 0) - dt;
         if (w.tykOgnia <= 0) {
           w.tykOgnia = 0.5;
-          w.hp -= 4;
-          tekstNaSwiecie(w.x, w.y - w.r, '4', '#e6743c');
+          var obrPal = w.obrPalenia || 4;
+          w.hp -= obrPal;
+          tekstNaSwiecie(w.x, w.y - w.r, String(obrPal), '#e6743c');
           if (w.hp <= 0) { zabijWroga(w); return; }
         }
       }
@@ -19279,6 +19287,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
         // ---- WLADCA: goni i SZARZUJE ----
         if (w.wzorzec === 'goniacy') {
+          // Uderzenie w ziemie: czerwony krag zapowiada atak - mozna odskoczyc
+          w.cooldownUderzenia = (w.cooldownUderzenia === undefined ? 3 : w.cooldownUderzenia) - dt;
+          if (w.cooldownUderzenia <= 0 && d < 150 && !(w.szarzaTrwa > 0)) {
+            w.cooldownUderzenia = 4.2;
+            uderzeniaBossa.push({ x: w.x, y: w.y, r: 125, czas: 0, zapowiedz: 0.75, obr: Math.round(w.atak * 0.7), zadane: false });
+            dziennik('⚠️ ' + w.nazwa + ' uderza w ziemię — odskocz!');
+            tonSlizg(320, 90, 0.7, 'sawtooth', 0.08);
+          }
           w.cooldownSzarzy -= dt;
           if (w.cooldownSzarzy <= 0 && d > 100) {
             w.cooldownSzarzy = 5.0; w.szarzaTrwa = 0.85;
@@ -19303,15 +19319,38 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         else { rx = -Math.sin(katDoGracza) * w.kierunekKrazenia; ry = Math.cos(katDoGracza) * w.kierunekKrazenia; }
         rusza = true;
       } else if (w.zachowanie === 'uciekajacy') {
-        // UCIEKA i zostawia za soba trujacy gaz
-        if (d < 210) { rx = -Math.cos(katDoGracza); ry = -Math.sin(katDoGracza); }
+        // UCIEKA i zostawia za soba trujacy gaz. Z 12 kierunkow wybiera wolny, ktory najbardziej
+        // oddala go od gracza - nie wbija sie w rogi; gdy gracz jest tuz-tuz, robi zryw.
+        if (d < 210) {
+          var odKat = katDoGracza + Math.PI;
+          var wolnyKier = function (kk) {
+            for (var kr = 1; kr <= 3; kr++) if (czySciana(w.x + Math.cos(kk) * (w.r + 12) * kr, w.y + Math.sin(kk) * (w.r + 12) * kr)) return false;
+            return true;
+          };
+          // Trzyma obrany kierunek, dopoki jest wolny i nie prowadzi na gracza (bez drgania w rogu)
+          w.czasKierunku = (w.czasKierunku || 0) - dt;
+          var zmien = w.kierUc === undefined || (w.czasKierunku <= 0 && (!wolnyKier(w.kierUc) || Math.cos(w.kierUc - katDoGracza) > 0.2));
+          if (zmien) {
+            w.czasKierunku = 0.35;
+            var najK = null, najW = -9;
+            for (var ki = 0; ki < 16; ki++) {
+              var kk = odKat + (ki - 8) * Math.PI / 8;
+              if (!wolnyKier(kk)) continue;
+              var ocena = Math.cos(kk - odKat) + (w.kierUc !== undefined ? 0.6 * Math.cos(kk - w.kierUc) : 0);
+              if (ocena > najW) { najW = ocena; najK = kk; }
+            }
+            w.kierUc = najK === null ? odKat : najK;
+          }
+          rx = Math.cos(w.kierUc); ry = Math.sin(w.kierUc);
+          if (d < 80) { rx *= 1.45; ry *= 1.45; }
+        }
         else { rx = -Math.sin(katDoGracza)*w.kierunekKrazenia; ry = Math.cos(katDoGracza)*w.kierunekKrazenia; }
         rusza = true;
         w.cooldownGazu -= dt;
         if (w.cooldownGazu <= 0) {
           w.cooldownGazu = 0.75;
           gazy.push({ x:w.x, y:w.y, r:26, zycie:5.5, max:5.5, tyk:0,
-                      obr:Math.max(1, Math.round(w.atak*0.22)) }); tonSlizg(220, 90, 0.45, 'sawtooth', 0.035);
+                      obr:Math.max(2, Math.round(w.atak*0.4)) }); szumKrotki(0.45, 0.035, 'highpass', 3200);   // syk zamiast 'ataku'
         }
       } else if (w.zachowanie === 'szarzaBoki') {
         // Biegnie WPROST na gracza, ale strzela na BOKI - nie da sie
@@ -19355,12 +19394,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       }
 
       w.cooldown -= dt;
-      if (d < zasiegAtaku && w.cooldown <= 0) {
+      if (d < zasiegAtaku && w.cooldown <= 0 && w.zachowanie !== 'uciekajacy') {   // uciekajacy nie atakuje - truje gazem
         w.cooldown = w.boss ? 0.9 : 1.25;
         if (w.dystansowy) {
           var k2 = Math.atan2(gracz.y - w.y, gracz.x - w.x);
           // Czarodziej co trzeci atak rzuca czar zamiast pocisku: na zmiane sciane i wir
-          if (w.teleportuje) {
+          if (w.typ === 'czarodziej') {
             w.licznikAtakow = (w.licznikAtakow || 0) + 1;
             if (w.licznikAtakow % 2 === 0) {
               var czarSciana = (w.licznikAtakow / 2) % 2 === 1;
@@ -19369,18 +19408,30 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
               return;
             }
           }
-          // Mroczny mag: co trzeci strzal - salwa trzech pociskow
+          // Mroczny mag: co trzeci atak czar - na zmiane salwa, magiczna sciana i wir
           if (w.typ === 'mag') {
             w.licznikAtakow = (w.licznikAtakow || 0) + 1;
             if (w.licznikAtakow % 3 === 0) {
-              [-0.3, 0, 0.3].forEach(function (o) {
-                pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2+o)*210, vy:Math.sin(k2+o)*210, obr:Math.round(w.atak*0.8), wroga:true, zycie:1.6, kolor:'#e0458a' });
-              });
-              teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '✨ Salwa!', kolor: '#ff9fd0', zycie: 1.2 }); dzwiekStrzaluWroga(w); dzwiekCzaru();
+              var czar = (w.licznikAtakow / 3) % 3;
+              if (czar === 1) {
+                [-0.3, 0, 0.3].forEach(function (o) {
+                  pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2+o)*210, vy:Math.sin(k2+o)*210, obr:Math.round(w.atak*0.8), wroga:true, zycie:1.6, kolor:'#e0458a' });
+                });
+                teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '✨ Salwa!', kolor: '#ff9fd0', zycie: 1.2 }); dzwiekStrzaluWroga(w);
+              } else if (czar === 2) {
+                postawSciane(w, k2);
+                teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '🔮 Ściana!', kolor: '#9fd8ff', zycie: 1.2 });
+              } else {
+                rzucWir(w);
+                teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '🌀 Wir!', kolor: '#9fd8ff', zycie: 1.2 });
+              }
+              dzwiekCzaru();
               return;
             }
           }
-          pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*230, vy:Math.sin(k2)*230, obr:w.atak, wroga:true, zycie:1.6, kolor:'#c46ce8' }); dzwiekStrzaluWroga(w);
+          var belt = w.typ === 'kusznik';
+          pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*(belt ? 320 : 230), vy:Math.sin(k2)*(belt ? 320 : 230), obr:w.atak, wroga:true, zycie:1.6,
+                         kolor: belt ? '#c9a36b' : '#c46ce8', ksztalt: belt ? 'belt' : undefined }); dzwiekStrzaluWroga(w);
         } else {
           zadajObrazeniaGraczowi(w.atak);
         }
@@ -19409,16 +19460,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           if (p.efekt === 'ogien') {
             // Kula ognia wybucha przy trafieniu: rani wszystkich w malym
             // promieniu (60% obrazen) i podpala kazdego, kogo dosiegnie.
-            if (trafiony.hp > 0) trafiony.plonie = 3;
-            fale.push({ x: p.x, y: p.y, zycie: 0.3, max: 0.3, r: PROMIEN_OGNIA, kolor: '#ff8a3a' });
+            if (trafiony.hp > 0) { trafiony.plonie = 3; trafiony.obrPalenia = Math.max(6, Math.round(p.obr * 0.45)); }
+            fale.push({ x: p.x, y: p.y, zycie: 0.3, max: 0.3, r: PROMIEN_WYBUCHU_OGNIA, kolor: '#ff8a3a' });
             rozbryzg(p.x, p.y, '#ff8a3a', 14);
             ton(150, 0.14, 'sawtooth', 0.07);
             var px4 = p.x, py4 = p.y, obr4 = p.obr;
             wrogowie.slice().forEach(function (o) {
               if (o === trafiony || o.hp <= 0) return;
-              if (Math.hypot(o.x - px4, o.y - py4) <= PROMIEN_OGNIA + o.r) {
-                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr4 * 0.6)));
-                if (o.hp > 0) o.plonie = 3;
+              if (Math.hypot(o.x - px4, o.y - py4) <= PROMIEN_WYBUCHU_OGNIA + o.r) {
+                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr4 * 0.4)));
+                if (o.hp > 0) { o.plonie = 3; o.obrPalenia = Math.max(6, Math.round(obr4 * 0.45)); }
               }
             });
           }
@@ -19431,6 +19482,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
             rozbryzg(p.x, p.y, '#cfefff', 14);
             ton(640, 0.12, 'sine', 0.06);
             var px5 = p.x, py5 = p.y, obr5 = p.obr;
+            polaMrozu.push({ x: px5, y: py5, r: Math.round(PROMIEN_OGNIA * 1.25), zycie: 3.5, max: 3.5, tyk: 0.5, obr: Math.max(1, Math.round(obr5 * 0.08)) });
             wrogowie.slice().forEach(function (o) {
               if (o === trafiony || o.hp <= 0) return;
               if (Math.hypot(o.x - px5, o.y - py5) <= PROMIEN_OGNIA + o.r) {
@@ -19734,6 +19786,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function rysuj() {
+    swiatlaPochodni.length = 0;
     przywrocRozmiarPlanszy();
     krokiGracza();
     if (widok.width !== WID * DPR) { widok.width = WID * DPR; widok.height = WYS * DPR; }
@@ -19762,6 +19815,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var odcien = (ziarno % 7) * 3;
         ctx.fillStyle = 'rgb(' + (32+odcien) + ',' + (28+odcien) + ',' + (25+odcien) + ')';
         ctx.fillRect(ex, ey, KAFEL, KAFEL);
+        // Cien rzucany przez sciane na podloge - daje glebie
+        if (mapa[ty-1] && mapa[ty-1][tx] !== 1) {
+          ctx.fillStyle = 'rgba(0,0,0,0.34)'; ctx.fillRect(ex, ey, KAFEL, 5);
+          ctx.fillStyle = 'rgba(0,0,0,0.16)'; ctx.fillRect(ex, ey + 5, KAFEL, 7);
+        }
+        if (mapa[ty][tx-1] !== 1) { ctx.fillStyle = 'rgba(0,0,0,0.2)'; ctx.fillRect(ex, ey, 5, KAFEL); }
+        if (mapa[ty][tx+1] !== 1) { ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.fillRect(ex + KAFEL - 4, ey, 4, KAFEL); }
 
         if (wariant === 1) {                       // spekany kamien
           ctx.strokeStyle = 'rgba(0,0,0,0.34)'; ctx.lineWidth = 1;
@@ -19818,6 +19878,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         if (z2 % 17 === 0 && mapa[wy+1] && mapa[wy+1][wx] === 1) {
           var pchX = sx + KAFEL/2, pchY = sy + KAFEL*0.72;
           var migot = 0.72 + Math.sin(Date.now()/140 + wx*2.1 + wy) * 0.28;
+          swiatlaPochodni.push([pchX, pchY, migot]);
           ctx.fillStyle = '#5a3a20';
           ctx.fillRect(pchX - 1.6, pchY - 2, 3.2, 9);
           ctx.save();
@@ -19908,6 +19969,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.fillText('🌀', px2, py2);
     }
 
+    efektyDodatkowe();
+
     // Drzwi komnaty bossa
     if (komnataBossa && komnataBossa.drzwi && komnataBossa.drzwi.length) rysujDrzwiBossa();
 
@@ -19950,7 +20013,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.save();
       ctx.shadowColor = p.kolor; ctx.shadowBlur = 10;
       ctx.fillStyle = p.kolor;
-      if (p.ksztalt === 'wlocznia') {
+      if (p.ksztalt === 'belt') {
+        // Belt kuszy: drzewce, grot i lotki
+        ctx.shadowBlur = 4;
+        ctx.translate(ex, ey); ctx.rotate(Math.atan2(p.vy, p.vx));
+        ctx.fillStyle = '#8a6a3c'; ctx.fillRect(-11, -1.2, 18, 2.4);
+        ctx.fillStyle = '#d8d8e0'; ctx.beginPath(); ctx.moveTo(11, 0); ctx.lineTo(5, -3.6); ctx.lineTo(5, 3.6); ctx.closePath(); ctx.fill();
+        ctx.fillStyle = '#c0392b'; ctx.beginPath(); ctx.moveTo(-11, 0); ctx.lineTo(-15, -3.6); ctx.lineTo(-8, 0); ctx.lineTo(-15, 3.6); ctx.closePath(); ctx.fill();
+      } else if (p.ksztalt === 'wlocznia') {
         ctx.translate(ex, ey); ctx.rotate(Math.atan2(p.vy, p.vx));
         ctx.fillRect(-13, -1.6, 22, 3.2);
         ctx.beginPath(); ctx.moveTo(13,0); ctx.lineTo(4,-5); ctx.lineTo(4,5); ctx.closePath(); ctx.fill();
@@ -20124,6 +20194,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.fillRect(cz.x - kamX - 2, cz.y - kamY - 2, 4, 4);
     });
     ctx.globalAlpha = 1;
+
+    rysujOswietlenie();
 
     // Teksty
     teksty.forEach(function (t) {
@@ -20867,7 +20939,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       // Co trzeci wrog to STRZELAJACY albo o specjalnym zachowaniu -
       // trzeba unikac pociskow, a nie tylko klikac w tlum.
       // Odblokowuja sie po kolei w glab labiryntu: czarodziej wczesnie (zeby bylo widac jego czary), Ania glebiej
-  var SPECJALNE = ['mag', 'kusznik', 'czarodziej', 'trujacy', 'okrazacz', 'jezdziec'];
+  var SPECJALNE = ['mag', 'kusznik', 'trujacy', 'okrazacz', 'jezdziec'];   // bez Czarodzieja - jego czary ma teraz Mroczny mag
 
       for (var i = 0; i < ile; i++) {
         var typ;
@@ -21395,6 +21467,134 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
   }
 
+  // ---------- OSWIETLENIE: ciemnosc lochu, swiatlo gracza, pochodni i pociskow ----------
+  function rysujOswietlenie() {
+    if (!gracz) return;
+    var Wp = widok.width, Hp = widok.height;
+    if (ciemnosc.width !== Wp || ciemnosc.height !== Hp) { ciemnosc.width = Wp; ciemnosc.height = Hp; }
+    var c = ciemnoscCtx, teraz = Date.now();
+    c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-over';
+    c.clearRect(0, 0, Wp, Hp);
+    c.fillStyle = 'rgba(6,5,14,0.66)'; c.fillRect(0, 0, Wp, Hp);
+    c.setTransform(ZOOM * DPR, 0, 0, ZOOM * DPR, 0, 0);
+    c.globalCompositeOperation = 'destination-out';
+    function swiatlo(x, y, r, sila) {
+      var g = c.createRadialGradient(x, y, 0, x, y, r);
+      g.addColorStop(0, 'rgba(0,0,0,' + sila + ')'); g.addColorStop(0.55, 'rgba(0,0,0,' + (sila * 0.75) + ')'); g.addColorStop(1, 'rgba(0,0,0,0)');
+      c.fillStyle = g; c.beginPath(); c.arc(x, y, r, 0, Math.PI * 2); c.fill();
+    }
+    var gx = gracz.x - kamX, gy = gracz.y - kamY;
+    swiatlo(gx, gy, 265 * (1 + Math.sin(teraz / 230) * 0.025), 1);          // pochodnia gracza, lekko migocze
+    swiatlaPochodni.forEach(function (p) { swiatlo(p[0], p[1], 125 * p[2], 0.9); });
+    pociski.forEach(function (p) { swiatlo(p.x - kamX, p.y - kamY, 42, 0.55); });
+    if (portal) swiatlo(portal.x - kamX, portal.y - kamY, 110, 0.8);
+    ctx.save();
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.drawImage(ciemnosc, 0, 0);
+    ctx.restore();
+    // Ciepla poswiata pochodni i gracza (addytywnie)
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    swiatlaPochodni.forEach(function (p) {
+      var g = ctx.createRadialGradient(p[0], p[1], 2, p[0], p[1], 92);
+      g.addColorStop(0, 'rgba(255,150,60,' + (0.16 * p[2]) + ')'); g.addColorStop(1, 'rgba(255,120,40,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p[0], p[1], 92, 0, Math.PI * 2); ctx.fill();
+    });
+    var gg = ctx.createRadialGradient(gx, gy, 4, gx, gy, 170);
+    gg.addColorStop(0, 'rgba(255,200,130,0.07)'); gg.addColorStop(1, 'rgba(255,200,130,0)');
+    ctx.fillStyle = gg; ctx.beginPath(); ctx.arc(gx, gy, 170, 0, Math.PI * 2); ctx.fill();
+    // Iskierki przy nieotwartych skrzynkach - latwiej je wypatrzyc (jedna ma klucz do bossa)
+    skrzynie.forEach(function (sk) {
+      if (sk.otwarta) return;
+      var sx = sk.x - kamX, sy = sk.y - kamY;
+      if (sx < -30 || sx > WID_SWIATA + 30 || sy < -30 || sy > WYS_SWIATA + 30) return;
+      var gs = ctx.createRadialGradient(sx, sy, 2, sx, sy, 34);
+      gs.addColorStop(0, 'rgba(255,214,120,0.16)'); gs.addColorStop(1, 'rgba(255,214,120,0)');
+      ctx.fillStyle = gs; ctx.beginPath(); ctx.arc(sx, sy, 34, 0, Math.PI * 2); ctx.fill();
+      for (var q = 0; q < 2; q++) {
+        var fz = (teraz / 900 + q * 0.5 + (sk.faza || 0)) % 1, ka = q * 3.1 + (sk.faza || 0);
+        ctx.fillStyle = 'rgba(255,240,180,' + (0.8 * Math.sin(fz * Math.PI)) + ')';
+        var ix = sx + Math.cos(ka) * 14, iy = sy - 6 - fz * 16;
+        ctx.beginPath(); ctx.moveTo(ix, iy - 3); ctx.lineTo(ix + 1, iy - 1); ctx.lineTo(ix + 3, iy); ctx.lineTo(ix + 1, iy + 1);
+        ctx.lineTo(ix, iy + 3); ctx.lineTo(ix - 1, iy + 1); ctx.lineTo(ix - 3, iy); ctx.lineTo(ix - 1, iy - 1); ctx.closePath(); ctx.fill();
+      }
+    });
+    // Kurz unoszacy sie w swietle pochodni gracza
+    if (drobinki.length === 0) for (var i = 0; i < 28; i++) drobinki.push({ dx: (Math.random() - 0.5) * 440, dy: (Math.random() - 0.5) * 440, f: Math.random() * 6.28, s: 0.6 + Math.random() * 1.2 });
+    drobinki.forEach(function (d) {
+      d.f += 0.012; d.dy -= 0.12 * d.s; d.dx += Math.sin(d.f) * 0.18;
+      if (d.dy < -220) d.dy += 440; if (d.dx < -220) d.dx += 440; if (d.dx > 220) d.dx -= 440;
+      var odl = Math.hypot(d.dx, d.dy), a = Math.max(0, 1 - odl / 210) * 0.55;
+      if (a <= 0.02) return;
+      ctx.fillStyle = 'rgba(255,225,170,' + a + ')';
+      ctx.beginPath(); ctx.arc(gx + d.dx, gy + d.dy, d.s, 0, Math.PI * 2); ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  // ---------- EFEKTY DODATKOWE (logika + rysowanie, raz na klatke z rysuj) ----------
+  var polaMrozu = [], uderzeniaBossa = [], ostatniCzasEfektow = 0, ostatniaBronGracza = null;
+  function efektyDodatkowe() {
+    if (!polaMrozu || !uderzeniaBossa) return;   // podglad planszy przy wczytywaniu - listy jeszcze nie istnieja
+    var teraz = performance.now(), dt = Math.min(0.05, (teraz - (ostatniCzasEfektow || teraz)) / 1000);
+    ostatniCzasEfektow = teraz;
+    var gra = trwa && gracz;
+    if (gra) {
+      // HP po zmianie broni (premia za bron wrecz)
+      if (gracz.zalozone && gracz.zalozone.bron !== ostatniaBronGracza) { ostatniaBronGracza = gracz.zalozone.bron; przeliczHpMax(); odswiezHud(); }
+      // Sludzy przywolani w trakcie walki z bossem: polowa zdrowia
+      if (bossPrzywolany && arenaZamknieta) {
+        wrogowie.forEach(function (w) {
+          if (w.boss || w.przedBossem || w.polowaHp) return;
+          w.polowaHp = true; w.hpMax = Math.max(1, Math.round(w.hpMax / 2)); w.hp = Math.min(w.hp, w.hpMax);
+        });
+      }
+      // Pola mrozu: spowalniaja stojacych w nich i co pol sekundy lekko rania
+      for (var i = polaMrozu.length - 1; i >= 0; i--) {
+        var pm = polaMrozu[i]; pm.zycie -= dt; pm.tyk -= dt;
+        var rani = pm.tyk <= 0; if (rani) pm.tyk = 0.5;
+        wrogowie.slice().forEach(function (o) {
+          if (o.hp <= 0 || Math.hypot(o.x - pm.x, o.y - pm.y) > pm.r + o.r * 0.5) return;
+          o.spowolnienie = Math.max(o.spowolnienie || 0, 0.4);
+          if (rani) zadajObrazeniaWrogowi(o, pm.obr);
+        });
+        if (pm.zycie <= 0) polaMrozu.splice(i, 1);
+      }
+      // Uderzenia bossa w ziemie: po zapowiedzi rania, jesli gracz jest w kregu
+      for (var u = uderzeniaBossa.length - 1; u >= 0; u--) {
+        var ub = uderzeniaBossa[u]; ub.czas += dt;
+        if (!ub.zadane && ub.czas >= ub.zapowiedz) {
+          ub.zadane = true;
+          fale.push({ x: ub.x, y: ub.y, zycie: 0.4, max: 0.4, r: ub.r, kolor: '#ff5a3a' });
+          rozbryzg(ub.x, ub.y, '#8a4a2a', 20);
+          dzwiekWybuchu();
+          if (Math.hypot(gracz.x - ub.x, gracz.y - ub.y) <= ub.r) zadajObrazeniaGraczowi(ub.obr);
+        }
+        if (ub.czas > ub.zapowiedz + 0.3) uderzeniaBossa.splice(u, 1);
+      }
+    }
+    if (!bossPrzywolany) uderzeniaBossa.length = 0;
+    // Rysowanie: pola mrozu i zapowiedz uderzenia (pod postaciami)
+    polaMrozu.forEach(function (pm) {
+      var ex = pm.x - kamX, ey = pm.y - kamY, a = Math.min(1, pm.zycie / 0.8);
+      var g = ctx.createRadialGradient(ex, ey, 2, ex, ey, pm.r);
+      g.addColorStop(0, 'rgba(200,240,255,' + (0.32 * a) + ')'); g.addColorStop(1, 'rgba(120,200,255,' + (0.08 * a) + ')');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(ex, ey, pm.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(190,235,255,' + (0.55 * a) + ')'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.globalAlpha = 0.7 * a; ctx.font = '11px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      for (var s = 0; s < 3; s++) { var kt = s * 2.1 + performance.now() / 900; ctx.fillText('❄', ex + Math.cos(kt) * pm.r * 0.55, ey + Math.sin(kt) * pm.r * 0.55); }
+      ctx.globalAlpha = 1;
+    });
+    uderzeniaBossa.forEach(function (ub) {
+      if (ub.zadane) return;
+      var ex = ub.x - kamX, ey = ub.y - kamY, p = Math.min(1, ub.czas / ub.zapowiedz);
+      ctx.fillStyle = 'rgba(220,40,30,' + (0.12 + 0.22 * p) + ')';
+      ctx.beginPath(); ctx.arc(ex, ey, ub.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,90,60,0.85)'; ctx.lineWidth = 2.5; ctx.setLineDash([8, 6]); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.arc(ex, ey, ub.r * p, 0, Math.PI * 2); ctx.strokeStyle = 'rgba(255,160,120,0.9)'; ctx.lineWidth = 2; ctx.stroke();
+    });
+  }
+
   // ---------- DRZWI BOSSA I KLUCZ ----------
   var drzwiBossaOtwarte = false, drzwiZatrzasniete = false;
   function ustawDrzwiBossa(otwarte) {
@@ -21432,6 +21632,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function zatrzasnijDrzwiIBudzBossa() {
     var d = DEFINICJE_BOSSOW[poziomLabiryntu];
     drzwiBossaOtwarte = false; ustawDrzwiBossa(false); drzwiZatrzasniete = true;
+    wrogowie.forEach(function (w) { w.przedBossem = true; });   // ci nie sa przyzwanymi slugami
     bossPrzywolany = true; arenaZamknieta = true; cooldownSlug = 6;
     wrogowie.push(stworzBossa((komnataBossa.cx+0.5)*KAFEL, (komnataBossa.cy+0.5)*KAFEL));
     dziennik('🚪 Drzwi zatrzasnęły się! 😈 ' + d.nazwa + ' przebudził się!');
