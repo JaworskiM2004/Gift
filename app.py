@@ -407,7 +407,7 @@ ETAPY = [
     {
         "klucz": "gra",
         "emoji": "❤️",
-        "tytul": {"pl": "❤️ Refleks", "en": "❤️ Reflexes"},
+        "tytul": {"pl": "❤️ Serduszka", "en": "❤️ Hearts"},
         "typ": "gra",
     },
     {
@@ -487,7 +487,7 @@ ETAPY = [
     {
         "klucz": "wordle",
         "emoji": "📝",
-        "tytul": {"pl": "📝 Wordle dnia", "en": "📝 Today's Wordle"},
+        "tytul": {"pl": "📝 Wordle & Loldle", "en": "📝 Wordle & Loldle"},
         "typ": "wordle",
         # Aplikacja SAMA pobiera dzisiejsze słowo z (angielskiego) NYT Wordle —
         # nie musisz nic wpisywać. Nie znalazłem podobnie niezawodnego,
@@ -504,7 +504,7 @@ ETAPY = [
     {
         "klucz": "data",
         "emoji": "📅",
-        "tytul": {"pl": "📅 Dokładna data", "en": "📅 The exact date"},
+        "tytul": {"pl": "📅 Data", "en": "📅 The date"},
         "typ": "data",
         "tresc": {
             "pl": "Jaka jest dokładna data, kiedy pierwszy raz jechałaś ze mną samochodem?",
@@ -555,20 +555,20 @@ ETAPY = [
     },
     {
         "klucz": "dron",
-        "emoji": "🚁",
-        "tytul": {"pl": "🚁 Dron", "en": "🚁 Drone"},
+        "emoji": "🛸",
+        "tytul": {"pl": "🛸 Dron", "en": "🛸 Drone"},
         "typ": "dron",
     },
     {
         "klucz": "bungee",
-        "emoji": "🪢",
-        "tytul": {"pl": "🪢 Skok na bungee", "en": "🪢 Bungee jump"},
+        "emoji": "🏗️",
+        "tytul": {"pl": "🏗️ Bungee", "en": "🏗️ Bungee"},
         "typ": "bungee",
     },
     {
         "klucz": "zaba",
         "emoji": "🟧",
-        "tytul": {"pl": "🟧 Geometry Dash", "en": "🟧 Geometry Dash"},
+        "tytul": {"pl": "🟧 Ungeometrical Dasher", "en": "🟧 Ungeometrical Dasher"},
         "typ": "zaba",
     },
     {
@@ -622,13 +622,13 @@ ETAPY = [
     {
         "klucz": "piano",
         "emoji": "🎹",
-        "tytul": {"pl": "🎹 Piano Tiles", "en": "🎹 Piano Tiles"},
+        "tytul": {"pl": "🎹 Pianinko", "en": "🎹 Little piano"},
         "typ": "piano",
     },
     {
         "klucz": "spiderman",
         "emoji": "🕷️",
-        "tytul": {"pl": "🕷️ Spider-Man", "en": "🕷️ Spider-Man"},
+        "tytul": {"pl": "🕷️ Pajęczy quiz", "en": "🕷️ Spider quiz"},
         "typ": "quiz",
         "prog": 1.0,
         "pytania": [
@@ -733,55 +733,55 @@ ETAPY = [
     {
         "klucz": "bitwa",
         "emoji": "⚔️",
-        "tytul": {"pl": "⚔️ Bitwa", "en": "⚔️ Battle"},
+        "tytul": {"pl": "⚔️ Kontra", "en": "⚔️ Kontra"},
         "typ": "bitwa",
     },
     {
         "klucz": "minecraft",
         "emoji": "⛏️",
-        "tytul": {"pl": "⛏️ Prosty Minecraft", "en": "⛏️ Simple Minecraft"},
+        "tytul": {"pl": "⛏️ Minecraft 2D", "en": "⛏️ Minecraft 2D"},
         "typ": "minecraft",
     },
     {
         "klucz": "snake",
         "emoji": "🫒",
-        "tytul": {"pl": "🫒 Wąż na skos", "en": "🫒 Diagonal Snake"},
+        "tytul": {"pl": "🫒 Snake, ale nie do końca", "en": "🫒 Snake, but not quite"},
         "typ": "snake",
     },
     {
         "klucz": "blackjack",
-        "emoji": "🎴",
-        "tytul": {"pl": "🎴 Blackjack", "en": "🎴 Blackjack"},
+        "emoji": "🃏",
+        "tytul": {"pl": "🃏 Blackjack", "en": "🃏 Blackjack"},
         "typ": "blackjack",
     },
     {
         "klucz": "samolot",
         "emoji": "✈️",
-        "tytul": {"pl": "✈️ Lot samolotem", "en": "✈️ Paper Plane Flight"},
+        "tytul": {"pl": "✈️ Samolot z papieru", "en": "✈️ Paper plane"},
         "typ": "samolot",
     },
     {
         "klucz": "odyseusz",
         "emoji": "🏹",
-        "tytul": {"pl": "🏹 Odyseusz — strzelnica", "en": "🏹 Odysseus — Archery"},
+        "tytul": {"pl": "🏹 Łucznik", "en": "🏹 Archer"},
         "typ": "odyseusz",
     },
     {
         "klucz": "parkour",
         "emoji": "🧗",
-        "tytul": {"pl": "🧗 Parkour Odyseusza", "en": "🧗 Odysseus's Climb"},
+        "tytul": {"pl": "🧗 Jumping Prince", "en": "🧗 Jumping Prince"},
         "typ": "parkour",
     },
     {
         "klucz": "labirynt",
         "emoji": "⚔️",
-        "tytul": {"pl": "⚔️ Labirynt Cieni", "en": "⚔️ Labyrinth of Shadows"},
+        "tytul": {"pl": "⚔️ Więzień labiryntu", "en": "⚔️ Prisoner of the Labyrinth"},
         "typ": "labirynt",
     },
     {
         "klucz": "poziom_diabla",
         "emoji": "😈",
-        "tytul": {"pl": "😈 Poziom Diabła", "en": "😈 Level Devil"},
+        "tytul": {"pl": "😈 Devil", "en": "😈 Devil"},
         "typ": "poziom_diabla",
     },
 ]
@@ -981,9 +981,7 @@ def pokaz_samouczek(krok):
             unsafe_allow_html=True,
         )
         pokaz_przycisk_wiadomosci()
-        sciezka = "<span class='strz'> → </span>".join(
-            f"{k['emoji']} {tt(k['nazwa'])}" for k in KATEGORIE
-        )
+        sciezka = "<span class='strz'> → </span>".join(tt(k['nazwa']) for k in KATEGORIE)
         st.markdown(
             "<div class='samouczek'>"
             + "<h3>" + tt({"pl": "🏰 Trzy levele", "en": "🏰 Three levels"}) + "</h3>"
@@ -998,7 +996,7 @@ def pokaz_samouczek(krok):
     else:
         st.markdown(
             "<div class='samouczek'>" + kropki
-            + "<h2>" + tt({"pl": "⛶ Pełny ekran i powtórki", "en": "⛶ Full screen and replays"}) + "</h2>"
+            + "<h2>" + tt({"pl": "💡 Kilka wskazówek", "en": "💡 A few tips"}) + "</h2>"
             + "<p>" + tt({
                 "pl": "Każda gra ma w prawym górnym rogu taką ikonkę. <b>Zazwyczaj pomaga:</b> "
                       "powiększa grę, a ekran przestaje się przewijać pod palcem.",
@@ -1012,6 +1010,9 @@ def pokaz_samouczek(krok):
                 "en": "✅ <b>A finished game stays finished</b> — no need to beat it twice. "
                       "If you feel like it, or want to let someone else play, use “🔁 Play again” — "
                       "it doesn't affect your progress."}) + "</div>"
+            + "<div class='samouczek-wazne'>" + tt({
+                "pl": "🔔 <b>Graj z dźwiękiem</b> — przełącznik wyciszenia w iPhonie wycisza też muzykę w grach.",
+                "en": "🔔 <b>Play with sound on</b> — the iPhone silent switch also mutes the game music."}) + "</div>"
             + "</div>",
             unsafe_allow_html=True,
         )
@@ -1020,6 +1021,13 @@ def pokaz_samouczek(krok):
     if st.button(etykieta, key="samouczek_dalej", use_container_width=True):
         _samouczek_dalej()
 
+
+
+def _wroc_do_menu(klucz):
+    st.session_state.setdefault("tryb_powtorki", set()).discard(klucz)
+    st.session_state.pop("gra_dalej_klucz", None)
+    st.session_state.ekran = "menu"
+    st.rerun()
 
 
 def _wymagane_przed(kat):
@@ -1089,7 +1097,7 @@ def sciezka_stanu():
 TEKST = {
     "pl": {
         "rozpocznij": "Rozpocznij 🔓",
-        "wroc_do_menu": "⬅ Powrót do menu",
+        "wroc_do_menu": "⬅ Wróć do menu",
         "wiadomosc_tytul": "Ukryta wiadomość",
         "wiadomosc_pod": "Odsłania się z każdym ukończonym etapem",
         "wiadomosc_odkryto": "Odsłonięte:",
@@ -1123,7 +1131,7 @@ TEKST = {
         "tryb_powtorki_info": "🔁 Powtórka — gra dla przyjemności, postęp zostaje bez zmian.",
         "powtorka_ukonczona": "🎉 Przeszłaś jeszcze raz! Postęp bez zmian — ten etap był już zaliczony.",
         "zamkniete_status": "🔒 Zamknięte (zła próba — jedna szansa już wykorzystana)",
-        "menu_tytul": "Wybierz etap",
+        "menu_tytul": "Powodzenia! 🍀",
         "wszystko_rozwiazane": "🎉 Rozwiązałaś wszystko!",
         "ukonczonych": "ukończonych",
         "otworz": "Otwórz →",
@@ -1208,7 +1216,7 @@ TEKST = {
         "tryb_powtorki_info": "🔁 Replay — just for fun, progress stays the same.",
         "powtorka_ukonczona": "🎉 Beaten again! Progress unchanged — this stage was already solved.",
         "zamkniete_status": "🔒 Locked (wrong attempt — your one shot is used)",
-        "menu_tytul": "Choose a stage",
+        "menu_tytul": "Good luck! 🍀",
         "wszystko_rozwiazane": "🎉 You solved everything!",
         "ukonczonych": "completed",
         "otworz": "Open →",
@@ -2176,6 +2184,10 @@ button[data-testid="stBaseButton-primary"]:active,
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -2201,6 +2213,12 @@ button[data-testid="stBaseButton-primary"]:active,
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -2704,6 +2722,7 @@ SZABLON_DRONA = """
   });
   gra.addEventListener('touchstart', function (e) {
     if (nakladka.style.display !== 'none') return;
+    if (!window.__pelnyEkranAktywny) return;   // poza pelnym ekranem: skok na stukniecie (click)
     e.preventDefault();
     pominDrugiSkok = true;
     skok();
@@ -2936,6 +2955,10 @@ SZABLON_DRONA = """
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -2961,6 +2984,12 @@ SZABLON_DRONA = """
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -3041,6 +3070,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
     background: repeating-linear-gradient(90deg, rgba(80,48,0,0.55) 0 2px, transparent 2px 7px);
     -webkit-mask: linear-gradient(90deg, #000 0 32%, transparent 32% 68%, #000 68% 100%); mask: linear-gradient(90deg, #000 0 32%, transparent 32% 68%, #000 68% 100%); }
   #suwak.chwycony #uchwyt { background: linear-gradient(180deg, #fff0b8, #f2b93a); }
+  html.poza-pelnym-ekranem canvas#plotno { touch-action: pan-y; }
 </style>
 </head>
 <body>
@@ -3060,7 +3090,7 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
       <button id="btnSkacz" class="przycisk">Skacz! 🪢</button>
     </div>
     <div id="nakladka">
-      <h2 id="nakladkaTytul">🪢 Skok na bungee</h2>
+      <h2 id="nakladkaTytul">🏗️ Bungee</h2>
       <p id="nakladkaOpis">Skaczesz z dźwigu prosto w dół. Skoczek się nie rusza —<br>
         <b>to Ty przesuwasz belki!</b><br>
         Przeciągaj uchwyt <b>podziałki pod ekranem</b>: belki jadą razem z nim.<br>
@@ -3871,6 +3901,10 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -3896,6 +3930,12 @@ SZABLON_BUNGEE = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -3988,7 +4028,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
   <div id="wskazowka">dotknij, żeby skoczyć</div>
 
   <div id="nakladka">
-    <div id="nakladkaTytul">🟧 Geometry Dash</div>
+    <div id="nakladkaTytul">🟧 Ungeometrical Dasher</div>
     <div id="nakladkaOpis">
       Kostka biegnie sama. Ty tylko <b>skaczesz</b> — dotknij gdziekolwiek.<br><br>
       <b>Przytrzymaj</b>, żeby skakać od razu po wylądowaniu.<br><br>
@@ -4785,6 +4825,10 @@ SZABLON_ZABY = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -4810,6 +4854,12 @@ SZABLON_ZABY = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -5509,6 +5559,10 @@ SZABLON_MEMORY = """
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -5534,6 +5588,12 @@ SZABLON_MEMORY = """
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -6127,6 +6187,10 @@ SZABLON_SIMON = """
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -6152,6 +6216,12 @@ SZABLON_SIMON = """
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -6335,7 +6405,7 @@ SZABLON_PIANO = """
     </div>
     <div id="linia-trafien"></div>
     <div id="nakladka">
-      <h2 id="nakladkaTytul">🎹 Piano Tiles</h2>
+      <h2 id="nakladkaTytul">🎹 Pianinko</h2>
       <p id="nakladkaOpis">Wybierz melodię:</p>
       <div id="wyborPiosenki">
         <button class="gra-btn" id="btnPiosenkaKotek">🐱 Wlazł kotek</button>
@@ -6792,7 +6862,7 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   btnZmienPiosenke.addEventListener('click', function () {
     trwa = false;
     nakladka.style.display = 'flex';
-    nakladkaTytul.textContent = '🎹 Piano Tiles';
+    nakladkaTytul.textContent = '🎹 Pianinko';
     nakladkaOpis.textContent = 'Wybierz melodię:';
     wyborPiosenki.style.display = 'flex';
     nakladkaBtn.style.display = 'none';
@@ -7023,6 +7093,10 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -7048,6 +7122,12 @@ var BUFOR_DOTKNIECIA = 0.16;   // sekundy
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -7419,7 +7499,7 @@ SZABLON_BITWA = """
       <div class="siatka-akcji" id="siatkaAkcji"></div>
     </div>
     <div id="nakladka">
-      <h2 id="nakladkaTytul">Bitwa</h2>
+      <h2 id="nakladkaTytul">Kontra</h2>
       <p id="nakladkaOpis"></p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
@@ -8598,6 +8678,10 @@ SZABLON_BITWA = """
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -8623,6 +8707,12 @@ SZABLON_BITWA = """
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -9199,6 +9289,29 @@ SZABLON_MINECRAFT = """
     background: linear-gradient(135deg, #5a2a18, #3a1a10); color: #ffd8b0; font-weight: 800; font-size: 13px; }
   .podp-piec { margin: 0 0 8px; padding: 8px 10px; border-radius: 10px; background: rgba(230,116,60,0.12);
     color: #f0c8a8; font-size: 12px; line-height: 1.4; }
+  html.poza-pelnym-ekranem #canvasSwiat { touch-action: pan-y; }
+  /* Pasek narzedzi: wszystkie przyciski na jednym poziomie (stare przesuniecia z dawnego ukladu) */
+  #sterowanie .grupa-narzedzi { align-items: center; }
+  #sterowanie .btn-narzedzie { top: auto !important; }
+  #sterowanie #btnDom { padding: 0 !important; font-size: 21px !important; flex: 0 0 auto !important; max-width: none !important;
+    width: 46px !important; height: 46px !important; border-radius: 12px !important; }
+  /* Panele zamyka krzyzyk w naglowku */
+  .btn-zamknij-panel { display: inline-flex !important; align-items: center; justify-content: center; }
+  /* W rece: ikonka przedmiotu */
+  #wybranyBlokEtykieta { display: flex; align-items: center; justify-content: center; gap: 6px; }
+  #wybranyBlokEtykieta .ikonka-reka { flex: 0 0 auto; }
+  /* Oznaczenia receptur i podpowiedzi */
+  .znacznik-receptury { display: inline-block; align-self: flex-start; width: auto; font-size: 10.5px; font-weight: 800; padding: 2px 8px; border-radius: 7px; margin-bottom: 6px; }
+  .zn-reka { background: rgba(255,255,255,0.08); color: #e8dcc0; border: 1px solid rgba(255,255,255,0.25); }
+  .zn-stol { background: rgba(156,107,58,0.35); color: #f3d7a8; border: 1px solid rgba(156,107,58,0.75); }
+  .zn-piec { background: rgba(230,126,60,0.25); color: #ffc79a; border: 1px solid rgba(230,126,60,0.65); }
+  .paliwo-receptury { font-size: 11px; color: #d9c79e; margin: 4px 0 6px; }
+  .wskazowka-receptur { font-size: 12.5px; line-height: 1.5; color: #e8dcc0; background: rgba(255,255,255,0.05);
+    border: 1px dashed rgba(212,175,55,0.5); border-radius: 10px; padding: 9px 10px; margin: 0 0 10px; text-align: center; }
+  #nakladka p { max-width: 290px; line-height: 1.5; }
+  /* Otwarty panel przykrywa 🔄, a jego krzyzyk nie wchodzi pod przycisk pelnego ekranu */
+  #obszarSwiata #btnNowySwiat { z-index: 13 !important; }
+  .naglowek-panelu { padding-right: 50px !important; }
 </style>
 </head>
 <body>
@@ -9221,7 +9334,6 @@ SZABLON_MINECRAFT = """
           <div id="pasekGloduTlo"><div id="pasekGloduWypelnienie" style="width:100%;"></div></div>
         </div>
       </div>
-      <div id="celZadania">🎯 Cel: zbuduj dom</div>
       <div id="wielkiKomunikat"></div>
       <canvas id="canvasSwiat" width="260" height="338"></canvas>
       <div id="hudNarzedzi">
@@ -9248,13 +9360,13 @@ SZABLON_MINECRAFT = """
         <button class="btn-narzedzie" id="btnPiecToggle">🔥</button>
       </div>
     </div>
-    </div>
     <div id="ekwipunek"></div>
     <div id="panelReceptur"></div>
     <div id="panelPieca"></div>
 
     <div id="nakladka">
-      <h2>⛏️ Prosty Minecraft</h2>
+      <h2>⛏️ Minecraft 2D</h2>
+      <p>Zetnij drzewo i zbuduj 🛠️ <b>stół rzemieślniczy</b> (4 drewna). Postaw go i stań obok — odblokujesz receptury.</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
     <div id="nakladkaSmierc">
@@ -9437,7 +9549,7 @@ SZABLON_MINECRAFT = """
     trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
     drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
     zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
-    szyby: '#bfe6f0', piec: '#4a4a4a',
+    szyby: '#bfe6f0', stol: '#9c6b3a', piec: '#4a4a4a',
     rudaZelaza: '#b8927a', diament: '#7ee8e0', drewnoBrzozy: '#e8ddc8',
     deski: '#b8894f', plytki: '#9c9ca8', drzwi: '#6b4423', lozko: '#c96f6f', twardyKamien: '#5a5560',
     deskiBrzozowe: '#e8d9b8', drzwiBrzozowe: '#c9b48a',
@@ -9451,6 +9563,7 @@ SZABLON_MINECRAFT = """
     diament: 'Diament', pioro: 'Pióro', nici: 'Nici', strzala: 'Strzała',
     kilofDrewniany: 'Kilof drewniany', kilofKamienny: 'Kilof kamienny',
     kilofZelazny: 'Kilof żelazny',
+    stol: 'Stół rzemieślniczy',
     siekieraDrewniana: 'Siekiera drewniana', siekieraKamienna: 'Siekiera kamienna', siekieraZelazna: 'Siekiera żelazna',
     stekPieczony: 'Pieczony stek', szynkaPieczona: 'Pieczona szynka', kurczakPieczony: 'Pieczony kurczak',
     baraninaPieczona: 'Pieczona baranina', zloteJablko: 'Złote jabłko',
@@ -9467,7 +9580,7 @@ SZABLON_MINECRAFT = """
   var KOLEJNOSC_EKWIPUNKU = [
     'ziemia', 'kamien', 'twardyKamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
     'piach', 'drewnoBrzozy', 'deski', 'deskiBrzozowe', 'plytki', 'drzwi',
-    'drzwiBrzozowe', 'lozko', 'szyby', 'piec',
+    'drzwiBrzozowe', 'lozko', 'szyby', 'stol', 'piec',
   ];
 
   // ---------- IKONY (prawdziwa tekstura dla blokow, emoji dla reszty) ----------
@@ -9627,35 +9740,38 @@ SZABLON_MINECRAFT = """
   }
 
   var RECEPTURY = [
+    // Kolejnosc = rozwoj postaci: stol, drewno, kamien, piec, dom, zelazo, diament, korona
+    { id: 'stol', wyjscie: 'stol', ileWyjscia: 1, skladniki: { drewno: 4 }, bezStolu: true },
+    { id: 'stolBrzoza', wyjscie: 'stol', ileWyjscia: 1, skladniki: { drewnoBrzozy: 4 }, bezStolu: true, etykieta: 'Stół rzemieślniczy (z brzozy)' },
     { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 }, etykieta: 'Patyk (z dębu)' },
     { id: 'patykBrzoza', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewnoBrzozy: 1 }, etykieta: 'Patyk (z brzozy)' },
     { id: 'deski', wyjscie: 'deski', ileWyjscia: 4, skladniki: { drewno: 1 } },
     { id: 'deskiBrzozowe', wyjscie: 'deskiBrzozowe', ileWyjscia: 4, skladniki: { drewnoBrzozy: 1 } },
     { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Kilof drewniany (z dębu)' },
     { id: 'kilofDrewnianyBrzoza', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Kilof drewniany (z brzozy)' },
+    { id: 'siekieraDrewniana', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Siekiera drewniana (🪓 2× drewna)' },
+    { id: 'siekieraDrewnianaBrzoza', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Siekiera drewniana z brzozy (🪓 2×)' },
     { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 }, etykieta: 'Miecz drewniany (z dębu)' },
     { id: 'mieczDrewnianyBrzoza', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewnoBrzozy: 2 }, etykieta: 'Miecz drewniany (z brzozy)' },
-    { id: 'plytki', wyjscie: 'plytki', ileWyjscia: 4, skladniki: { kamien: 2 } },
     { id: 'kilofKamienny', wyjscie: 'kilofKamienny', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 } },
+    { id: 'siekieraKamienna', wyjscie: 'siekieraKamienna', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 }, etykieta: 'Siekiera kamienna (🪓 3× drewna)' },
     { id: 'mieczKamienny', wyjscie: 'mieczKamienny', ileWyjscia: 1, skladniki: { patyk: 1, kamien: 2 } },
+    { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
+    { id: 'plytki', wyjscie: 'plytki', ileWyjscia: 4, skladniki: { kamien: 2 } },
     { id: 'drzwi', wyjscie: 'drzwi', ileWyjscia: 1, skladniki: { deski: 2 } },
     { id: 'drzwiBrzozowe', wyjscie: 'drzwiBrzozowe', ileWyjscia: 1, skladniki: { deskiBrzozowe: 2 } },
-    { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 }, etykieta: 'Łóżko (deski dębowe)' },
-    { id: 'lozkoBrzoza', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deskiBrzozowe: 3 }, etykieta: 'Łóżko (deski brzozowe)' },
-    { id: 'piec', wyjscie: 'piec', ileWyjscia: 1, skladniki: { kamien: 6 } },
     { id: 'luk', wyjscie: 'luk', ileWyjscia: 1, skladniki: { pioro: 1, nici: 1, patyk: 1 } },
     { id: 'strzala', wyjscie: 'strzala', ileWyjscia: 4, skladniki: { patyk: 1, kamien: 1 } },
+    { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 }, etykieta: 'Łóżko (deski dębowe)' },
+    { id: 'lozkoBrzoza', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deskiBrzozowe: 3 }, etykieta: 'Łóżko (deski brzozowe)' },
     { id: 'kilofZelazny', wyjscie: 'kilofZelazny', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 } },
+    { id: 'siekieraZelazna', wyjscie: 'siekieraZelazna', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 }, etykieta: 'Siekiera żelazna (🪓 4× drewna)' },
     { id: 'mieczZelazny', wyjscie: 'mieczZelazny', ileWyjscia: 1, skladniki: { patyk: 1, zelazo: 2 } },
     { id: 'zbrojaZelazna', wyjscie: 'zbrojaZelazna', ileWyjscia: 1, skladniki: { zelazo: 5 } },
     { id: 'mieczDiamentowy', wyjscie: 'mieczDiamentowy', ileWyjscia: 1, skladniki: { patyk: 1, diament: 2 } },
     { id: 'zbrojaDiamentowa', wyjscie: 'zbrojaDiamentowa', ileWyjscia: 1, skladniki: { diament: 5 } },
-    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zlotoStopione: 5 }, etykieta: 'Korona (👑 2× szybsze leczenie)' },
     { id: 'zloteJablko', wyjscie: 'zloteJablko', ileWyjscia: 1, skladniki: { jezyny: 3, zlotoStopione: 2 }, etykieta: 'Złote jabłko (leczy do pełna)' },
-    { id: 'siekieraDrewniana', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Siekiera drewniana (🪓 2× drewna)' },
-    { id: 'siekieraDrewnianaBrzoza', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Siekiera drewniana z brzozy (🪓 2×)' },
-    { id: 'siekieraKamienna', wyjscie: 'siekieraKamienna', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 }, etykieta: 'Siekiera kamienna (🪓 3× drewna)' },
-    { id: 'siekieraZelazna', wyjscie: 'siekieraZelazna', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 }, etykieta: 'Siekiera żelazna (🪓 4× drewna)' },
+    { id: 'korona', wyjscie: 'korona', ileWyjscia: 1, skladniki: { zlotoStopione: 5 }, etykieta: 'Korona (👑 2× szybsze leczenie)' },
   ];
 ;
 
@@ -10139,12 +10255,43 @@ SZABLON_MINECRAFT = """
     return wiersz;
   }
 
+  // Czy w zasiegu gracza stoi dany blok (stol, piec)
+  function blokWZasiegu(typ) {
+    for (var x = graczX - ZASIEG; x <= graczX + ZASIEG; x++) {
+      for (var y = graczY - ZASIEG; y <= graczY + ZASIEG; y++) {
+        if (x >= 0 && x < SZEROKOSC_SWIATA && y >= 0 && y < WYSOKOSC_SWIATA && world[x] && world[x][y] === typ) return true;
+      }
+    }
+    return false;
+  }
+  var stanReceptur = '';
+  function dodajWskazowkeReceptur(html) {
+    var w = document.createElement('div');
+    w.className = 'wskazowka-receptur';
+    w.innerHTML = html;
+    panelReceptur.appendChild(w);
+  }
+  function znacznikReceptury(klasa, tekst) {
+    var z = document.createElement('div');
+    z.className = 'znacznik-receptury ' + klasa;
+    z.textContent = tekst;
+    return z;
+  }
+  // Receptury: bez stolu tylko sam stol; stol w poblizu odblokowuje reszte,
+  // piec w poblizu dopisuje przetapianie (1 paliwo + surowiec)
   function odswiezPanelReceptur() {
     panelReceptur.innerHTML = '';
     dodajNaglowekPanelu(panelReceptur, '📖 Receptury');
+    var przyStole = blokWZasiegu('stol'), przyPiecu = blokWZasiegu('piec');
+    stanReceptur = przyStole + '|' + przyPiecu;
+    if (!przyStole) {
+      dodajWskazowkeReceptur('🛠️ Zbuduj <b>stół rzemieślniczy</b>, postaw go i stań obok — odblokujesz wszystkie receptury.');
+    }
     RECEPTURY.forEach(function (przepis) {
+      if (!przepis.bezStolu && !przyStole) return;
       var karta = document.createElement('div');
       karta.className = 'karta-receptury';
+      karta.appendChild(przepis.bezStolu ? znacznikReceptury('zn-reka', '✋ bez stołu') : znacznikReceptury('zn-stol', '🛠️ stół'));
       karta.appendChild(stworzWierszReceptury(przepis.skladniki, przepis.wyjscie, przepis.ileWyjscia));
       var btn = document.createElement('button');
       btn.className = 'btn-wytworz';
@@ -10154,9 +10301,31 @@ SZABLON_MINECRAFT = """
       karta.appendChild(btn);
       panelReceptur.appendChild(karta);
     });
+    if (przyPiecu) {
+      var wegiel = ekwipunek.wegiel || 0, drewno = ekwipunek.drewno || 0;
+      PRZEPISY_PIECA.forEach(function (przepis) {
+        var skladnik = {};
+        skladnik[przepis.surowiec] = 1;
+        var karta = document.createElement('div');
+        karta.className = 'karta-receptury';
+        karta.appendChild(znacznikReceptury('zn-piec', '🔥 piec'));
+        karta.appendChild(stworzWierszReceptury(skladnik, przepis.wyjscie, 1));
+        var paliwo = document.createElement('div');
+        paliwo.className = 'paliwo-receptury';
+        paliwo.textContent = '+ paliwo: 1× węgiel albo 1× drewno (masz: ' + wegiel + ' / ' + drewno + ')';
+        karta.appendChild(paliwo);
+        var btn = document.createElement('button');
+        btn.className = 'btn-wytworz';
+        btn.textContent = '🔥 Przetop → ' + NAZWY_BLOKOW[przepis.wyjscie];
+        btn.disabled = !((ekwipunek[przepis.surowiec] || 0) > 0 && (wegiel > 0 || drewno > 0));
+        btn.addEventListener('click', function () { przetop(przepis); odswiezPanelReceptur(); });
+        karta.appendChild(btn);
+        panelReceptur.appendChild(karta);
+      });
+    } else if (przyStole) {
+      dodajWskazowkeReceptur('🔥 Postaw <b>piec</b> i stań obok — dojdą receptury przetapiania (rudy, piasek, mięso).');
+    }
   }
-
-  // ---------- PIEC (smelting piachu na szyby) ----------
   function odswiezPiecWZasiegu() {
     var znaleziono = false;
     for (var x = graczX - ZASIEG; x <= graczX + ZASIEG && !znaleziono; x++) {
@@ -10168,6 +10337,9 @@ SZABLON_MINECRAFT = """
       }
     }
     btnPiecToggle.classList.toggle('widoczny', znaleziono);
+    if (panelReceptur.classList.contains('widoczny') && (blokWZasiegu('stol') + '|' + blokWZasiegu('piec')) !== stanReceptur) {
+      odswiezPanelReceptur();
+    }
     if (!znaleziono && panelPieca.classList.contains('widoczny')) {
       panelPieca.classList.remove('widoczny');
       btnPiecToggle.classList.remove('aktywne');
@@ -10312,6 +10484,24 @@ SZABLON_MINECRAFT = """
       ctxDocelowy.lineWidth = 1;
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + 2, y + 2); ctxDocelowy.lineTo(x + KOMORKA - 2, y + KOMORKA - 2); ctxDocelowy.stroke();
       ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + KOMORKA - 2, y + 2); ctxDocelowy.lineTo(x + 2, y + KOMORKA - 2); ctxDocelowy.stroke();
+    } else if (blok === 'stol') {
+      // Stol rzemieslniczy: jasny blat z siatka, nogi i mlotek
+      ctxDocelowy.fillStyle = '#c99257';
+      ctxDocelowy.fillRect(x + 2, y + 2, KOMORKA - 4, 8);
+      ctxDocelowy.strokeStyle = 'rgba(60,35,10,0.65)';
+      ctxDocelowy.lineWidth = 1;
+      ctxDocelowy.beginPath();
+      ctxDocelowy.moveTo(x + KOMORKA / 3, y + 2); ctxDocelowy.lineTo(x + KOMORKA / 3, y + 10);
+      ctxDocelowy.moveTo(x + 2 * KOMORKA / 3, y + 2); ctxDocelowy.lineTo(x + 2 * KOMORKA / 3, y + 10);
+      ctxDocelowy.moveTo(x + 2, y + 6); ctxDocelowy.lineTo(x + KOMORKA - 2, y + 6);
+      ctxDocelowy.stroke();
+      ctxDocelowy.fillStyle = '#5a3a1a';
+      ctxDocelowy.fillRect(x + 4, y + 11, 3, KOMORKA - 13);
+      ctxDocelowy.fillRect(x + KOMORKA - 7, y + 11, 3, KOMORKA - 13);
+      ctxDocelowy.fillStyle = '#c4c4cc';
+      ctxDocelowy.fillRect(x + KOMORKA / 2 - 5, y + 13, 10, 4);
+      ctxDocelowy.fillStyle = '#7a5530';
+      ctxDocelowy.fillRect(x + KOMORKA / 2 - 1, y + 17, 2, KOMORKA - 21);
     } else if (blok === 'piec') {
       ctxDocelowy.fillStyle = '#e67e3c';
       ctxDocelowy.fillRect(x + 8, y + 14, KOMORKA - 16, 9);
@@ -10764,6 +10954,7 @@ SZABLON_MINECRAFT = """
     obslugaDotkniecia(e.clientX, e.clientY);
   });
   canvas.addEventListener('touchstart', function (e) {
+    if (!window.__pelnyEkranAktywny) return;   // poza pelnym ekranem: akcja na stukniecie (click)
     e.preventDefault();
     pominKlikCanvas = true;
     var dotyk = e.touches[0];
@@ -10806,7 +10997,18 @@ SZABLON_MINECRAFT = """
     if (!wybranyBlokEtykietaEl) return;
     var nazwa = NAZWY_BLOKOW[wybranyBlok] || wybranyBlok;
     var ile = ekwipunek[wybranyBlok] || 0;
-    wybranyBlokEtykietaEl.textContent = '✋ W ręce: ' + nazwa + ' (' + ile + ')';
+    wybranyBlokEtykietaEl.innerHTML = '';
+    var poczatek = document.createElement('span');
+    poczatek.textContent = '✋ W ręce:';
+    wybranyBlokEtykietaEl.appendChild(poczatek);
+    try {
+      var ikonka = stworzIkonkeElementu(wybranyBlok, 18);
+      if (ikonka.classList) ikonka.classList.add('ikonka-reka');
+      wybranyBlokEtykietaEl.appendChild(ikonka);
+    } catch (e) {}
+    var opis = document.createElement('span');
+    opis.textContent = nazwa + ' (' + ile + ')';
+    wybranyBlokEtykietaEl.appendChild(opis);
   }
 
   function dodajNaglowekPanelu(panelEl, tytul) {
@@ -10860,8 +11062,7 @@ SZABLON_MINECRAFT = """
     var otwarty = panelReceptur.classList.contains('widoczny') || panelPieca.classList.contains('widoczny');
     schowajWszystkiePanele();
     if (!otwarty) {
-      odswiezPanelReceptur();
-      dodajWejscieDoPieca();
+      odswiezPanelReceptur();   // przetapianie jest juz na liscie, gdy piec stoi obok
       panelReceptur.classList.add('widoczny');
       btnRecepturyToggle.classList.add('aktywne');
     }
@@ -11430,6 +11631,10 @@ SZABLON_MINECRAFT = """
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -11455,6 +11660,12 @@ SZABLON_MINECRAFT = """
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -11649,7 +11860,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
     <button class="btn-diag" id="btnPD">↘</button>
   </div>
   <div id="nakladka">
-    <div id="nakladkaTytul">🫒 Wąż na skos</div>
+    <div id="nakladkaTytul">🫒 Snake, ale nie do końca</div>
     <div id="nakladkaOpis">Zbierz 20 oliwek! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
@@ -12348,6 +12559,10 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -12373,6 +12588,12 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -12527,7 +12748,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     <button class="btn-akcja-bj" id="btnPas">✋ Pas</button>
   </div>
   <div id="nakladka">
-    <div id="nakladkaTytul">🎴 Blackjack</div>
+    <div id="nakladkaTytul">🃏 Blackjack</div>
     <div id="nakladkaOpis">Pokonaj tajemniczego krupiera 3 razy! Zbierz karty jak najbliżej 21, nie przebijając. Król/Dama/Walet = 10, As = 11 albo 1.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
@@ -13105,6 +13326,10 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -13130,6 +13355,12 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -13168,6 +13399,7 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.55; }
   .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px; padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .gra-btn:active { transform:scale(0.96); }
+  #plotno { touch-action: none; }   /* przeciaganie = rzut */
 </style>
 </head>
 <body>
@@ -14151,6 +14383,10 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -14176,6 +14412,12 @@ SZABLON_SAMOLOT = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -14215,6 +14457,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.55; }
   .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px; padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .gra-btn:active { transform:scale(0.96); }
+  #plotno { touch-action: none; }   /* przeciaganie = celowanie */
 </style>
 </head>
 <body>
@@ -14230,7 +14473,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   <div id="strzalyPasek"></div>
   <div id="komunikat"></div>
   <div id="nakladka">
-    <div id="nakladkaTytul">🏹 Odyseusz — strzelnica</div>
+    <div id="nakladkaTytul">🏹 Łucznik</div>
     <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — strzał masz <b>bez ograniczeń</b>.<br><br>Trafienie wszystkich celów otwiera kolejny etap. Sześć coraz trudniejszych etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
@@ -15126,6 +15369,10 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -15151,6 +15398,12 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -15285,6 +15538,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     box-shadow: 0 3px 10px rgba(0,0,0,0.4);
   }
   .gra-btn:active { transform: scale(0.96); }
+  #btnLewo, #btnPrawo { touch-action: none; }
 </style>
 </head>
 <body>
@@ -15300,7 +15554,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     <button class="btn-kierunek" id="btnPrawo">➡️</button>
   </div>
   <div id="nakladka">
-    <div id="nakladkaTytul">🧗 Parkour Odyseusza</div>
+    <div id="nakladkaTytul">🧗 Jumping Prince</div>
     <div id="nakladkaOpis">Wspinaj się na szczyt wieży! Przytrzymaj strzałkę, żeby naładować skok — im dłużej trzymasz, tym wyżej i dalej skoczysz. Puść, żeby skoczyć.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
@@ -16031,6 +16285,10 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -16056,6 +16314,12 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -16142,6 +16406,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
              padding:12px 30px; font-weight:900; font-size:15px; letter-spacing:0.03em;
              box-shadow:0 4px 14px rgba(0,0,0,0.5); }
   .gra-btn:active { transform:scale(0.96); }
+  #btnLewo, #btnPrawo, #btnSkok { touch-action: none; }
 </style>
 </head>
 <body>
@@ -16165,7 +16430,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   </div>
 
   <div id="nakladka">
-    <div id="nakladkaTytul">😈 Poziom Diabła</div>
+    <div id="nakladkaTytul">😈 Devil</div>
     <div id="nakladkaOpis">
       Dojdź do <b>drzwi</b>. To wszystko.<br><br>
       <b>◀ ▶</b> ruch · <b>⤴</b> skok<br>
@@ -17284,6 +17549,10 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -17309,6 +17578,12 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -17325,6 +17600,15 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
 </body>
 </html>
 """
+
+# Labirynt: przeciwnicy z twarzami znajomych (Ania - strzela i ucieka, Patryk - smierdziel)
+TWARZ_ANI_B64 = "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"
+TWARZ_PATRYKA_B64 = "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"
+
+
+def _szablon_labirynt():
+    return SZABLON_LABIRYNT.replace("__TWARZ_ANI__", TWARZ_ANI_B64).replace("__TWARZ_PATRYKA__", TWARZ_PATRYKA_B64)
+
 
 SZABLON_LABIRYNT = """<!DOCTYPE html>
 <html>
@@ -17482,6 +17766,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   #nakladkaOpis { color:#d8cdb0; font-size:13px; margin-bottom:16px; max-width:300px; line-height:1.55; }
   .gra-btn { background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; border:none; border-radius:30px; padding:10px 26px; font-weight:700; font-size:15px; box-shadow:0 3px 10px rgba(0,0,0,0.4); }
   .gra-btn:active { transform:scale(0.96); }
+  .pasek-otoczka { position: relative; }
+  .pasek-tekst { position: absolute; left: 0; right: 0; top: 0; bottom: 0; display: flex; align-items: center; padding-left: 6px;
+    font-size: 8.5px; font-weight: 800; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.95), 0 0 3px rgba(0,0,0,0.8);
+    letter-spacing: 0.02em; white-space: nowrap; pointer-events: none; }
+  #hudHp { display: none; }
+  #banerPietra { position: absolute; left: 0; right: 0; top: 30%; z-index: 6; text-align: center; pointer-events: none;
+    color: #ffe08a; font-weight: 900; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.95); opacity: 0; transition: opacity .6s; }
+  #banerPietra small { display: block; font-size: 13px; color: #f0e8d0; font-weight: 700; margin-top: 4px; }
 </style>
 </head>
 <body>
@@ -17491,15 +17783,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   <canvas id="widok" width="380" height="470"></canvas>
 
   <div id="hud">
-    <div class="pasek-otoczka"><div class="pasek-wyp" id="paskHp" style="width:100%"></div></div>
-    <div class="pasek-otoczka" style="height:7px"><div class="pasek-wyp" id="paskXp" style="width:0%"></div></div>
+    <div class="pasek-otoczka"><div class="pasek-wyp" id="paskHp" style="width:100%"></div><span class="pasek-tekst" id="tekstHp">❤️ Zdrowie</span></div>
+    <div class="pasek-otoczka" style="height:11px"><div class="pasek-wyp" id="paskXp" style="width:0%"></div><span class="pasek-tekst" id="tekstXp">✨ Doświadczenie</span></div>
     <div id="hudTekst">
       <span id="hudHp">100 / 100</span>
       <span id="hudPoziom">Poziom 1</span>
       <span id="hudMikstury">🧪 0</span>
     </div>
   </div>
-  <div id="dziennik"></div>
+  <div id="banerPietra"></div>
+    <div id="dziennik"></div>
   <button id="btnSkrzynia">📦 Otwórz skrzynkę</button>
 
   <div id="nakladkaEkw">
@@ -17521,7 +17814,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   </div>
 
   <div id="nakladka">
-    <div id="nakladkaTytul">⚔️ Labirynt Cieni</div>
+    <div id="nakladkaTytul">⚔️ Więzień labiryntu</div>
     <div id="nakladkaOpis">Przemierz labirynt, zbieraj łupy, rozwijaj postać i pokonaj <b>Władcę Labiryntu</b>.<br><br>Dotknij ekranu i przeciągnij, żeby iść — atakujesz automatycznie.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
@@ -17546,6 +17839,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var nakladka = document.getElementById('nakladka'), nakladkaTytul = document.getElementById('nakladkaTytul'), nakladkaOpis = document.getElementById('nakladkaOpis'), nakladkaBtn = document.getElementById('nakladkaBtn');
 
   var WID = 380, WYS = 470;
+  var WYS_BAZOWE = WYS;   // wysokosc planszy poza pelnym ekranem
+  // Twarze znajomych dla wybranych przeciwnikow (rysowane w kolku zamiast emoji)
+  var OBRAZY_TWARZY = {};
+  [['ania', '__TWARZ_ANI__'], ['patryk', '__TWARZ_PATRYKA__']].forEach(function (p) {
+    var im = new Image(); im.src = 'data:image/jpeg;base64,' + p[1]; OBRAZY_TWARZY[p[0]] = im;
+  });
   var ZOOM = 0.84;          // nieco dalej - widac wiecej pola walki
   var POJEMNOSC_PLECAKA = 50;
   // Obszar swiata widoczny na ekranie. Przy ZOOM < 1 miesci sie go wiecej.
@@ -18264,9 +18563,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:75,  atak:25, pancerz:3,  predkosc:168, xp:28, r:16, kolor:'#e6743c', wybuchowy:true },
     kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:16, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
-    okrazacz: { nazwa:'Cień',      ikona:'🦇', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
+    okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
-    trujacy:  { nazwa:'Śmierdziel', ikona:'🦨', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:17, kolor:'#6a9a4a',
+    trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:17, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
     jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:18, kolor:'#8a5a3a',
                 zachowanie:'szarzaBoki' },
@@ -19248,7 +19547,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Cala mapa w pomniejszeniu: komnaty, gracz, boss, portal i lupy.
   // Wieksza i odsunieta od gornej krawedzi - przycisk pelnego ekranu
   // siedzi w prawym gornym rogu i wczesniej ladowal na minimapie.
-  var MINI_BOK = 132, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
+  var MINI_BOK = 100, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
   function rysujMinimape() {
     var skala = MINI_BOK / (SIATKA * KAFEL);
     var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_ODSTEP_GORA;
@@ -19258,11 +19557,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // zeby kontur korytarzy odcinal sie od jasnej podlogi gry.
     // Tlo mocno przezroczyste (widac przez nie walke), ale sama mapa w pelnym
     // kolorze. Wczesniej cala minimapa, lacznie z kropka gracza, byla przygaszona.
-    ctx.globalAlpha = 0.22;
+    ctx.globalAlpha = 0.14;
     ctx.fillStyle = '#07060c';
     ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
     ctx.globalAlpha = 1;
-    ctx.strokeStyle = 'rgba(230,193,92,0.85)'; ctx.lineWidth = 2;
+    ctx.strokeStyle = 'rgba(230,193,92,0.45)'; ctx.lineWidth = 1.5;
     ctx.strokeRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
 
     // CALA przechodnia mapa, wiec widac takze KORYTARZE, nie tylko komnaty
@@ -19272,7 +19571,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Dwie warstwy: nieodwiedzone korytarze ciemnoszare, odwiedzone jasne
     // (na stale) - widac, gdzie juz sie bylo, a gdzie jeszcze nie
     for (var warstwa = 0; warstwa < 2; warstwa++) {
-      ctx.fillStyle = warstwa ? 'rgba(236,226,200,0.72)' : 'rgba(96,92,108,0.42)';
+      ctx.fillStyle = warstwa ? 'rgba(236,226,200,0.5)' : 'rgba(96,92,108,0.28)';
       for (var my2 = 0; my2 < SIATKA; my2++) {
         for (var mx2 = 0; mx2 < SIATKA; mx2++) {
           if (mapa[my2][mx2] !== 1) continue;
@@ -19290,11 +19589,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                    Math.max(2, sekretnaKomnata.w*KAFEL*skala), Math.max(2, sekretnaKomnata.h*KAFEL*skala));
     }
 
-    // Komnata bossa na czerwono
+    // Komnata bossa: polprzezroczysty napis zamiast czerwonego pola (nie zaslania mapy)
     if (komnataBossa) {
-      ctx.fillStyle = 'rgba(214,54,40,0.95)';
-      ctx.fillRect(mx + komnataBossa.x*KAFEL*skala, my + komnataBossa.y*KAFEL*skala,
-                   Math.max(2, komnataBossa.w*KAFEL*skala), Math.max(2, komnataBossa.h*KAFEL*skala));
+      var bx = mx + (komnataBossa.x + komnataBossa.w / 2) * KAFEL * skala, byy = my + (komnataBossa.y + komnataBossa.h / 2) * KAFEL * skala;
+      ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.lineWidth = 2.5; ctx.strokeStyle = 'rgba(0,0,0,0.55)'; ctx.strokeText('BOSS', bx, byy);
+      ctx.fillStyle = 'rgba(255,120,100,0.8)'; ctx.fillText('BOSS', bx, byy);
     }
 
     // Nieotwarte skrzynie jako "?" - nie zdradzamy, co jest w srodku
@@ -19412,6 +19712,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   function rysuj() {
+    przywrocRozmiarPlanszy();
     if (widok.width !== WID * DPR) { widok.width = WID * DPR; widok.height = WYS * DPR; }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#0a0810';
@@ -19647,7 +19948,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (w.zamrozony > 0) { ctx.shadowColor = '#cfefff'; ctx.shadowBlur = 24; }
       else if (w.spowolnienie > 0) { ctx.shadowColor = '#5aa8ff'; ctx.shadowBlur = 18 + Math.sin(Date.now() / 180) * 5; }
       ctx.font = (w.r*1.7) + 'px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText(w.ikona, ex, ey);
+      var defW = TYPY_WROGOW[w.typ], twarz = defW && defW.obraz && OBRAZY_TWARZY[defW.obraz];
+      if (twarz && twarz.complete && twarz.naturalWidth) {
+        var rr = w.r * 1.12;
+        ctx.beginPath(); ctx.arc(ex, ey, rr + 2.2, 0, Math.PI*2); ctx.fillStyle = w.kolor || defW.kolor; ctx.fill();
+        ctx.save(); ctx.beginPath(); ctx.arc(ex, ey, rr, 0, Math.PI*2); ctx.clip();
+        ctx.drawImage(twarz, ex - rr, ey - rr, rr*2, rr*2); ctx.restore();
+        ctx.font = (w.r*0.85) + 'px sans-serif';
+        ctx.fillText(w.ikona, ex + rr*0.78, ey + rr*0.72);   // mala plakietka: jak sie zachowuje
+      } else {
+        ctx.fillText(w.ikona, ex, ey);
+      }
       ctx.shadowBlur = 0;
       // Zamrozony / spowolniony: niebieska tarcza i krecaca sie obwodka
       if (w.zamrozony > 0 || w.spowolnienie > 0) {
@@ -19688,27 +19999,44 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (gracz.migotanie > 0) ctx.globalAlpha = 0.5;
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath(); ctx.ellipse(gx, gy + 11, 12, 4.5, 0, 0, Math.PI*2); ctx.fill();
-    // Plaszcz
-    ctx.fillStyle = '#2f5f8f';
+    // Plaszcz - z cieniowaniem i lekkim falowaniem
+    var faluje = Math.sin(Date.now() / 170) * 0.9;
+    var gradP = ctx.createLinearGradient(gx, gy - gracz.r*0.4, gx, gy + gracz.r*0.6);
+    gradP.addColorStop(0, '#3b74ab'); gradP.addColorStop(1, '#22476d');
+    ctx.fillStyle = gradP;
     ctx.beginPath();
-    ctx.moveTo(gx - gracz.r*0.95, gy + gracz.r*0.5);
-    ctx.lineTo(gx + gracz.r*0.95, gy + gracz.r*0.5);
-    ctx.lineTo(gx + gracz.r*0.6, gy - gracz.r*0.4);
-    ctx.lineTo(gx - gracz.r*0.6, gy - gracz.r*0.4);
+    ctx.moveTo(gx - gracz.r*0.62, gy - gracz.r*0.4);
+    ctx.lineTo(gx + gracz.r*0.62, gy - gracz.r*0.4);
+    ctx.lineTo(gx + gracz.r*0.98 + faluje, gy + gracz.r*0.55);
+    ctx.lineTo(gx - gracz.r*0.98 + faluje, gy + gracz.r*0.55);
     ctx.closePath(); ctx.fill();
-    // Tulow
-    ctx.fillStyle = '#c9483a';
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
+    // Tulow (zbroja) z cieniowaniem i konturem
+    var gradT = ctx.createRadialGradient(gx - 3, gy - 3, 2, gx, gy, gracz.r*0.85);
+    gradT.addColorStop(0, '#e2604f'); gradT.addColorStop(1, '#9a3328');
+    ctx.fillStyle = gradT;
     ctx.beginPath(); ctx.arc(gx, gy, gracz.r*0.78, 0, Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#8a2f26';
-    ctx.fillRect(gx - gracz.r*0.75, gy - 1.5, gracz.r*1.5, 3);
-    // Glowa + wlosy
-    ctx.fillStyle = '#e0b48a';
+    ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
+    // Pas ze zlota sprzaczka
+    ctx.fillStyle = '#5a2a1e'; ctx.fillRect(gx - gracz.r*0.74, gy - 1.8, gracz.r*1.48, 3.6);
+    ctx.fillStyle = '#ffd24a'; ctx.fillRect(gx - 2, gy - 2.2, 4, 4.4);
+    // Glowa: cieniowana twarz, wlosy z grzywka, oczy patrza w strone ruchu
+    var patrzX = Math.max(-1, Math.min(1, gracz.kierunekX || 0)) * 1.2;
+    var patrzY = Math.max(-1, Math.min(1, gracz.kierunekY || 0)) * 0.8;
+    var gradG = ctx.createRadialGradient(gx - 2, gy - 11, 1, gx, gy - 9, 8);
+    gradG.addColorStop(0, '#f1c9a0'); gradG.addColorStop(1, '#d09c72');
+    ctx.fillStyle = gradG;
     ctx.beginPath(); ctx.arc(gx, gy - 9, 7, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1; ctx.stroke();
     ctx.fillStyle = '#4a3020';
-    ctx.beginPath(); ctx.arc(gx, gy - 11, 7, Math.PI, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(gx, gy - 11, 7.2, Math.PI*1.02, Math.PI*1.98); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(gx - 6.6, gy - 11); ctx.quadraticCurveTo(gx - 2, gy - 8.2, gx + 1, gy - 11.4);
+    ctx.lineTo(gx + 6.9, gy - 11); ctx.lineTo(gx + 6, gy - 14.5); ctx.lineTo(gx - 6, gy - 14.5); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#16130a';
-    ctx.fillRect(gx - 3, gy - 10, 1.8, 1.8);
-    ctx.fillRect(gx + 1.4, gy - 10, 1.8, 1.8);
+    ctx.fillRect(gx - 3.2 + patrzX, gy - 9.4 + patrzY, 1.9, 2.1);
+    ctx.fillRect(gx + 1.3 + patrzX, gy - 9.4 + patrzY, 1.9, 2.1);
+    ctx.fillStyle = 'rgba(230,110,90,0.32)';
+    ctx.beginPath(); ctx.arc(gx - 4.2, gy - 6.6, 1.4, 0, Math.PI*2); ctx.arc(gx + 4.2, gy - 6.6, 1.4, 0, Math.PI*2); ctx.fill();
     ctx.restore();
 
     // Pasek zdrowia NAD POSTACIA - widac stan bez zerkania na gore ekranu
@@ -19903,8 +20231,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function odswiezHud() {
     paskHp.style.width = Math.max(0, (gracz.hp / gracz.hpMax) * 100) + '%';
     paskXp.style.width = ((gracz.xp / gracz.xpDoNastepnego) * 100) + '%';
-    hudHp.textContent = Math.max(0, Math.round(gracz.hp)) + ' / ' + gracz.hpMax;
-    hudPoziom.textContent = 'Lv ' + gracz.poziom + ' · Labirynt ' + (poziomLabiryntu+1) + '/3';
+    var tHp = document.getElementById('tekstHp'), tXp = document.getElementById('tekstXp');
+    if (tHp) tHp.textContent = '❤️ Zdrowie ' + Math.max(0, Math.round(gracz.hp)) + ' / ' + gracz.hpMax;
+    if (tXp) tXp.textContent = '✨ Doświadczenie ' + Math.round(gracz.xp) + ' / ' + gracz.xpDoNastepnego;
+    hudHp.textContent = '';
+    hudPoziom.textContent = '⭐ Poziom ' + gracz.poziom;
     hudMikstury.textContent = '🧪 ' + gracz.mikstury;
     var lm = document.getElementById('licznikMikstur');
     if (lm) lm.textContent = gracz.mikstury;
@@ -20509,7 +20840,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var minTyp = glebokosc > 0.55 ? 1 : 0;
       // Co trzeci wrog to STRZELAJACY albo o specjalnym zachowaniu -
       // trzeba unikac pociskow, a nie tylko klikac w tlum.
-      var SPECJALNE = ['mag', 'kusznik', 'lucznik', 'okrazacz', 'trujacy', 'jezdziec', 'czarodziej'];
+      var SPECJALNE = ['mag', 'kusznik', 'okrazacz', 'trujacy', 'jezdziec', 'czarodziej'];   // Lucznik usuniety - robil to samo co Ania
 
       for (var i = 0; i < ile; i++) {
         var typ;
@@ -20943,6 +21274,44 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   gracz.x = (komnaty[0].cx+0.5)*KAFEL; gracz.y = (komnaty[0].cy+0.5)*KAFEL;
   kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
   przeliczHpMax(); odswiezHud(); odswiezPanele(); rysuj();
+
+  // ---------- KOMUNIKAT O PIETRZE: tylko przy wejsciu, nie caly czas ----------
+  function pokazBanerPietra() {
+    var el = document.getElementById('banerPietra'); if (!el) return;
+    var nr = poziomLabiryntu + 1;
+    el.innerHTML = '🏰 Labirynt ' + nr + (nr <= 3 ? ' / 3' : '') + '<small>' + (nr <= 3 ? 'Znajdź komnatę bossa' : 'Tryb nieskończony') + '</small>';
+    el.style.opacity = '1';
+    clearTimeout(pokazBanerPietra._t);
+    pokazBanerPietra._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
+  }
+  var _generujMapeOryg = generujMape;
+  generujMape = function () { var w = _generujMapeOryg.apply(this, arguments); pokazBanerPietra(); return w; };
+
+  // ---------- PELNY EKRAN: wyzsza plansza zamiast rozciagania ----------
+  // Logiczna wysokosc planszy rosnie w tej samej proporcji co jej wyswietlana
+  // wysokosc - kafle zostaja kwadratowe, a na ekranie miesci sie wiecej.
+  var WYS_PASKA_PELNY = 172;
+  window.__wlasneSkalowanie = true;
+  function ustawWysokoscPlanszy(nowa) {
+    WYS = nowa; WYS_SWIATA = WYS / ZOOM;
+    widok.width = WID * DPR; widok.height = WYS * DPR;
+  }
+  window.__dopasujGre = function () {
+    var gra = document.getElementById('gra'), pas = document.getElementById('pasSterowania');
+    var w = gra.clientWidth || window.innerWidth, h = gra.clientHeight || window.innerHeight;
+    var wysPlotna = Math.max(300, h - WYS_PASKA_PELNY);
+    ustawWysokoscPlanszy(Math.round(WID * wysPlotna / w));
+    widok.style.height = wysPlotna + 'px';
+    if (pas) pas.style.top = wysPlotna + 'px';
+  };
+  function przywrocRozmiarPlanszy() {
+    // Tylko gdy wspolny blok wyraznie zglosil 'poza pelnym ekranem' (przy wczytywaniu jeszcze go nie ma)
+    if (window.__pelnyEkranAktywny === false && WYS !== WYS_BAZOWE) {
+      ustawWysokoscPlanszy(WYS_BAZOWE);
+      widok.style.height = '';
+      var pas = document.getElementById('pasSterowania'); if (pas) pas.style.top = '';
+    }
+  }
 </script>
 
 <script>
@@ -20962,7 +21331,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var przycisk = document.createElement('button');
   przycisk.textContent = '⛶';
   przycisk.style.cssText =
-    'position:fixed;top:5px;right:150px;z-index:2147483647;width:34px;height:34px;' +   // na lewo od minimapy
+    'position:fixed;top:5px;right:124px;z-index:2147483647;width:34px;height:34px;' +   // na lewo od (mniejszej) minimapy
     'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
     'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
     'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
@@ -21168,6 +21537,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
   function ustawBlokadeWnetrza(wl) {
     var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
     h.style.overflow = wl ? 'hidden' : '';
     h.style.overscrollBehavior = wl ? 'none' : '';
     b.style.overscrollBehavior = wl ? 'none' : '';
@@ -21193,6 +21566,12 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   window.addEventListener('pagehide', function () {
     if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
   });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
 
   przycisk.addEventListener('click', function (e) {
     e.preventDefault();
@@ -21709,6 +22088,28 @@ div[data-testid="stHorizontalBlock"]:has(> div[data-testid="stColumn"]:nth-child
 .zwoj-pod {
   text-align: center; color: #a8946a; font-size: 0.74rem;
   margin: -6px 0 16px; letter-spacing: 0.03em;
+}
+
+/* Ekran z klodkami: strona sie nie przewija - klodka jest zawsze w widocznej
+   czesci ekranu. Dziala tylko, gdy klodka jest na stronie (:has), wiec w
+   menu i grach przewijanie zostaje normalne. */
+html:has(.st-key-zamek_btn), body:has(.st-key-zamek_btn),
+.stApp:has(.st-key-zamek_btn), .stApp:has(.st-key-zamek_btn) [data-testid="stAppViewContainer"],
+.stApp:has(.st-key-zamek_btn) [data-testid="stMain"], .stApp:has(.st-key-zamek_btn) section.main {
+  overflow: hidden !important; overscroll-behavior: none !important;
+}
+.stApp:has(.st-key-zamek_btn) { touch-action: none; }
+
+/* Ukryta wiadomosc: gdy tresc miesci sie na ekranie, strona sie nie przewija.
+   Klase wiadomosc-miesci ustawia skrypt po zmierzeniu tresci; :has() wylacza
+   blokade od razu po wyjsciu z tego ekranu. */
+.stApp:has(.ekran-wiadomosc) [data-testid="stMainBlockContainer"],
+.stApp:has(.ekran-wiadomosc) .block-container { padding-bottom: 1.5rem !important; }
+html.wiadomosc-miesci:has(.ekran-wiadomosc), html.wiadomosc-miesci:has(.ekran-wiadomosc) body,
+html.wiadomosc-miesci .stApp:has(.ekran-wiadomosc) [data-testid="stMain"],
+html.wiadomosc-miesci .stApp:has(.ekran-wiadomosc) [data-testid="stAppViewContainer"],
+html.wiadomosc-miesci .stApp:has(.ekran-wiadomosc) section.main {
+  overflow: hidden !important; overscroll-behavior: none !important;
 }
 </style>
 """, unsafe_allow_html=True)
@@ -22391,11 +22792,11 @@ def renderuj_labirynt(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
-        wynik = gra_z_wynikiem(SZABLON_LABIRYNT, 700, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(_szablon_labirynt(), 700, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Fallback, gdyby most byl niedostepny - stary, sprawdzony reczny przycisk.
-    components.html(SZABLON_LABIRYNT, height=760, scrolling=False)
+    components.html(_szablon_labirynt(), height=760, scrolling=False)
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_labirynt"), etykieta_bledow=t("bledy_etykieta_labirynt"))
 
 
@@ -22748,6 +23149,34 @@ ANIMACJA_KLODKI = """<!DOCTYPE html><html><head><meta charset="utf-8"><style>
 # audio (iPhone wymaga gestu) i gra metaliczne klikniecie. Z tego samego
 # kontekstu korzysta potem animacja otwarcia i gry.
 KOD_KLIKNIECIA_ZAMKA = (
+    # Najpierw efekt "tu naprawde byla klodka": otwarta klodka podskakuje i znika,
+    # zloty pierscien i iskry. Elementy trafiaja do body strony, wiec
+    # przezywaja przeladowanie Streamlita i same sie sprzataja.
+    "try {"
+    " var b = ev.currentTarget || ev.target; var r = b.getBoundingClientRect();"
+    " var cx = r.left + r.width / 2, cy = r.top + r.height / 2, D = document;"
+    " var duch = D.createElement('div'); duch.textContent = '🔓';"
+    " duch.style.cssText = 'position:fixed;left:' + cx + 'px;top:' + cy + 'px;font-size:6rem;line-height:1;z-index:99999;"
+    "pointer-events:none;transform:translate(-50%,-50%);text-shadow:0 0 22px rgba(255,215,106,0.95), 0 0 6px rgba(255,235,170,0.9);';"
+    " D.body.appendChild(duch);"
+    " duch.animate([{transform:'translate(-50%,-50%) scale(1) rotate(0deg)', opacity:1},"
+    " {transform:'translate(-50%,-62%) scale(1.35) rotate(-12deg)', opacity:1, offset:0.35},"
+    " {transform:'translate(-50%,-90%) scale(1.6) rotate(8deg)', opacity:0}], {duration:1100, easing:'ease-out', fill:'forwards'});"
+    " var krag = D.createElement('div');"
+    " krag.style.cssText = 'position:fixed;left:' + cx + 'px;top:' + cy + 'px;width:44px;height:44px;margin:-22px 0 0 -22px;"
+    "border-radius:50%;border:3px solid rgba(255,215,106,0.95);box-shadow:0 0 22px rgba(255,215,106,0.85);z-index:99998;pointer-events:none;';"
+    " D.body.appendChild(krag);"
+    " krag.animate([{transform:'scale(1)', opacity:1}, {transform:'scale(5.5)', opacity:0}], {duration:850, easing:'ease-out', fill:'forwards'});"
+    " var iskry = [];"
+    " for (var i = 0; i < 10; i++) { var s = D.createElement('div'); s.textContent = '✨';"
+    " s.style.cssText = 'position:fixed;left:' + cx + 'px;top:' + cy + 'px;font-size:1.3rem;z-index:99999;pointer-events:none;transform:translate(-50%,-50%);';"
+    " D.body.appendChild(s); iskry.push(s); var a = i / 10 * Math.PI * 2, o = 70 + Math.random() * 45;"
+    " s.animate([{transform:'translate(-50%,-50%) scale(0.5)', opacity:1},"
+    " {transform:'translate(calc(-50% + ' + Math.cos(a) * o + 'px), calc(-50% + ' + Math.sin(a) * o + 'px)) scale(1.1)', opacity:0}],"
+    " {duration:750 + Math.random() * 300, easing:'ease-out', fill:'forwards'}); }"
+    " setTimeout(function () { duch.remove(); krag.remove(); iskry.forEach(function (x) { x.remove(); }); }, 1200);"
+    " b.style.visibility = 'hidden';"
+    "} catch (e) {}"
     "try {"
     " var g = window; try { if (window.top.document) g = window.top; } catch (e) {}"
     " var C = g.AudioContext || g.webkitAudioContext;"
@@ -22805,10 +23234,12 @@ def pokaz_powitanie():
         unsafe_allow_html=True,
     )
 
-    losowa_wysokosc = random.choice([10, 16, 22, 28, 34, 40, 46, 52, 58])
-    losowy_offset = random.choice([3, 12, 22, 32, 45, 58, 68, 78])
-
-    st.markdown(f"<div style='height:{losowa_wysokosc}vh;'></div>", unsafe_allow_html=True)
+    # Klodka jest przypieta do ekranu (position:fixed) w losowym, ale zawsze
+    # WIDOCZNYM miejscu - dawniej odstep o losowej wysokosci rozciagal strone
+    # i trzeba bylo ja przewijac. Przewijanie tego ekranu blokuje CSS (:has).
+    losowe_x = random.choice([18, 26, 34, 42, 50, 58, 66, 74, 82])      # srodek klodki, % szerokosci
+    losowe_y = random.choice([46, 52, 58, 64, 70, 76])                  # srodek klodki, % wysokosci
+    gora_min = 400 if tryb_testowy() else 210                          # pod naglowkiem (i banerem testowym)
     kliknieto = st.button("🔒", key="zamek_btn")
 
     # WAZNE: st.markdown/st.html z <style> okazal sie zawodny przy KOLEJNYCH
@@ -22828,7 +23259,12 @@ def pokaz_powitanie():
               var wrapper = doc.querySelector('.st-key-zamek_btn');
               if (!wrapper) return;
               wrapper.style.width = 'fit-content';
-              wrapper.style.marginLeft = '{losowy_offset}%';
+              wrapper.style.marginLeft = '0';
+              wrapper.style.position = 'fixed';
+              wrapper.style.zIndex = '50';
+              wrapper.style.left = 'clamp(8px, calc({losowe_x}vw - 80px), calc(100vw - 168px))';
+              wrapper.style.top = 'clamp({gora_min}px, calc({losowe_y}vh - 80px), calc(100vh - 176px))';
+              wrapper.style.top = 'clamp({gora_min}px, calc({losowe_y}dvh - 80px), calc(100dvh - 176px))';
               var btn = wrapper.querySelector('button');
               if (!btn) return;
               // Samo emoji - bez tla/ramki/cienia, tylko wieksze i z
@@ -22852,10 +23288,11 @@ def pokaz_powitanie():
               var proby = {st.session_state.zamek_proby};
               var staryPostep = wrapper.querySelector('#postepZamka');
               if (staryPostep) staryPostep.remove();
+              btn.style.visibility = 'visible';   // stara kopia byla chowana w chwili dotkniecia
               if (proby > 0 && btn.animate) {{
-                btn.animate([{{transform:'rotate(0deg)'}}, {{transform:'rotate(-14deg) scale(1.08)'}},
-                             {{transform:'rotate(11deg)'}}, {{transform:'rotate(-6deg)'}}, {{transform:'rotate(0deg)'}}],
-                            {{duration: 450}});
+                btn.animate([{{transform:'scale(0.3)', opacity:0}}, {{transform:'scale(1.12)', opacity:1, offset:0.7}},
+                             {{transform:'scale(1)', opacity:1}}],
+                            {{duration: 520, easing: 'ease-out'}});
               }}
               // Funkcja tworzona w oknie STRONY - przezyje zniszczenie tej ramki
               if (!btn.dataset.dzwiek) {{
@@ -22902,11 +23339,6 @@ def pokaz_menu():
 
     zrobione_lacznie = sum(1 for e in ETAPY if e["klucz"] in st.session_state.rozwiazane)
     proc_globalny = int(zrobione_lacznie / len(ETAPY) * 100) if ETAPY else 0
-    if zrobione_lacznie < 3:
-        st.caption(tt({
-            "pl": "🔔 Graj z dźwiękiem — przełącznik wyciszenia w iPhonie wycisza też muzykę w grach.",
-            "en": "🔔 Play with sound on — the iPhone silent switch also mutes the game music.",
-        }))
     # Jeden zamkniety blok HTML. Rozbijanie go na kilka wywolan markdown
     # NIE dziala - Streamlit renderuje kazde jako osobny fragment DOM,
     # wiec niedomkniety <div> nie opakowuje tego, co po nim nastepuje.
@@ -22915,7 +23347,6 @@ def pokaz_menu():
         <div class='pasek-globalny'>
           <div class='pasek-globalny-wyp' style='width:{proc_globalny}%'></div>
         </div>
-        <p class='licznik-globalny'>{zrobione_lacznie} / {len(ETAPY)} {t('ukonczonych')}</p>
         """,
         unsafe_allow_html=True,
     )
@@ -22942,7 +23373,7 @@ def pokaz_menu():
             st.button(
                 f"🔒\n\n**{tt(kat['nazwa'])}**\n\n{tt(kat['opis'])}\n\n"
                 f"{t('level_zablokowany').format(n=KATEGORIE.index(kat))}\n\n"
-                f"{'▱' * 10}  {zrobione_z}/{ile_z}",
+                f"{'▰' * zrobione_z}{'▱' * (ile_z - zrobione_z)}  {zrobione_z}/{ile_z}",
                 key=f"kat_{kat['id']}", use_container_width=True,
                 type="primary", disabled=True,
             )
@@ -22954,11 +23385,9 @@ def pokaz_menu():
                     st.rerun()
             continue
         zrobione, ile = _postep_kategorii(kat)
-        pelne = round(zrobione / ile * 10) if ile else 0
-        pasek = "▰" * pelne + "▱" * (10 - pelne)
+        pasek = "▰" * zrobione + "▱" * (ile - zrobione)   # jedna kratka = jedna gra
         znacznik = " ✅" if zrobione == ile else ""
         etykieta = (
-            f"{kat['emoji']}\n\n"
             f"**{tt(kat['nazwa'])}**{znacznik}\n\n"
             f"{tt(kat['opis'])}\n\n"
             f"{pasek}  {zrobione}/{ile}"
@@ -23165,6 +23594,8 @@ def pokaz_ekran_etapu(etap_dane):
         if st.button(t("zagraj_ponownie"), key=f"powtorz_{klucz}", use_container_width=True):
             _rozpocznij_powtorke(klucz)
             st.rerun()
+        if st.button(t("wroc_do_menu"), key=f"menu_po_{klucz}", use_container_width=True):
+            _wroc_do_menu(klucz)
         return
     if powtorka:
         st.info(t("tryb_powtorki_info"))
@@ -23236,6 +23667,8 @@ def pokaz_ekran_etapu(etap_dane):
             if st.button(t("zagraj_ponownie"), key=f"powtorz_znow_{klucz}", use_container_width=True):
                 _rozpocznij_powtorke(klucz)
                 st.rerun()
+            if st.button(t("wroc_do_menu"), key=f"menu_po_powtorce_{klucz}", use_container_width=True):
+                _wroc_do_menu(klucz)
         return
 
     if wynik is True:
@@ -23247,6 +23680,8 @@ def pokaz_ekran_etapu(etap_dane):
         if st.session_state.pop("graj_dalej", False):
             st.success(tt({"pl": "✅ Gra zaliczona! Możesz grać dalej albo wrócić do menu.",
                            "en": "✅ Game completed! Keep playing or go back to the menu."}))
+            if st.button(t("wroc_do_menu"), key=f"menu_dalej_{klucz}", use_container_width=True):
+                _wroc_do_menu(klucz)
             return
         st.rerun()
     elif wynik is False:
@@ -23345,7 +23780,25 @@ def pokaz_przycisk_kodu_pod_wiadomoscia():
                   key="kod_zablokowany", use_container_width=True, disabled=True)
 
 
+SKRYPT_WIADOMOSC_MIESCI = """<script>
+(function () {
+  var D; try { D = window.parent.document; } catch (e) { return; }
+  function sprawdz() {
+    var m = D.querySelector('[data-testid="stMain"]') || D.querySelector('section.main') || D.scrollingElement;
+    if (!m || !D.querySelector('.ekran-wiadomosc')) { D.documentElement.classList.remove('wiadomosc-miesci'); return; }
+    D.documentElement.classList.remove('wiadomosc-miesci');
+    var miesci = m.scrollHeight <= m.clientHeight + 4;
+    D.documentElement.classList.toggle('wiadomosc-miesci', miesci);
+  }
+  [60, 400, 1200].forEach(function (t) { setTimeout(sprawdz, t); });
+  try { window.parent.addEventListener('resize', sprawdz); } catch (e) {}
+})();
+</script>"""
+
+
 def pokaz_ukryta_wiadomosc():
+    st.markdown("<span class='ekran-wiadomosc'></span>", unsafe_allow_html=True)
+    components.html(SKRYPT_WIADOMOSC_MIESCI, height=0)
     if st.button(t("wroc_do_menu"), key="powrot_wiadomosc"):
         st.session_state.ekran = "menu"
         st.rerun()
