@@ -17863,12 +17863,15 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var okno; try { okno = window.top; } catch (e) { okno = window; }
       if (okno.__wspolnyKontekstAudio && okno.__wspolnyKontekstAudio.state !== 'closed') audioCtx = okno.__wspolnyKontekstAudio;
       else if (!audioCtx || audioCtx.state === 'closed') {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // kontekst w oknie strony - przetrwa zamykanie i otwieranie gier
+        audioCtx = new (okno.AudioContext || okno.webkitAudioContext || window.AudioContext || window.webkitAudioContext)();
         try { okno.__wspolnyKontekstAudio = audioCtx; } catch (e2) {}
       }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx.state !== 'running' && audioCtx.state !== 'closed') { try { audioCtx.resume(); } catch (eR) {} }
       var el = document.getElementById('odblokowanieDzwiekuIOS');
       if (el && !el.src) { el.src = 'data:audio/wav;base64,UklGRkQDAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YSADAACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgA=='; el.play().catch(function(){}); }
+      // tryb cichy na iPhonie: ukryty <audio> musi grac, inaczej Web Audio milknie (system go pauzuje po przerwie)
+      else if (el && el.paused) { el.play().catch(function(){}); }
     } catch (e) {}
   }
   ['pointerdown','touchstart','click'].forEach(function (ev) { document.addEventListener(ev, inicjujDzwiek, { passive:true }); });
@@ -17876,7 +17879,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function ton(f, dl, typ, glosnosc) {
     if (!audioCtx) return;
     try {
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+      if (audioCtx.state !== 'running' && audioCtx.state !== 'closed') { try { audioCtx.resume(); } catch (eR) {} }
       var o = audioCtx.createOscillator(), g = audioCtx.createGain();
       o.type = typ || 'square'; o.frequency.value = f;
       g.gain.setValueAtTime(0.0001, audioCtx.currentTime);
@@ -18024,6 +18027,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ton(180, 0.5, 'triangle', 0.1);
   }
   function wybuchBomby(bm) {
+    dzwiekWybuchu();
     rozbryzg(bm.x, bm.y, '#ffd24a', 40);
     rozbryzg(bm.x, bm.y, '#e6743c', 30);
     fale.push({ x: bm.x, y: bm.y, zycie: 0.45, max: 0.45 });
@@ -18282,13 +18286,14 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (o !== undefined && o < najO) { najO = o; najl = c; }
     });
     if (!najl) return false;
-    // Wejscie 3 kafle szerokosci, jak korytarze
+    // Wejscie 3 kafle szerokosci, jak korytarze - zapamietane jako DRZWI na klucz
+    kb.drzwi = []; kb.drzwiNaZewnatrz = [najl[2], najl[3]];
     var wzdluzX = najl[3] !== 0;
     for (var s2 = -1; s2 <= 1; s2++) {
       var ex = najl[0] + (wzdluzX ? s2 : 0), ey = najl[1] + (wzdluzX ? 0 : s2);
       var wRogu = (ex <= kb.x - 1 || ex >= kb.x + kb.w) && (ey <= kb.y - 1 || ey >= kb.y + kb.h);
       if (wRogu) continue;
-      mapa[ey][ex] = 1;
+      mapa[ey][ex] = 1; kb.drzwi.push([ex, ey]);
       var ox = ex + najl[2], oy = ey + najl[3];
       if (ox > 0 && oy > 0 && ox < SIATKA - 1 && oy < SIATKA - 1) mapa[oy][ox] = 1;
     }
@@ -18372,7 +18377,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     return {
       kategoria:'bron', rodzaj:rodzaj, tier:tier,
       nazwa: TIERY[tier].nazwa + ' ' + d.nazwa,
-      ikona: d.ikona, obr: Math.round(d.obr * m), zasieg: d.zasieg, tempo: d.tempo,
+      // Rozdzki: na najnizszym poziomie 80% obrazen, +13 pkt % za kazdy wyzszy; strzelaja o 20% wolniej
+      ikona: d.ikona, obr: Math.round(d.obr * m * (d.magiczna ? 0.8 + 0.13 * tier : 1)), zasieg: d.zasieg,
+      tempo: d.magiczna ? Math.round(d.tempo * 1.2 * 100) / 100 : d.tempo,
       magiczna: d.magiczna, pocisk: d.pocisk || false,
       efekt: d.efekt || null, efektBroni: d.efektBroni || null, opis: d.opis || null,
     };
@@ -18563,7 +18570,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     bombiarz: { nazwa:'Bombiarz',  ikona:'💣', hp:75,  atak:25, pancerz:3,  predkosc:168, xp:28, r:16, kolor:'#e6743c', wybuchowy:true },
     kusznik:  { nazwa:'Kusznik',   ikona:'🏹', hp:38,  atak:13, pancerz:6,  predkosc:70,  xp:19, r:16, kolor:'#7a6a4a', dystansowy:true, zasiegStrzalu:320 },
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
-    okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:34,  atak:10, pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
+    okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:30,  atak:7,  pancerz:5,  predkosc:106, xp:18, r:16, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
     trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:42,  atak:6,  pancerz:6,  predkosc:88, xp:22, r:17, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
@@ -18696,6 +18703,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           rozbryzg(w.x, w.y, '#9fd8ff', 14);
           w.juzSieTeleportowal = true;
           udany = true;
+          teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '✨ Teleport!', kolor: '#9fd8ff', zycie: 1.2 }); tonSlizg(700, 1600, 0.22, 'sine', 0.06);
           ton(880, 0.12, 'sine', 0.10);
           tekstNaSwiecie(w.x, w.y - w.r - 8, 'blink!', '#9fd8ff');
         }
@@ -19076,18 +19084,19 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       }
     }
 
-    // Przywolanie bossa
-    if (!bossPrzywolany && !pytanieOBossa && komnataBossa) {
-      var bx = (komnataBossa.cx + 0.5) * KAFEL, by = (komnataBossa.cy + 0.5) * KAFEL;
-      // Komnata jest teraz duza - pytamy zaraz po przekroczeniu progu,
-      // a nie dopiero 210 px od srodka
+    // Przywolanie bossa: drzwi na klucz; po wejsciu zatrzaskuja sie i boss sie budzi
+    if (!bossPrzywolany && komnataBossa) {
       var kbp = komnataBossa;
       var wKomnacie = gracz.x > (kbp.x + 1) * KAFEL && gracz.x < (kbp.x + kbp.w - 1) * KAFEL
                    && gracz.y > (kbp.y + 1) * KAFEL && gracz.y < (kbp.y + kbp.h - 1) * KAFEL;
-      if (wKomnacie || Math.hypot(gracz.x - bx, gracz.y - by) < 210) {
-        pytanieOBossa = true; trwa = false;
-        pokazPytanieOBossa();
-        return;
+      if (!kbp.drzwi || !kbp.drzwi.length) {
+        if (!pytanieOBossa && wKomnacie) { pytanieOBossa = true; trwa = false; pokazPytanieOBossa(); return; }
+      } else if (drzwiBossaOtwarte) {
+        if (wKomnacie) zatrzasnijDrzwiIBudzBossa();
+      } else {
+        var sdz = srodekDrzwi(), odlD = Math.hypot(gracz.x - sdz.x, gracz.y - sdz.y);
+        if (!pytanieOBossa && odlD < KAFEL * 1.7) { pytanieOBossa = true; trwa = false; pokazPytanieOBossa(); return; }
+        if (pytanieOBossa && odlD > KAFEL * 3.2) pytanieOBossa = false;
       }
     }
 
@@ -19216,7 +19225,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
             for (var sT = 0; sT < ileT; sT++) {
               var kT = katT + (sT - (ileT-1)/2) * 0.26;
               pociski.push({ x:w.x, y:w.y, vx:Math.cos(kT)*235, vy:Math.sin(kT)*235,
-                             obr:Math.round(w.atak*0.75), wroga:true, zycie:2.8, kolor: w.poswiata || '#e86ca0' });
+                             obr:Math.round(w.atak*0.75), wroga:true, zycie:2.8, kolor: w.poswiata || '#e86ca0' }); dzwiekStrzaluWroga(w);
             }
             ton(170, 0.14, 'sawtooth', 0.14);
           }
@@ -19251,7 +19260,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
             for (var sW = 0; sW < 11; sW++) {
               var kW = katW + (sW - 5) * 0.24;
               pociski.push({ x:w.x, y:w.y, vx:Math.cos(kW)*230, vy:Math.sin(kW)*230,
-                             obr:Math.round(w.atak*1.35), wroga:true, zycie:2.8, kolor:'#e86ca0' });
+                             obr:Math.round(w.atak*1.35), wroga:true, zycie:2.8, kolor:'#e86ca0' }); dzwiekStrzaluWroga(w);
             }
             ton(180, 0.14, 'sawtooth', 0.14);
           }
@@ -19302,7 +19311,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         if (w.cooldownGazu <= 0) {
           w.cooldownGazu = 0.75;
           gazy.push({ x:w.x, y:w.y, r:26, zycie:5.5, max:5.5, tyk:0,
-                      obr:Math.max(1, Math.round(w.atak*0.22)) });
+                      obr:Math.max(1, Math.round(w.atak*0.22)) }); tonSlizg(220, 90, 0.45, 'sawtooth', 0.035);
         }
       } else if (w.zachowanie === 'szarzaBoki') {
         // Biegnie WPROST na gracza, ale strzela na BOKI - nie da sie
@@ -19314,7 +19323,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           [Math.PI/2, -Math.PI/2].forEach(function (odchyl) {
             var kb = katDoGracza + odchyl;
             pociski.push({ x:w.x, y:w.y, vx:Math.cos(kb)*195, vy:Math.sin(kb)*195,
-                           obr:Math.round(w.atak*0.7), wroga:true, zycie:2.2, kolor:'#e8a05a' });
+                           obr:Math.round(w.atak*0.7), wroga:true, zycie:2.2, kolor:'#e8a05a' }); dzwiekStrzaluWroga(w);
           });
           ton(260, 0.07, 'square', 0.09);
         }
@@ -19353,12 +19362,25 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           // Czarodziej co trzeci atak rzuca czar zamiast pocisku: na zmiane sciane i wir
           if (w.teleportuje) {
             w.licznikAtakow = (w.licznikAtakow || 0) + 1;
-            if (w.licznikAtakow % 3 === 0) {
-              if ((w.licznikAtakow / 3) % 2 === 1) postawSciane(w, k2); else rzucWir(w);
+            if (w.licznikAtakow % 2 === 0) {
+              var czarSciana = (w.licznikAtakow / 2) % 2 === 1;
+              if (czarSciana) postawSciane(w, k2); else rzucWir(w);
+              teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: czarSciana ? '🔮 Ściana!' : '🌀 Wir!', kolor: '#9fd8ff', zycie: 1.2 }); dzwiekCzaru();
               return;
             }
           }
-          pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*230, vy:Math.sin(k2)*230, obr:w.atak, wroga:true, zycie:1.6, kolor:'#c46ce8' });
+          // Mroczny mag: co trzeci strzal - salwa trzech pociskow
+          if (w.typ === 'mag') {
+            w.licznikAtakow = (w.licznikAtakow || 0) + 1;
+            if (w.licznikAtakow % 3 === 0) {
+              [-0.3, 0, 0.3].forEach(function (o) {
+                pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2+o)*210, vy:Math.sin(k2+o)*210, obr:Math.round(w.atak*0.8), wroga:true, zycie:1.6, kolor:'#e0458a' });
+              });
+              teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '✨ Salwa!', kolor: '#ff9fd0', zycie: 1.2 }); dzwiekStrzaluWroga(w); dzwiekCzaru();
+              return;
+            }
+          }
+          pociski.push({ x:w.x, y:w.y, vx:Math.cos(k2)*230, vy:Math.sin(k2)*230, obr:w.atak, wroga:true, zycie:1.6, kolor:'#c46ce8' }); dzwiekStrzaluWroga(w);
         } else {
           zadajObrazeniaGraczowi(w.atak);
         }
@@ -19713,6 +19735,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   function rysuj() {
     przywrocRozmiarPlanszy();
+    krokiGracza();
     if (widok.width !== WID * DPR) { widok.width = WID * DPR; widok.height = WYS * DPR; }
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.fillStyle = '#0a0810';
@@ -19884,6 +19907,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('🌀', px2, py2);
     }
+
+    // Drzwi komnaty bossa
+    if (komnataBossa && komnataBossa.drzwi && komnataBossa.drzwi.length) rysujDrzwiBossa();
 
     // Skrzynie
     skrzynie.forEach(function (sk) {
@@ -20236,7 +20262,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (tXp) tXp.textContent = '✨ Doświadczenie ' + Math.round(gracz.xp) + ' / ' + gracz.xpDoNastepnego;
     hudHp.textContent = '';
     hudPoziom.textContent = '⭐ Poziom ' + gracz.poziom;
-    hudMikstury.textContent = '🧪 ' + gracz.mikstury;
+    hudMikstury.textContent = '🧪 ' + gracz.mikstury + (gracz.maKlucz ? '   🗝️' : '');
     var lm = document.getElementById('licznikMikstur');
     if (lm) lm.textContent = gracz.mikstury;
     odznakaPkt.style.display = gracz.punkty > 0 ? 'inline-block' : 'none';
@@ -20840,7 +20866,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       var minTyp = glebokosc > 0.55 ? 1 : 0;
       // Co trzeci wrog to STRZELAJACY albo o specjalnym zachowaniu -
       // trzeba unikac pociskow, a nie tylko klikac w tlum.
-      var SPECJALNE = ['mag', 'kusznik', 'okrazacz', 'trujacy', 'jezdziec', 'czarodziej'];   // Lucznik usuniety - robil to samo co Ania
+      // Odblokowuja sie po kolei w glab labiryntu: czarodziej wczesnie (zeby bylo widac jego czary), Ania glebiej
+  var SPECJALNE = ['mag', 'kusznik', 'czarodziej', 'trujacy', 'okrazacz', 'jezdziec'];
 
       for (var i = 0; i < ile; i++) {
         var typ;
@@ -21007,16 +21034,30 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     nakladkaOpis.innerHTML = d.opis + '<br><br>Po rozpoczęciu <b>komnata się zamknie</b> — nie ma odwrotu, dopóki boss nie padnie. Dołączą też jego sługi.'
       + '<br><br>Zdrowie: <b>' + Math.round(gracz.hp) + ' / ' + gracz.hpMax + '</b> · mikstury: <b>' + gracz.mikstury + '</b>';
     nakladkaBtn.style.display = 'inline-block';
-    nakladkaBtn.textContent = '⚔️ Zaczynam walkę';
+    var maDrzwi = !!(komnataBossa && komnataBossa.drzwi && komnataBossa.drzwi.length), maKlucz = !!gracz.maKlucz;
+    if (maDrzwi) {
+      nakladkaOpis.innerHTML += '<br><br>' + (maKlucz
+        ? '🗝️ <b>Masz klucz</b> — drzwi się otworzą, a gdy wejdziesz, zatrzasną się za tobą.'
+        : '🔒 <b>Drzwi są zamknięte.</b> Klucz wypada z jednej ze skrzynek na tym piętrze — poszukaj go.');
+      nakladkaBtn.textContent = maKlucz ? '🗝️ Otwórz drzwi i walcz' : '⚔️ Zaczynam walkę (wymagany klucz 🗝️)';
+    } else {
+      nakladkaBtn.textContent = '⚔️ Zaczynam walkę';
+    }
+    nakladkaBtn.disabled = maDrzwi && !maKlucz;
+    nakladkaBtn.style.opacity = nakladkaBtn.disabled ? '0.5' : '1';
     nakladkaBtn.onclick = function () {
+      if (nakladkaBtn.disabled) return;
       inicjujDzwiek();
       nakladka.style.display = 'none';
       var bj = document.getElementById('btnJeszczeNie'); if (bj) bj.style.display='none';
-      bossPrzywolany = true; arenaZamknieta = true; cooldownSlug = 6;
-      wrogowie.push(stworzBossa((komnataBossa.cx+0.5)*KAFEL, (komnataBossa.cy+0.5)*KAFEL));
-      dziennik('😈 ' + d.nazwa + ' przebudził się!');
-      ton(90,0.5,'sawtooth',0.2);
-      setTimeout(function(){ ton(60,0.7,'sawtooth',0.18); },400);
+      if (maDrzwi) {
+        gracz.maKlucz = false; odswiezHud();
+        drzwiBossaOtwarte = true; ustawDrzwiBossa(true);
+        dziennik('🚪 Drzwi otwarte — wejdź do komnaty!');
+        ton(300, 0.25, 'triangle', 0.16); setTimeout(function () { ton(420, 0.3, 'triangle', 0.14); }, 150);
+      } else {
+        zatrzasnijDrzwiIBudzBossa();
+      }
       trwa = true; czasOstatni = null;
       requestAnimationFrame(petla);
     };
@@ -21041,6 +21082,20 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       nakladkaBtn.parentNode.appendChild(b2);
     }
     document.getElementById('btnJeszczeNie').style.display='inline-block';
+    var bjn = document.getElementById('btnJeszczeNie');
+    if (bjn && maDrzwi) {
+      bjn.style.display = 'inline-block';
+      bjn.onclick = function () {
+        inicjujDzwiek();
+        nakladka.style.display = 'none'; bjn.style.display = 'none';
+        nakladkaBtn.disabled = false; nakladkaBtn.style.opacity = '1';
+        // krok od drzwi, na kafel korytarza tuz za nimi (pytanie wroci, gdy odejdziesz i podejdziesz znowu)
+        var sd = srodekDrzwi(), kier = komnataBossa.drzwiNaZewnatrz || [0, 0];
+        gracz.x = sd.x + kier[0] * KAFEL; gracz.y = sd.y + kier[1] * KAFEL;
+        trwa = true; czasOstatni = null;
+        requestAnimationFrame(petla);
+      };
+    }
   }
 
   function oznaczPrzejscie() {
@@ -21285,7 +21340,140 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     pokazBanerPietra._t = setTimeout(function () { el.style.opacity = '0'; }, 2600);
   }
   var _generujMapeOryg = generujMape;
-  generujMape = function () { var w = _generujMapeOryg.apply(this, arguments); pokazBanerPietra(); return w; };
+  generujMape = function () { var w = _generujMapeOryg.apply(this, arguments); przygotujDrzwi(); pokazBanerPietra(); return w; };
+  var _zaludnijMapeOryg = zaludnijMape;
+  zaludnijMape = function () { var w = _zaludnijMapeOryg.apply(this, arguments); przydzielKlucz(); return w; };
+
+  // ---------- DZWIEKI: wrogowie (ciszej niz gracz), czary, wybuchy, kroki ----------
+  function tonSlizg(f1, f2, dl, typ, gl) {
+    if (!audioCtx) return;
+    try {
+      var t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = typ || 'triangle';
+      o.frequency.setValueAtTime(f1, t); o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + dl);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(gl || 0.06, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dl);
+      o.connect(g); g.connect(audioCtx.destination);
+      o.start(t); o.stop(t + dl + 0.03);
+    } catch (e) {}
+  }
+  var buforSzumu = null;
+  function szumKrotki(dl, gl, filtr, czest) {
+    if (!audioCtx) return;
+    try {
+      if (!buforSzumu || buforSzumu.sampleRate !== audioCtx.sampleRate) {
+        buforSzumu = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate * 0.6), audioCtx.sampleRate);
+        var d = buforSzumu.getChannelData(0); for (var i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      var t = audioCtx.currentTime, s = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g = audioCtx.createGain();
+      s.buffer = buforSzumu; f.type = filtr || 'bandpass'; f.frequency.value = czest || 1200;
+      g.gain.setValueAtTime(gl, t); g.gain.exponentialRampToValueAtTime(0.0001, t + dl);
+      s.connect(f); f.connect(g); g.connect(audioCtx.destination);
+      s.start(t); s.stop(t + dl + 0.02);
+    } catch (e) {}
+  }
+  function dzwiekStrzaluWroga(w) {
+    var t = w && w.typ;
+    if (w && w.boss) tonSlizg(260, 110, 0.2, 'sawtooth', 0.07);
+    else if (t === 'kusznik') { tonSlizg(320, 150, 0.07, 'square', 0.04); szumKrotki(0.05, 0.04, 'highpass', 2500); }
+    else if (t === 'mag' || t === 'czarodziej') tonSlizg(520, 900, 0.13, 'sine', 0.05);
+    else tonSlizg(760, 380, 0.09, 'triangle', 0.045);      // Ania i reszta: "piu"
+  }
+  function dzwiekCzaru() { tonSlizg(380, 1150, 0.28, 'sine', 0.05); setTimeout(function () { tonSlizg(900, 1500, 0.18, 'triangle', 0.03); }, 90); }
+  function dzwiekWybuchu() { szumKrotki(0.45, 0.22, 'lowpass', 700); tonSlizg(110, 40, 0.4, 'sawtooth', 0.12); }
+  function krokiGracza() {
+    if (!gracz || !trwa) return;
+    var px = krokiGracza.px, py = krokiGracza.py;
+    krokiGracza.px = gracz.x; krokiGracza.py = gracz.y;
+    if (px === undefined) return;
+    var d = Math.hypot(gracz.x - px, gracz.y - py);
+    if (d > 60) { krokiGracza.dyst = 0; return; }          // teleport / nowe pietro - to nie krok
+    krokiGracza.dyst = (krokiGracza.dyst || 0) + d;
+    if (krokiGracza.dyst > 48) {
+      krokiGracza.dyst = 0; krokiGracza.n = (krokiGracza.n || 0) + 1;
+      szumKrotki(0.05, 0.035, 'bandpass', krokiGracza.n % 2 ? 900 : 700);   // bardzo cichutki krok
+    }
+  }
+
+  // ---------- DRZWI BOSSA I KLUCZ ----------
+  var drzwiBossaOtwarte = false, drzwiZatrzasniete = false;
+  function ustawDrzwiBossa(otwarte) {
+    var kb = komnataBossa; if (!kb || !kb.drzwi) return;
+    kb.drzwi.forEach(function (d) { mapa[d[1]][d[0]] = otwarte ? 1 : 0; });
+  }
+  function srodekDrzwi() {
+    var kb = komnataBossa, sx = 0, sy = 0;
+    kb.drzwi.forEach(function (d) { sx += (d[0] + 0.5) * KAFEL; sy += (d[1] + 0.5) * KAFEL; });
+    return { x: sx / kb.drzwi.length, y: sy / kb.drzwi.length };
+  }
+  // Po wygenerowaniu mapy: drzwi zamkniete, klucz do znalezienia od nowa
+  function przygotujDrzwi() {
+    drzwiBossaOtwarte = false; drzwiZatrzasniete = false;
+    if (typeof gracz !== 'undefined' && gracz) gracz.maKlucz = false;
+    if (komnataBossa && komnataBossa.drzwi && komnataBossa.drzwi.length) ustawDrzwiBossa(false);
+  }
+  // Po zaludnieniu (dopiero wtedy sa skrzynki): klucz w dokladnie jednej skrzynce poza komnata bossa
+  function przydzielKlucz() {
+    var kb = komnataBossa;
+    if (!kb || !kb.drzwi || !kb.drzwi.length) return;
+    skrzynie.forEach(function (s) { s.klucz = false; });
+    var kandydaci = skrzynie.filter(function (s) {
+      var tx = Math.floor(s.x / KAFEL), ty = Math.floor(s.y / KAFEL);
+      return mapa[ty] && mapa[ty][tx] === 1 && !(tx >= kb.x && tx < kb.x + kb.w && ty >= kb.y && ty < kb.y + kb.h);
+    });
+    if (!kandydaci.length) {
+      var kk = komnaty.filter(function (k) { return k !== kb && k !== komnaty[0] && mapa[k.cy] && mapa[k.cy][k.cx] === 1; }).pop()
+            || komnaty[0];
+      var nowa = stworzSkrzynie((kk.cx + 0.5) * KAFEL, (kk.cy + 0.5) * KAFEL, 0);
+      skrzynie.push(nowa); kandydaci = [nowa];
+    }
+    kandydaci[Math.floor(Math.random() * kandydaci.length)].klucz = true;
+  }
+  function zatrzasnijDrzwiIBudzBossa() {
+    var d = DEFINICJE_BOSSOW[poziomLabiryntu];
+    drzwiBossaOtwarte = false; ustawDrzwiBossa(false); drzwiZatrzasniete = true;
+    bossPrzywolany = true; arenaZamknieta = true; cooldownSlug = 6;
+    wrogowie.push(stworzBossa((komnataBossa.cx+0.5)*KAFEL, (komnataBossa.cy+0.5)*KAFEL));
+    dziennik('🚪 Drzwi zatrzasnęły się! 😈 ' + d.nazwa + ' przebudził się!');
+    ton(90,0.5,'sawtooth',0.2);
+    setTimeout(function(){ ton(60,0.7,'sawtooth',0.18); },400);
+  }
+  function rysujDrzwiBossa() {
+    var kb = komnataBossa, srodek = kb.drzwi[Math.floor(kb.drzwi.length / 2)];
+    kb.drzwi.forEach(function (d) {
+      var dx = d[0] * KAFEL - kamX, dy = d[1] * KAFEL - kamY;
+      if (dx < -KAFEL || dx > WID_SWIATA + KAFEL || dy < -KAFEL || dy > WYS_SWIATA + KAFEL) return;
+      if (mapa[d[1]][d[0]] !== 1) {
+        var g = ctx.createLinearGradient(dx, dy, dx + KAFEL, dy + KAFEL);
+        g.addColorStop(0, '#7a4e28'); g.addColorStop(1, '#4e3016');
+        ctx.fillStyle = g; ctx.fillRect(dx, dy, KAFEL, KAFEL);
+        ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1.5;
+        for (var p = 1; p < 4; p++) { ctx.beginPath(); ctx.moveTo(dx + p * KAFEL / 4, dy + 2); ctx.lineTo(dx + p * KAFEL / 4, dy + KAFEL - 2); ctx.stroke(); }
+        ctx.fillStyle = drzwiZatrzasniete ? '#8a2a20' : '#3c3c46';
+        ctx.fillRect(dx, dy + KAFEL * 0.2, KAFEL, 5); ctx.fillRect(dx, dy + KAFEL * 0.68, KAFEL, 5);
+        ctx.strokeStyle = 'rgba(255,210,74,0.55)'; ctx.lineWidth = 2; ctx.strokeRect(dx + 1, dy + 1, KAFEL - 2, KAFEL - 2);
+      } else {
+        ctx.fillStyle = 'rgba(90,58,30,0.9)';
+        ctx.fillRect(dx, dy, 5, KAFEL); ctx.fillRect(dx + KAFEL - 5, dy, 5, KAFEL);
+      }
+    });
+    if (mapa[srodek[1]][srodek[0]] !== 1) {
+      ctx.font = '20px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(drzwiZatrzasniete ? '⛓️' : '🔒', (srodek[0] + 0.5) * KAFEL - kamX, (srodek[1] + 0.5) * KAFEL - kamY);
+    }
+  }
+  var _otworzSkrzynieOryg = otworzSkrzynie;
+  otworzSkrzynie = function (sk) {
+    var bylaOtwarta = sk.otwarta;
+    _otworzSkrzynieOryg(sk);
+    if (!bylaOtwarta && sk.klucz && gracz) {
+      gracz.maKlucz = true;
+      dziennik('🗝️ Znalazłaś klucz do komnaty bossa!');
+      teksty.push({ x: sk.x, y: sk.y - 30, tekst: '🗝️ Klucz!', kolor: '#ffd24a', zycie: 1.8 });
+      ton(880, 0.12, 'triangle', 0.14); setTimeout(function () { ton(1320, 0.2, 'triangle', 0.12); }, 110);
+      odswiezHud();
+    }
+  };
 
   // ---------- PELNY EKRAN: wyzsza plansza zamiast rozciagania ----------
   // Logiczna wysokosc planszy rosnie w tej samej proporcji co jej wyswietlana
