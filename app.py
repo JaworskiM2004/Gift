@@ -5942,10 +5942,10 @@ SZABLON_SIMON = """
 
   var CZESTOTLIWOSCI = [330, 415, 494, 262];
   var CEL_DLUGOSC = 15;
-  // Pierwsza proba: szybkie odtwarzanie + malo czasu (przy ~14 praktycznie nie do wpisania).
-  // Po pierwszej porazce: jednorazowa CAPTCHA, potem na zawsze spokojnie i bez limitu czasu.
+  // Kazde wejscie do gry: szybkie odtwarzanie + malo czasu (przy ~14 praktycznie nie do wpisania).
+  // Pierwsza porazka -> CAPTCHA -> do konca TEJ rozgrywki spokojnie i bez limitu czasu.
+  // Po przeladowaniu / ponownym wejsciu / "Zagraj jeszcze raz" wszystko od nowa (nic nie jest zapamietywane).
   var trybLatwy = false;
-  try { trybLatwy = localStorage.getItem('escape_simon_latwy') === '1'; } catch (e) {}
   var koniecCzasu = 0, limitCzasu = 0, timerAktywny = false;
 
   var sekwencja = [];
@@ -6162,7 +6162,6 @@ SZABLON_SIMON = """
           inicjujDzwiek(); nakladka.style.display = 'none';
           pokazCaptcha(function () {
             trybLatwy = true;
-            try { localStorage.setItem('escape_simon_latwy', '1'); } catch (e) {}
             rozpocznijGre();
           });
         };
@@ -7780,6 +7779,10 @@ SZABLON_BITWA = """
   #sciaga .moje { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 7px 9px; border-radius: 9px; background: rgba(230,193,92,0.08); border: 1px solid rgba(230,193,92,0.25); }
   #sciaga .moje b { color: #ffe08a; }
   #sciaga .btn-zamknij-dol { display: block; margin: 12px auto 0; padding: 9px 22px; border-radius: 10px; border: none; background: #e6c15c; color: #1a1408; font-weight: 800; cursor: pointer; }
+  .btn-akcji.aktywny { position: relative; }
+  .btn-akcji.aktywny::after { content: '✕'; position: absolute; top: 4px; right: 5px; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(0,0,0,0.6); color: #fff; font-size: 12px; line-height: 22px; font-weight: 900; text-align: center;
+    box-shadow: 0 0 0 1.5px rgba(255,255,255,0.7); }
   .karta-blokuje { box-shadow: 0 0 0 3px #7ab8ff, 0 0 18px rgba(122,184,255,0.8) !important; }
   #sciaga.widoczna { display: block; }
   #sciaga b { color: #ffe08a; }
@@ -8495,7 +8498,7 @@ SZABLON_BITWA = """
     var przyciski = siatkaAkcji.querySelectorAll('.btn-akcji');
     przyciski.forEach(function (btn) {
       var klucz = btn.dataset.akcja;
-      var zablokuj = !trwa || akcjaWTurze >= 2 || akcjaOczekujacaTyp !== null
+      var zablokuj = !trwa || akcjaWTurze >= 2 || (akcjaOczekujacaTyp !== null && akcjaOczekujacaTyp !== klucz)
         || (klucz === 'blok' && blokAktywny);   // obrona raz na ture - druga nic nie zmienia
       if (klucz === 'fiolka' && (fiolkaUzyta || poziomIndeks < POZIOM_OD_FIOLKI)) zablokuj = true;
       btn.disabled = zablokuj;
@@ -8503,9 +8506,19 @@ SZABLON_BITWA = """
     });
   }
 
+  // Wybrana (czekajaca na cel) akcje mozna cofnac: ponowne dotkniecie jej przycisku (z ✕)
+  var podpowiedzPrzedWyborem = '';
+  function anulujAkcje() {
+    akcjaOczekujacaTyp = null;
+    ustawStanPrzyciskow();
+    odswiezKartyWrogow();
+    podpowiedzTury.textContent = podpowiedzPrzedWyborem;
+    zagrajTon(330, 0.06, 'triangle');
+  }
   function wybranoAkcje(klucz) {
     if (!trwa || akcjaWTurze >= 2) return;
     inicjujDzwiek();
+    if (akcjaOczekujacaTyp !== null) { if (akcjaOczekujacaTyp === klucz) anulujAkcje(); return; }
     if (klucz === 'blok') {
       if (blokAktywny) return;
       blokAktywny = true;
@@ -8527,10 +8540,11 @@ SZABLON_BITWA = """
       poTurzeAkcji();
       return;
     }
+    podpowiedzPrzedWyborem = podpowiedzTury.textContent;
     akcjaOczekujacaTyp = klucz;
     ustawStanPrzyciskow();
     odswiezKartyWrogow();
-    podpowiedzTury.textContent = 'Wybierz cel na liście powyżej';
+    podpowiedzTury.textContent = 'Wybierz cel — albo dotknij ✕, żeby zmienić akcję';
   }
 
   function kliknietoWroga(idx) {
@@ -16112,6 +16126,30 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   .por-rada { font-size: 13.5px; margin: 9px 0 10px; }
   .por-btn { width: 100%; padding: 11px; border: none; border-radius: 11px; background: linear-gradient(135deg,#ffe08a,#d4af37); color: #16130a;
     font-weight: 900; font-size: 14px; cursor: pointer; }
+  /* --- Wieksze przyciski na calej szerokosci, stary pasek mocy zastapil pierscien przy postaci --- */
+  #sterowanieParkour { padding: 10px 12px 12px !important; gap: 12px !important; }
+  .btn-kierunek { flex: 1 1 0; width: auto !important; height: 84px !important; font-size: 34px !important; border-radius: 18px !important;
+    border: 1.5px solid rgba(230,193,92,0.55) !important; }
+  #paskMocyOtoczka { display: none !important; }
+  /* --- Papier, kamien, nozyce --- */
+  #pkn { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 12; display: flex; align-items: center; justify-content: center;
+    background: rgba(8,6,18,0.78); padding: 12px; }
+  .pkn-karta { width: 100%; max-width: 340px; background: linear-gradient(160deg, #2b1f3e, #17121f); border: 1.5px solid rgba(190,140,255,0.6);
+    border-radius: 18px; padding: 14px 14px 16px; text-align: center; color: #f1e6c8; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+  .pkn-tytul { font-size: 20px; font-weight: 900; color: #e7c8ff; }
+  .pkn-pod { font-size: 12.5px; line-height: 1.45; margin: 4px 0 10px; opacity: 0.9; }
+  .pkn-wynik { font-size: 16px; font-weight: 800; color: #ffe08a; }
+  .pkn-wynik b { font-size: 22px; }
+  .pkn-arena { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 10px 0 4px; }
+  .pkn-znak { font-size: 50px; width: 74px; height: 74px; line-height: 74px; border-radius: 50%; background: rgba(255,255,255,0.06); }
+  .pkn-znak.trzes { animation: pknTrzes .25s ease-in-out infinite; }
+  @keyframes pknTrzes { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  .pkn-vs { font-weight: 900; color: #c8a0ff; }
+  .pkn-info { min-height: 20px; font-size: 13.5px; margin: 6px 0 10px; }
+  .pkn-przyciski { display: flex; gap: 8px; }
+  .pkn-przyciski button { flex: 1; padding: 10px 4px; border-radius: 14px; border: 1.5px solid rgba(230,193,92,0.6); background: linear-gradient(160deg,#3a2e14,#1a1420);
+    color: #fff; font-size: 30px; cursor: pointer; }
+  .pkn-przyciski button span { display: block; font-size: 12px; font-weight: 800; color: #ffe08a; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -16119,7 +16157,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
   <canvas id="canvasGry" width="380" height="450"></canvas>
-  <div id="panel">Platforma <span id="platformaEtykieta">1</span> / 25<span id="wiatrEtykieta"></span></div>
+  <div id="panel">Platforma <span id="platformaEtykieta">1</span> / <span id="platformaRazem">25</span><span id="wiatrEtykieta"></span></div>
   <div id="komunikatSpadku">Spadłaś! Wracasz do punktu kontrolnego.</div>
   <div id="paskMocyOtoczka"><div id="paskMocyWypelnienie"></div></div>
   <div id="sterowanieParkour">
@@ -16137,6 +16175,8 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   var gra = document.getElementById('gra');
   var canvas = document.getElementById('canvasGry');
   var ctx = canvas.getContext('2d');
+  canvas.width = Math.round(380 * Math.min(2, window.devicePixelRatio || 1));
+  canvas.height = Math.round(450 * Math.min(2, window.devicePixelRatio || 1));
   var platformaEtykieta = document.getElementById('platformaEtykieta');
   var komunikatSpadku = document.getElementById('komunikatSpadku');
   var paskMocyOtoczka = document.getElementById('paskMocyOtoczka');
@@ -16148,7 +16188,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
 
-  var W = 380, H = 450;
+  var W = 380, H = 450, DPR = Math.min(2, window.devicePixelRatio || 1);
 
   var GRAWITACJA = 900;
   var MOC_MIN = 180;
@@ -16196,6 +16236,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     { odY: -783,  sila: 26,  nazwa:'Słaby wiatr w prawo'  },
     { odY: -1201, sila: -34, nazwa:'Wiatr w lewo'         },
     { odY: -1560, sila: 44,  nazwa:'Silny wiatr w prawo'  },
+    { odY: -1900, sila: 0,   nazwa:'Cisza'                },   // 5 dodatkowych platform - bez wiatru
   ];
   function wiatrTeraz() {
     var s = 0;
@@ -16319,39 +16360,158 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   // ========================================================
   function swiatDoEkranuY(worldY) { return worldY - kameraSwiatY + H * 0.72; }
 
-  function narysujTlo() {
-    var niebo = ctx.createLinearGradient(0, 0, 0, H);
-    niebo.addColorStop(0, '#2a3a5c');
-    niebo.addColorStop(1, '#6a8fc4');
-    ctx.fillStyle = niebo;
-    ctx.fillRect(0, 0, W, H);
+  // ======== TLO ZALEZNE OD WYSOKOSCI: dom -> wieze -> ptaki i samoloty -> gwiazdy -> Droga Mleczna ========
+  var GWIAZDY_PK = (function () { var g = []; for (var i = 0; i < 90; i++) g.push({ x: Math.random(), y: Math.random(), r: Math.random() * 1.3 + 0.4, f: Math.random() * 6.28 }); return g; })();
+  var PTAKI = (function () { var p = []; for (var i = 0; i < 7; i++) p.push({ x: Math.random() * 400, alt: -650 - Math.random() * 380, v: 16 + Math.random() * 16, f: Math.random() * 6, s: 0.7 + Math.random() * 0.5 }); return p; })();
+  var CHMURY = (function () { var c = []; for (var i = 0; i < 8; i++) c.push({ x: Math.random() * 440, alt: -180 - i * 140, s: 0.6 + Math.random() * 0.7, v: 3 + Math.random() * 6 }); return c; })();
+  var SAMOLOTY = [{ alt: -1080, v: 34, x0: -60, kier: 1 }, { alt: -1330, v: 26, x0: 440, kier: -1 }];
+  function hexNaRgb(h) { return [parseInt(h.substr(1, 2), 16), parseInt(h.substr(3, 2), 16), parseInt(h.substr(5, 2), 16)]; }
+  function mieszaj(a, b, t) { var x = hexNaRgb(a), y = hexNaRgb(b); return 'rgb(' + Math.round(x[0] + (y[0] - x[0]) * t) + ',' + Math.round(x[1] + (y[1] - x[1]) * t) + ',' + Math.round(x[2] + (y[2] - x[2]) * t) + ')'; }
+  var ETAPY_NIEBA = [ [0, '#4f9fe0', '#bfe4ff'], [0.3, '#3f6cb4', '#f3b88c'], [0.52, '#2b2f6c', '#c2668a'], [0.72, '#0f1641', '#3a2a66'], [1, '#03040d', '#120a2a'] ];
+  function kolorNieba(a) {
+    for (var i = 1; i < ETAPY_NIEBA.length; i++) if (a <= ETAPY_NIEBA[i][0]) {
+      var p = ETAPY_NIEBA[i - 1], n = ETAPY_NIEBA[i], t = (a - p[0]) / (n[0] - p[0]);
+      return [mieszaj(p[1], n[1], t), mieszaj(p[2], n[2], t)];
+    }
+    var o = ETAPY_NIEBA[ETAPY_NIEBA.length - 1]; return [o[1], o[2]];
   }
-
-  var STYLE_PLATFORM = {
-    podloga: { g:'#8a7a5a', d:'#4a4030', obwod:'rgba(255,255,255,0.25)' },
-    zwykla:  { g:'#e6c15c', d:'#a9781f', obwod:'rgba(255,255,255,0.3)'  },
-    szeroka: { g:'#9ae6a8', d:'#3f8a52', obwod:'rgba(255,255,255,0.35)' },
-    waska:   { g:'#e88a7c', d:'#a13c2e', obwod:'rgba(255,255,255,0.35)' },
-    lodowa:  { g:'#bfe6f5', d:'#5a9ec4', obwod:'rgba(255,255,255,0.6)'  },
-  };
+  function bgY(alt, par) { return H * 0.72 + (alt - kameraSwiatY) * par; }
+  function narysujTlo() {
+    var a = Math.max(0, Math.min(1, -kameraSwiatY / 2150)), t = Date.now() / 1000, i;
+    var k = kolorNieba(a), niebo = ctx.createLinearGradient(0, 0, 0, H);
+    niebo.addColorStop(0, k[0]); niebo.addColorStop(1, k[1]);
+    ctx.fillStyle = niebo; ctx.fillRect(0, 0, W, H);
+    // Droga Mleczna - na samej gorze
+    var aMl = Math.max(0, Math.min(1, (a - 0.74) / 0.2));
+    if (aMl > 0) {
+      ctx.save(); ctx.globalAlpha = aMl; ctx.translate(W / 2, H * 0.45); ctx.rotate(-0.55);
+      for (i = 0; i < 6; i++) {
+        var gm = ctx.createRadialGradient(0, (i - 2.5) * 16, 4, 0, (i - 2.5) * 16, 170);
+        gm.addColorStop(0, i % 2 ? 'rgba(190,160,255,0.20)' : 'rgba(255,215,235,0.18)'); gm.addColorStop(1, 'rgba(0,0,0,0)');
+        ctx.fillStyle = gm; ctx.fillRect(-W, -180, W * 2, 360);
+      }
+      for (i = 0; i < 170; i++) {
+        var px = ((i * 73) % 720) - 360, py = ((i * 37) % 80) - 40 + Math.sin(i * 1.7) * 14;
+        ctx.fillStyle = 'rgba(255,255,255,' + (0.35 + 0.5 * Math.abs(Math.sin(t + i))).toFixed(2) + ')'; ctx.fillRect(px, py, 1.2, 1.2);
+      }
+      ctx.restore();
+    }
+    // Gwiazdy i ksiezyc - od zmierzchu
+    var aG = Math.max(0, Math.min(1, (a - 0.42) / 0.3));
+    if (aG > 0) {
+      GWIAZDY_PK.forEach(function (s) {
+        var tw = 0.5 + 0.5 * Math.sin(t * 2 + s.f), sy = ((s.y * H - kameraSwiatY * 0.04) % H + H) % H;
+        ctx.fillStyle = 'rgba(255,255,255,' + (aG * (0.3 + 0.7 * tw)).toFixed(2) + ')'; ctx.fillRect(s.x * W, sy, s.r, s.r);
+      });
+      var my = bgY(-1650, 0.22), gk = ctx.createRadialGradient(W * 0.78, my, 4, W * 0.78, my, 60);
+      gk.addColorStop(0, 'rgba(255,245,210,' + (0.35 * aG) + ')'); gk.addColorStop(1, 'rgba(255,245,210,0)');
+      ctx.fillStyle = gk; ctx.fillRect(W * 0.78 - 60, my - 60, 120, 120);
+      ctx.fillStyle = 'rgba(255,246,214,' + aG + ')'; ctx.beginPath(); ctx.arc(W * 0.78, my, 16, 0, Math.PI * 2); ctx.fill();
+    }
+    // Slonce - za dnia
+    var aS = Math.max(0, 1 - a / 0.45);
+    if (aS > 0) {
+      var sy2 = bgY(-160, 0.18), gs = ctx.createRadialGradient(W * 0.2, sy2, 6, W * 0.2, sy2, 70);
+      gs.addColorStop(0, 'rgba(255,240,170,' + (0.6 * aS) + ')'); gs.addColorStop(1, 'rgba(255,240,170,0)');
+      ctx.fillStyle = gs; ctx.fillRect(W * 0.2 - 70, sy2 - 70, 140, 140);
+      ctx.fillStyle = 'rgba(255,236,150,' + aS + ')'; ctx.beginPath(); ctx.arc(W * 0.2, sy2, 18, 0, Math.PI * 2); ctx.fill();
+    }
+    // Chmury
+    CHMURY.forEach(function (c) {
+      var cy = bgY(c.alt, 0.5); if (cy < -40 || cy > H + 40) return;
+      var cx = ((c.x + t * c.v) % 460) - 40, al = 0.55 * (1 - Math.max(0, (a - 0.55) / 0.3));
+      if (al <= 0.02) return;
+      ctx.fillStyle = 'rgba(255,255,255,' + al.toFixed(2) + ')';
+      ctx.beginPath(); ctx.ellipse(cx, cy, 34 * c.s, 11 * c.s, 0, 0, Math.PI * 2); ctx.ellipse(cx + 18 * c.s, cy - 7 * c.s, 20 * c.s, 10 * c.s, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx - 16 * c.s, cy - 4 * c.s, 16 * c.s, 8 * c.s, 0, 0, Math.PI * 2); ctx.fill();
+    });
+    // Panorama: wzgorza i dom na starcie
+    var gy = bgY(30, 0.5);
+    if (gy < H + 200) {
+      ctx.fillStyle = 'rgba(70,120,80,0.55)'; ctx.beginPath(); ctx.moveTo(0, gy);
+      for (i = 0; i <= 8; i++) ctx.quadraticCurveTo(i * 50 - 25, gy - 28 - (i % 3) * 10, i * 50, gy); ctx.lineTo(W, H + 300); ctx.lineTo(0, H + 300); ctx.fill();
+      var dx = 300, dy = gy - 4;                           // domek z oswietlonymi oknami
+      ctx.fillStyle = 'rgba(120,70,60,0.75)'; ctx.fillRect(dx - 26, dy - 38, 52, 38);
+      ctx.fillStyle = 'rgba(80,40,40,0.8)'; ctx.beginPath(); ctx.moveTo(dx - 32, dy - 38); ctx.lineTo(dx, dy - 62); ctx.lineTo(dx + 32, dy - 38); ctx.fill();
+      ctx.fillRect(dx + 12, dy - 60, 7, 14);
+      ctx.fillStyle = 'rgba(255,220,120,0.8)'; ctx.fillRect(dx - 18, dy - 28, 10, 10); ctx.fillRect(dx + 8, dy - 28, 10, 10);
+      ctx.fillStyle = 'rgba(60,35,25,0.85)'; ctx.fillRect(dx - 5, dy - 18, 10, 18);
+      for (i = 0; i < 3; i++) { var fz = (t * 0.4 + i / 3) % 1; ctx.fillStyle = 'rgba(230,230,230,' + (0.45 * (1 - fz)).toFixed(2) + ')'; ctx.beginPath(); ctx.arc(dx + 15 + fz * 10, dy - 64 - fz * 26, 3 + fz * 5, 0, Math.PI * 2); ctx.fill(); }
+      [[60, 1], [100, 0.8], [210, 0.9]].forEach(function (d) { ctx.fillStyle = 'rgba(50,90,55,0.7)'; ctx.beginPath(); ctx.arc(d[0], gy - 22 * d[1], 14 * d[1], 0, Math.PI * 2); ctx.fill(); ctx.fillStyle = 'rgba(70,45,30,0.7)'; ctx.fillRect(d[0] - 2, gy - 12 * d[1], 4, 12 * d[1]); });
+    }
+    // Wiezowiec i wieza Eiffla w dalszej perspektywie
+    var by = bgY(-430, 0.42);
+    if (by > -40 && by - 230 < H) {
+      ctx.fillStyle = 'rgba(40,50,80,0.45)'; ctx.fillRect(40, by - 200, 46, 200); ctx.fillRect(56, by - 222, 14, 22);
+      ctx.fillStyle = 'rgba(255,225,140,0.35)'; for (var wy = by - 192; wy < by - 8; wy += 12) for (var wx = 46; wx < 82; wx += 10) if (((wx + wy) | 0) % 3) ctx.fillRect(wx, wy, 5, 6);
+    }
+    var ey = bgY(-640, 0.4);
+    if (ey > -40 && ey - 300 < H) {
+      var ex = 292; ctx.strokeStyle = 'rgba(60,45,60,0.6)'; ctx.fillStyle = 'rgba(60,45,60,0.5)'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(ex - 52, ey); ctx.quadraticCurveTo(ex - 14, ey - 110, ex - 3, ey - 270); ctx.lineTo(ex + 3, ey - 270);
+      ctx.quadraticCurveTo(ex + 14, ey - 110, ex + 52, ey); ctx.lineTo(ex + 30, ey); ctx.quadraticCurveTo(ex, ey - 40, ex - 30, ey); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(ex - 40, ey - 70); ctx.lineTo(ex + 40, ey - 70); ctx.moveTo(ex - 22, ey - 150); ctx.lineTo(ex + 22, ey - 150); ctx.stroke();
+      ctx.lineWidth = 0.8; for (var li = 0; li < 9; li++) { var ly = ey - 20 - li * 25, sz = 40 - li * 4; ctx.beginPath(); ctx.moveTo(ex - sz, ly); ctx.lineTo(ex + sz * 0.6, ly - 25); ctx.moveTo(ex + sz, ly); ctx.lineTo(ex - sz * 0.6, ly - 25); ctx.stroke(); }
+      ctx.fillStyle = 'rgba(255,90,90,' + (0.5 + 0.5 * Math.sin(t * 3)).toFixed(2) + ')'; ctx.beginPath(); ctx.arc(ex, ey - 274, 2.5, 0, Math.PI * 2); ctx.fill();
+    }
+    // Ptaki
+    PTAKI.forEach(function (p) {
+      var py = bgY(p.alt, 0.55); if (py < -20 || py > H + 20) return;
+      var px = ((p.x + t * p.v) % 440) - 30, mach = Math.sin(t * 7 + p.f) * 4 * p.s;
+      ctx.strokeStyle = 'rgba(30,30,40,0.7)'; ctx.lineWidth = 1.6; ctx.beginPath();
+      ctx.moveTo(px - 7 * p.s, py - mach); ctx.quadraticCurveTo(px - 3 * p.s, py - 2, px, py); ctx.quadraticCurveTo(px + 3 * p.s, py - 2, px + 7 * p.s, py - mach); ctx.stroke();
+    });
+    // Samoloty ze smuga i migajacymi swiatlami
+    SAMOLOTY.forEach(function (s) {
+      var sy3 = bgY(s.alt, 0.5); if (sy3 < -30 || sy3 > H + 30) return;
+      var sx = s.x0 + s.kier * ((t * s.v) % 520);
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx - s.kier * 14, sy3); ctx.lineTo(sx - s.kier * 90, sy3 + 2); ctx.stroke();
+      ctx.fillStyle = 'rgba(220,225,235,0.9)'; ctx.beginPath(); ctx.ellipse(sx, sy3, 12, 3, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(sx - 2, sy3); ctx.lineTo(sx - s.kier * 6, sy3 + 9); ctx.lineTo(sx + s.kier * 2, sy3); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(sx - s.kier * 9, sy3); ctx.lineTo(sx - s.kier * 13, sy3 - 6); ctx.lineTo(sx - s.kier * 7, sy3); ctx.fill();
+      var mr = Math.sin(t * 6) > 0; ctx.fillStyle = mr ? '#ff4d5a' : '#3dff8a'; ctx.fillRect(sx + s.kier * 10, sy3 - 1, 2, 2);
+    });
+  }
+  // ======== PLATFORMY: jeden spojny styl (lod zachowuje szron - jest sliski) ========
+  function zaokrPK(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
   function narysujPlatforme(p) {
     var y = swiatDoEkranuY(p.y);
     if (y < -30 || y > H + 30) return;
-    var st = STYLE_PLATFORM[p.typ] || STYLE_PLATFORM.zwykla;
-    var wys = p.typ === 'podloga' ? 22 : PLATFORMA_WYS;
-    var grad = ctx.createLinearGradient(0, y, 0, y + wys);
-    grad.addColorStop(0, st.g); grad.addColorStop(1, st.d);
-    ctx.fillStyle = grad;
-    ctx.fillRect(p.x - p.w / 2, y, p.w, wys);
-    ctx.strokeStyle = st.obwod; ctx.lineWidth = 1;
-    ctx.strokeRect(p.x - p.w / 2, y, p.w, wys);
-    if (p.typ === 'lodowa') {
-      ctx.fillStyle = 'rgba(255,255,255,0.75)';
-      for (var i = 0; i < 3; i++) ctx.fillRect(p.x - p.w/2 + 8 + i*18, y + 3, 7, 2);
-    } else if (p.typ === 'waska') {
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.fillRect(p.x - 2, y + 3, 4, wys - 6);
+    var wys = p.typ === 'podloga' ? 22 : PLATFORMA_WYS, x0 = p.x - p.w / 2;
+    ctx.save();
+    if (p.pojawienie) ctx.globalAlpha = Math.min(1, (performance.now() - p.pojawienie) / 700);
+    if (p.typ === 'podloga') {
+      var hz = Math.max(60, H - y + 10);   // ziemia az do dolnej krawedzi planszy
+      var gp = ctx.createLinearGradient(0, y, 0, y + hz); gp.addColorStop(0, '#6a4a2a'); gp.addColorStop(1, '#2a1c0e');
+      ctx.fillStyle = gp; ctx.fillRect(x0, y, p.w, hz);
+      ctx.fillStyle = '#5fb04a'; ctx.fillRect(x0, y, p.w, 6); ctx.fillStyle = '#7cd060'; ctx.fillRect(x0, y, p.w, 2);
+      ctx.restore(); return;
     }
+    ctx.shadowColor = 'rgba(0,0,0,0.55)'; ctx.shadowBlur = 8; ctx.shadowOffsetY = 3;
+    var g = ctx.createLinearGradient(0, y, 0, y + wys);
+    g.addColorStop(0, '#ffe7a6'); g.addColorStop(0.45, '#e8b558'); g.addColorStop(1, '#94621f');
+    ctx.fillStyle = g; zaokrPK(x0, y, p.w, wys, 4); ctx.fill();
+    ctx.shadowColor = 'transparent'; ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = 'rgba(40,24,8,0.9)'; ctx.lineWidth = 1.4; ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.6)'; ctx.fillRect(x0 + 3, y + 1.6, p.w - 6, 1.6);
+    ctx.fillStyle = 'rgba(90,55,15,0.85)'; ctx.beginPath(); ctx.arc(x0 + 5, y + wys / 2 + 1, 1.3, 0, Math.PI * 2); ctx.arc(x0 + p.w - 5, y + wys / 2 + 1, 1.3, 0, Math.PI * 2); ctx.fill();
+    if (p.typ === 'lodowa') {
+      ctx.fillStyle = 'rgba(205,240,255,0.6)'; zaokrPK(x0 + 1, y + 1, p.w - 2, wys / 2, 3); ctx.fill();
+      var tt = Date.now() / 400;
+      for (var i = 0; i < 4; i++) { var a = 0.4 + 0.6 * Math.abs(Math.sin(tt + i * 1.3)); ctx.fillStyle = 'rgba(255,255,255,' + a.toFixed(2) + ')'; ctx.fillRect(x0 + 6 + i * (p.w - 12) / 3, y + 2.5, 2, 2); }
+    }
+    ctx.restore();
+  }
+  // ======== Pierscien ladowania skoku przy postaci (rysowany w kazdej klatce - bez opoznienia) ========
+  function narysujLadowanie() {
+    if (!ladowanie) return;
+    var k = Math.min(1, czasLadowania / MAX_LADOWANIE_S), x = postacX, y = swiatDoEkranuY(postacY) - 17;
+    ctx.save(); ctx.lineWidth = 5; ctx.lineCap = 'round';
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.beginPath(); ctx.arc(x, y, 27, 0, Math.PI * 2); ctx.stroke();
+    ctx.strokeStyle = 'hsl(' + Math.round(120 - 120 * k) + ',90%,55%)';
+    if (k >= 1) { ctx.shadowColor = '#ff5040'; ctx.shadowBlur = 10 + 6 * Math.sin(Date.now() / 60); }
+    ctx.beginPath(); ctx.arc(x, y, 27, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); ctx.stroke();
+    ctx.restore();
   }
 
   function narysujWskaznikWiatru() {
@@ -16391,7 +16551,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
 
   // Na szczycie czeka ksiezniczka: rozowa suknia, korona, machanie i serduszka
   function narysujMete() {
-    var top = PLATFORMY[PLATFORMY.length - 1];
+    var top = pozycjaKsiezniczki();
     var y = swiatDoEkranuY(top.y), x = top.x, t = Date.now() / 1000;
     ctx.save();
     var gr = ctx.createLinearGradient(x, y - 24, x, y);
@@ -16453,12 +16613,16 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
 
   function rysujWszystko() {
+    przywrocRozmiarPK();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.clearRect(0, 0, W, H);
     narysujTlo();
     PLATFORMY.forEach(narysujPlatforme);
     narysujWskaznikWiatru();
     narysujMete();
+    narysujReke();
     narysujPostac();
+    narysujLadowanie();
   }
 
   // ========================================================
@@ -16477,8 +16641,8 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
 
   function wykonajSkok() {
-    window.stat && window.stat('skoki');
     if (!ladowanie) return;
+    window.stat && window.stat('skoki');
     var proc = Math.min(1, czasLadowania / MAX_LADOWANIE_S);
     var moc = MOC_MIN + proc * (MOC_MAX - MOC_MIN);
     postacVY = -moc;
@@ -16492,12 +16656,17 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     zagrajSkok();
   }
 
-  btnLewo.addEventListener('pointerdown', function () { rozpocznijLadowanie(-1); });
-  btnPrawo.addEventListener('pointerdown', function () { rozpocznijLadowanie(1); });
-  btnLewo.addEventListener('pointerup', wykonajSkok);
-  btnPrawo.addEventListener('pointerup', wykonajSkok);
-  btnLewo.addEventListener('pointerleave', wykonajSkok);
-  btnPrawo.addEventListener('pointerleave', wykonajSkok);
+  [[btnLewo, -1], [btnPrawo, 1]].forEach(function (para) {
+    var bt = para[0];
+    bt.addEventListener('pointerdown', function (e) {
+      if (e.cancelable) e.preventDefault();
+      try { bt.setPointerCapture(e.pointerId); } catch (x) {}
+      rozpocznijLadowanie(para[1]);
+    });
+    bt.addEventListener('pointerup', wykonajSkok);
+    bt.addEventListener('pointercancel', wykonajSkok);
+    bt.addEventListener('lostpointercapture', wykonajSkok);
+  });
 
   // ========================================================
   // PETLA GRY
@@ -16510,10 +16679,28 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
 
   // ---- "Poradnik": przyspieszone nagranie bezblednego przejscia (raz na gre) ----
+  var TEKSTY_PORADNIKA = [
+    'Serio, znowu? Skup się i zobacz, jak to się robi. 🙄', 'Spokojnie, mistrz pokaże jeszcze raz.', 'Patrz uważnie: lewo, prawo, skok. Proste.',
+    'Może tym razem zadziała. Patrz i ucz się.', 'To już było. Ale dla Ciebie — powtórka. 📼', 'Kursy online kosztują fortunę, a ten masz za darmo.',
+    'Patrz na palce. Tam jest cała magia. ✨', 'Wersja dla zaawansowanych: dokładnie ta sama.', 'Pro tip: nie spadaj.',
+    'Zrób dokładnie to samo, tylko bez spadania.', 'Niektórzy rodzą się z talentem. Inni oglądają poradniki. 😇', 'Powtarzam ostatni raz. Przedostatni. Dobra, nie wiem który.',
+    'Grawitacja: 1, Ty: 0.', 'Rozważ zmianę strategii na: nie spadać.', 'Uwaga, spoiler: na górze jest księżniczka.',
+    'Wiesz, że skacze się NA platformy, a nie obok? 🤔', 'Przyspieszyłem to ×6, żebyś się nie nudziła.', 'Kolejne podejście, kolejna lekcja. Dziś: skakanie.',
+    'Nauczyciel jest cierpliwy. Bardzo cierpliwy. Jeszcze.', 'Gdyby spadanie było dyscypliną olimpijską… 🥇', 'Nie poddawaj się! Ale może trochę mniej spadaj.',
+    'Ten film ma więcej zwrotów akcji niż Twoje skoki.', 'Obejrzyj na spokojnie. Zrób herbatę. Spróbuj znowu. ☕', 'Jestem przekonany, że tym razem pójdzie lepiej. Chyba.',
+    'Ziemia tęskniła, ale nie musisz jej tak często odwiedzać. 🌍'
+  ];
+  var kolejkaTekstow = [];
+  function nastepnyTekstPoradnika() {
+    if (!kolejkaTekstow.length) {
+      kolejkaTekstow = TEKSTY_PORADNIKA.slice();
+      for (var i = kolejkaTekstow.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), tmp = kolejkaTekstow[i]; kolejkaTekstow[i] = kolejkaTekstow[j]; kolejkaTekstow[j] = tmp; }
+    }
+    return kolejkaTekstow.pop();
+  }
   var PORADNIK_B64 = '__PORADNIK_WIDEO__', poradnikPokazany = false, poradnikUrl = null;
   function pokazPoradnik() {
-    if (poradnikPokazany || PORADNIK_B64.length < 200) return;
-    poradnikPokazany = true;
+    if (document.getElementById('poradnik') || PORADNIK_B64.length < 200) return;
     try {
       if (!poradnikUrl) {
         var bin = atob(PORADNIK_B64), arr = new Uint8Array(bin.length);
@@ -16525,7 +16712,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     o.innerHTML = '<div class="por-karta"><div class="por-tytul">📼 Poradnik</div>'
       + '<div class="por-pod">Jak przejść Jumping Prince — nagranie autora, <b>bez ani jednej pomyłki</b>.</div>'
       + '<div class="por-wideo"><video muted playsinline loop autoplay></video><span class="por-ff">⏩ ×6</span></div>'
-      + '<div class="por-rada">Wystarczy zrobić dokładnie to samo. Proste, prawda? 😇</div>'
+      + '<div class="por-rada">' + nastepnyTekstPoradnika() + '</div>'
       + '<button class="por-btn">Dzięki, bardzo pomogło 🙃</button></div>';
     document.body.appendChild(o);
     var v = o.querySelector('video');
@@ -16600,11 +16787,10 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
               if (i > checkpoint) checkpoint = i;
               aktualizujEtykiete();
               if (spadekPlatform >= 4) { zagrajSpadek(); pokazKomunikatSpadku(spadekPlatform); }
-              if (spadekPlatform >= 6) setTimeout(pokazPoradnik, 1100);   // zart: "poradnik" po duzym spadku
               else zagrajLadowanie();
-
-              if (i === PLATFORMY.length - 1) {
-                zakonczGre(true);
+              if (spadekPlatform >= 5) setTimeout(pokazPoradnik, 1100);   // zart: "poradnik" po kazdym duzym spadku
+              if (i === indeksMety) {
+                if (!porwana) rozpocznijPorwanie(); else pokazPKN();
                 return;
               }
               break;
@@ -16640,6 +16826,10 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   }
 
   function rozpocznijGre() {
+    if (PLATFORMY.length > LICZBA_BAZOWA) PLATFORMY.length = LICZBA_BAZOWA;
+    porwana = false; scena = null; indeksMety = PLATFORMY.length - 1;
+    var prz = document.getElementById('platformaRazem'); if (prz) prz.textContent = PLATFORMY.length;
+    var pkn0 = document.getElementById('pkn'); if (pkn0) pkn0.parentNode.removeChild(pkn0);
     var start = PLATFORMY[0];
     postacX = start.x; postacY = start.y;
     postacVX = 0; postacVY = 0;
@@ -16656,6 +16846,137 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     requestAnimationFrame(petla);
   }
 
+  // ======== FINAL: reka porywa ksiezniczke, +5 latwych platform, papier-kamien-nozyce ========
+  var LICZBA_BAZOWA = PLATFORMY.length;
+  var porwana = false, indeksMety = PLATFORMY.length - 1, scena = null;
+  var DODATKOWE_PLATFORMY = [
+    { x:130, y:-1945, w:90, typ:'szeroka' }, { x:240, y:-2022, w:90, typ:'szeroka' },
+    { x:135, y:-2098, w:86, typ:'zwykla' },  { x:245, y:-2175, w:86, typ:'zwykla' },
+    { x:190, y:-2255, w:110, typ:'szeroka' } ];
+  function pozycjaKsiezniczki() {
+    if (scena) return { x: scena.kx, y: scena.ky };
+    if (porwana) { var t = PLATFORMY[indeksMety]; return { x: t.x, y: t.y - 52 + Math.sin(Date.now() / 450) * 3 }; }
+    return PLATFORMY[indeksMety];
+  }
+  function narysujReke() {
+    var rx, ry;
+    if (scena) { rx = scena.rx; ry = scena.ry; }
+    else if (porwana) { var pk = pozycjaKsiezniczki(); rx = pk.x; ry = pk.y - 50; }
+    else return;
+    var x = rx, y = swiatDoEkranuY(ry);
+    if (y < -60) return;
+    ctx.save();
+    ctx.strokeStyle = '#5b2a7a'; ctx.lineWidth = 13; ctx.lineCap = 'round';           // rekaw z nieba
+    ctx.beginPath(); ctx.moveTo(x + 40, -20); ctx.quadraticCurveTo(x + 30, y * 0.5, x + 4, y - 14); ctx.stroke();
+    ctx.strokeStyle = '#7b3fa0'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(x + 40, -20); ctx.quadraticCurveTo(x + 30, y * 0.5, x + 4, y - 14); ctx.stroke();
+    ctx.fillStyle = '#f4f1ea'; ctx.strokeStyle = 'rgba(40,30,30,0.7)'; ctx.lineWidth = 1.2;  // biala rekawica
+    ctx.beginPath(); ctx.ellipse(x, y, 15, 12, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    for (var i = 0; i < 4; i++) { ctx.beginPath(); ctx.ellipse(x - 10 + i * 6.5, y + 11, 3.4, 7, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); }
+    ctx.fillStyle = '#e0dcd0'; ctx.fillRect(x - 10, y - 15, 20, 5);
+    ctx.restore();
+  }
+  function komunikatPK(tekst, kolor) {
+    komunikatSpadku.textContent = tekst; komunikatSpadku.style.color = kolor || '#ffe08a';
+    komunikatSpadku.classList.add('widoczny');
+    clearTimeout(komunikatPK._t); komunikatPK._t = setTimeout(function () { komunikatSpadku.classList.remove('widoczny'); komunikatSpadku.style.color = ''; }, 2800);
+  }
+  function dodajPlatformy() {
+    var teraz = performance.now();
+    DODATKOWE_PLATFORMY.forEach(function (p, i) { PLATFORMY.push({ x: p.x, y: p.y, w: p.w, typ: p.typ, pojawienie: teraz + i * 140 }); });
+    indeksMety = PLATFORMY.length - 1;
+    var pr = document.getElementById('platformaRazem'); if (pr) pr.textContent = PLATFORMY.length;
+  }
+  function rozpocznijPorwanie() {
+    trwa = false; ladowanie = false;
+    var top = PLATFORMY[indeksMety], cel = DODATKOWE_PLATFORMY[DODATKOWE_PLATFORMY.length - 1];
+    scena = { t: 0, kx: top.x, ky: top.y, x0: top.x, y0: top.y, x1: cel.x, y1: cel.y - 52, rx: top.x, ry: top.y - 420, dodane: false };
+    zagrajTon(330, 0.25, 'sawtooth'); setTimeout(function () { zagrajTon(220, 0.35, 'sawtooth'); }, 180);
+    komunikatPK('😱 Co to za ręka?!', '#ffb0b0');
+    var ost = null;
+    function klatka(czas) {
+      if (ost === null) ost = czas;
+      var dt = Math.min(0.05, (czas - ost) / 1000); ost = czas; scena.t += dt;
+      var s = scena, t = s.t;
+      if (t < 1.0) { var p = 1 - Math.pow(1 - t, 3); s.rx = s.x0; s.ry = (s.y0 - 420) + 372 * p; }
+      else if (t < 1.35) { s.rx = s.x0 + Math.sin(t * 45) * 2; s.ry = s.y0 - 48; s.kx = s.x0 + Math.sin(t * 45) * 2; }
+      else if (t < 2.8) {
+        if (!s.dodane) { s.dodane = true; dodajPlatformy(); zagrajTon(660, 0.12, 'triangle'); }
+        var q = (t - 1.35) / 1.45; q = q * q * (3 - 2 * q);
+        s.kx = s.x0 + (s.x1 - s.x0) * q; s.ky = s.y0 + (s.y1 - s.y0) * q; s.rx = s.kx; s.ry = s.ky - 50;
+      } else {
+        scena = null; porwana = true;
+        komunikatPK('Ręka porwała księżniczkę! Goń ją — jeszcze 5 platform ⬆️', '#ffe08a');
+        trwa = true; czasOstatni = null; requestAnimationFrame(petla);
+        return;
+      }
+      rysujWszystko();
+      requestAnimationFrame(klatka);
+    }
+    requestAnimationFrame(klatka);
+  }
+  function zrzucNaDol() {
+    var start = PLATFORMY[0];
+    postacX = start.x; postacY = start.y; postacVX = 0; postacVY = 0; naZiemi = true;
+    platformaAktualna = 0; kameraSwiatY = postacY - H * 0.02; aktualizujEtykiete();
+    komunikatPK('😈 Ręka zrzuciła Cię na sam dół!', '#ffb0b0');
+    trwa = true; czasOstatni = null; requestAnimationFrame(petla);
+  }
+  function pokazPKN() {
+    trwa = false; ladowanie = false;
+    var wynikTy = 0, wynikReka = 0, blokada = false, IK = ['✊', '✋', '✌️'], NAZ = ['Kamień', 'Papier', 'Nożyce'];
+    var o = document.createElement('div'); o.id = 'pkn';
+    o.innerHTML = '<div class="pkn-karta"><div class="pkn-tytul">✋ Ręka chce się bawić!</div>'
+      + '<div class="pkn-pod">Papier, kamień, nożyce — <b>do 3 wygranych</b>. Wygrasz — odzyskasz księżniczkę. Przegrasz — lecisz na sam dół. 😈</div>'
+      + '<div class="pkn-wynik">Ty <b id="pknTy">0</b> : <b id="pknReka">0</b> Ręka</div>'
+      + '<div class="pkn-arena"><div class="pkn-znak" id="pknMoja">❔</div><div class="pkn-vs">VS</div><div class="pkn-znak" id="pknJej">❔</div></div>'
+      + '<div class="pkn-info" id="pknInfo">Wybierz:</div>'
+      + '<div class="pkn-przyciski"><button data-r="0">✊<span>Kamień</span></button><button data-r="1">✋<span>Papier</span></button><button data-r="2">✌️<span>Nożyce</span></button></div></div>';
+    document.getElementById('gra').appendChild(o);
+    var moja = o.querySelector('#pknMoja'), jej = o.querySelector('#pknJej'), info = o.querySelector('#pknInfo');
+    [].forEach.call(o.querySelectorAll('.pkn-przyciski button'), function (b) {
+      b.addEventListener('click', function () {
+        if (blokada) return; blokada = true; inicjujDzwiek();
+        var ja = +b.dataset.r, ona = Math.floor(Math.random() * 3);              // totalnie losowo
+        moja.textContent = '✊'; jej.textContent = '✊'; moja.classList.add('trzes'); jej.classList.add('trzes');
+        info.textContent = 'Kamień… papier… nożyce…';
+        setTimeout(function () {
+          moja.classList.remove('trzes'); jej.classList.remove('trzes');
+          moja.textContent = IK[ja]; jej.textContent = IK[ona];
+          var w = (ja - ona + 3) % 3;                                              // 0 remis, 1 wygrana, 2 przegrana
+          if (w === 1) { wynikTy++; info.textContent = NAZ[ja] + ' bije: ' + NAZ[ona].toLowerCase() + ' — punkt dla Ciebie! 🎉'; zagrajTon(880, 0.12, 'triangle'); }
+          else if (w === 2) { wynikReka++; info.textContent = NAZ[ona] + ' bije: ' + NAZ[ja].toLowerCase() + ' — punkt dla Ręki 😈'; zagrajTon(200, 0.2, 'sawtooth'); }
+          else { info.textContent = 'Remis! Jeszcze raz.'; zagrajTon(440, 0.1, 'triangle'); }
+          o.querySelector('#pknTy').textContent = wynikTy; o.querySelector('#pknReka').textContent = wynikReka;
+          if (wynikTy >= 3) {
+            setTimeout(function () { info.textContent = '👑 Odzyskałaś księżniczkę!'; }, 500);
+            setTimeout(function () { o.parentNode.removeChild(o); porwana = false; zakonczGre(true); }, 1700);
+            return;
+          }
+          if (wynikReka >= 3) {
+            setTimeout(function () { info.textContent = '😈 Ręka wygrała… lecisz na sam dół!'; zagrajSpadek(); }, 500);
+            setTimeout(function () { o.parentNode.removeChild(o); zrzucNaDol(); }, 2000);
+            return;
+          }
+          blokada = false;
+        }, 750);
+      });
+    });
+  }
+  // ======== PELNY EKRAN: wyzsza plansza (wiecej widac w gore), skoki bez zmian ========
+  var H_BAZOWE = H;
+  window.__wlasneSkalowanie = true;
+  function ustawRozmiarPK(noweH) { H = noweH; canvas.width = Math.round(W * DPR); canvas.height = Math.round(H * DPR); }
+  window.__dopasujGre = function () {
+    var gra = document.getElementById('gra'), ster = document.getElementById('sterowanieParkour');
+    var w = gra.clientWidth || window.innerWidth, h = gra.clientHeight || window.innerHeight;
+    var wysPlotna = Math.max(300, h - (ster ? ster.offsetHeight : 110));
+    ustawRozmiarPK(Math.round(W * wysPlotna / w));
+    canvas.style.height = wysPlotna + 'px';
+    if (!trwa) rysujWszystko();
+  };
+  function przywrocRozmiarPK() {
+    if (window.__pelnyEkranAktywny === false && H !== H_BAZOWE) { ustawRozmiarPK(H_BAZOWE); canvas.style.height = ''; }
+  }
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
   rysujWszystko();
 </script>
@@ -18416,6 +18737,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   #banerPietra small { display: block; font-size: 13px; color: #f0e8d0; font-weight: 700; margin-top: 4px; }
   #btnZapiszLb { position: absolute; left: 8px; bottom: calc(var(--wys-paska, 230px) - 4px); z-index: 7; width: 38px; height: 38px; border-radius: 50%;
     border: 1.5px solid rgba(230,193,92,0.6); background: rgba(20,16,28,0.85); font-size: 17px; cursor: pointer; display: none; }
+  #pasSterowania { touch-action: none; }
+  #strefaDrazka { transition: none; }
 </style>
 </head>
 <body>
@@ -18572,7 +18895,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                   efektBroni:'rozpedzanie' },
     wlocznia:   { nazwa:'Włócznia',         ikona:'🔱', zasieg:96,  tempo:0.52, obr:26, magiczna:false,
                   efektBroni:'rzut' },
-    kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:70, magiczna:false,
+    kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:84, magiczna:false,
                   pocisk:true, opis:'Powolny, ciężki bełt — ogromne obrażenia' },
     rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:210, tempo:0.47, obr:15, magiczna:true,  opis:'Pocisk na dystans' },
     rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:195, tempo:0.62, obr:16, magiczna:true,  opis:'Wybucha przy trafieniu i podpala kilku wrogów', efekt:'ogien' },
@@ -19762,7 +20085,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (gracz.y < gora) gracz.y = gora;
       if (gracz.y > dol) gracz.y = dol;
       cooldownSlug -= dt;
-      if (poziomLabiryntu < 2 && cooldownSlug <= 0 && wrogowie.length < 9) {
+      if (poziomLabiryntu < 2 && cooldownSlug <= 0 && wrogowie.length < 9 && !zyjeSluga()) {
         cooldownSlug = 7 - poziomLabiryntu;
         var typSlugi = ['szczur','goblin','szkielet'][Math.min(2, poziomLabiryntu)];
         for (var sl = 0; sl < 1 + poziomLabiryntu; sl++) {
@@ -19919,7 +20242,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
             ton(180, 0.14, 'sawtooth', 0.14);
           }
           w.cooldownPrzywolania -= dt;
-          if (w.cooldownPrzywolania <= 0 && wrogowie.length < 14) {
+          if (w.cooldownPrzywolania <= 0 && wrogowie.length < 14 && !zyjeSluga()) {
             w.cooldownPrzywolania = 9;
             for (var pz = 0; pz < 3; pz++) {
               var pom = stworzWroga(w.x + losowo(-80,80), w.y + losowo(-80,80),
@@ -21572,6 +21895,35 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   ['pointerup','pointercancel','pointerleave'].forEach(function (ev) {
     strefaDrazka.addEventListener(ev, puscDrazek);
   });
+  // Dotkniecie GDZIEKOLWIEK na dolnym pasku (poza przyciskami): joystick pojawia sie pod palcem,
+  // stoi tam nieruchomo do puszczenia, a potem wraca na swoje miejsce.
+  var pasSter = document.getElementById('pasSterowania');
+  pasSter.addEventListener('pointerdown', function (e) {
+    if (idPalcaDrazka !== null || e.target.closest('button') || e.target.closest('#strefaDrazka')) return;
+    e.preventDefault(); inicjujDzwiek();
+    strefaDrazka.style.transform = 'none';
+    var r = strefaDrazka.getBoundingClientRect(), pr = pasSter.getBoundingClientRect();
+    var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+    var px = Math.max(pr.left + r.width / 2, Math.min(pr.right - r.width / 2, e.clientX));
+    var py = Math.max(pr.top + r.height / 2, Math.min(pr.bottom - r.height / 2, e.clientY));
+    strefaDrazka.style.transform = 'translate(' + (px - cx).toFixed(1) + 'px,' + (py - cy).toFixed(1) + 'px)';
+    idPalcaDrazka = e.pointerId;
+    try { pasSter.setPointerCapture(e.pointerId); } catch (x) {}
+    var p = pozycjaWStrefie(e);
+    joyAktywny = true; joyBazaX = 0; joyBazaY = 0; joyX = p.x; joyY = p.y;
+    ustawGalke(p.x, p.y);
+  });
+  pasSter.addEventListener('pointermove', function (e) {
+    if (idPalcaDrazka !== e.pointerId || !strefaDrazka.style.transform || strefaDrazka.style.transform === 'none') return;
+    var p = pozycjaWStrefie(e); joyX = p.x; joyY = p.y; ustawGalke(p.x, p.y);
+  });
+  ['pointerup', 'pointercancel'].forEach(function (ev) {
+    pasSter.addEventListener(ev, function (e) {
+      if (idPalcaDrazka !== e.pointerId || !strefaDrazka.style.transform || strefaDrazka.style.transform === 'none') return;
+      puscDrazek(e);
+      strefaDrazka.style.transform = '';
+    });
+  });
 
   // ---------- PETLA GLOWNA ----------
   function petla(czas) {
@@ -22109,6 +22461,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       if (!pas || !gra) return;
       bz.style.display = graRozpoczeta ? 'block' : 'none';
       bz.style.bottom = (gra.clientHeight - pas.offsetTop + 8) + 'px';
+      var ne = document.getElementById('nakladkaEkw'); if (ne) ne.style.height = pas.offsetTop + 'px';   // plecak siega do paska
     }, 400);
   })();
   function zapiszGreLabirynt(cicho) {
@@ -22277,6 +22630,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ctx.beginPath(); ctx.arc(gx + d.dx, gy + d.dy, d.s, 0, Math.PI * 2); ctx.fill();
     });
     ctx.restore();
+  }
+
+  // Czy zyje jeszcze ktorys ze slug przywolanych w walce z bossem (nowych nie ma, dopoki tamci zyja)
+  function zyjeSluga() {
+    return wrogowie.some(function (w) { return w.hp > 0 && !w.boss && !w.przedBossem; });
   }
 
   // ---------- EFEKTY DODATKOWE (logika + rysowanie, raz na klatke z rysuj) ----------
@@ -22458,6 +22816,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     ustawWysokoscPlanszy(Math.round(WID * wysPlotna / w));
     widok.style.height = wysPlotna + 'px';
     if (pas) pas.style.top = wysPlotna + 'px';
+    var neP = document.getElementById('nakladkaEkw'); if (neP) neP.style.height = wysPlotna + 'px';
   };
   function przywrocRozmiarPlanszy() {
     // Tylko gdy wspolny blok wyraznie zglosil 'poza pelnym ekranem' (przy wczytywaniu jeszcze go nie ma)
@@ -22465,6 +22824,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       ustawWysokoscPlanszy(WYS_BAZOWE);
       widok.style.height = '';
       var pas = document.getElementById('pasSterowania'); if (pas) pas.style.top = '';
+      var neR = document.getElementById('nakladkaEkw'); if (neR) neR.style.height = '';
     }
   }
 </script>
