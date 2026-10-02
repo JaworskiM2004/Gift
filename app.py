@@ -275,6 +275,37 @@ _ZACZEPY_PORAZKI = {
 }
 
 
+# Dzwiek po przerwie (iPhone: zablokowanie ekranu, inna aplikacja, tryb cichy).
+# Kazde dotkniecie wznawia WSPOLNY kontekst dzwieku z kazdego stanu (takze
+# 'interrupted', ktorego gry same nie obsluguja) i ukryty <audio>, dzieki
+# ktoremu Web Audio gra mimo przelacznika wyciszenia. Kontekst powstaje w oknie
+# strony, wiec przetrwa zamykanie i otwieranie gier.
+SKRYPT_WZNOWIENIA_DZWIEKU = """<script>
+(function () {
+  var okno; try { okno = window.top; void okno.document; } catch (e) { okno = window; }
+  function wznow() {
+    try {
+      if (!okno.__wspolnyKontekstAudio || okno.__wspolnyKontekstAudio.state === 'closed') {
+        var K = okno.AudioContext || okno.webkitAudioContext || window.AudioContext || window.webkitAudioContext;
+        if (K) okno.__wspolnyKontekstAudio = new K();
+      }
+      var c = okno.__wspolnyKontekstAudio;
+      if (c && c.state !== 'running' && c.state !== 'closed') c.resume();
+    } catch (e) {}
+    try {
+      var el = document.getElementById('odblokowanieDzwiekuIOS');
+      if (el && el.getAttribute('src') && el.paused) { var p = el.play(); if (p && p.catch) p.catch(function () {}); }
+    } catch (e) {}
+  }
+  ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(function (t) {
+    document.addEventListener(t, wznow, { capture: true, passive: true });
+  });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(wznow, 60); });
+})();
+</script>
+"""
+
+
 def dodaj_oprawe(html, klucz=None):
     if "<script>" not in html or "wyjscieDzwieku" in html:
         return html
@@ -288,7 +319,7 @@ def dodaj_oprawe(html, klucz=None):
                   r"\1(window.statyDoWyslania ? window.statyDoWyslania() : true)", html)
     i = html.index("<script>")
     znacznik = "<script>window.__KLUCZ_GRY = " + json.dumps(klucz or "nieznana") + ";</script>\n"
-    return html[:i] + znacznik + WSPOLNA_OPRAWA_JS + html[i:]
+    return html[:i] + znacznik + WSPOLNA_OPRAWA_JS + SKRYPT_WZNOWIENIA_DZWIEKU + html[i:]
 
 
 def gra_z_wynikiem(html_gry, wysokosc, key):
@@ -307,6 +338,12 @@ def gra_z_wynikiem(html_gry, wysokosc, key):
         key = f"{key}__powtorka{nr}"
     wynik = _KOMPONENT_WYNIKU(html_gry=html_gry, wysokosc=wysokosc, key=key, default=None)
     if isinstance(wynik, dict):
+        # Blackjack: podpis z cyrografu - pokaze sie po otwarciu sejfu
+        podpis = wynik.get("podpis")
+        if (isinstance(podpis, str) and podpis.startswith("data:image/png;base64,") and len(podpis) < 250000
+                and st.session_state.get("podpis_diabla") != podpis):
+            st.session_state.podpis_diabla = podpis
+            zapisz_postep()
         staty = wynik.get("staty") or {}
         if not staty and "porazki" in wynik:          # Bitwa liczy porazki sama
             staty = {"smierci": wynik.get("porazki", 0)}
@@ -342,6 +379,31 @@ WIADOMOSC_KONCOWA = {
         "<div style='text-align:center; font-size:1.15rem; line-height:1.7;'>"
         "To był mój sposób, żeby Ci pokazać, jak wiele dla mnie znaczysz."
         "<br><br>LOVE U 💛</div>"
+        "<details class='koperta-prezent'>"
+        "<summary>💌 Przeczytaj, gdy otworzysz sejf</summary>"
+        "<div class='koperta-tresc'>"
+        "Prezent, który czeka na Ciebie w sejfie, jest od <b>naszej rodzinki i od Twojej rodzinki</b> — "
+        "złożyliśmy się na niego wszyscy razem. Pomysł, jak się pewnie domyślasz, był mój 😄"
+        "<br><br>"
+        "Z góry przepraszam, że to nie jest jakiś bardzo romantyczny prezent. Wiem, że lubisz winyle, "
+        "ale ich kupowanie to trochę nie mój styl — to zostawiam innym 😉 Za to stwierdziłem, że lepszych "
+        "słuchawek do iPhone'a raczej byś nie znalazła. Mam nadzieję, że będą Ci służyć na co dzień "
+        "i sprawiać dużo radości."
+        "<br><br>"
+        "Wielki buziak ode mnie i od całej reszty! 💛"
+        "</div></details>"
+        "<details class='koperta-prezent smaczki'>"
+        "<summary>🔍 Smaczki, które mogłaś przeoczyć</summary>"
+        "<div class='koperta-tresc'><ul>"
+        "<li>♟️ <b>Szachy</b> — przykład, jak zapisywać ruchy („Qe6 Nf7 Nh6 Qg8 Nf7”), był od razu rozwiązaniem. "
+        "Wystarczyło go przepisać 😏</li>"
+        "<li>🏗️ <b>Bungee</b> — skoczek to moja sylwetka, wycięta z Twojego nagrania.</li>"
+        "<li>😈 <b>Devil</b> — na pierwszym poziomie wystarczyło pójść w lewo: wychodziłaś z prawej strony "
+        "od razu na ostatnim poziomie, tuż przy drzwiach.</li>"
+        "<li>🫒 <b>Snake</b> — głowa węża to Ty, ze zdjęcia z plaży w Chałupach.</li>"
+        "<li>🧗 <b>Jumping Prince</b> — skoczek z arbuzem na głowie to ja, a księżniczka na szczycie to Ty 👑</li>"
+        "<li>🏰 <b>Więzień labiryntu</b> — ta, która strzela i ucieka, to Ania, a śmierdziel z gazem to Patryk 😄</li>"
+        "</ul></div></details>"
     ),
     "en": (
         "<div style='text-align:center; font-size:1.15rem; line-height:1.7;'>"
@@ -1164,7 +1226,7 @@ TEKST = {
         "tak_ukonczylam": "Tak, ukończyłam!",
         "napewno_dron": "Na pewno ukończyłaś cały lot bez rozbicia?",
         "napewno_bungee": "Na pewno przeszłaś wszystkie 3 etapy skoku?",
-        "napewno_snake": "Na pewno wąż zjadł wszystkie 20 oliwek?",
+        "napewno_snake": "Na pewno wąż zjadł wszystkie 15 oliwek?",
         "napewno_blackjack": "Na pewno pokonałaś krupiera 3 razy?",
         "napewno_samolot": "Na pewno samolot doleciał co najmniej 300 m?",
         "napewno_odyseusz": "Na pewno zaliczyłaś wszystkie 3 etapy strzelnicy?",
@@ -1722,6 +1784,10 @@ button[data-testid="stBaseButton-primary"]:active,
     }
   }
 
+  // Dryf w poprzek lotu ZAWSZE w strone srodka ekranu: serce z gornej polowy
+  // moze zjezdzac tylko w dol, z dolnej tylko w gore (tak samo w poziomie) -
+  // nie ucieknie za krawedz, zanim da sie je kliknac.
+  function dryfDoSrodka(poz, rozmiar, maks) { var v = losowo(0, maks); return poz < rozmiar / 2 ? v : -v; }
   function stworzElement(zly) {
     var el = document.createElement('div');
     el.className = 'item';
@@ -1739,17 +1805,17 @@ button[data-testid="stBaseButton-primary"]:active,
         x = szer + 30;
         y = losowo(10, wys - 40);
         vx = -predkosc;
-        vy = losowo(-60, 60);
+        vy = dryfDoSrodka(y, wys, 60);
       } else {
         x = losowo(10, szer - 40);
         y = wys + 30;
-        vx = losowo(-70, 70);
+        vx = dryfDoSrodka(x, szer, 70);
         vy = -predkosc;
       }
     } else if (poziom.kierunek === 'skos') {
       x = losowo(10, szer - 40);
       y = -40;
-      vx = losowo(-90, 90);
+      vx = dryfDoSrodka(x, szer, 90);
       vy = predkosc;
     } else if (poziom.kierunek === 'ukos') {
       // Wyraznie po przekatnej - startuje z LEWEJ lub PRAWEJ krawedzi
@@ -1773,21 +1839,21 @@ button[data-testid="stBaseButton-primary"]:active,
       var strona = Math.floor(Math.random() * 4);
       if (strona === 0) {
         x = losowo(10, szer - 40); y = -40;
-        vx = losowo(-45, 45); vy = predkosc;
+        vx = dryfDoSrodka(x, szer, 45); vy = predkosc;
       } else if (strona === 1) {
         x = losowo(10, szer - 40); y = wys + 40;
-        vx = losowo(-45, 45); vy = -predkosc;
+        vx = dryfDoSrodka(x, szer, 45); vy = -predkosc;
       } else if (strona === 2) {
         x = -40; y = losowo(10, wys - 40);
-        vx = predkosc; vy = losowo(-45, 45);
+        vx = predkosc; vy = dryfDoSrodka(y, wys, 45);
       } else {
         x = szer + 40; y = losowo(10, wys - 40);
-        vx = -predkosc; vy = losowo(-45, 45);
+        vx = -predkosc; vy = dryfDoSrodka(y, wys, 45);
       }
     } else {
       x = losowo(10, szer - 40);
       y = -40;
-      vx = losowo(-25, 25);
+      vx = dryfDoSrodka(x, szer, 25);
       vy = predkosc;
     }
 
@@ -2374,6 +2440,8 @@ SZABLON_DRONA = """
     font-size: 15px;
     margin-top: 10px;
   }
+  #plotnoDrona { position: absolute; left: 0; top: 0; display: block; }
+  #nakladka { background: rgba(8,8,22,0.6) !important; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); }
 </style>
 </head>
 <body>
@@ -2384,20 +2452,7 @@ SZABLON_DRONA = """
        zapetlonego <audio> "odmutowuje" tez pozniejszy Web Audio API. -->
   <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
   <div id="gra">
-    <div id="wynikNaEkranie">0</div>
-    <svg id="dron" viewBox="0 0 34 34">
-      <line x1="6" y1="6" x2="28" y2="28" stroke="#9a9a9a" stroke-width="2"/>
-      <line x1="28" y1="6" x2="6" y2="28" stroke="#9a9a9a" stroke-width="2"/>
-      <circle cx="6" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo" style="transform-origin:6px 6px"><rect x="1.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="28" cy="6" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo smiglo-b" style="transform-origin:28px 6px"><rect x="23.5" y="5.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="6" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <g class="smiglo smiglo-b" style="transform-origin:6px 28px"><rect x="1.5" y="27.3" width="9" height="1.4" rx="0.7" fill="#f0dfa8"/></g>
-      <circle cx="28" cy="28" r="4.5" fill="none" stroke="#d4af37" stroke-width="2"/>
-      <rect x="11" y="11" width="12" height="12" rx="3" fill="#1a1a1a" stroke="#e6c15c" stroke-width="1.5"/>
-      <circle cx="17" cy="17" r="1.6" fill="#ff4d4d"/>
-    </svg>
+    <canvas id="plotnoDrona"></canvas>
     <div id="nakladka">
       <h2 id="nakladkaTytul">Dron</h2>
       <p id="nakladkaOpis"></p>
@@ -2407,13 +2462,14 @@ SZABLON_DRONA = """
 
 <script>
   var gra = document.getElementById('gra');
-  var dron = document.getElementById('dron');
-  var wynikNaEkranie = document.getElementById('wynikNaEkranie');
+  var plotno = document.getElementById('plotnoDrona');
+  var ctx = plotno.getContext('2d');
   var nakladka = document.getElementById('nakladka');
   var nakladkaTytul = document.getElementById('nakladkaTytul');
   var nakladkaOpis = document.getElementById('nakladkaOpis');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
 
+  // ---- Parametry trudnosci: BEZ ZMIAN (poziom trudnosci zostaje identyczny) ----
   var DRON_X = 0.25;
   var DRON_R = 14;
   var GRAWITACJA = 1400;
@@ -2427,16 +2483,13 @@ SZABLON_DRONA = """
   var celOsiagniety = false; // sygnal zaliczenia wysylamy TYLKO RAZ, gra leci dalej
   var MARGINES = 60;
 
-  var dronY = 0;
-  var dronVY = 0;
-  var przeszkody = [];
-  var wynik = 0;
-  var trwa = false;
-  var czasOstatni = null;
-  var czasOdSpawnu = 0;
-  var obrotWygladzony = 0;
-
+  var dronY = 0, dronVY = 0, przeszkody = [], wynik = 0, trwa = false;
+  var czasOstatni = null, czasOdSpawnu = 0, obrotWygladzony = 0;
   var audioCtx = null;
+  // ---- Efekty i oprawa ----
+  var czastki = [], napisy = [], wstrzas = 0, blysk = 0, blyskKolor = '255,215,0';
+  var czasSwiata = 0, przesuniecie = 0, smiglaKat = 0, rekord = 0;
+  var W = 0, H = 0, DPR = 1, gwiazdy = [], warstwaDal = null, warstwaBliz = null;
 
   function losowo(min, max) { return Math.random() * (max - min) + min; }
 
@@ -2540,141 +2593,220 @@ SZABLON_DRONA = """
     }
   }
 
+
+  // ---------- PLOTNO I TLO (rysowane raz, potem tylko przesuwane) ----------
+  function dopasujPlotno() {
+    var w = gra.clientWidth, h = gra.clientHeight, d = Math.min(2.5, window.devicePixelRatio || 1);
+    if (w === W && h === H && d === DPR) return;
+    W = w; H = h; DPR = d;
+    plotno.width = Math.round(w * d); plotno.height = Math.round(h * d);
+    plotno.style.width = w + 'px'; plotno.style.height = h + 'px';
+    gwiazdy = [];
+    for (var i = 0; i < 70; i++) gwiazdy.push({ x: Math.random() * W, y: Math.random() * H * 0.72, r: Math.random() * 1.4 + 0.4, f: Math.random() * 6.28 });
+    warstwaDal = zbudujPanorame(0.30, 0.58, '#1c1540', 0.10, 1);
+    warstwaBliz = zbudujPanorame(0.16, 0.36, '#110b25', 0.20, 2);
+  }
+  function zbudujPanorame(minH, maxH, kolor, okna, ziarno) {
+    var szer = Math.max(200, Math.round(W * 1.6)), c = document.createElement('canvas');
+    c.width = Math.round(szer * DPR); c.height = Math.round(H * DPR);
+    var k = c.getContext('2d'); k.scale(DPR, DPR);
+    var x = 0, n = ziarno * 97;
+    function los() { n = (n * 9301 + 49297) % 233280; return n / 233280; }
+    while (x < szer) {
+      var w = 22 + los() * 30, h = (minH + los() * (maxH - minH)) * H;
+      k.fillStyle = kolor; k.fillRect(x, H - h, w, h);
+      if (los() > 0.5) { k.fillRect(x + w / 2 - 1, H - h - 10, 2, 10); }          // antena
+      k.fillStyle = 'rgba(255,214,120,' + okna + ')';
+      for (var wy = H - h + 7; wy < H - 6; wy += 9) for (var wx = x + 4; wx < x + w - 5; wx += 7) if (los() < 0.42) k.fillRect(wx, wy, 3, 4);
+      x += w + 2 + los() * 6;
+    }
+    return { c: c, szer: szer };
+  }
+  function rysujWarstwe(warstwa, off) {
+    var o = ((off % warstwa.szer) + warstwa.szer) % warstwa.szer;
+    ctx.drawImage(warstwa.c, -o, 0, warstwa.szer, H);
+    ctx.drawImage(warstwa.c, warstwa.szer - o, 0, warstwa.szer, H);
+  }
+  function rysujTlo() {
+    var g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#0a0f2e'); g.addColorStop(0.55, '#2a1652'); g.addColorStop(1, '#55204f');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    var gk = ctx.createRadialGradient(W * 0.8, H * 0.17, 4, W * 0.8, H * 0.17, 60);
+    gk.addColorStop(0, 'rgba(255,240,200,0.35)'); gk.addColorStop(1, 'rgba(255,240,200,0)');
+    ctx.fillStyle = gk; ctx.fillRect(W * 0.8 - 60, H * 0.17 - 60, 120, 120);
+    ctx.fillStyle = '#fff3cf'; ctx.beginPath(); ctx.arc(W * 0.8, H * 0.17, 15, 0, Math.PI * 2); ctx.fill();
+    for (var i = 0; i < gwiazdy.length; i++) {
+      var s = gwiazdy[i], a = 0.35 + 0.65 * Math.abs(Math.sin(czasSwiata * 1.2 + s.f));
+      ctx.fillStyle = 'rgba(255,255,255,' + a.toFixed(2) + ')'; ctx.fillRect(s.x, s.y, s.r, s.r);
+    }
+    rysujWarstwe(warstwaDal, przesuniecie * 0.15);
+    rysujWarstwe(warstwaBliz, przesuniecie * 0.38);
+  }
+  // ---------- PRZESZKODY: neonowe wiezowce ----------
+  function rysujPrzeszkode(p) {
+    var x = p.x, w = SZEROKOSC_PRZESZKODY, gora = p.gapY - p.gapH / 2, dol = p.gapY + p.gapH / 2;
+    function wieza(y0, y1, krawedzNaDole) {
+      if (y1 <= y0) return;
+      var g = ctx.createLinearGradient(x, 0, x + w, 0);
+      g.addColorStop(0, '#16213d'); g.addColorStop(0.45, '#2c4372'); g.addColorStop(1, '#121a31');
+      ctx.fillStyle = g; ctx.fillRect(x, y0, w, y1 - y0);
+      ctx.fillStyle = 'rgba(130,225,255,0.55)';
+      for (var yy = y0 + 10; yy < y1 - 8; yy += 14) for (var xx = x + 8; xx < x + w - 9; xx += 12) if (((xx + yy * 3 + p.ziarno) | 0) % 4) ctx.fillRect(xx, yy, 5, 6);
+      ctx.save();
+      ctx.shadowColor = '#5ff2ff'; ctx.shadowBlur = 16; ctx.fillStyle = '#7ff6ff';
+      ctx.fillRect(x - 4, krawedzNaDole ? y1 - 7 : y0, w + 8, 7);
+      ctx.restore();
+    }
+    wieza(0, gora, true);
+    wieza(dol, H, false);
+  }
+  // ---------- DRON ----------
+  function zaokr(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+  function rysujDrona() {
+    var x = W * DRON_X, y = dronY;
+    var obrotCel = Math.max(-25, Math.min(70, dronVY / 8));
+    obrotWygladzony += (obrotCel - obrotWygladzony) * 0.22;
+    ctx.save(); ctx.translate(x, y); ctx.rotate(obrotWygladzony * Math.PI / 180 * 0.55);
+    var gs = ctx.createRadialGradient(0, 2, 2, 0, 2, 30);          // poswiata
+    gs.addColorStop(0, 'rgba(95,242,255,0.25)'); gs.addColorStop(1, 'rgba(95,242,255,0)');
+    ctx.fillStyle = gs; ctx.fillRect(-30, -28, 60, 60);
+    ctx.strokeStyle = '#8f99ad'; ctx.lineWidth = 3; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(-18, -5); ctx.lineTo(18, -5); ctx.stroke();
+    [-18, 18].forEach(function (sx, i) {
+      ctx.fillStyle = '#c9d2e3'; ctx.fillRect(sx - 1.5, -10, 3, 6);
+      var sz = 12 * Math.abs(Math.cos(smiglaKat + i * 1.7));
+      ctx.fillStyle = 'rgba(210,235,255,0.55)'; ctx.beginPath(); ctx.ellipse(sx, -10, Math.max(2, sz), 2, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = 'rgba(210,235,255,0.18)'; ctx.beginPath(); ctx.ellipse(sx, -10, 12, 2.6, 0, 0, Math.PI * 2); ctx.fill();
+    });
+    var g = ctx.createLinearGradient(0, -8, 0, 8); g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#93a1bb');
+    ctx.fillStyle = g; zaokr(-12, -7, 24, 13, 5); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.fillStyle = '#d4af37'; ctx.fillRect(-9, -1, 18, 2);                       // zlota listwa
+    ctx.fillStyle = '#1b2233'; ctx.beginPath(); ctx.arc(7, 6, 3.4, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#5ff2ff'; ctx.beginPath(); ctx.arc(7.6, 5.5, 1.3, 0, Math.PI * 2); ctx.fill();
+    var mr = Math.sin(czasSwiata * 9) > 0;
+    ctx.fillStyle = mr ? '#ff4d5a' : '#5a1a20'; ctx.beginPath(); ctx.arc(-11, -2, 1.9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = mr ? '#3dff8a' : '#174a2c'; ctx.beginPath(); ctx.arc(11, -2, 1.9, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+  // ---------- EFEKTY ----------
+  function podmuch() {
+    var x = W * DRON_X;
+    for (var i = 0; i < 7; i++) czastki.push({ x: x + losowo(-10, 10), y: dronY + 8, vx: losowo(-40, 40) - 60, vy: losowo(120, 220), zycie: 0.35, max: 0.35, r: losowo(2, 3.5), kolor: '200,235,255' });
+  }
+  function wybuch() {
+    var x = W * DRON_X;
+    for (var i = 0; i < 34; i++) { var k = Math.random() * Math.PI * 2, v = losowo(80, 340);
+      czastki.push({ x: x, y: dronY, vx: Math.cos(k) * v, vy: Math.sin(k) * v, zycie: 0.7, max: 0.7, r: losowo(2, 4.5), kolor: Math.random() < 0.5 ? '255,170,60' : '255,230,120', grawitacja: true }); }
+    wstrzas = 0.35; blysk = 0.5; blyskKolor = '255,120,60';
+  }
+  function aktualizujEfekty(dt) {
+    czasSwiata += dt; smiglaKat += dt * 38;
+    if (wstrzas > 0) wstrzas -= dt; if (blysk > 0) blysk -= dt * 1.6;
+    for (var i = czastki.length - 1; i >= 0; i--) { var c = czastki[i];
+      c.x += c.vx * dt; c.y += c.vy * dt; if (c.grawitacja) c.vy += 500 * dt; c.zycie -= dt; if (c.zycie <= 0) czastki.splice(i, 1); }
+    for (var j = napisy.length - 1; j >= 0; j--) { var n = napisy[j]; n.y -= 40 * dt; n.zycie -= dt; if (n.zycie <= 0) napisy.splice(j, 1); }
+  }
+  function rysujEfekty() {
+    czastki.forEach(function (c) { var a = Math.max(0, c.zycie / c.max);
+      ctx.fillStyle = 'rgba(' + c.kolor + ',' + a.toFixed(2) + ')'; ctx.beginPath(); ctx.arc(c.x, c.y, c.r * (0.5 + a * 0.5), 0, Math.PI * 2); ctx.fill(); });
+    napisy.forEach(function (n) { var a = Math.min(1, n.zycie / 0.4);
+      ctx.font = '800 ' + n.rozmiar + 'px -apple-system, Poppins, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = 'rgba(' + n.kolor + ',' + a.toFixed(2) + ')'; ctx.fillText(n.tekst, n.x, n.y); });
+  }
+  function rysujWynik() {
+    ctx.textAlign = 'center';
+    ctx.font = '900 38px -apple-system, Poppins, sans-serif';
+    ctx.save(); ctx.shadowColor = celOsiagniety ? 'rgba(255,215,0,0.9)' : 'rgba(0,0,0,0.6)'; ctx.shadowBlur = celOsiagniety ? 14 : 6;
+    ctx.fillStyle = celOsiagniety ? '#ffd76a' : '#ffffff'; ctx.fillText(String(wynik), W / 2, 50); ctx.restore();
+    ctx.font = '700 12px -apple-system, Poppins, sans-serif'; ctx.fillStyle = 'rgba(255,255,255,0.75)';
+    ctx.fillText(celOsiagniety ? '🏆 leć po rekord!' : '🎯 cel: ' + CEL_WYNIK, W / 2, 68);
+  }
+  function rysujScene() {
+    dopasujPlotno();
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (wstrzas > 0) ctx.translate(losowo(-1, 1) * wstrzas * 18, losowo(-1, 1) * wstrzas * 18);
+    rysujTlo();
+    for (var i = 0; i < przeszkody.length; i++) rysujPrzeszkode(przeszkody[i]);
+    rysujEfekty();
+    if (trwa || czastki.length === 0 || nakladka.style.display !== 'none') { if (trwa || nakladka.style.display !== 'none') rysujDrona(); }
+    if (blysk > 0) { ctx.fillStyle = 'rgba(' + blyskKolor + ',' + Math.min(0.45, blysk).toFixed(2) + ')'; ctx.fillRect(-20, -20, W + 40, H + 40); }
+    if (trwa) rysujWynik();
+  }
+  // ---------- LOGIKA (identyczna jak wczesniej, liczona w malych krokach) ----------
   function skok() {
     if (!trwa) return;
     dronVY = SILA_SKOKU;
     zagrajDzwiek('skok');
+    podmuch();
   }
-
-  function usunPrzeszkode(p) {
-    if (p.elGora.parentNode) p.elGora.remove();
-    if (p.elDol.parentNode) p.elDol.remove();
-  }
-
-  function stworzPrzeszkode(szer, wys, gapY, gapH) {
-    var gora = document.createElement('div');
-    gora.className = 'przeszkoda przeszkoda-gora';
-    gora.style.height = (gapY - gapH / 2) + 'px';
-
-    var dol = document.createElement('div');
-    dol.className = 'przeszkoda przeszkoda-dol';
-    dol.style.top = (gapY + gapH / 2) + 'px';
-    dol.style.height = (wys - (gapY + gapH / 2)) + 'px';
-
-    gra.appendChild(gora);
-    gra.appendChild(dol);
-
-    return { x: szer + 10, gapY: gapY, gapH: gapH, minieta: false, elGora: gora, elDol: dol };
-  }
-
-  function aktualizujWynik() {
-    wynikNaEkranie.textContent = wynik;
-  }
-
-  function rysuj() {
-    dron.style.left = (gra.clientWidth * DRON_X) + 'px';
-    dron.style.top = dronY + 'px';
-    var obrotCel = Math.max(-25, Math.min(70, dronVY / 8));
-    obrotWygladzony += (obrotCel - obrotWygladzony) * 0.22;
-    dron.style.transform = 'translate(-50%, -50%) rotate(' + obrotWygladzony.toFixed(2) + 'deg)';
-
-    for (var i = 0; i < przeszkody.length; i++) {
-      przeszkody[i].elGora.style.left = przeszkody[i].x + 'px';
-      przeszkody[i].elDol.style.left = przeszkody[i].x + 'px';
-    }
-  }
-
-  function petla(czas) {
-    if (!trwa) { czasOstatni = null; return; }
-    if (czasOstatni === null) czasOstatni = czas;
-    var dt = Math.min((czas - czasOstatni) / 1000, 0.05);
-    czasOstatni = czas;
-
-    var szer = gra.clientWidth;
-    var wys = gra.clientHeight;
-
+  function krokFizyki(dt) {
+    var szer = W, wys = H;
     dronVY += GRAWITACJA * dt;
     dronY += dronVY * dt;
-
     var mnoznik = 1 + Math.min(wynik, 100) * 0.03; // rosnie dalej w nieskonczonym trybie
     var predkoscAktualna = PREDKOSC_START * mnoznik;
     var lukaAktualna = Math.max(LUKA_MIN, LUKA_START - wynik * 2);
-
+    przesuniecie += predkoscAktualna * dt;
     czasOdSpawnu += dt;
     var odstepAktualny = ODSTEP_SPAWN_START / mnoznik;
     if (czasOdSpawnu >= odstepAktualny) {
       czasOdSpawnu = 0;
       var gapYMin = MARGINES + lukaAktualna / 2;
       var gapYMax = wys - MARGINES - lukaAktualna / 2;
-      var gapY = losowo(gapYMin, gapYMax);
-      przeszkody.push(stworzPrzeszkode(szer, wys, gapY, lukaAktualna));
+      przeszkody.push({ x: szer + 10, gapY: losowo(gapYMin, gapYMax), gapH: lukaAktualna, minieta: false, ziarno: Math.floor(Math.random() * 7) });
     }
-
     var dronXpx = szer * DRON_X;
-
     for (var i = przeszkody.length - 1; i >= 0; i--) {
       var p = przeszkody[i];
       p.x -= predkoscAktualna * dt;
-
       if (p.x < dronXpx + DRON_R && p.x + SZEROKOSC_PRZESZKODY > dronXpx - DRON_R) {
         var krawedzGornej = p.gapY - p.gapH / 2;
         var krawedzDolnej = p.gapY + p.gapH / 2;
-        if (dronY - DRON_R < krawedzGornej || dronY + DRON_R > krawedzDolnej) {
-          zakonczGre();
-          return;
-        }
+        if (dronY - DRON_R < krawedzGornej || dronY + DRON_R > krawedzDolnej) { zakonczGre(); return; }
       }
-
       if (!p.minieta && p.x + SZEROKOSC_PRZESZKODY < dronXpx - DRON_R) {
         p.minieta = true;
         wynik += 1;
         zagrajDzwiek('punkt');
-        aktualizujWynik();
-        // Gra jest NIESKONCZONA - po osiagnieciu celu wysylamy zaliczenie
-        // TYLKO RAZ, ale lot trwa dalej (bez zatrzymywania).
-        if (wynik >= CEL_WYNIK && !celOsiagniety) {
-          celOsiagniety = true;
-          zglosZaliczenieWLocie();
-        }
+        napisy.push({ x: dronXpx + 18, y: dronY - 18, tekst: '+1', kolor: '127,246,255', rozmiar: 18, zycie: 0.8 });
+        if (wynik >= CEL_WYNIK && !celOsiagniety) { celOsiagniety = true; zglosZaliczenieWLocie(); }
       }
-
-      if (p.x < -SZEROKOSC_PRZESZKODY) {
-        usunPrzeszkode(p);
-        przeszkody.splice(i, 1);
-      }
+      if (p.x < -SZEROKOSC_PRZESZKODY - 10) przeszkody.splice(i, 1);
     }
-
-    if (dronY - DRON_R < 0 || dronY + DRON_R > wys) {
-      zakonczGre();
-      return;
-    }
-
-    rysuj();
-    requestAnimationFrame(petla);
+    if (dronY - DRON_R < 0 || dronY + DRON_R > wys) { zakonczGre(); return; }
   }
-
+  // Jedna petla: fizyka (gdy trwa lot) w krokach 1/240 s + efekty i rysowanie zawsze
+  function klatka(czas) {
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min((czas - czasOstatni) / 1000, 0.05); czasOstatni = czas;
+    dopasujPlotno();
+    if (trwa) {
+      var kroki = Math.max(1, Math.ceil(dt * 240)), h = dt / kroki;
+      for (var k = 0; k < kroki && trwa; k++) krokFizyki(h);
+    } else if (nakladka.style.display !== 'none') {
+      przesuniecie += 40 * dt;                                   // ekran startowy: miasto powoli przesuwa sie
+      dronY = H / 2 + Math.sin(czasSwiata * 2.2) * 6; dronVY = 0;
+    }
+    aktualizujEfekty(dt);
+    rysujScene();
+    requestAnimationFrame(klatka);
+  }
   function rozpocznijGre() {
     window.stat && window.stat('podejscia');
-    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
-    przeszkody = [];
+    przeszkody = []; czastki = []; napisy = [];
     wynik = 0;
     celOsiagniety = false;
-    aktualizujWynik();
-    dronY = gra.clientHeight / 2;
+    dronY = H / 2 || gra.clientHeight / 2;
     dronVY = 0;
     czasOdSpawnu = 0;
     obrotWygladzony = 0;
-    czasOstatni = null;
     nakladka.style.display = 'none';
+    gra.style.touchAction = 'none';            // w trakcie lotu dotyk steruje dronem (bez przewijania strony)
     trwa = true;
-    rysuj();
-    requestAnimationFrame(petla);
     startMuzyke();
   }
-
-  // Wysyla sygnal zaliczenia BEZ zatrzymywania lotu - gra jest
-  // nieskonczona, wiec po osiagnieciu celu leci sie dalej. Krotki
-  // dzwiekowy i wizualny akcent daje znac, ze cel zostal osiagniety.
+  // Wysyla sygnal zaliczenia BEZ zatrzymywania lotu - gra jest nieskonczona.
   function zglosZaliczenieWLocie() {
     if (window.parent) {
       var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
@@ -2685,51 +2817,45 @@ SZABLON_DRONA = """
     }
     zagrajTon(1046.50, 0.15, 'triangle');
     setTimeout(function () { zagrajTon(1318.51, 0.2, 'triangle'); }, 130);
-    wynikNaEkranie.style.color = '#ffd700';
-    wynikNaEkranie.style.textShadow = '0 0 10px rgba(255,215,0,0.9), 0 2px 6px rgba(0,0,0,0.6)';
-    setTimeout(function () {
-      wynikNaEkranie.style.color = '#fff';
-      wynikNaEkranie.style.textShadow = '0 2px 6px rgba(0,0,0,0.6)';
-    }, 1600);
+    blysk = 0.45; blyskKolor = '255,215,0';
+    napisy.push({ x: W / 2, y: H * 0.42, tekst: '🎉 Cel osiągnięty!', kolor: '255,215,110', rozmiar: 24, zycie: 1.8 });
   }
-
-  // Gra konczy sie TERAZ tylko przez rozbicie - nie ma juz oddzielnego
-  // "zwyciestwa" ktore zatrzymywalo lot (patrz zglosZaliczenieWLocie).
   function zakonczGre() {
     trwa = false;
-    przeszkody.forEach(function (p) { usunPrzeszkode(p); });
-    przeszkody = [];
-    nakladka.style.display = 'flex';
     zatrzymajMuzyke();
     zagrajDzwiek('crash');
-    if (celOsiagniety) {
-      nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ' + wynik;
-      nakladkaOpis.textContent = 'Cel to ' + CEL_WYNIK + ' — udało się! Spróbujesz pobić swój wynik?';
-    } else {
-      nakladkaTytul.textContent = '💥 Rozbity dron...';
-      nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
-    }
-    nakladkaBtn.style.display = 'inline-block';
-    nakladkaBtn.textContent = 'Jeszcze raz';
-    nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    wybuch();
+    rekord = Math.max(rekord, wynik);
+    gra.style.touchAction = '';
+    setTimeout(function () {
+      przeszkody = [];
+      nakladka.style.display = 'flex';
+      if (celOsiagniety) {
+        nakladkaTytul.textContent = '🎉 Zaliczone! Wynik: ' + wynik;
+        nakladkaOpis.textContent = 'Cel to ' + CEL_WYNIK + ' — udało się! Twój rekord: ' + rekord + '. Spróbujesz go pobić?';
+      } else {
+        nakladkaTytul.textContent = '💥 Rozbity dron...';
+        nakladkaOpis.textContent = 'Wynik: ' + wynik + ' / ' + CEL_WYNIK + '. Spróbuj jeszcze raz.';
+      }
+      nakladkaBtn.style.display = 'inline-block';
+      nakladkaBtn.textContent = 'Jeszcze raz';
+      nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+    }, 650);
   }
-
-  var pominDrugiSkok = false;
-  gra.addEventListener('click', function () {
-    if (pominDrugiSkok) return;
-    if (nakladka.style.display !== 'none') return;
+  // ---------- STEROWANIE: skok w chwili dotkniecia ----------
+  gra.addEventListener('pointerdown', function (e) {
+    if (!trwa) return;                          // ekran startowy / koniec: obsluguja go przyciski
+    if (e.cancelable) e.preventDefault();
     skok();
-  });
-  gra.addEventListener('touchstart', function (e) {
-    if (nakladka.style.display !== 'none') return;
-    if (!window.__pelnyEkranAktywny) return;   // poza pelnym ekranem: skok na stukniecie (click)
-    e.preventDefault();
-    pominDrugiSkok = true;
-    skok();
-    setTimeout(function () { pominDrugiSkok = false; }, 500);
   }, { passive: false });
+  gra.addEventListener('touchstart', function (e) { if (trwa && e.cancelable) e.preventDefault(); }, { passive: false });
+  document.addEventListener('keydown', function (e) {
+    if (trwa && (e.code === 'Space' || e.code === 'ArrowUp')) { e.preventDefault(); skok(); }
+  });
 
+  if (!nakladkaOpis.textContent) nakladkaOpis.textContent = 'Dotknij ekranu, żeby wzbić drona w górę, i przeleć między wieżowcami. Cel: ' + CEL_WYNIK + ' — potem leć dalej po rekord!';
   nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  requestAnimationFrame(klatka);
 </script>
 
 <script>
@@ -4071,9 +4197,9 @@ SZABLON_ZABY = """<!DOCTYPE html>
       teren:'==========11111====  ====2222222=====  ====111111====2222===========  ====22222=====11111====  ====222222====  ====1111==========22222====  ====111====222222====  ====22222====1111===============  ====2222====111111====  ====22222====222222=============1111====  ====22222===================',
       nad:  '.....^.............p.....^........p.....................^.......^..p......^.........^....p............p.............^...............p...................^......p..........^......^...........^....p...............^.....p.................^....^.................p.................^....^..........' },
 
-    { nazwa:'Burza', kolor:['#52281a','#30140d'], akcent:'#ff8a4a', tempo:146, gama:[0,2,5,9],
-      teren:'======2222====  ====22222====1111====  ====22222===222222========  ====111111====  ====2222222====  ====22222====2222========1111====  ====222222====22222====  ====111111====  ====222====  ====22222====2222====  ====1111111====  ====22222===========222222====  ====1111============================',
-      nad:  '..^.................p...^.................P....^...................................p....^.................P......^...........^.................p......^.............^.....P.................................p................^.....P......^...............^.................p....^......^................' },
+    { nazwa:'Burza', kolor:['#52281a','#30140d'], akcent:'#ff8a4a', tempo:156, gama:[0,2,5,9], predkosc:238,
+      teren:'========================111122223333333333========              ==============2222222222222==============  22  33  22  ========================             3333333===============11112222333322221111======                =============22  33   22=============^^====2222====  ====3333========================',
+      nad:  '....^.......^^.....................^...............pp...PP...pp...................^^^..P.........^..........................^......vvvvvv.......p....P.........^..........^..........^...^...^...^...........pp..PP..pp..PP......^......................................^...........^............................' },
   ];
 
   // ---------- DZWIEK ----------
@@ -4232,7 +4358,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
   // ---------- AKTUALIZACJA ----------
   function aktualizuj(dt) {
     czasGlobalny += dt;
-    gracz.x += PREDKOSC * dt;
+    gracz.x += (ETAPY[etapIdx].predkosc || PREDKOSC) * dt;   // etap 3 jest szybszy
 
     var kafelGracza = Math.floor((gracz.x + BOK/2) / KAFEL);
 
@@ -4374,7 +4500,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
 
   // Gra liczy sie jako zaliczona juz po DRUGIM etapie. Trzeci to wyzwanie
   // dla chetnych - przegrana na nim niczego nie odbiera.
-  var ETAP_ZALICZAJACY = 1;
+  var ETAP_ZALICZAJACY = 2;   // zaliczenie dopiero po trzecim etapie (Burza jest obowiazkowa)
   var zaliczenieWyslane = false;
 
   function wyslijZaliczenie(dalej) {
@@ -4389,10 +4515,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
 
   function nastepnyEtap() {
     if (etapIdx >= ETAPY.length - 1) { wygrana(); return; }
-    if (etapIdx === ETAP_ZALICZAJACY && !zaliczenieWyslane) {
-      pokazWyborTrzeciego();
-      return;
-    }
+    // Etap 3 jest obowiazkowy - zaliczenie dopiero po nim (w wygrana())
     przejdzDalej();
   }
 
@@ -7448,11 +7571,24 @@ SZABLON_BITWA = """
   }
   #btnSciaga.pulsuje { animation: sciagaPuls 1.6s ease-in-out infinite; }
   @keyframes sciagaPuls { 0%,100% { box-shadow: 0 0 0 0 rgba(230,193,92,0.55); } 50% { box-shadow: 0 0 0 7px rgba(230,193,92,0); } }
+  #gra { position: relative; }
   #sciaga {
-    position: absolute; inset: 6px; z-index: 7; display: none; overflow-y: auto; text-align: left;
-    background: rgba(10,8,16,0.96); border: 1.5px solid rgba(230,193,92,0.5); border-radius: 12px;
-    padding: 10px 12px; font-size: calc(12.5px * var(--sm)); line-height: 1.5; color: #eee4cc;
+    position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 60; display: none; overflow-y: auto; text-align: left;
+    background: rgba(10,8,16,0.97); padding: 48px 14px 16px; font-size: calc(12.5px * var(--sm)); line-height: 1.5; color: #eee4cc;
+    -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
   }
+  #sciaga .sciaga-x { position: absolute; top: 8px; left: 8px; width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid rgba(230,193,92,0.7);
+    background: rgba(40,32,20,0.95); color: #ffe08a; font-size: 18px; font-weight: 800; cursor: pointer; }
+  #sciaga .sciaga-tytul { position: absolute; top: 14px; left: 0; right: 0; text-align: center; font-weight: 800; color: #ffe08a; font-size: calc(15px * var(--sm)); pointer-events: none; }
+  #sciaga .sekcja { margin: 10px 0 4px; font-weight: 800; color: #e6c15c; letter-spacing: 0.03em; font-size: calc(12px * var(--sm)); text-transform: uppercase; }
+  #sciaga .wrog-wiersz { display: flex; gap: 8px; align-items: flex-start; padding: 7px 8px; margin: 4px 0; border-radius: 9px; background: rgba(255,255,255,0.05); }
+  #sciaga .wrog-ik { font-size: 22px; line-height: 1.2; }
+  #sciaga .wrog-staty { font-size: calc(11.5px * var(--sm)); color: #f3dfa6; }
+  #sciaga .wrog-opis { font-size: calc(11.5px * var(--sm)); color: #cfc6b0; }
+  #sciaga .moje { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; padding: 7px 9px; border-radius: 9px; background: rgba(230,193,92,0.08); border: 1px solid rgba(230,193,92,0.25); }
+  #sciaga .moje b { color: #ffe08a; }
+  #sciaga .btn-zamknij-dol { display: block; margin: 12px auto 0; padding: 9px 22px; border-radius: 10px; border: none; background: #e6c15c; color: #1a1408; font-weight: 800; cursor: pointer; }
+  .karta-blokuje { box-shadow: 0 0 0 3px #7ab8ff, 0 0 18px rgba(122,184,255,0.8) !important; }
   #sciaga.widoczna { display: block; }
   #sciaga b { color: #ffe08a; }
   #sciaga .wiersz { padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.06); }
@@ -7473,18 +7609,7 @@ SZABLON_BITWA = """
     <div id="srodekAreny">
       <div id="dziennik"></div>
       <button id="btnSciaga" title="Ściąga">❓</button>
-      <div id="sciaga">
-        <div class="wiersz"><b>📜 Ściąga — co na co</b></div>
-        <div class="wiersz">🔥 bije ❄️, a ❄️ bije 🔥 — atakuj żywiołem <b>przeciwnym</b> do wroga. Zły żywioł = tylko 1 obrażenie.</div>
-        <div class="wiersz">🏹 <b>Łucznik</b> — bij z łuku. Miecz zadaje mu połowę.</div>
-        <div class="wiersz">🛡️ <b>Tarczownik</b> — blokuje strzały. Na niego miecz.</div>
-        <div class="wiersz">🔱 <b>Włócznik</b> — oddaje 4 HP, gdy bijesz go mieczem. Lepiej łuk.</div>
-        <div class="wiersz">👑 <b>Boss</b> — częściowo blokuje łuk i oddaje 2 HP za miecz.</div>
-        <div class="wiersz">🪄 <b>Czarodziej</b> — leczy innych. Pokonaj go najpierw.</div>
-        <div class="wiersz">🧱 <b>Czołg</b> — dużo zdrowia, ale bije słabo.</div>
-        <div class="wiersz">W turze masz <b>2 akcje</b>. 🛡️ Obrona (raz na turę) zmniejsza obrażenia, 🧪 fiolka leczy do pełna.</div>
-        <div class="zamknij-podp">dotknij, żeby zamknąć</div>
-      </div>
+      <div id="sciaga"></div>
       <div id="graczOtoczenie">
         <canvas id="canvasGracza" width="72" height="88"></canvas>
         <div id="paskiGracza">
@@ -7554,8 +7679,10 @@ SZABLON_BITWA = """
     var bs = document.getElementById('btnSciaga'), ps = document.getElementById('sciaga');
     if (!bs || !ps) return;
     bs.classList.add('pulsuje');        // pulsuje, dopoki ktos jej nie otworzy
-    bs.addEventListener('click', function () { bs.classList.remove('pulsuje'); ps.classList.toggle('widoczna'); });
-    ps.addEventListener('click', function () { ps.classList.remove('widoczna'); });
+    // Sciaga zakrywa cala gre (przeciwnikow i przyciski akcji) - przenosimy ja do korzenia gry
+    var korzenGry = document.getElementById('gra'); if (korzenGry && ps.parentNode !== korzenGry) korzenGry.appendChild(ps);
+    bs.addEventListener('click', function () { bs.classList.remove('pulsuje'); zbudujSciage(); ps.classList.add('widoczna'); ps.scrollTop = 0; });
+    ps.addEventListener('click', function (e) { if (e.target.closest('.sciaga-x, .btn-zamknij-dol')) ps.classList.remove('widoczna'); });
   })();
   var podpowiedzTury = document.getElementById('podpowiedzTury');
   var siatkaAkcji = document.getElementById('siatkaAkcji');
@@ -7919,11 +8046,46 @@ SZABLON_BITWA = """
     },
     function () {
       return [
-        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 83), { boss: true }),
+        Object.assign(nowyWrog('Strażnik\\nŻywiołów', 'boss', 'ogien', 42), { boss: true }),
       ];
     },
   ];
 
+  // Obrazenia przeciwnikow - JEDNA tabela dla walki i dla sciagi.
+  // Lucznik bije najmocniej (ale ma malo HP), wlocznik = wojownik, tarczownik najslabiej.
+  var OBRAZENIA_WROGOW = { dystans: [6, 8], dzida: [5, 7], wojownik: [5, 7], tarcza: [3, 5], czarodziej: [7, 9], tank: [1, 3], boss: [4, 7] };
+  var HP_WROGOW = { dystans: '11–12', tarcza: '14–15', dzida: '14–15', wojownik: '11–13', czarodziej: '9', tank: '52' };
+  function zbudujSciage() {
+    var m = mnoznikObrazen, r = function (x) { return Math.max(1, Math.round(x * m)); };
+    var o = function (t) { var z = OBRAZENIA_WROGOW[t]; return z[0] + '–' + z[1]; };
+    var wrogowieOpis = [
+      ['🏹', 'Łucznik', 'dystans', 'Bije najmocniej, ale ma mało zdrowia. Zwinny — miecz zadaje mu tylko połowę. <b>Bij z łuku.</b>'],
+      ['🛡️', 'Tarczownik', 'tarcza', 'Bije najsłabiej. Tarcza blokuje strzały (1 obr.). <b>Na niego miecz.</b>'],
+      ['🔱', 'Włócznik', 'dzida', 'Bije jak wojownik. Za każdy cios mieczem oddaje Ci 4 HP. <b>Lepiej łuk.</b>'],
+      ['⚔️', 'Wojownik', 'wojownik', 'Bez słabych punktów — działa na niego wszystko.'],
+      ['🪄', 'Czarodziej', 'czarodziej', 'Magia przebija Twój blok, a przy ataku leczy sojusznika. <b>Pokonaj go najpierw.</b>'],
+      ['🧱', 'Czołg', 'tank', 'Mnóstwo zdrowia, ale ledwo drapie.']
+    ];
+    var h = '<button class="sciaga-x" aria-label="Zamknij">✕</button><div class="sciaga-tytul">📜 Ściąga</div>';
+    h += '<div class="sekcja">⚔️ Twoje obrażenia teraz</div><div class="moje">'
+       + '<span>Miecz lub strzała, <b>trafny żywioł</b></span><b>' + r(8) + '</b>'
+       + '<span>Zły żywioł</span><b>' + r(1) + '</b>'
+       + '<span>Miecz na łucznika</span><b>' + r(4) + '</b>'
+       + '<span>Strzała w tarczownika</span><b>' + r(1) + '</b>'
+       + '<span>Twoje zdrowie</span><b>' + graczHp + ' / ' + graczHpMax + '</b>'
+       + '<span>Odnowa na początku tury</span><b>+' + REGEN_NA_TURE + '</b>'
+       + '</div>';
+    h += '<div class="sekcja">🔥 ❄️ Żywioły</div><div class="wrog-opis">🔥 bije ❄️, a ❄️ bije 🔥 — atakuj żywiołem <b>przeciwnym</b> do wroga. W turze masz <b>2 akcje</b>; 🛡️ blok zmniejsza obrażenia o połowę, 🧪 fiolka (od 4. poziomu, raz na poziom) leczy do pełna.</div>';
+    h += '<div class="sekcja">👾 Przeciwnicy</div>';
+    wrogowieOpis.forEach(function (w) {
+      h += '<div class="wrog-wiersz"><div class="wrog-ik">' + w[0] + '</div><div><b>' + w[1] + '</b> <span class="wrog-staty">❤️ ' + HP_WROGOW[w[2]] + ' &nbsp;·&nbsp; 💥 ' + o(w[2]) + '</span>'
+         + '<div class="wrog-opis">' + w[3] + '</div></div></div>';
+    });
+    h += '<div class="wrog-wiersz"><div class="wrog-ik">👑</div><div><b>Boss — nierozpoznany</b> <span class="wrog-staty">❤️ ??? &nbsp;·&nbsp; 💥 ???</span>'
+       + '<div class="wrog-opis">Nikt, kto go spotkał, nie zostawił notatek. Jak go bić — przekonasz się sama. 🕯️</div></div></div>';
+    h += '<button class="btn-zamknij-dol">Zamknij i walczę ⚔️</button>';
+    document.getElementById('sciaga').innerHTML = h;
+  }
   var NAZWY_AKCJI = {
     miecz_ogien: { ikona: '🔥⚔️', etykieta: 'Miecz\\nOgnisty' },
     miecz_lod: { ikona: '❄️⚔️', etykieta: 'Miecz\\nLodowy' },
@@ -8215,7 +8377,7 @@ SZABLON_BITWA = """
       obrazenia = 8;
     }
     obrazenia = Math.round(obrazenia * mnoznikObrazen);
-
+    if (wrog.blokuje) obrazenia = Math.max(1, Math.ceil(obrazenia / 2));   // boss zaslonil sie w swojej turze
     wrog.hp -= obrazenia;
     zamigajISzarpnij(wrog._karta);
 
@@ -8257,10 +8419,30 @@ SZABLON_BITWA = """
       }, 700);
     }
 
-    if (wrog.hp <= 0) {
+    if (wrog.hp <= 0 && wrog.typ === 'boss' && !wrog.odrodzony) {
+      // Pierwsze "pokonanie" bossa: odradza sie z pelnym zdrowiem
+      wrog.odrodzony = true;
+      wrog.hp = wrog.hpMax;
+      setTimeout(function () {
+        pokazDziennik('👑 Strażnik powstaje z popiołów — znów ma pełne zdrowie!', 2400);
+        pokazLatajaceObrazenia(wrog._karta, '+' + wrog.hpMax, '#8fe6a0');
+        rozbryzgCzastek(wrog._karta, 'ogien', 16);
+        zagrajLeczenieSojusznika();
+        odswiezKartyWrogow();
+      }, 600);
+    } else if (wrog.hp <= 0) {
       wrog.hp = 0;
       wrog.zyje = false;
       rozbryzgCzastek(wrog._karta, zywiolAtaku, 14);
+    } else if (wrog.typ === 'boss' && wrog.odrodzony && !wrog.przyzwal && wrog.hp <= wrog.hpMax * 0.35) {
+      // Blisko konca drugiego zycia: przyzywa jednego wojownika
+      wrog.przyzwal = true;
+      setTimeout(function () {
+        wrogowie.push(nowyWrog('Wojownik\\nStrażnika', 'wojownik', Math.random() < 0.5 ? 'ogien' : 'lod', 11));
+        zbudujWrogow();
+        pokazDziennik('👑 Strażnik przyzywa wojownika!', 2200);
+        zagrajCzarMagii();
+      }, 700);
     }
     odswiezKartyWrogow();
 
@@ -8284,18 +8466,28 @@ SZABLON_BITWA = """
   function turaWroga() {
     var zyjacy = zyjacyWrogowie();
     var opoznienie = 0;
+    wrogowie.forEach(function (w) { w.blokuje = false; if (w._karta) w._karta.classList.remove('karta-blokuje'); });
     zyjacy.forEach(function (wrog) {
-      var liczbaAtakow = (wrog.typ === 'boss') ? 2 : 1;
+      // Boss: dwa ataki albo atak + blok (w Twojej turze przyjmie polowe obrazen)
+      var bossBlok = wrog.typ === 'boss' && Math.random() < 0.35;
+      var liczbaAtakow = (wrog.typ === 'boss') ? (bossBlok ? 1 : 2) : 1;
+      if (bossBlok) {
+        (function (wrog, kiedy) {
+          setTimeout(function () {
+            if (graczHp <= 0 || !wrog.zyje) return;
+            wrog.blokuje = true;
+            if (wrog._karta) wrog._karta.classList.add('karta-blokuje');
+            pokazDziennik('👑 Strażnik zasłania się — w Twojej turze przyjmie połowę obrażeń!', 1900);
+            dzwiekBlok();
+          }, kiedy);
+        })(wrog, opoznienie + 750);
+      }
       for (var i = 0; i < liczbaAtakow; i++) {
         (function (wrog) {
           setTimeout(function () {
             if (graczHp <= 0) return;
-            var dmg = wrog.typ === 'dystans' ? losowaLiczba(4, 6) :
-                      wrog.typ === 'tarcza' ? losowaLiczba(5, 7) :
-                      wrog.typ === 'dzida' ? losowaLiczba(6, 8) :
-                      wrog.typ === 'czarodziej' ? losowaLiczba(7, 10) :
-                      wrog.typ === 'tank' ? losowaLiczba(1, 3) :
-                      losowaLiczba(5, 8);
+            var zakres = OBRAZENIA_WROGOW[wrog.typ] || [5, 7];
+            var dmg = losowaLiczba(zakres[0], zakres[1]);
             // Czarodziej przebija blok - magia ignoruje tarcze fizyczna
             var blokDzialaTutaj = blokAktywny && wrog.typ !== 'czarodziej';
             if (blokDzialaTutaj) {
@@ -9312,6 +9504,12 @@ SZABLON_MINECRAFT = """
   /* Otwarty panel przykrywa 🔄, a jego krzyzyk nie wchodzi pod przycisk pelnego ekranu */
   #obszarSwiata #btnNowySwiat { z-index: 13 !important; }
   .naglowek-panelu { padding-right: 50px !important; }
+  /* Zapis gry: tuz obok przycisku nowego swiata */
+  #btnZapiszMc { position: absolute; top: 8px; left: 58px; z-index: 13; width: 44px; height: 44px; border-radius: 12px;
+    border: 1.5px solid rgba(255,255,255,0.35); background: rgba(40,48,70,0.85); font-size: 20px; cursor: pointer;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.35); }
+  #btnZapiszMc:active { transform: scale(0.94); }
+  .nakladka-wczytaj { margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -9324,6 +9522,7 @@ SZABLON_MINECRAFT = """
   <div id="gra">
     <div id="obszarSwiata">
       <button class="btn-narzedzie" id="btnNowySwiat" title="Nowy świat">🔄</button>
+      <button id="btnZapiszMc" title="Zapisz grę">💾</button>
       <div id="pasekGloduOtoczka">
         <div class="mini-pasek-otoczka">
           <span>❤️</span>
@@ -9742,17 +9941,12 @@ SZABLON_MINECRAFT = """
   var RECEPTURY = [
     // Kolejnosc = rozwoj postaci: stol, drewno, kamien, piec, dom, zelazo, diament, korona
     { id: 'stol', wyjscie: 'stol', ileWyjscia: 1, skladniki: { drewno: 4 }, bezStolu: true },
-    { id: 'stolBrzoza', wyjscie: 'stol', ileWyjscia: 1, skladniki: { drewnoBrzozy: 4 }, bezStolu: true, etykieta: 'Stół rzemieślniczy (z brzozy)' },
-    { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 }, etykieta: 'Patyk (z dębu)' },
-    { id: 'patykBrzoza', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewnoBrzozy: 1 }, etykieta: 'Patyk (z brzozy)' },
+    { id: 'patyk', wyjscie: 'patyk', ileWyjscia: 2, skladniki: { drewno: 1 } },
     { id: 'deski', wyjscie: 'deski', ileWyjscia: 4, skladniki: { drewno: 1 } },
     { id: 'deskiBrzozowe', wyjscie: 'deskiBrzozowe', ileWyjscia: 4, skladniki: { drewnoBrzozy: 1 } },
-    { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Kilof drewniany (z dębu)' },
-    { id: 'kilofDrewnianyBrzoza', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Kilof drewniany (z brzozy)' },
+    { id: 'kilofDrewniany', wyjscie: 'kilofDrewniany', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 } },
     { id: 'siekieraDrewniana', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewno: 3 }, etykieta: 'Siekiera drewniana (🪓 2× drewna)' },
-    { id: 'siekieraDrewnianaBrzoza', wyjscie: 'siekieraDrewniana', ileWyjscia: 1, skladniki: { patyk: 2, drewnoBrzozy: 3 }, etykieta: 'Siekiera drewniana z brzozy (🪓 2×)' },
-    { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 }, etykieta: 'Miecz drewniany (z dębu)' },
-    { id: 'mieczDrewnianyBrzoza', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewnoBrzozy: 2 }, etykieta: 'Miecz drewniany (z brzozy)' },
+    { id: 'mieczDrewniany', wyjscie: 'mieczDrewniany', ileWyjscia: 1, skladniki: { patyk: 1, drewno: 2 } },
     { id: 'kilofKamienny', wyjscie: 'kilofKamienny', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 } },
     { id: 'siekieraKamienna', wyjscie: 'siekieraKamienna', ileWyjscia: 1, skladniki: { patyk: 2, kamien: 3 }, etykieta: 'Siekiera kamienna (🪓 3× drewna)' },
     { id: 'mieczKamienny', wyjscie: 'mieczKamienny', ileWyjscia: 1, skladniki: { patyk: 1, kamien: 2 } },
@@ -9763,7 +9957,6 @@ SZABLON_MINECRAFT = """
     { id: 'luk', wyjscie: 'luk', ileWyjscia: 1, skladniki: { pioro: 1, nici: 1, patyk: 1 } },
     { id: 'strzala', wyjscie: 'strzala', ileWyjscia: 4, skladniki: { patyk: 1, kamien: 1 } },
     { id: 'lozko', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deski: 3 }, etykieta: 'Łóżko (deski dębowe)' },
-    { id: 'lozkoBrzoza', wyjscie: 'lozko', ileWyjscia: 1, skladniki: { welna: 3, deskiBrzozowe: 3 }, etykieta: 'Łóżko (deski brzozowe)' },
     { id: 'kilofZelazny', wyjscie: 'kilofZelazny', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 } },
     { id: 'siekieraZelazna', wyjscie: 'siekieraZelazna', ileWyjscia: 1, skladniki: { patyk: 2, zelazo: 3 }, etykieta: 'Siekiera żelazna (🪓 4× drewna)' },
     { id: 'mieczZelazny', wyjscie: 'mieczZelazny', ileWyjscia: 1, skladniki: { patyk: 1, zelazo: 2 } },
@@ -10160,16 +10353,27 @@ SZABLON_MINECRAFT = """
   }
 
   // ---------- RECEPTURY (crafting) ----------
+  // Drewno debowe i brzozowe (tak samo deski) to jedna pula - receptura bierze, co masz
+  var ZAMIENNIKI = { drewno: ['drewno', 'drewnoBrzozy'], deski: ['deski', 'deskiBrzozowe'] };
+  function ileMamSkladnika(k) {
+    return (ZAMIENNIKI[k] || [k]).reduce(function (s, z) { return s + (ekwipunek[z] || 0); }, 0);
+  }
+  function zuzyjSkladnik(k, ile) {
+    (ZAMIENNIKI[k] || [k]).forEach(function (z) {
+      var bierz = Math.min(ile, ekwipunek[z] || 0);
+      ekwipunek[z] = (ekwipunek[z] || 0) - bierz; ile -= bierz;
+    });
+  }
   function maSkladniki(skladniki) {
     return Object.keys(skladniki).every(function (k) {
-      return (ekwipunek[k] || 0) >= skladniki[k];
+      return ileMamSkladnika(k) >= skladniki[k];
     });
   }
 
   function wytworz(przepis) {
     if (!maSkladniki(przepis.skladniki)) return;
     Object.keys(przepis.skladniki).forEach(function (k) {
-      ekwipunek[k] -= przepis.skladniki[k];
+      zuzyjSkladnik(k, przepis.skladniki[k]);
     });
     ekwipunek[przepis.wyjscie] = (ekwipunek[przepis.wyjscie] || 0) + przepis.ileWyjscia;
     odswiezEkwipunek();
@@ -10302,7 +10506,7 @@ SZABLON_MINECRAFT = """
       panelReceptur.appendChild(karta);
     });
     if (przyPiecu) {
-      var wegiel = ekwipunek.wegiel || 0, drewno = ekwipunek.drewno || 0;
+      var wegiel = ekwipunek.wegiel || 0, drewno = ileMamSkladnika('drewno');
       PRZEPISY_PIECA.forEach(function (przepis) {
         var skladnik = {};
         skladnik[przepis.surowiec] = 1;
@@ -10357,13 +10561,13 @@ SZABLON_MINECRAFT = """
   ];
 
   function przetop(przepis) {
-    var maPaliwo = (ekwipunek.wegiel || 0) > 0 || (ekwipunek.drewno || 0) > 0;
+    var maPaliwo = (ekwipunek.wegiel || 0) > 0 || ileMamSkladnika('drewno') > 0;
     if ((ekwipunek[przepis.surowiec] || 0) <= 0 || !maPaliwo) return;
     ekwipunek[przepis.surowiec]--;
     if ((ekwipunek.wegiel || 0) > 0) {
       ekwipunek.wegiel--;
     } else {
-      ekwipunek.drewno--;
+      zuzyjSkladnik('drewno', 1);
     }
     ekwipunek[przepis.wyjscie] = (ekwipunek[przepis.wyjscie] || 0) + 1;
     odswiezEkwipunek();
@@ -11386,6 +11590,55 @@ SZABLON_MINECRAFT = """
 
   rozpocznijSwiat();
 
+  // ---------- ZAPIS GRY (pamiec przegladarki: przetrwa przeladowanie strony i wyjscie) ----------
+  var KLUCZ_ZAPISU_MC = 'escape_zapis_minecraft';
+  function zapiszGreMc(cicho) {
+    try {
+      var dane = { wersja: 1, czas: Date.now(), world: world, ekwipunek: ekwipunek, wybranyBlok: wybranyBlok,
+        graczX: graczX, graczY: graczY, kameraX: kameraX, kameraY: kameraY, graczGlod: graczGlod, graczHp: graczHp,
+        czasSwiata: czasSwiata, probyDomu: probyDomu, zwierzeta: zwierzeta, groby: groby, spawnX: spawnX, spawnY: spawnY };
+      localStorage.setItem(KLUCZ_ZAPISU_MC, JSON.stringify(dane));
+      if (!cicho) pokazDziennikMc('💾 Zapisano grę!', 1600);
+      return true;
+    } catch (e) {
+      if (!cicho) pokazDziennikMc('⚠️ Nie udało się zapisać gry na tym urządzeniu.', 2400);
+      return false;
+    }
+  }
+  function odczytajZapisMc() {
+    try { var t = localStorage.getItem(KLUCZ_ZAPISU_MC); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  function wczytajGreMc(d) {
+    world = d.world; ekwipunek = d.ekwipunek || {}; wybranyBlok = d.wybranyBlok || 'ziemia';
+    graczX = d.graczX; graczY = d.graczY; kameraX = d.kameraX || 0; kameraY = d.kameraY || 0;
+    graczGlod = d.graczGlod; graczHp = d.graczHp; czasSwiata = d.czasSwiata || 0; probyDomu = d.probyDomu || 0;
+    zwierzeta = d.zwierzeta || []; groby = d.groby || []; spawnX = d.spawnX; spawnY = d.spawnY;
+    potwory = [];
+    try { odswiezEkwipunek(); } catch (e) {}
+    try { aktualizujPasekGlodu(); aktualizujPasekHp(); aktualizujHudNarzedzi(); aktualizujEtykieteWybranego(); } catch (e) {}
+    try { odswiezPrzyciskSpania(); odswiezPiecWZasiegu(); } catch (e) {}
+  }
+  document.getElementById('btnZapiszMc').addEventListener('click', function (e) { e.stopPropagation(); inicjujDzwiek(); zapiszGreMc(false); });
+  setInterval(function () { if (trwa) zapiszGreMc(true); }, 30000);           // autozapis
+  window.addEventListener('pagehide', function () { if (trwa) zapiszGreMc(true); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden && trwa) zapiszGreMc(true); });
+  (function () {
+    var zapis = odczytajZapisMc();
+    if (!zapis || !zapis.world) return;
+    var bw = document.createElement('button');
+    bw.className = nakladkaBtn.className + ' nakladka-wczytaj'; bw.id = 'btnWczytajMc';
+    var ile = Math.max(1, Math.round((Date.now() - zapis.czas) / 60000));
+    bw.textContent = '📂 Wczytaj zapis (' + (ile < 60 ? ile + ' min' : Math.round(ile / 60) + ' godz.') + ' temu)';
+    nakladkaBtn.parentNode.insertBefore(bw, nakladkaBtn.nextSibling);
+    nakladkaBtn.textContent = '🆕 Nowy świat';
+    bw.onclick = function () {
+      inicjujDzwiek();
+      wczytajGreMc(zapis);
+      trwa = true; nakladka.style.display = 'none';
+      rysuj();
+      pokazDziennikMc('📂 Wczytano zapisaną grę.', 1800);
+    };
+  })();
   nakladkaBtn.onclick = function () {
     inicjujDzwiek();
     trwa = true;
@@ -11861,7 +12114,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   </div>
   <div id="nakladka">
     <div id="nakladkaTytul">🫒 Snake, ale nie do końca</div>
-    <div id="nakladkaOpis">Zbierz 20 oliwek! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
+    <div id="nakladkaOpis">Zbierz 15 oliwek! Wąż porusza się TYLKO po przekątnej — sterujesz czterema strzałkami skośnymi poniżej.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -11882,6 +12135,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
   var KOMORKA = 24;           // przeliczane przy starcie z faktycznej szerokosci
   var SIATKA_N = 16;          // 16x16 pol
   var CEL_WYNIK = 15;   // minimum do zaliczenia - potem gra toczy sie do smierci
+  var CEL_SZEFA = 20;   // tryb szefa (wersja dla koksow) - nie ma o nim slowa w opisie
   var MARGINES_OD_SCIAN = 2;  // oliwki nie pojawiaja sie przy krawedziach
   var TICK_START = 260;
   var TICK_PRZYROST = 3.5; // ms szybciej za kazda oliwke (bylo 5.5 - przyspieszal za szybko)
@@ -12172,7 +12426,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
       zagrajChrupanie();
       // Po progu gra NIE konczy sie - zaliczamy i gramy dalej do smierci
       if (wynik === CEL_WYNIK && !trybSzefa) zglosZaliczenieWeza(false);
-      if (wynik === CEL_WYNIK) pokazKomunikatWeza(trybSzefa ? '👑 ' + CEL_WYNIK + ' w trybie szefa!' : '✅ ' + CEL_WYNIK + ' oliwek — zaliczone! Graj dalej, ile dasz radę');
+      if (wynik === (trybSzefa ? CEL_SZEFA : CEL_WYNIK)) pokazKomunikatWeza(trybSzefa ? '👑 ' + CEL_SZEFA + ' w trybie szefa!' : '✅ ' + CEL_WYNIK + ' oliwek — zaliczone! Graj dalej, ile dasz radę');
       ruchZjadl = true;
       if (trybSzefa) { odwrocone = !odwrocone; pokazOdwrocenie(); }
       jedzenie = losujJedzenie();
@@ -12262,7 +12516,7 @@ SZABLON_SNAKE = """<!DOCTYPE html>
         ? '👑 Tryb szefa: ' + wynik + ' ' + odmianaOliwek(wynik)
         : '🎉 Zaliczone — wynik: ' + wynik + ' ' + odmianaOliwek(wynik) + '!';
       nakladkaOpis.textContent = trybSzefa
-        ? (wynik >= CEL_WYNIK ? 'Prawdziwa szefowa! 👑' : 'Minimum to ' + CEL_WYNIK + '. Spróbujesz jeszcze raz?')
+        ? (wynik >= CEL_SZEFA ? 'Prawdziwa szefowa! 👑' : 'W trybie szefa cel to ' + CEL_SZEFA + '. Spróbujesz jeszcze raz?')
         : 'Chcesz więcej? W trybie dla największych szefów każda oliwka odwraca sterowanie — aż do następnej.';
       nakladkaBtn.style.display = 'inline-block';
       nakladkaBtn.textContent = trybSzefa ? '👑 Jeszcze raz (tryb szefa)' : '👑 Tryb dla największych szefów';
@@ -12730,13 +12984,37 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     box-shadow: 0 3px 10px rgba(0,0,0,0.4);
   }
   .gra-btn:active { transform: scale(0.96); }
+  /* ---- Cyrograf i papirusy ---- */
+  .papirus-tlo { position: absolute; left: 0; right: 0; top: 0; bottom: 0; z-index: 30; display: none;
+    align-items: center; justify-content: center; background: rgba(8,2,4,0.62); }
+  .papirus { width: 88%; max-width: 340px; padding: 16px 16px 14px; border-radius: 7px; transform: rotate(-0.6deg);
+    background: radial-gradient(ellipse at 50% 45%, #f6e7c1 0%, #ecd49c 60%, #cfae6c 100%);
+    box-shadow: inset 0 0 42px rgba(120,70,20,0.6), inset 0 0 6px rgba(90,50,10,0.5), 0 12px 32px rgba(0,0,0,0.65);
+    color: #3b2410; font-family: Georgia, 'Times New Roman', serif; animation: rozwin .35s ease-out; }
+  @keyframes rozwin { from { transform: rotate(-0.6deg) scaleY(0.2); opacity: 0; } to { transform: rotate(-0.6deg) scaleY(1); opacity: 1; } }
+  .papirus-tytul { font-size: 21px; font-weight: 700; text-align: center; color: #5a1a10; margin-bottom: 8px; }
+  .papirus-tekst { font-size: 13.5px; line-height: 1.5; text-align: center; }
+  #podpisCanvas { display: block; width: 100%; height: 85px; margin-top: 10px; touch-action: none; cursor: crosshair;
+    background: rgba(255,255,255,0.18); border-bottom: 2px solid #5a3a1a; border-radius: 4px 4px 0 0; }
+  .papirus-linia { font-size: 10.5px; font-style: italic; text-align: right; color: #7a5a30; margin-top: 2px; }
+  .papirus-przyciski { display: flex; gap: 8px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
+  .papirus-btn { border: none; border-radius: 8px; padding: 9px 14px; font: 700 14px Georgia, serif; background: #7a1c12; color: #f6e7c1; cursor: pointer; }
+  .papirus-btn.drugi { background: transparent; color: #7a1c12; border: 1.5px solid #7a1c12; }
+  .papirus-btn:disabled { opacity: 0.45; }
+  #papirusIlustracja svg { display: block; width: 100%; border-radius: 5px; margin-bottom: 10px; filter: sepia(0.35) brightness(0.82) contrast(1.1);
+    box-shadow: 0 0 0 3px rgba(90,50,10,0.45), 0 4px 10px rgba(0,0,0,0.4); }
+  #toastWygranej { position: absolute; left: 7%; right: 7%; top: 36%; z-index: 25; display: none; text-align: center;
+    padding: 14px 12px; border-radius: 14px; background: linear-gradient(135deg, #3a2a08, #6a4a10); border: 2px solid #e6b53c;
+    color: #ffe9a8; font-weight: 800; font-size: 17px; box-shadow: 0 10px 28px rgba(0,0,0,0.6); animation: wyskocz .3s ease-out; }
+  #toastWygranej small { display: block; font-size: 13px; font-weight: 600; color: #f3dfa6; margin-top: 4px; }
+  @keyframes wyskocz { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 </style>
 </head>
 <body>
 
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
-  <div id="panel"><span id="wygraneEtykieta">Wygrane: 0 / 3</span></div>
+  <div id="panel"><span id="wygraneEtykieta">✅ 0/3   ❌ 0   🤝 0   👻 100%</span></div>
   <canvas id="canvasCien" width="140" height="150"></canvas>
   <div class="etykieta-strony">Krupier <span id="sumaKrupiera"></span></div>
   <div class="rzad-kart" id="kartyKrupiera"></div>
@@ -12747,9 +13025,27 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     <button class="btn-akcja-bj" id="btnDobierz">🃏 Dobierz</button>
     <button class="btn-akcja-bj" id="btnPas">✋ Pas</button>
   </div>
+  <div id="cyrograf" class="papirus-tlo">
+    <div class="papirus">
+      <div class="papirus-tytul">📜 Cyrograf</div>
+      <div class="papirus-tekst">Ja, niżej podpisana, <b>zapożyczam się u Diabła</b> na partię Blackjacka.<br>Oświadczam, że wiem, iż <b>hazard to zło</b>, a kasyno zawsze wygrywa.<br>Za każdą przegraną oddaję Krupierowi kawałek duszy. 😈</div>
+      <canvas id="podpisCanvas" width="560" height="170"></canvas>
+      <div class="papirus-linia">podpis (palcem)</div>
+      <div class="papirus-przyciski"><button class="papirus-btn drugi" id="btnWyczysc">🧽 Wyczyść</button><button class="papirus-btn" id="btnPodpisuje" disabled>✍️ Podpisuję</button></div>
+    </div>
+  </div>
+  <div id="papirusOkno" class="papirus-tlo">
+    <div class="papirus">
+      <div id="papirusIlustracja"></div>
+      <div class="papirus-tytul" id="papirusTytul"></div>
+      <div class="papirus-tekst" id="papirusTekst"></div>
+      <div class="papirus-przyciski" id="papirusPrzyciski"></div>
+    </div>
+  </div>
+  <div id="toastWygranej"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">🃏 Blackjack</div>
-    <div id="nakladkaOpis">Pokonaj tajemniczego krupiera 3 razy! Zbierz karty jak najbliżej 21, nie przebijając. Król/Dama/Walet = 10, As = 11 albo 1.</div>
+    <div id="nakladkaOpis">Pokonaj krupiera 3 razy — ale najpierw podpisz cyrograf. 😈 Zbierz karty jak najbliżej 21, nie przebijając. Król/Dama/Walet = 10, As = 11 albo 1.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -12957,9 +13253,8 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
   }
 
   function aktualizujWygrane() {
-    wygraneEtykieta.textContent = 'Wygrane: ' + wygraneGracza + ' / ' + CEL_WYGRANYCH;
+    wygraneEtykieta.textContent = '✅ ' + wygraneGracza + '/' + CEL_WYGRANYCH + '   ❌ ' + przegraneGracza + '   🤝 ' + remisyGracza + '   👻 ' + dusza + '%';
   }
-
   function ustawStanPrzyciskow(wlaczone) {
     btnDobierz.disabled = !wlaczone;
     btnPas.disabled = !wlaczone;
@@ -13045,42 +13340,83 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
     }
   }
 
+  // ---- Cyrograf, papirusy i licznik duszy ----
+  var przegraneGracza = 0, remisyGracza = 0, dusza = 100, podpisDataUrl = null;
+  var GORNIK_SVG = '<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="skala" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2a1c"/><stop offset="1" stop-color="#1a120a"/></linearGradient><radialGradient id="lampa" cx="1" cy="0.5" r="1"><stop offset="0" stop-color="rgba(255,230,150,0.55)"/><stop offset="1" stop-color="rgba(255,230,150,0)"/></radialGradient></defs><rect width="300" height="130" fill="#120c07"/><path d="M0 22 Q60 6 120 16 T240 14 T300 20 L300 108 Q240 120 180 112 T60 116 T0 108Z" fill="url(#skala)"/><path d="M0 108 L300 108 L300 130 L0 130Z" fill="#0d0905"/><path d="M0 113 L200 113 M0 118 L200 118" stroke="#5a4632" stroke-width="1.6"/><path d="M12 111 v9 M40 111 v9 M68 111 v9 M96 111 v9 M124 111 v9 M152 111 v9 M180 111 v9" stroke="#3a2a1c" stroke-width="3"/><path d="M206 16 L222 18 L218 40 L226 62 L216 84 L224 108 L204 108 L210 84 L200 60 L208 38Z" fill="#4a3826" stroke="#2a1e12" stroke-width="1.5"/><path d="M212 30 l4 8 M208 70 l5 6" stroke="#2a1e12" stroke-width="1.2"/><g fill="#7fe6ff" stroke="#e6fbff" stroke-width="0.8"><path d="M240 50 l8 -8 l8 8 l-8 12z"/><path d="M262 74 l7 -7 l7 7 l-7 10z"/><path d="M250 94 l6 -6 l6 6 l-6 9z"/><path d="M276 40 l6 -6 l6 6 l-6 9z"/><path d="M232 80 l5 -5 l5 5 l-5 7z"/><path d="M284 92 l5 -5 l5 5 l-5 7z"/></g><g fill="#fff"><circle cx="248" cy="44" r="1.3"/><circle cx="270" cy="69" r="1.1"/><circle cx="283" cy="36" r="1.1"/><circle cx="256" cy="90" r="0.9"/></g><path d="M86 46 L4 22 L4 86Z" fill="url(#lampa)"/><g transform="translate(96 54)"><ellipse cx="0" cy="54" rx="17" ry="3" fill="rgba(0,0,0,0.55)"/><path d="M-5 24 L-13 51 M5 24 L9 51" stroke="#26262c" stroke-width="6" stroke-linecap="round"/><rect x="-9" y="2" width="18" height="25" rx="5" fill="#3d5a7a"/><path d="M-8 9 L-17 22" stroke="#3d5a7a" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="-6" r="8" fill="#d9a77a"/><path d="M-10.5 -8 Q0 -21 10.5 -8Z" fill="#f2c230"/><circle cx="-9.5" cy="-10" r="2.5" fill="#fff6c0"/><path d="M5 5 L23 -14" stroke="#7a5a3a" stroke-width="3" stroke-linecap="round"/><path d="M14 -21 Q25 -17 31 -6" stroke="#9aa0a8" stroke-width="3.5" fill="none" stroke-linecap="round"/></g></svg>';
+  function losuj(t) { return t[Math.floor(Math.random() * t.length)]; }
+  function pokazPapirus(ilustracja, tytul, tekst, przyciski) {
+    document.getElementById('papirusIlustracja').innerHTML = ilustracja || '';
+    document.getElementById('papirusTytul').textContent = tytul;
+    document.getElementById('papirusTekst').innerHTML = tekst;
+    var pp = document.getElementById('papirusPrzyciski'); pp.innerHTML = '';
+    przyciski.forEach(function (p) {
+      var bt = document.createElement('button'); bt.className = 'papirus-btn' + (p.drugi ? ' drugi' : ''); bt.textContent = p.tekst;
+      bt.onclick = function () { inicjujDzwiek(); p.akcja(); }; pp.appendChild(bt);
+    });
+    document.getElementById('papirusOkno').style.display = 'flex';
+  }
+  function zamknijPapirus() { document.getElementById('papirusOkno').style.display = 'none'; }
+  function grajDalej() { zamknijPapirus(); if (trwa) rozpocznijRozdanie(); }
+  function pokazToastWygranej() {
+    var t = document.getElementById('toastWygranej');
+    var hasla = [['🎰 Urodzona hazardzistka!', 'Diabeł nerwowo przelicza żetony…'], ['💎 Masz talent!', 'Może to Twoja droga w życiu?'],
+                 ['🃏 Kasyno już dzwoni', 'z ofertą pracy dla Ciebie.'], ['🔥 Szczęście Ci sprzyja!', 'Krupier zaczyna się pocić.']];
+    var h = losuj(hasla); t.innerHTML = h[0] + '<small>' + h[1] + '</small>';
+    t.style.display = 'block'; setTimeout(function () { t.style.display = 'none'; }, 1500);
+  }
   function zakonczRozdanie(rezultat, opis) {
     trwaRozdanie = false;
     ustawStanPrzyciskow(false);
     komunikatRozdania.textContent = opis;
-
     if (rezultat === 'wygrana') {
-      zagrajWygrana();
-      wygraneGracza++;
+      zagrajWygrana(); wygraneGracza++; window.stat && window.stat('wygrane');
       aktualizujWygrane();
+      if (wygraneGracza >= CEL_WYGRANYCH) { setTimeout(function () { zakonczGre(true); }, 1300); return; }
+      setTimeout(pokazToastWygranej, 350);
+      setTimeout(function () { if (trwa) rozpocznijRozdanie(); }, 2000);
     } else if (rezultat === 'przegrana') {
-      zagrajPrzegrana();
+      zagrajPrzegrana(); przegraneGracza++; window.stat && window.stat('przegrane');
+      dusza = Math.max(0, dusza - 15); aktualizujWygrane();
+      setTimeout(function () {
+        pokazPapirus(GORNIK_SVG, losuj(['📜 Klauzula nr 13', '😈 Diabeł dopisuje odsetki', '📜 Przypomnienie z cyrografu']),
+          'Kolejny kawałek duszy przechodzi na własność Krupiera — zostało Ci <b>' + dusza + '%</b>.<br><br>' +
+          '⛏️ <i>Większość graczy odpuszcza tuż przed wielką wygraną… a diamenty mogą być za następną ścianą.</i>',
+          [{ tekst: '😈 Gram dalej', akcja: grajDalej }]);
+      }, 900);
     } else {
-      zagrajRemis();
+      zagrajRemis(); remisyGracza++; window.stat && window.stat('remisy');
+      dusza = Math.max(0, dusza - 5); aktualizujWygrane();
+      setTimeout(function () {
+        pokazPapirus('', '🤝 Remis', 'Ani wygrana, ani przegrana…<br><b>Czy na pewno chcesz grać dalej?</b>', [
+          { tekst: 'Tak, gram dalej', akcja: grajDalej },
+          { tekst: 'Może jednak nie…', drugi: true, akcja: function () {
+              document.getElementById('papirusTekst').innerHTML = 'Za późno — <b>cyrograf już podpisany</b>. 😈';
+              document.getElementById('papirusPrzyciski').innerHTML = '';
+              setTimeout(grajDalej, 1500);
+          } }]);
+      }, 700);
     }
-
-    if (wygraneGracza >= CEL_WYGRANYCH) {
-      setTimeout(function () { zakonczGre(true); }, 1300);
-      return;
-    }
-
-    setTimeout(function () {
-      if (trwa) rozpocznijRozdanie();
-    }, 1600);
   }
 
   function zakonczGre(wygrana) {
     trwa = false;
+    zamknijPapirus();
     trwaRozdanie = false;
     ustawStanPrzyciskow(false);
     nakladka.style.display = 'flex';
 
     if (wygrana) {
       nakladkaTytul.textContent = '🎉 Pokonałaś krupiera!';
-      nakladkaOpis.textContent = 'Etap zaliczony automatycznie!';
-      nakladkaBtn.style.display = 'none';
-      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      nakladkaOpis.innerHTML = '✅ Wygrane: <b>' + wygraneGracza + '</b> &nbsp; ❌ Przegrane: <b>' + przegraneGracza + '</b> &nbsp; 🤝 Remisy: <b>' + remisyGracza + '</b>'
+        + '<br>👻 Zostało Ci <b>' + dusza + '%</b> duszy.<br><br><i>Cyrograf trafił do Diabła… zobaczysz go jeszcze. 😈</i>';
+      nakladkaBtn.style.display = '';
+      nakladkaBtn.textContent = '🔁 Zagraj jeszcze raz';
+      // Gra zostaje na ekranie (dalej), a z wynikiem leci podpis - pokaze sie po otwarciu sejfu
+      var pakiet = window.statyDoWyslania ? window.statyDoWyslania() : { zaliczono: true };
+      if (typeof pakiet !== 'object' || pakiet === null) pakiet = { zaliczono: true };
+      pakiet.dalej = true;
+      if (podpisDataUrl) pakiet.podpis = podpisDataUrl;
+      var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: pakiet };
       window.postMessage(wiadomoscZaliczenia, '*');
       if (window.parent && window.parent !== window) { window.parent.postMessage(wiadomoscZaliczenia, '*'); }
     }
@@ -13088,7 +13424,7 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
 
   function rozpocznijGre() {
     talia = nowaTalia();
-    wygraneGracza = 0;
+    wygraneGracza = 0; przegraneGracza = 0; remisyGracza = 0; dusza = 100;
     aktualizujWygrane();
     nakladka.style.display = 'none';
     trwa = true;
@@ -13098,7 +13434,33 @@ SZABLON_BLACKJACK = """<!DOCTYPE html>
 
   btnDobierz.addEventListener('click', dobierzKarte);
   btnPas.addEventListener('click', pas);
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  // ---- Podpis palcem na cyrografie ----
+  (function () {
+    var pc = document.getElementById('podpisCanvas'), px = pc.getContext('2d'), btnP = document.getElementById('btnPodpisuje');
+    var rysuje = false, ost = null, tusz = 0;
+    px.lineCap = 'round'; px.lineJoin = 'round'; px.strokeStyle = '#6a0f0f'; px.lineWidth = 5;
+    function punkt(e) { var r = pc.getBoundingClientRect(); return [(e.clientX - r.left) * pc.width / r.width, (e.clientY - r.top) * pc.height / r.height]; }
+    pc.addEventListener('pointerdown', function (e) { e.preventDefault(); rysuje = true; ost = punkt(e); try { pc.setPointerCapture(e.pointerId); } catch (x) {} });
+    pc.addEventListener('pointermove', function (e) {
+      if (!rysuje) return; e.preventDefault();
+      var p = punkt(e); px.beginPath(); px.moveTo(ost[0], ost[1]); px.lineTo(p[0], p[1]); px.stroke();
+      tusz += Math.hypot(p[0] - ost[0], p[1] - ost[1]); ost = p;
+      btnP.disabled = tusz < 90;
+    });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { pc.addEventListener(t, function () { rysuje = false; }); });
+    document.getElementById('btnWyczysc').onclick = function () { px.clearRect(0, 0, pc.width, pc.height); tusz = 0; btnP.disabled = true; };
+    btnP.onclick = function () {
+      if (tusz < 90) return;
+      podpisDataUrl = pc.toDataURL('image/png');
+      document.getElementById('cyrograf').style.display = 'none';
+      rozpocznijGre();
+    };
+  })();
+  nakladkaBtn.onclick = function () {
+    inicjujDzwiek();
+    if (!podpisDataUrl) { nakladka.style.display = 'none'; document.getElementById('cyrograf').style.display = 'flex'; }
+    else rozpocznijGre();
+  };
 
   narysujCien();
 </script>
@@ -16759,6 +17121,8 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   function kafelStaly(kx, ky) {
     // W trakcie ucieczki prawa krawedz przestaje byc sciana - mozna wybiec
     if (kx >= KOL) return faza !== 'ucieczka';
+    // Smaczek: na 1. poziomie lewa krawedz NIE jest sciana - mozna wyjsc w lewo
+    if (kx < 0 && poziomIdx === 0 && faza === 'gra') return false;
     if (kx < 0 || ky < 0 || ky >= WIERSZ) return kx < 0;
     return mapa[ky][kx] === '#';
   }
@@ -16986,6 +17350,9 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     if (dotykaKolcow()) { zgin('Auć.'); return; }
     if (gracz.y > WYS + 40) { zgin('Spadłaś.'); return; }
 
+    // Smaczek: wyszla w lewo na 1. poziomie -> wchodzi z prawej strony od razu na OSTATNI poziom
+    if (poziomIdx === 0 && gracz.x + SZER_GRACZA < -2) { skrotDiabla(); return; }
+
     // --- Drzwi ---
     var dy = drzwi.y * KAFEL;
     if (faza === 'gra') {
@@ -17095,6 +17462,10 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
     nakladkaTytul.textContent = '😇 Pokonałaś diabła!';
     nakladkaOpis.innerHTML = 'Wszystkie ' + POZIOMY.length + ' poziomów zaliczone.<br>'
       + 'Zgonów po drodze: <b>' + zgony + '</b>.<br><br>Etap zaliczony automatycznie!';
+    if (skrotUzyty) {
+      nakladkaTytul.textContent = '😈 Skrót diabła!';
+      nakladkaOpis.innerHTML = 'Zamiast ' + POZIOMY.length + ' poziomów wystarczyło pójść w lewo.<br>Diabeł jest w szoku. Etap zaliczony! 😏';
+    }
     nakladkaBtn.style.display = 'none';
     var w = { type:'streamlit-child:zaliczono', wartosc:true };
     window.postMessage(w, '*');
@@ -17102,6 +17473,21 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
   }
 
   // ---------- RYSOWANIE ----------
+  var skrotUzyty = false;
+  function skrotDiabla() {
+    skrotUzyty = true;
+    poziomIdx = POZIOMY.length - 1;
+    wczytajPoziom(poziomIdx);
+    var startX = gracz.x, yStart = gracz.y;
+    gracz.x = SZER - SZER_GRACZA - 2; gracz.vx = 0; gracz.patrzy = -1;
+    // gdyby po prawej stronie byla sciana - zostaje zwykly start poziomu
+    var kxP = Math.floor((gracz.x + SZER_GRACZA - 1) / KAFEL), kyP = Math.floor((yStart + WYS_GRACZA - 1) / KAFEL);
+    if (kafelStaly(kxP, kyP) || kafelStaly(kxP, Math.floor(yStart / KAFEL))) gracz.x = startX;
+    window.stat && window.stat('skrot_diabla');
+    pokazTytul(poziomIdx);
+    setTimeout(function () { pokazTekst('😈 Skrót diabła!'); }, 700);
+    dzwiekDrzwi();
+  }
   function rysujBlok(x, y) {
     ctx.fillStyle = '#443c62'; ctx.fillRect(x, y, KAFEL, KAFEL);
     ctx.fillStyle = '#564d78'; ctx.fillRect(x, y, KAFEL, 4);
@@ -17312,7 +17698,7 @@ SZABLON_POZIOM_DIABLA = """<!DOCTYPE html>
                       function () { wcisniete.skok = false; });
 
   function rozpocznijGre() {
-    poziomIdx = 0; zgony = 0;
+    poziomIdx = 0; zgony = 0; skrotUzyty = false;
     wcisniete.lewo = false; wcisniete.prawo = false; wcisniete.skok = false;
     wczytajPoziom(0);
     pokazTytul(0);
@@ -17774,6 +18160,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   #banerPietra { position: absolute; left: 0; right: 0; top: 30%; z-index: 6; text-align: center; pointer-events: none;
     color: #ffe08a; font-weight: 900; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.95); opacity: 0; transition: opacity .6s; }
   #banerPietra small { display: block; font-size: 13px; color: #f0e8d0; font-weight: 700; margin-top: 4px; }
+  #btnZapiszLb { position: absolute; left: 8px; bottom: calc(var(--wys-paska, 230px) - 4px); z-index: 7; width: 38px; height: 38px; border-radius: 50%;
+    border: 1.5px solid rgba(230,193,92,0.6); background: rgba(20,16,28,0.85); font-size: 17px; cursor: pointer; display: none; }
 </style>
 </head>
 <body>
@@ -17793,6 +18181,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   </div>
   <div id="banerPietra"></div>
     <div id="dziennik"></div>
+    <button id="btnZapiszLb" title="Zapisz grę">💾</button>
   <button id="btnSkrzynia">📦 Otwórz skrzynkę</button>
 
   <div id="nakladkaEkw">
@@ -17921,9 +18310,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var RODZAJE_BRONI = {
     miecz:      { nazwa:'Miecz',            ikona:'🗡️', zasieg:66,  tempo:0.40, obr:21, magiczna:false,
                   efektBroni:'wampiryzm' },
-    topor:      { nazwa:'Topór',            ikona:'🪓', zasieg:62,  tempo:0.60, obr:36, magiczna:false,
+    topor:      { nazwa:'Topór',            ikona:'🪓', zasieg:62,  tempo:0.70, obr:36, magiczna:false,
                   efektBroni:'krwawienieLecznicze' },
-    mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:0.82, obr:56, magiczna:false,
+    mlot:       { nazwa:'Młot',             ikona:'🔨', zasieg:58,  tempo:1.25, obr:95, magiczna:false,
                   opis:'Miażdżący, szeroki zamach' },
     sztylety:   { nazwa:'Sztylety',         ikona:'⚔️', zasieg:50,  tempo:0.30, obr:14, magiczna:false,
                   efektBroni:'rozpedzanie' },
@@ -17952,17 +18341,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     { rodzaj:'zbrPlyt',   slot:'zbroja', nazwa:'Zbroja płytowa',    ikona:'🛡️', obrona:19 },
     { rodzaj:'zbrBers',   slot:'zbroja', nazwa:'Napierśnik Berserkera', ikona:'🥋', obrona:5, obrazenia:8 },
     { rodzaj:'zbrStraz',  slot:'zbroja', nazwa:'Zbroja Strażnika',  ikona:'🦺', obrona:12, obrazenia:4 },
-    { rodzaj:'zbrKata',   slot:'zbroja', nazwa:'Zbroja Kata',       ikona:'☠️', obrona:6, egzekucja:0.05 },
+    { rodzaj:'zbrKata',   slot:'zbroja', nazwa:'Zbroja Kata',       ikona:'☠️', obrona:15, egzekucja:0.05 },
     // BUTY
     { rodzaj:'butWichr',  slot:'buty', nazwa:'Buty Wichru',        ikona:'👟', predkosc:26 },
     { rodzaj:'butOkute',  slot:'buty', nazwa:'Buty okute',         ikona:'🥾', obrona:10 },
     { rodzaj:'butWedr',   slot:'buty', nazwa:'Buty Wędrowca',      ikona:'🧦', obrona:5, predkosc:15 },
     // AMULET
-    { rodzaj:'amMocy',    slot:'amulet', nazwa:'Amulet Mocy',      ikona:'📿', obrazenia:7 },
-    { rodzaj:'amZycia',   slot:'amulet', nazwa:'Amulet Życia',     ikona:'💠', zdrowie:30 },
-    { rodzaj:'amLowcy',   slot:'amulet', nazwa:'Amulet Łowcy',     ikona:'🔮', obrazenia:3, doswiadczenie:0.10 },
+    { rodzaj:'amMocy',    slot:'amulet', nazwa:'Amulet Mocy',      ikona:'📿', obrazenia:16 },
+    { rodzaj:'amZycia',   slot:'amulet', nazwa:'Amulet Życia',     ikona:'💠', zdrowie:90 },
+    { rodzaj:'amLowcy',   slot:'amulet', nazwa:'Amulet Łowcy',     ikona:'🔮', obrazenia:10, doswiadczenie:0.12 },
     { rodzaj:'amWiedzy',  slot:'amulet', nazwa:'Amulet Wiedzy',    ikona:'📖', doswiadczenie:0.28 },
-    { rodzaj:'amZrodla',  slot:'amulet', nazwa:'Amulet Źródła',    ikona:'💧', regeneracja:2 },
+    { rodzaj:'amZrodla',  slot:'amulet', nazwa:'Amulet Źródła',    ikona:'💧', regeneracja:6 },
     { rodzaj:'amKrwi',    slot:'amulet', nazwa:'Amulet Krwi',      ikona:'🩸', omnivamp:0.04 },
   ];
   var WARIANT_PO_RODZAJU = {};
@@ -18072,6 +18461,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Przedmioty i poziom zostaja po smierci. Cofa sie tylko to, co zuzylas
   // na tym pietrze: zdrowie i mikstury wracaja do stanu z wejscia.
   function zapiszMigawkePietra() {
+    if (typeof graRozpoczeta !== 'undefined' && graRozpoczeta) setTimeout(function () { zapiszGreLabirynt(true); }, 0);
     migawkaPietra = {
       hp: gracz.hp,
       mikstury: gracz.mikstury,
@@ -18343,7 +18733,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
 
   // Efekty broni ROSNA Z RZADKOSCIA - lepsza wersja tej samej broni
   // działa realnie inaczej, nie tylko bije mocniej.
-  function procentWampiryzmu(tier) { return 0.02 + tier * 0.01; }        // 2% .. 6%
+  function procentWampiryzmu(tier) { return 0.06 + tier * 0.02; }        // 2% .. 6%
   function coIleRzut(tier)        { return Math.max(2, 6 - tier); }      // co 6 .. co 2 ataki
   function mnoznikKrwawienia(tier){ return 0.30 + tier * 0.09; }         // 30% .. 66% obr. bazowych
 
@@ -18356,9 +18746,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (bron.opis) return bron.opis;
     var t = bron.tier || 0;
     if (bron.efektBroni === 'wampiryzm') return 'Leczy ' + Math.round(procentWampiryzmu(t)*100) + '% zadanych obrażeń';
-    if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 33% obrażeń od krwawienia';
+    if (bron.efektBroni === 'krwawienieLecznicze') return 'Krwawienie · leczy 25% obrażeń od krwawienia';
     if (bron.efektBroni === 'rozpedzanie') return 'Rozpędza się: do ' + Math.round(maksRozpedzenie(t)*100)
-      + '% szybciej po serii ciosów (reset po ' + PRZERWA_ROZPEDU + 's)';
+      + '% szybciej i do ' + Math.round(maksRozpedzenie(t)*80) + '% mocniej po serii ciosów (reset po ' + PRZERWA_ROZPEDU + 's)';
     if (bron.efektBroni === 'rzut') return 'Długi zasięg · rzut co ' + coIleRzut(t) + '. atak';
     return '';
   }
@@ -18579,7 +18969,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // Wrogowie o wlasnych WZORCACH RUCHU - nie kazdy po prostu biegnie na gracza
     okrazacz: { nazwa:'Ania',      ikona:'🦇', obraz:'ania', hp:34,  atak:8,  pancerz:5,  predkosc:130, xp:18, r:16, kolor:'#6a5a8a',
                 dystansowy:true, zasiegStrzalu:230, zachowanie:'okrazajacy' },
-    trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:60,  atak:9,  pancerz:6,  predkosc:104, xp:22, r:17, kolor:'#6a9a4a',
+    trujacy:  { nazwa:'Patryk', ikona:'🦨', obraz:'patryk', hp:85,  atak:12,  pancerz:6,  predkosc:112, xp:22, r:17, kolor:'#6a9a4a',
                 zachowanie:'uciekajacy', gazowy:true },
     jezdziec: { nazwa:'Jeździec',  ikona:'🐗', hp:64,  atak:15, pancerz:9,  predkosc:132, xp:24, r:18, kolor:'#8a5a3a',
                 zachowanie:'szarzaBoki' },
@@ -18711,6 +19101,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           w.juzSieTeleportowal = true;
           udany = true;
           teksty.push({ x: w.x, y: w.y - w.r - 12, tekst: '✨ Teleport!', kolor: '#9fd8ff', zycie: 1.2 }); tonSlizg(700, 1600, 0.22, 'sine', 0.06);
+          w.krwawienie = 0; w.spowolnienie = 0; w.plonie = 0; w.zamrozony = 0;   // teleport zrzuca z maga wszystkie efekty
           ton(880, 0.12, 'sine', 0.10);
           tekstNaSwiecie(w.x, w.y - w.r - 8, 'blink!', '#9fd8ff');
         }
@@ -18930,7 +19321,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       });
       trafieni.forEach(function (w) {
         var przed = w.hp;
-        zadajObrazeniaWrogowi(w, bron.obr);
+        // Sztylety: rozpedzenie przyspiesza ciosy I zwieksza ich obrazenia
+        zadajObrazeniaWrogowi(w, bron.efektBroni === 'rozpedzanie' ? Math.round(bron.obr * (1 + (gracz.rozpedzenie || 0) * 0.8)) : bron.obr);
         var zadane = przed - w.hp;
         if (bron.efektBroni === 'wampiryzm' && zadane > 0 && gracz.hp > 0) {
           var lecz = Math.max(1, Math.round(zadane * procentWampiryzmu(bron.tier || 0)));
@@ -18943,7 +19335,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           w.krwawienieObr = Math.max(2, Math.round(bron.obr * mnoznikKrwawienia(bron.tier || 0)));
           // Topor: krwawienie ODDAJE graczowi polowe zadanych obrazen
           // (poza bossami - inaczej walki z nimi bylyby trywialne)
-          w.krwawienieLeczy = !w.boss;   // topor oddaje 33% obrazen od krwawienia
+          w.krwawienieLeczy = !w.boss;   // topor oddaje 25% obrazen od krwawienia
         }
       });
       gracz.animCios = 0.16;
@@ -19141,7 +19533,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
           w.hp -= w.krwawienieObr;
           tekstNaSwiecie(w.x, w.y - w.r, '' + w.krwawienieObr, '#e6543c');
           if (w.krwawienieLeczy && gracz.hp > 0 && gracz.hp < gracz.hpMax) {
-            var oddane = Math.max(1, Math.round(w.krwawienieObr * 0.5));
+            var oddane = Math.max(1, Math.round(w.krwawienieObr * 0.25));
             gracz.hp = Math.min(gracz.hpMax, gracz.hp + oddane);
             tekstNaSwiecie(gracz.x, gracz.y - gracz.r - 6, '+' + oddane, '#7ec98a');
             odswiezHud();
@@ -19348,7 +19740,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         rusza = true;
         w.cooldownGazu -= dt;
         if (w.cooldownGazu <= 0) {
-          w.cooldownGazu = 0.75;
+          w.cooldownGazu = 0.6;
           gazy.push({ x:w.x, y:w.y, r:26, zycie:5.5, max:5.5, tyk:0,
                       obr:Math.max(2, Math.round(w.atak*0.4)) }); szumKrotki(0.45, 0.035, 'highpass', 3200);   // syk zamiast 'ataku'
         }
@@ -19468,7 +19860,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
             wrogowie.slice().forEach(function (o) {
               if (o === trafiony || o.hp <= 0) return;
               if (Math.hypot(o.x - px4, o.y - py4) <= PROMIEN_WYBUCHU_OGNIA + o.r) {
-                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr4 * 0.4)));
+                zadajObrazeniaWrogowi(o, Math.max(1, Math.round(obr4 * 0.25)));
                 if (o.hp > 0) { o.plonie = 3; o.obrPalenia = Math.max(6, Math.round(obr4 * 0.45)); }
               }
             });
@@ -20095,44 +20487,58 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (gracz.migotanie > 0) ctx.globalAlpha = 0.5;
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.beginPath(); ctx.ellipse(gx, gy + 11, 12, 4.5, 0, 0, Math.PI*2); ctx.fill();
-    // Plaszcz - z cieniowaniem i lekkim falowaniem
-    var faluje = Math.sin(Date.now() / 170) * 0.9;
-    var gradP = ctx.createLinearGradient(gx, gy - gracz.r*0.4, gx, gy + gracz.r*0.6);
-    gradP.addColorStop(0, '#3b74ab'); gradP.addColorStop(1, '#22476d');
-    ctx.fillStyle = gradP;
-    ctx.beginPath();
-    ctx.moveTo(gx - gracz.r*0.62, gy - gracz.r*0.4);
-    ctx.lineTo(gx + gracz.r*0.62, gy - gracz.r*0.4);
-    ctx.lineTo(gx + gracz.r*0.98 + faluje, gy + gracz.r*0.55);
-    ctx.lineTo(gx - gracz.r*0.98 + faluje, gy + gracz.r*0.55);
-    ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
-    // Tulow (zbroja) z cieniowaniem i konturem
-    var gradT = ctx.createRadialGradient(gx - 3, gy - 3, 2, gx, gy, gracz.r*0.85);
-    gradT.addColorStop(0, '#e2604f'); gradT.addColorStop(1, '#9a3328');
-    ctx.fillStyle = gradT;
-    ctx.beginPath(); ctx.arc(gx, gy, gracz.r*0.78, 0, Math.PI*2); ctx.fill();
-    ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 1.2; ctx.stroke();
-    // Pas ze zlota sprzaczka
-    ctx.fillStyle = '#5a2a1e'; ctx.fillRect(gx - gracz.r*0.74, gy - 1.8, gracz.r*1.48, 3.6);
-    ctx.fillStyle = '#ffd24a'; ctx.fillRect(gx - 2, gy - 2.2, 4, 4.4);
-    // Glowa: cieniowana twarz, wlosy z grzywka, oczy patrza w strone ruchu
-    var patrzX = Math.max(-1, Math.min(1, gracz.kierunekX || 0)) * 1.2;
-    var patrzY = Math.max(-1, Math.min(1, gracz.kierunekY || 0)) * 0.8;
-    var gradG = ctx.createRadialGradient(gx - 2, gy - 11, 1, gx, gy - 9, 8);
-    gradG.addColorStop(0, '#f1c9a0'); gradG.addColorStop(1, '#d09c72');
-    ctx.fillStyle = gradG;
-    ctx.beginPath(); ctx.arc(gx, gy - 9, 7, 0, Math.PI*2); ctx.fill();
+    // ===== POSTAC GLOWNA: poszukiwaczka przygod - dlugie wlosy, tunika, plaszcz =====
+    // Patrzy w strone ruchu/ataku, przebiera nogami w marszu, oddycha i mruga.
+    var kierP = (gracz.kierunekX || 0) < -0.15 ? -1 : 1;
+    var ruchP = (gracz._rysX === undefined) ? 0 : Math.hypot(gracz.x - gracz._rysX, gracz.y - gracz._rysY);
+    gracz._rysX = gracz.x; gracz._rysY = gracz.y;
+    gracz._faza = (gracz._faza || 0) + Math.min(ruchP, 6) * 0.24;
+    var idzieP = ruchP > 0.4, krokP = idzieP ? Math.sin(gracz._faza) : 0;
+    var oddechP = Math.sin(Date.now() / 420) * 0.6, falP = Math.sin(Date.now() / 180) * (idzieP ? 1.6 : 0.6);
+    function zaokrP(x, y, w, h, r, kolor) { ctx.fillStyle = kolor; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); ctx.fill(); }
+    ctx.save();
+    ctx.translate(gx, gy + 2);
+    ctx.scale(kierP * gracz.r / 16, gracz.r / 16);
+    // Plaszcz (za postacia)
+    var gPl = ctx.createLinearGradient(0, -6, 0, 14); gPl.addColorStop(0, '#b3263a'); gPl.addColorStop(1, '#6e1424');
+    ctx.fillStyle = gPl; ctx.beginPath(); ctx.moveTo(-7, -5); ctx.lineTo(7, -5); ctx.lineTo(9 - falP, 13);
+    ctx.quadraticCurveTo(0, 15.5, -10 - falP, 12); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.4)'; ctx.lineWidth = 1; ctx.stroke();
+    // Dlugie wlosy z tylu - ZA cialem
+    ctx.fillStyle = '#5a3420'; ctx.beginPath(); ctx.moveTo(-8, -14); ctx.quadraticCurveTo(-11.5, -3, -8.6 - falP * 0.5, 3.5);
+    ctx.lineTo(8.6 - falP * 0.5, 3.5); ctx.quadraticCurveTo(11.5, -3, 8, -14); ctx.closePath(); ctx.fill();
+    // Nogi i buty - krok
+    zaokrP(-5, 5 + Math.max(0, krokP) * 1.5, 4, 8 - Math.max(0, krokP) * 1.5, 1.5, '#2f3a4f');
+    zaokrP(1, 5 + Math.max(0, -krokP) * 1.5, 4, 8 - Math.max(0, -krokP) * 1.5, 1.5, '#2f3a4f');
+    zaokrP(-6 + krokP * 1.3, 11, 5.6, 3.6, 1.6, '#4a2c1a'); zaokrP(0.4 - krokP * 1.3, 11, 5.6, 3.6, 1.6, '#4a2c1a');
+    // Tunika z cieniowaniem
+    var gTu = ctx.createLinearGradient(-7, -6, 7, 8); gTu.addColorStop(0, '#41b097'); gTu.addColorStop(1, '#21645a');
+    ctx.fillStyle = gTu; ctx.beginPath(); ctx.moveTo(-6.5, -5 + oddechP * 0.3); ctx.lineTo(6.5, -5 + oddechP * 0.3); ctx.lineTo(8.2, 7.5); ctx.lineTo(-8.2, 7.5); ctx.closePath(); ctx.fill();
     ctx.strokeStyle = 'rgba(0,0,0,0.45)'; ctx.lineWidth = 1; ctx.stroke();
-    ctx.fillStyle = '#4a3020';
-    ctx.beginPath(); ctx.arc(gx, gy - 11, 7.2, Math.PI*1.02, Math.PI*1.98); ctx.fill();
-    ctx.beginPath(); ctx.moveTo(gx - 6.6, gy - 11); ctx.quadraticCurveTo(gx - 2, gy - 8.2, gx + 1, gy - 11.4);
-    ctx.lineTo(gx + 6.9, gy - 11); ctx.lineTo(gx + 6, gy - 14.5); ctx.lineTo(gx - 6, gy - 14.5); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#16130a';
-    ctx.fillRect(gx - 3.2 + patrzX, gy - 9.4 + patrzY, 1.9, 2.1);
-    ctx.fillRect(gx + 1.3 + patrzX, gy - 9.4 + patrzY, 1.9, 2.1);
-    ctx.fillStyle = 'rgba(230,110,90,0.32)';
-    ctx.beginPath(); ctx.arc(gx - 4.2, gy - 6.6, 1.4, 0, Math.PI*2); ctx.arc(gx + 4.2, gy - 6.6, 1.4, 0, Math.PI*2); ctx.fill();
+    // Pas ze zlota sprzaczka
+    zaokrP(-7.6, 1.4, 15.2, 2.7, 1, '#5a3a1e'); zaokrP(-1.6, 1.1, 3.2, 3.3, 0.8, '#ffd24a');
+    // Rece - machaja w marszu
+    zaokrP(-9.6, -4 - krokP * 1.2, 3.4, 8, 1.6, '#2f8a74'); zaokrP(6.2, -4 + krokP * 1.2, 3.4, 8, 1.6, '#2f8a74');
+    ctx.fillStyle = '#efc39a'; ctx.beginPath(); ctx.arc(-7.9, 4.6 - krokP * 1.2, 1.9, 0, Math.PI * 2); ctx.arc(7.9, 4.6 + krokP * 1.2, 1.9, 0, Math.PI * 2); ctx.fill();
+    // Glowa
+    var gGl = ctx.createRadialGradient(-2, -15, 1, 0, -13, 9); gGl.addColorStop(0, '#f6d2ae'); gGl.addColorStop(1, '#dca57c');
+    ctx.fillStyle = gGl; ctx.beginPath(); ctx.arc(0, -13 + oddechP * 0.2, 7.6, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)'; ctx.lineWidth = 0.9; ctx.stroke();
+    // Czubek glowy i grzywka
+    ctx.fillStyle = '#6b3d24'; ctx.beginPath(); ctx.arc(0, -14.5, 8, Math.PI * 1.02, Math.PI * 1.98); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(-7.8, -14); ctx.quadraticCurveTo(-3, -9.6, 1.5, -13.6); ctx.quadraticCurveTo(4.6, -11, 7.8, -14);
+    ctx.lineTo(7.5, -17.5); ctx.lineTo(-7.5, -17.5); ctx.closePath(); ctx.fill();
+    // Oczy (mrugaja), rumience, usmiech
+    var mrugP = (Date.now() % 3800) < 120;
+    ctx.fillStyle = '#1e1a16';
+    if (mrugP) { ctx.fillRect(-4, -11.6, 2.8, 0.9); ctx.fillRect(1.7, -11.6, 2.8, 0.9); }
+    else {
+      ctx.beginPath(); ctx.ellipse(-2.5, -11.3, 1.25, 1.65, 0, 0, Math.PI * 2); ctx.ellipse(3.1, -11.3, 1.25, 1.65, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#ffffff'; ctx.fillRect(-2.3, -12.3, 0.7, 0.7); ctx.fillRect(3.3, -12.3, 0.7, 0.7);
+    }
+    ctx.fillStyle = 'rgba(240,120,110,0.35)'; ctx.beginPath(); ctx.arc(-4.6, -9, 1.3, 0, Math.PI * 2); ctx.arc(5.3, -9, 1.3, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#8a3a2a'; ctx.lineWidth = 0.9; ctx.beginPath(); ctx.arc(0.5, -8.7, 1.8, 0.25, Math.PI - 0.25); ctx.stroke();
+    ctx.restore();
     ctx.restore();
 
     // Pasek zdrowia NAD POSTACIA - widac stan bez zerkania na gore ekranu
@@ -20641,8 +21047,37 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var kreator = { krok: 0, para: null, zachowany: null };
 
   function otworzKreatorLaczenia() {
+    var widziano = !!window.__poradnikLaczenia;
+    try { widziano = widziano || localStorage.getItem('escape_lb_poradnik_laczenia') === '1'; } catch (e) {}
+    if (!widziano) { pokazPoradnikLaczenia(); return; }
     kreator = { krok: 1, para: null, zachowany: null };
     rysujKreator();
+  }
+  function pokazPoradnikLaczenia() {
+    sekcjaEkw.innerHTML = '';
+    var kolory = TIERY.map(function (t) { return '<b style="color:' + t.kolor + '">' + t.nazwa + '</b>'; }).join(' → ');
+    var d = document.createElement('div');
+    d.style.cssText = 'font-size:12.5px;line-height:1.55;color:#eee4cc;padding:8px 6px 4px;';
+    d.innerHTML = '<div style="font-weight:800;color:#ffe08a;font-size:14px;margin-bottom:6px">🔗 Jak działa łączenie?</div>'
+      + '<div style="margin-bottom:7px">Łączenie podnosi przedmiot o <b>jeden kolor</b> wyżej:<br>' + kolory + '.<br>Wyższy kolor = większe <b>wszystkie</b> liczby przedmiotu.</div>'
+      + '<div style="margin-bottom:7px">⚔️ <b>Bronie:</b> potrzebujesz <b>dwóch takich samych broni</b> (np. dwa Młoty) w tym samym kolorze. '
+      + 'Jeden awansuje — więcej obrażeń i mocniejszy efekt (więcej leczenia, szybsze rozpędzanie…), drugi znika.</div>'
+      + '<div style="margin-bottom:7px">🛡️ <b>Rzeczy zakładane</b> (hełm, zbroja, buty, amulet): wystarczą <b>dwie rzeczy na tę samą część ciała</b> w tym samym kolorze — mogą być różne, '
+      + 'np. Zbroja Kata + Zbroja płytowa. Sama wybierasz, którą zachować: ona awansuje i <b>zachowuje swoje efekty</b>, druga znika.</div>'
+      + '<div style="margin-bottom:7px">💰 <b>Opłata:</b> do każdego łączenia potrzebny jest jeszcze <b>trzeci przedmiot w tym samym kolorze</b> — on też znika.</div>'
+      + '<div>✨ Łączyć można też rzeczy, które masz <b>założone</b>.</div>';
+    sekcjaEkw.appendChild(d);
+    var ok = document.createElement('button');
+    ok.style.cssText = 'width:100%;margin:8px 0 4px;background:linear-gradient(135deg,#e6c15c,#b8902c);border:none;border-radius:9px;color:#1a1408;font-size:13px;font-weight:800;padding:10px 2px;';
+    ok.textContent = 'Rozumiem — do łączenia 🔗';
+    ok.addEventListener('click', function () {
+      window.__poradnikLaczenia = true;
+      try { localStorage.setItem('escape_lb_poradnik_laczenia', '1'); } catch (e) {}
+      kreator = { krok: 1, para: null, zachowany: null };
+      rysujKreator();
+    });
+    sekcjaEkw.appendChild(ok);
+    sekcjaEkw.appendChild(przyciskWstecz(function () { kreator.krok = 0; odswiezPanele(); }));
   }
 
   function kartaPrzedmiotu(wpis, przyKliknieciu, dopisek) {
@@ -21360,7 +21795,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
   }
 
-  function rozpocznijGre() {
+  function rozpocznijGre(zapis) {
     trybNieskonczony = false;
     poziomLabiryntu = 0; czasGry = 0; zaliczoneZglosozone = false;
     zwiedzoneKomnaty = 0; odwiedzone = {};
@@ -21390,10 +21825,68 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         dziennik('👀 W rogu tej komnaty jest ukryte przejście… ale tylko dopóki stąd nie wyjdziesz.');
       }, 2200);
     }
+    if (zapis && zapis.gracz) {
+      // Wczytanie: postac z zapisu na poczatku zapisanego pietra (mapa losuje sie od nowa)
+      var hpZapisu = zapis.gracz.hp;
+      gracz = zapis.gracz;
+      poziomLabiryntu = zapis.poziom || 0; trybNieskonczony = !!zapis.tryb; czasGry = zapis.czasGry || 0;
+      generujMape(); zaludnijMape();
+      gracz.x = (komnaty[0].cx + 0.5) * KAFEL; gracz.y = (komnaty[0].cy + 0.5) * KAFEL;
+      gracz.cooldown = 0; gracz.rozpedzenie = 0; gracz.odOstatniegoCiosu = 0; gracz.niewrazliwosc = 1;
+      przeliczHpMax();
+      gracz.hp = Math.max(Math.round(gracz.hpMax * 0.5), Math.min(gracz.hpMax, hpZapisu || gracz.hpMax));
+      zapiszMigawkePietra();
+      kamX = gracz.x - WID_SWIATA/2; kamY = gracz.y - WYS_SWIATA*KAM_PION;
+      odswiezHud(); odswiezPanele();
+      setTimeout(function () { dziennik('📂 Wczytano zapis — piętro ' + (poziomLabiryntu + 1) + ', poziom postaci ' + gracz.poziom + '.'); }, 300);
+    }
+    var bwz = document.getElementById('btnWczytajZapis'); if (bwz) bwz.style.display = 'none';
     requestAnimationFrame(petla);
   }
 
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  // ---------- ZAPIS GRY: postac i pietro w pamieci przegladarki ----------
+  var KLUCZ_ZAPISU_LB = 'escape_zapis_labirynt';
+  (function () {
+    var bz = document.getElementById('btnZapiszLb');
+    bz.addEventListener('click', function (e) { e.stopPropagation(); inicjujDzwiek(); zapiszGreLabirynt(false); });
+    // przycisk tuz nad paskiem sterowania (wysokosc paska zalezy od trybu pelnego ekranu)
+    setInterval(function () {
+      var pas = document.getElementById('pasSterowania'), gra = document.getElementById('gra');
+      if (!pas || !gra) return;
+      bz.style.display = graRozpoczeta ? 'block' : 'none';
+      bz.style.bottom = (gra.clientHeight - pas.offsetTop + 8) + 'px';
+    }, 400);
+  })();
+  function zapiszGreLabirynt(cicho) {
+    try {
+      if (!gracz) return false;
+      var dane = { wersja: 1, czas: Date.now(), poziom: poziomLabiryntu, tryb: trybNieskonczony, czasGry: czasGry, gracz: JSON.parse(JSON.stringify(gracz)) };
+      localStorage.setItem(KLUCZ_ZAPISU_LB, JSON.stringify(dane));
+      if (!cicho) dziennik('💾 Zapisano — po wczytaniu zaczniesz to piętro od nowa z całym ekwipunkiem.');
+      return true;
+    } catch (e) {
+      if (!cicho) dziennik('⚠️ Nie udało się zapisać gry na tym urządzeniu.');
+      return false;
+    }
+  }
+  function odczytajZapisLabirynt() {
+    try { var t = localStorage.getItem(KLUCZ_ZAPISU_LB); return t ? JSON.parse(t) : null; } catch (e) { return null; }
+  }
+  var graRozpoczeta = false;
+  setInterval(function () { if (graRozpoczeta && trwa) zapiszGreLabirynt(true); }, 30000);
+  window.addEventListener('pagehide', function () { if (graRozpoczeta) zapiszGreLabirynt(true); });
+  document.addEventListener('visibilitychange', function () { if (document.hidden && graRozpoczeta) zapiszGreLabirynt(true); });
+
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); graRozpoczeta = true; rozpocznijGre(); };
+  (function () {
+    var zapis = odczytajZapisLabirynt();
+    if (!zapis || !zapis.gracz) return;
+    var bw = document.createElement('button');
+    bw.className = nakladkaBtn.className; bw.id = 'btnWczytajZapis'; bw.style.marginTop = '10px';
+    bw.textContent = '📂 Wczytaj zapis — piętro ' + ((zapis.poziom || 0) + 1) + ', poziom ' + (zapis.gracz.poziom || 1);
+    nakladkaBtn.parentNode.insertBefore(bw, nakladkaBtn.nextSibling);
+    bw.onclick = function () { inicjujDzwiek(); graRozpoczeta = true; nakladkaBtn.onclick = null; rozpocznijGre(zapis); };
+  })();
 
   // Ekran startowy - podglad
   generujMape();
@@ -21670,9 +22163,28 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     if (!bylaOtwarta && sk.klucz && gracz) {
       gracz.maKlucz = true;
       dziennik('🗝️ Znalazłaś klucz do komnaty bossa!');
+      var bpk = document.getElementById('banerPietra');
+      if (bpk) {
+        bpk.innerHTML = '🗝️ Masz klucz!<small>Drzwi do komnaty bossa stoją przed Tobą otworem</small>';
+        bpk.style.opacity = '1'; clearTimeout(pokazBanerPietra._t);
+        pokazBanerPietra._t = setTimeout(function () { bpk.style.opacity = '0'; }, 3200);
+      }
       teksty.push({ x: sk.x, y: sk.y - 30, tekst: '🗝️ Klucz!', kolor: '#ffd24a', zycie: 1.8 });
       ton(880, 0.12, 'triangle', 0.14); setTimeout(function () { ton(1320, 0.2, 'triangle', 0.12); }, 110);
       odswiezHud();
+    }
+  };
+
+  // Kreator laczenia: w pierwszym kroku zawsze mozna wrocic do poradnika
+  var _rysujKreatorOryg = rysujKreator;
+  rysujKreator = function () {
+    _rysujKreatorOryg();
+    if (kreator.krok === 1) {
+      var bp = document.createElement('button');
+      bp.style.cssText = 'width:100%;margin:4px 0;background:transparent;border:1px dashed rgba(230,193,92,0.6);border-radius:9px;color:#ffe08a;font-size:12px;font-weight:700;padding:8px 2px;';
+      bp.textContent = '❓ Jak działa łączenie?';
+      bp.addEventListener('click', pokazPoradnikLaczenia);
+      sekcjaEkw.appendChild(bp);
     }
   };
 
@@ -22500,6 +23012,39 @@ html.wiadomosc-miesci .stApp:has(.ekran-wiadomosc) [data-testid="stAppViewContai
 html.wiadomosc-miesci .stApp:has(.ekran-wiadomosc) section.main {
   overflow: hidden !important; overscroll-behavior: none !important;
 }
+
+/* Kafelki leveli w menu: ciemna karta z obramowaniem i poswiata w kolorze levelu
+   (zamiast globalnej, jaskrawej zieleni przyciskow "primary") */
+.st-key-kat_mozgowe { --kol: #5aa8ff; --kol-cien: rgba(90,168,255,0.28); }
+.st-key-kat_gry { --kol: #c06bff; --kol-cien: rgba(192,107,255,0.28); }
+.st-key-kat_przygody { --kol: #ff8a4a; --kol-cien: rgba(255,138,74,0.28); }
+.stApp div[class*="st-key-kat_"] div.stButton > button, .stApp div[class*="st-key-kat_"] button[kind], .stApp div[class*="st-key-kat_"] button {
+  background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(0,0,0,0.38)), #17121f !important;
+  border: 1.6px solid var(--kol, #d4af37) !important;
+  color: #f1e6c8 !important;
+  border-radius: 18px !important;
+  box-shadow: 0 0 16px var(--kol-cien, rgba(212,175,55,0.25)), inset 0 1px 0 rgba(255,255,255,0.08) !important;
+}
+.stApp div[class*="st-key-kat_"] button p { color: #f1e6c8 !important; }
+.stApp div[class*="st-key-kat_"] button p strong { color: var(--kol, #d4af37) !important; }
+.stApp div[class*="st-key-kat_"] button:hover, .stApp div[class*="st-key-kat_"] button:active {
+  box-shadow: 0 0 22px var(--kol-cien, rgba(212,175,55,0.35)), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+  transform: translateY(-1px);
+}
+.stApp div[class*="st-key-kat_"] button:disabled { opacity: 0.55 !important; }
+
+/* Koperta z wiadomoscia o prezencie (ekran po otwarciu sejfu) */
+details.koperta-prezent { max-width: 460px; margin: 1.4rem auto 0.4rem; border-radius: 16px; border: 1.5px solid rgba(230,193,92,0.7);
+  background: linear-gradient(160deg, #3a2e14, #1a1420); box-shadow: 0 8px 22px rgba(0,0,0,0.45); overflow: hidden; }
+details.koperta-prezent summary { list-style: none; cursor: pointer; padding: 0.9rem 1rem; text-align: center; font-weight: 800;
+  color: #ffe08a; font-size: 1.02rem; }
+details.koperta-prezent summary::-webkit-details-marker { display: none; }
+details.koperta-prezent[open] summary { border-bottom: 1px solid rgba(230,193,92,0.35); }
+details.koperta-prezent .koperta-tresc { padding: 0.9rem 1.1rem 1.1rem; color: #f1e6c8; font-size: 1rem; line-height: 1.65; text-align: left; }
+details.koperta-prezent.smaczki { margin-top: 0.8rem; }
+details.koperta-prezent .koperta-tresc ul { margin: 0; padding-left: 1.1rem; }
+details.koperta-prezent .koperta-tresc li { margin: 0 0 0.6rem; }
+details.koperta-prezent .koperta-tresc b { color: #ffe08a; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -22564,6 +23109,7 @@ def zapisz_postep():
         "jezyk": st.session_state.jezyk,
         "czas_startu": st.session_state.czas_startu,
         "samouczek_zrobiony": bool(st.session_state.get("samouczek_zrobiony")),
+        "podpis_diabla": st.session_state.get("podpis_diabla"),
     }
     try:
         with open(sciezka_stanu(), "w", encoding="utf-8") as f:
@@ -22603,13 +23149,15 @@ def zainicjuj_stan():
     for klucz_etapu, wartosc in bledy_url.items():
         bledy_polaczone[klucz_etapu] = max(bledy_polaczone.get(klucz_etapu, 0), wartosc)
     st.session_state.bledy_per_etap = bledy_polaczone
-    st.session_state.jezyk = jezyk_url or jezyk_plik or "pl"
+    st.session_state.jezyk = "pl"   # aplikacja tylko po polsku (bez angielskich instrukcji i podpowiedzi)
     st.session_state.czas_startu = czas_url or czas_plik
     try:
         staty_url = json.loads(st.query_params.get("s") or "{}")
     except Exception:
         staty_url = {}
     st.session_state.staty_gier = dict(zapisane.get("staty_gier", {}))
+    if zapisane.get("podpis_diabla") and not st.session_state.get("podpis_diabla"):
+        st.session_state.podpis_diabla = zapisane["podpis_diabla"]
     st.session_state.staty_gier.update(staty_url if isinstance(staty_url, dict) else {})
 
     juz_zaczela = bool(
@@ -22688,6 +23236,17 @@ SZABLON_KRZYZOWKI = """<!DOCTYPE html><html><head><meta charset="utf-8">
   #btnSprawdz { display:block; width:100%; margin-top:6px; padding:14px; border:none; border-radius:14px;
     background:linear-gradient(135deg,#ffe08a,#d4af37); color:#16130a; font-size:16px; font-weight:900; font-family:inherit; cursor:pointer; }
   #btnSprawdz.gotowy { animation:puls 1.4s ease-in-out infinite; }
+  #btnPodpowiedz { display:block; width:100%; margin-top:10px; padding:12px; border-radius:14px; cursor:pointer; font-family:inherit;
+    background:linear-gradient(160deg,#2a2213,#17121f); border:1.5px dashed rgba(230,193,92,0.8); color:#ffe08a; box-shadow:0 4px 14px rgba(0,0,0,0.35); font-size:15px; font-weight:800; }
+  #btnPodpowiedz:disabled { opacity:0.7; border-style:solid; cursor:default; }
+  #kartaPodpowiedzi { max-height:0; overflow:hidden; opacity:0; margin-top:0; border-radius:14px; transition:max-height .45s ease, opacity .35s ease, margin-top .35s ease;
+    background:linear-gradient(160deg,#3a2e14,#1a1420); border:1.5px solid rgba(230,193,92,0.7); box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+  #kartaPodpowiedzi.widoczna { max-height:260px; opacity:1; margin-top:10px; }
+  #kartaPodpowiedzi .kp-tytul { padding:10px 14px 0; color:#ffe08a; font-weight:900; font-size:14px; letter-spacing:.02em; }
+  #kartaPodpowiedzi .kp-tekst { padding:6px 14px 12px; color:#f1e6c8; font-size:14px; line-height:1.5; }
+  #kartaPodpowiedzi .kp-tekst b { color:#ffe08a; }
+  .karta.blysk { animation:blyskPodp 1.6s ease-out; }
+  @keyframes blyskPodp { 0% { box-shadow:0 0 0 0 rgba(255,224,138,0.0); } 25% { box-shadow:0 0 0 3px rgba(255,224,138,0.95), 0 0 24px rgba(255,224,138,0.7); } 100% { box-shadow:0 0 0 0 rgba(255,224,138,0); } }
   @keyframes puls { 0%,100% { box-shadow:0 0 0 0 rgba(230,193,92,.6); } 50% { box-shadow:0 0 0 9px rgba(230,193,92,0); } }
   #wynik { text-align:center; font-weight:800; margin-top:10px; min-height:22px; font-size:14px; }
   #wynik.zle { color:#fca5a5; } #wynik.dobrze { color:#9be8a8; }
@@ -22732,6 +23291,21 @@ SZABLON_KRZYZOWKI = """<!DOCTYPE html><html><head><meta charset="utf-8">
   var btn = document.createElement('button'); btn.id = 'btnSprawdz'; btn.textContent = D.t.sprawdz;
   var wynik = document.createElement('div'); wynik.id = 'wynik';
   gra.appendChild(btn); gra.appendChild(wynik);
+  // Jedyna podpowiedz: kierunek dla punktu 3 (bez zdradzania slowa)
+  if (D.t.podpTekst) {
+    var btnPodp = document.createElement('button'); btnPodp.id = 'btnPodpowiedz'; btnPodp.textContent = D.t.podpBtn;
+    var kartaPodp = document.createElement('div'); kartaPodp.id = 'kartaPodpowiedzi';
+    kartaPodp.innerHTML = '<div class="kp-tytul">💡 ' + D.t.podpTytul + '</div><div class="kp-tekst">' + D.t.podpTekst + '</div>';
+    btnPodp.addEventListener('click', function () {
+      if (btnPodp.disabled) return;
+      btnPodp.disabled = true; btnPodp.textContent = D.t.podpBtnUzyta;
+      kartaPodp.classList.add('widoczna'); klik(760);
+      var k3 = karty[2];
+      if (k3) { k3.classList.remove('blysk'); void k3.offsetWidth; k3.classList.add('blysk'); if (!zaliczone) { aktywne = 2; rysuj(); } }
+      setTimeout(function () { kartaPodp.scrollIntoView && kartaPodp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
+    });
+    gra.appendChild(btnPodp); gra.appendChild(kartaPodp);
+  }
 
   function rysuj() {
     karty.forEach(function (k, i) {
@@ -22830,6 +23404,11 @@ def renderuj_krzyzowka(etap_dane):
                 "zle": tt({"pl": "{n}/{m} dobrze — zdania na czerwono się nie zgadzają. Dotknij słowa, żeby je wyjąć.",
                            "en": "{n}/{m} correct — the red sentences are wrong. Tap a word to take it out."}),
                 "dobrze": tt({"pl": "✨ Wszystko się zgadza!", "en": "✨ All correct!"}),
+                "podpBtn": "💡 Podpowiedź",
+                "podpBtnUzyta": "💡 Podpowiedź odkryta",
+                "podpTytul": "Jedyna podpowiedź",
+                "podpTekst": ("W <b>punkcie 3</b> skup się na słowie związanym ze <b>wstydem</b>. "
+                              "Które z angielskich słów, które Ci zostały, mogłoby choć trochę pasować do wstydu? 😉"),
             },
         }
         html = SZABLON_KRZYZOWKI.replace("__DANE__", json.dumps(dane, ensure_ascii=False).replace("</", "<\\/"))
@@ -24552,7 +25131,8 @@ OPISY_STATOW = {
     "piano":     [("pomylki", "❌", "Pomyłki (zły klawisz)", "Wrong keys")],
     "snake":     [("smierci", "💀", "Liczba zderzeń", "Crashes"), ("oliwki", "🫒", "Zjedzone oliwki", "Olives eaten")],
     "bitwa":     [("smierci", "💀", "Przegrane walki", "Battles lost")],
-    "blackjack": [("rozdania", "🃏", "Rozegrane rozdania", "Hands played")],
+    "blackjack": [("wygrane", "✅", "Wygrane rozdania", "Hands won"), ("przegrane", "❌", "Przegrane rozdania", "Hands lost"),
+                  ("remisy", "🤝", "Remisy", "Pushes"), ("rozdania", "🃏", "Rozegrane rozdania", "Hands played")],
     "samolot":   [("metry", "📏", "Najdalszy lot", "Best flight"),
                   ("podejscia", "🔁", "Udało się za podejściem nr", "Made it on attempt no.")],
     "odyseusz":  [("pudla", "🎯", "Chybione strzały", "Missed shots")],
@@ -24621,6 +25201,28 @@ def pokaz_statystyki_gier():
     )
 
 
+def pokaz_cyrograf():
+    """Po otwarciu sejfu: podpisany przy Blackjacku cyrograf - dusza sprzedana Diablu."""
+    podpis = st.session_state.get("podpis_diabla")
+    if not podpis:
+        return
+    pl = st.session_state.jezyk == "pl"
+    tekst = ("Ja, niżej podpisana, zapożyczyłam się u Diabła przy stole do Blackjacka. "
+             "Umowa zawarta i podpisana własnoręcznie — bez prawa odwołania." if pl else
+             "I, the undersigned, borrowed from the Devil at the Blackjack table. "
+             "Signed by my own hand — no take-backs.")
+    st.markdown(f"""
+<div style="max-width:420px;margin:26px auto 8px;padding:18px 18px 16px;border-radius:8px;transform:rotate(-0.8deg);
+  background:radial-gradient(ellipse at 50% 45%,#f6e7c1 0%,#ecd49c 60%,#cfae6c 100%);
+  box-shadow:inset 0 0 44px rgba(120,70,20,.6),0 12px 30px rgba(0,0,0,.55);text-align:center;font-family:Georgia,serif;color:#3b2410;">
+  <div style="font-size:23px;font-weight:700;color:#5a1a10;">📜 {"Cyrograf" if pl else "The Contract"}</div>
+  <div style="font-size:14px;line-height:1.55;margin:8px 0 4px;">{tekst}</div>
+  <img src="{podpis}" alt="podpis" style="display:block;width:100%;max-width:300px;margin:4px auto 0;">
+  <div style="max-width:300px;margin:0 auto;border-top:2px solid #5a3a1a;font-size:11px;font-style:italic;color:#7a5a30;text-align:right;">{"podpis" if pl else "signature"}</div>
+  <div style="margin-top:12px;font-size:17px;font-weight:700;color:#7a1c12;">😈 {"Dusza sprzedana Diabłu" if pl else "Soul sold to the Devil"}</div>
+</div>""", unsafe_allow_html=True)
+
+
 def pokaz_final():
     sejf = (SZABLON_SEJF
             .replace("__KOD__", str(KOD_SEJFU))
@@ -24638,6 +25240,7 @@ def pokaz_final():
         minuty = (time.time() - st.session_state.czas_startu) / 60
         st.caption(f"⏱️ {t('ukonczone_w')} {minuty:.1f} {t('min')}")
 
+    pokaz_cyrograf()
     pokaz_statystyki_gier()
 
     if st.button(t("wroc_do_menu"), key="powrot_final"):
