@@ -380,7 +380,7 @@ WIADOMOSC_KONCOWA = {
         "To był mój sposób, żeby Ci pokazać, jak wiele dla mnie znaczysz."
         "<br><br>LOVE U 💛</div>"
         "<details class='koperta-prezent'>"
-        "<summary>💌 Przeczytaj, gdy otworzysz sejf</summary>"
+        "<summary>💌 Przeczytaj, gdy otworzysz prawdziwy sejf 🔐</summary>"
         "<div class='koperta-tresc'>"
         "Prezent, który czeka na Ciebie w sejfie, jest od <b>naszej rodzinki i od Twojej rodzinki</b> — "
         "złożyliśmy się na niego wszyscy razem. Pomysł, jak się pewnie domyślasz, był mój 😄"
@@ -404,6 +404,7 @@ WIADOMOSC_KONCOWA = {
         "<li>🫒 <b>Snake</b> — głowa węża to Ty, ze zdjęcia z plaży w Chałupach.</li>"
         "<li>🧗 <b>Jumping Prince</b> — skoczek z arbuzem na głowie to ja, a księżniczka na szczycie to Ty 👑</li>"
         "<li>🏰 <b>Więzień labiryntu</b> — ta, która strzela i ucieka, to Ania, a śmierdziel z gazem to Patryk 😄</li>"
+        "<li>🤖 Przy tekstach w wielu grach pomagało mi AI — więc jeśli momentami było trochę cringowo, to już wiesz dlaczego 😅</li>"
         "</ul></div></details>"
     ),
     "en": (
@@ -873,8 +874,8 @@ KATEGORIE = [
         "kolor": "#7ec98a",
         "etapy": [
             # Od rozgrzewki do najtrudniejszych - kolejnosc = kolejnosc na liscie
-            "simon", "memory", "samolot", "blackjack", "dron", "bungee",
-            "piano", "odyseusz", "bitwa",
+            "memory", "samolot", "blackjack", "dron", "bungee",
+            "piano", "simon", "odyseusz", "bitwa",
             "gra", "zaba", "poziom_diabla",
             "snake", "parkour",
         ],
@@ -906,6 +907,9 @@ def tryb_testowy():
 
 
 def _odczytaj_tryb_testowy():
+    if not TRYB_TESTOWY:                      # wersja finalna: trybu testowego nie da sie wlaczyc z adresu
+        st.session_state.tryb_testowy = False
+        return
     wartosc = str(st.query_params.get("test", "")).strip().lower()
     if wartosc in ("tak", "1", "true", "on"):
         st.session_state.tryb_testowy = True
@@ -916,6 +920,7 @@ def _odczytaj_tryb_testowy():
 
 
 def pokaz_baner_testowy():
+    return   # wersja testowa ma byc malo widoczna - bez banera
     if not tryb_testowy():
         return
     st.markdown(
@@ -5906,6 +5911,16 @@ SZABLON_SIMON = """
   .cap-blad { flex: 1; color: #d93025; font-size: 11px; text-align: right; }
   .cap-btn { background: #4a90e2; color: #fff; border: none; border-radius: 3px; padding: 10px 16px; font-weight: 700; font-size: 13px; letter-spacing: .03em; cursor: pointer; }
   .cap-szeroki { width: 100%; margin-top: 12px; }
+  /* Plynny blysk jak w klasycznym Simonie: szybkie rozswietlenie z poswiata w kolorze kafelka,
+     spokojne przygasniecie - bez skokow rozmiaru (stara animacja najpierw powiekszala, a styl pomniejszal) */
+  .przycisk-koloru { filter: brightness(0.55) saturate(0.9) !important; transform: none !important;
+    transition: filter .16s ease-out, box-shadow .16s ease-out !important; }
+  .przycisk-koloru.aktywny, .przycisk-koloru.wcisniety { animation: none !important;
+    filter: brightness(1.5) saturate(1.25) !important; transition-duration: .06s !important;
+    box-shadow: 0 0 28px 5px var(--swiatlo, rgba(255,255,255,0.5)), inset 0 0 24px rgba(255,255,255,0.35) !important; }
+  .przycisk-koloru.wejscie { animation: simonWchodzi 0.45s cubic-bezier(.2,.9,.3,1.15) both !important; }
+  .pk-0 { --swiatlo: rgba(255,90,90,0.75); } .pk-1 { --swiatlo: rgba(100,160,255,0.75); }
+  .pk-2 { --swiatlo: rgba(90,235,130,0.75); } .pk-3 { --swiatlo: rgba(255,222,90,0.75); }
 </style>
 </head>
 <body>
@@ -6107,7 +6122,7 @@ SZABLON_SIMON = """
 
   // ---- Limit czasu na wpisanie (tylko pierwsza proba) ----
   function uruchomCzas() {
-    limitCzasu = (1.0 + 0.27 * sekwencja.length) * 1000;
+    limitCzasu = (1.0 + 0.27 * sekwencja.length) * 1000;   // przy ~14 kolorach praktycznie nie do wpisania
     koniecCzasu = performance.now() + limitCzasu; timerAktywny = true;
     document.getElementById('pasekCzasu').classList.add('widoczny');
     (function tik() {
@@ -9716,6 +9731,7 @@ SZABLON_MINECRAFT = """
     box-shadow: 0 3px 8px rgba(0,0,0,0.35); }
   #btnZapiszMc:active { transform: scale(0.94); }
   .nakladka-wczytaj { margin-top: 10px; }
+  #btnNowySwiat, #btnZapiszMc { display: none !important; }   /* bez resetu mapy; zapis przy otwarciu receptur */
 </style>
 </head>
 <body>
@@ -9771,7 +9787,8 @@ SZABLON_MINECRAFT = """
 
     <div id="nakladka">
       <h2>⛏️ Minecraft 2D</h2>
-      <p>Zetnij drzewo i zbuduj 🛠️ <b>stół rzemieślniczy</b> (4 drewna). Postaw go i stań obok — odblokujesz receptury.</p>
+      <p>To Twój świat — kop, buduj i zwiedzaj, jak chcesz. Jest tylko jeden cel: <b>zbuduj dom</b> 🏠<br>Gdy uznasz, że jest gotowy, dotknij <b>domku w prawym dolnym rogu</b> — sprawdzę, czy niczego w nim nie brakuje.</p>
+      <p style="font-size:13px;opacity:.85">Na dobry początek zetnij drzewo i zrób 🛠️ <b>stół rzemieślniczy</b> (4 drewna) — obok niego odblokujesz receptury.</p>
       <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
     </div>
     <div id="nakladkaSmierc">
@@ -9935,7 +9952,7 @@ SZABLON_MINECRAFT = """
   }
 
   // ---------- SWIAT ----------
-  var SZEROKOSC_SWIATA = 200;
+  var SZEROKOSC_SWIATA = 300;   // szerszy swiat
   var WYSOKOSC_SWIATA = 40;
   var KOMORKA = 26;
   // W poziomie pokazujemy WIECEJ kolumn swiata - panoramiczny ekran
@@ -9952,7 +9969,7 @@ SZABLON_MINECRAFT = """
   var KOLORY_BLOKOW = {
     krzakJezyn: '#2f6a2c',
     trawa: '#5fa83f', ziemia: '#7a5230', kamien: '#8a8a92',
-    drewno: '#8b5a2b', liscie: '#3f8f4a', wegiel: '#2f2b28',
+    drewno: '#8b5a2b', liscie: '#3f8f4a', sadzonka: '#4fae4a', wegiel: '#2f2b28',
     zloto: '#e6c15c', podloze: '#403f45', piach: '#e0c88a',
     szyby: '#bfe6f0', stol: '#9c6b3a', piec: '#4a4a4a',
     rudaZelaza: '#b8927a', diament: '#7ee8e0', drewnoBrzozy: '#e8ddc8',
@@ -9969,6 +9986,7 @@ SZABLON_MINECRAFT = """
     kilofDrewniany: 'Kilof drewniany', kilofKamienny: 'Kilof kamienny',
     kilofZelazny: 'Kilof żelazny',
     stol: 'Stół rzemieślniczy',
+    sadzonka: 'Sadzonka',
     siekieraDrewniana: 'Siekiera drewniana', siekieraKamienna: 'Siekiera kamienna', siekieraZelazna: 'Siekiera żelazna',
     stekPieczony: 'Pieczony stek', szynkaPieczona: 'Pieczona szynka', kurczakPieczony: 'Pieczony kurczak',
     baraninaPieczona: 'Pieczona baranina', zloteJablko: 'Złote jabłko',
@@ -9983,7 +10001,7 @@ SZABLON_MINECRAFT = """
   };
   // Bloki, ktore mozna STAWIAC (narzedzia/skladniki/bron NIE sa blokami)
   var KOLEJNOSC_EKWIPUNKU = [
-    'ziemia', 'kamien', 'twardyKamien', 'drewno', 'liscie', 'trawa', 'wegiel', 'zloto',
+    'ziemia', 'kamien', 'twardyKamien', 'drewno', 'liscie', 'sadzonka', 'trawa', 'wegiel', 'zloto',
     'piach', 'drewnoBrzozy', 'deski', 'deskiBrzozowe', 'plytki', 'drzwi',
     'drzwiBrzozowe', 'lozko', 'szyby', 'stol', 'piec',
   ];
@@ -10362,7 +10380,7 @@ SZABLON_MINECRAFT = """
   function jestPuste(x, y) {
     if (x < 0 || x >= SZEROKOSC_SWIATA || y < 0 || y >= WYSOKOSC_SWIATA) return false;
     // Krzak jezyn jest przenikalny - to roslina, nie sciana
-    return world[x][y] === 'powietrze' || world[x][y] === 'krzakJezyn';
+    return world[x][y] === 'powietrze' || world[x][y] === 'krzakJezyn' || world[x][y] === 'sadzonka';
   }
 
   function czyDrzwi(x, y) {
@@ -10826,6 +10844,16 @@ SZABLON_MINECRAFT = """
 
   // ---------- RYSOWANIE ----------
   function rysujTeksture(ctxDocelowy, x, y, blok) {
+    if (blok === 'sadzonka') {
+      var Ks = KOMORKA;
+      ctxDocelowy.strokeStyle = '#6b4a2a'; ctxDocelowy.lineWidth = Math.max(2, Ks * 0.1);
+      ctxDocelowy.beginPath(); ctxDocelowy.moveTo(x + Ks * 0.5, y + Ks); ctxDocelowy.lineTo(x + Ks * 0.5, y + Ks * 0.45); ctxDocelowy.stroke();
+      ctxDocelowy.fillStyle = '#4fae4a';
+      ctxDocelowy.beginPath(); ctxDocelowy.ellipse(x + Ks * 0.36, y + Ks * 0.5, Ks * 0.17, Ks * 0.09, -0.6, 0, Math.PI * 2); ctxDocelowy.fill();
+      ctxDocelowy.beginPath(); ctxDocelowy.ellipse(x + Ks * 0.64, y + Ks * 0.42, Ks * 0.17, Ks * 0.09, 0.6, 0, Math.PI * 2); ctxDocelowy.fill();
+      ctxDocelowy.fillStyle = '#7fd36a'; ctxDocelowy.beginPath(); ctxDocelowy.arc(x + Ks * 0.5, y + Ks * 0.4, Ks * 0.08, 0, Math.PI * 2); ctxDocelowy.fill();
+      return;
+    }
     if (blok === 'krzakJezyn') {
       var K = KOMORKA;
       ctxDocelowy.fillStyle = '#2f6a2c';
@@ -11293,6 +11321,10 @@ SZABLON_MINECRAFT = """
       }
       window.stat && window.stat('bloki');
       dodajDoEkwipunku(blok, 1);
+      if (blok === 'liscie' && Math.random() < 0.2) {
+        dodajDoEkwipunku('sadzonka', 1);
+        setTimeout(function () { pokazDziennikMc('🌱 Wypadła sadzonka! Posadź ją na trawie — za minutę wyrośnie drzewo.', 2200); }, 50);
+      }
       var bonusDrewna = (blok === 'drewno' || blok === 'drewnoBrzozy') ? najlepszaSiekiera() : 0;
       if (bonusDrewna) dodajDoEkwipunku(blok, bonusDrewna);
       pokazDziennikMc(bonusDrewna ? '🪓 Ścięto: ' + NAZWY_BLOKOW[blok] + ' ×' + (1 + bonusDrewna) + '!'
@@ -11307,6 +11339,12 @@ SZABLON_MINECRAFT = """
         pokazDziennikMc('Brak zapasu: ' + NAZWY_BLOKOW[wybranyBlok], 1200);
         dzwiekBlokada();
         return;
+      }
+      if (wybranyBlok === 'sadzonka') {
+        var podSpodem = wy + 1 < WYSOKOSC_SWIATA ? world[wx][wy + 1] : null;
+        if (podSpodem !== 'trawa' && podSpodem !== 'ziemia') { pokazDziennikMc('🌱 Sadzonkę posadź na trawie albo ziemi.', 1600); dzwiekBlokada(); return; }
+        sadzonki.push({ x: wx, y: wy, t: Date.now() });
+        setTimeout(function () { pokazDziennikMc('🌱 Posadzono! Za minutę wyrośnie tu drzewo.', 1600); }, 30);
       }
       world[wx][wy] = wybranyBlok;
       ekwipunek[wybranyBlok]--;
@@ -11474,6 +11512,7 @@ SZABLON_MINECRAFT = """
     if (!otwarty) {
       odswiezPanelReceptur();   // przetapianie jest juz na liscie, gdy piec stoi obok
       panelReceptur.classList.add('widoczny');
+      zapiszGreMc(true);        // zapis przy kazdym otwarciu receptur
       btnRecepturyToggle.classList.add('aktywne');
     }
   });
@@ -11796,13 +11835,39 @@ SZABLON_MINECRAFT = """
 
   rozpocznijSwiat();
 
+  // ---------- SADZONKI: po minucie wyrasta z nich drzewo ----------
+  var sadzonki = [];
+  function wyrosnijDrzewo(x, y) {
+    for (var i = 1; i <= 2; i++) if (y - i < 0 || world[x][y - i] !== 'powietrze') return false;     // miejsce na pien
+    if (graczX === x && graczY <= y && graczY >= y - 2) return false;                                 // gracz stoi w miejscu pnia
+    var typ = Math.random() < 0.35 ? 'drewnoBrzozy' : 'drewno';
+    for (i = 0; i <= 2; i++) world[x][y - i] = typ;
+    var top = y - 2;
+    for (var dx = -1; dx <= 1; dx++) for (var dy = -2; dy <= 0; dy++) {
+      var lx = x + dx, ly = top + dy;
+      if (lx >= 0 && lx < SZEROKOSC_SWIATA && ly >= 0 && world[lx][ly] === 'powietrze') world[lx][ly] = 'liscie';
+    }
+    return true;
+  }
+  setInterval(function () {
+    var teraz = Date.now(), wyroslo = false;
+    for (var i = sadzonki.length - 1; i >= 0; i--) {
+      var s = sadzonki[i];
+      if (!world[s.x] || world[s.x][s.y] !== 'sadzonka') { sadzonki.splice(i, 1); continue; }   // wykopana
+      if (teraz - s.t < 60000) continue;
+      if (wyrosnijDrzewo(s.x, s.y)) { sadzonki.splice(i, 1); wyroslo = true; }
+      else s.t = teraz - 50000;                                                                   // brak miejsca - sprobuj za 10 s
+    }
+    if (wyroslo && trwa) { pokazDziennikMc('🌳 Z sadzonki wyrosło drzewo!', 1600); rysuj(); }
+  }, 2000);
+
   // ---------- ZAPIS GRY (pamiec przegladarki: przetrwa przeladowanie strony i wyjscie) ----------
   var KLUCZ_ZAPISU_MC = 'escape_zapis_minecraft';
   function zapiszGreMc(cicho) {
     try {
       var dane = { wersja: 1, czas: Date.now(), world: world, ekwipunek: ekwipunek, wybranyBlok: wybranyBlok,
         graczX: graczX, graczY: graczY, kameraX: kameraX, kameraY: kameraY, graczGlod: graczGlod, graczHp: graczHp,
-        czasSwiata: czasSwiata, probyDomu: probyDomu, zwierzeta: zwierzeta, groby: groby, spawnX: spawnX, spawnY: spawnY };
+        czasSwiata: czasSwiata, probyDomu: probyDomu, zwierzeta: zwierzeta, groby: groby, spawnX: spawnX, spawnY: spawnY, sadzonki: sadzonki };
       localStorage.setItem(KLUCZ_ZAPISU_MC, JSON.stringify(dane));
       if (!cicho) pokazDziennikMc('💾 Zapisano grę!', 1600);
       return true;
@@ -11818,7 +11883,7 @@ SZABLON_MINECRAFT = """
     world = d.world; ekwipunek = d.ekwipunek || {}; wybranyBlok = d.wybranyBlok || 'ziemia';
     graczX = d.graczX; graczY = d.graczY; kameraX = d.kameraX || 0; kameraY = d.kameraY || 0;
     graczGlod = d.graczGlod; graczHp = d.graczHp; czasSwiata = d.czasSwiata || 0; probyDomu = d.probyDomu || 0;
-    zwierzeta = d.zwierzeta || []; groby = d.groby || []; spawnX = d.spawnX; spawnY = d.spawnY;
+    zwierzeta = d.zwierzeta || []; groby = d.groby || []; spawnX = d.spawnX; spawnY = d.spawnY; sadzonki = d.sadzonki || [];
     potwory = [];
     try { odswiezEkwipunek(); } catch (e) {}
     try { aktualizujPasekGlodu(); aktualizujPasekHp(); aktualizujHudNarzedzi(); aktualizujEtykieteWybranego(); } catch (e) {}
@@ -11830,7 +11895,7 @@ SZABLON_MINECRAFT = """
   document.addEventListener('visibilitychange', function () { if (document.hidden && trwa) zapiszGreMc(true); });
   (function () {
     var zapis = odczytajZapisMc();
-    if (!zapis || !zapis.world) return;
+    if (!zapis || !zapis.world || zapis.world.length !== SZEROKOSC_SWIATA) return;   // stary zapis innego rozmiaru swiata - pomijamy
     var bw = document.createElement('button');
     bw.className = nakladkaBtn.className + ' nakladka-wczytaj'; bw.id = 'btnWczytajMc';
     var ile = Math.max(1, Math.round((Date.now() - zapis.czas) / 60000));
@@ -15042,7 +15107,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   <div id="komunikat"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">🏹 Łucznik</div>
-    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić lobem.<br><br>Trafiaj w <b>małe czerwone cele</b> — strzał masz <b>bez ograniczeń</b>.<br><br>Trafienie wszystkich celów otwiera kolejny etap. Sześć coraz trudniejszych etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
+    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić.<br><br>Kropki pokazują tylko <b>początek lotu</b> — resztę łuku musisz wyczuć sama. Po drodze: mury, daszki, ptaki i <b>wiatr</b> (strzałka u góry).<br><br>Strzał masz bez ograniczeń. Sześć etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -15133,57 +15198,40 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   // ---------- ETAPY ----------
   // Tarcze sa POCHYLONE tak, zeby ich lico bylo zwrocone ku nadlatujacej
   // strzale (ta leci lobem z lewej i opada z gory) - stad kat ~-38 stopni.
+  // Kazdy etap ma inny motyw. "podglad" = ile kropek trajektorii widac (reszte luku trzeba wyczuc),
+  // "wiatr" = maks. sila wiatru (losowany na nowo po kazdym strzale, podglad go NIE uwzglednia).
   var ETAPY = [
-    {
-      nazwa:'Etap 1 — jeden daleki cel',
-      opis:'Jeden mały cel, daleko. Celuj dokładnie!',
-      tarcze:[ { x:318, y:300, r:17, kat:-38 } ],
-      przeszkody:[],
-    },
-    {
-      nazwa:'Etap 2 — dwa cele i ruchoma zapora',
-      opis:'Jeden cel za wahającą się zaporą, drugi wyżej. Obydwa trzeba trafić.',
-      tarcze:[ { x:250, y:320, r:16, kat:-34 },
-               { x:332, y:210, r:15, kat:-50 } ],
-      przeszkody:[ { x:194, y:302, w:15, h:100, ruch:'pion', amp:62, tempo:1.25, faza:0 } ],
-    },
-    {
-      nazwa:'Etap 3 — trzy cele, jeden w ruchu',
-      opis:'Trzy bardzo małe cele, dwie zapory i jeden cel w ruchu.',
-      tarcze:[ { x:236, y:352, r:14, kat:-30 },
-               { x:314, y:256, r:14, kat:-44 },
-               { x:340, y:150, r:15, kat:-56, ruch:'pion', amp:42, tempo:0.85, faza:1.1 } ],
-      przeszkody:[ { x:182, y:330, w:14, h:92, ruch:'pion', amp:56, tempo:1.5, faza:0.4 },
-                   { x:278, y:206, w:14, h:82, ruch:'pion', amp:48, tempo:1.05, faza:2.2 } ],
-    },
-    {
-      nazwa:'Etap 4 — dwa cele w ruchu',
-      opis:'Oba cele przesuwają się w przeciwnych fazach. Trzeba złapać właściwy moment.',
-      tarcze:[ { x:262, y:300, r:14, kat:-36, ruch:'pion', amp:52, tempo:0.95, faza:0 },
-               { x:338, y:196, r:14, kat:-52, ruch:'pion', amp:48, tempo:1.15, faza:3.1 } ],
-      przeszkody:[ { x:198, y:300, w:15, h:104, ruch:'pion', amp:64, tempo:1.3, faza:1.4 } ],
-    },
-    {
-      nazwa:'Etap 5 — wąski korytarz',
-      opis:'Trzy cele za gęstą zaporą trzech ruchomych bloków. Cierpliwości!',
-      tarcze:[ { x:244, y:344, r:13, kat:-30 },
-               { x:316, y:242, r:13, kat:-46 },
-               { x:346, y:138, r:14, kat:-58 } ],
-      przeszkody:[ { x:176, y:330, w:14, h:88, ruch:'pion', amp:58, tempo:1.6, faza:0.2 },
-                   { x:248, y:250, w:14, h:80, ruch:'pion', amp:52, tempo:1.2, faza:1.9 },
-                   { x:300, y:170, w:14, h:74, ruch:'pion', amp:46, tempo:0.95, faza:3.4 } ],
-    },
-    {
-      nazwa:'Etap 6 — finał',
-      opis:'Cztery malutkie cele, dwa w ruchu, i zapory na całej drodze. Ostatnia próba!',
-      tarcze:[ { x:228, y:360, r:12, kat:-28 },
-               { x:296, y:272, r:12, kat:-42, ruch:'pion', amp:40, tempo:1.05, faza:0.7 },
-               { x:344, y:186, r:13, kat:-54 },
-               { x:352, y:104, r:13, kat:-62, ruch:'pion', amp:34, tempo:0.8, faza:2.6 } ],
-      przeszkody:[ { x:180, y:334, w:14, h:86, ruch:'pion', amp:56, tempo:1.45, faza:0.5 },
-                   { x:262, y:236, w:14, h:78, ruch:'pion', amp:50, tempo:1.1, faza:2.4 } ],
-    },
+    { nazwa:'Etap 1 — rozgrzewka', podglad:8, wiatr:0,
+      opis:'Dwa cele na otwartym polu. Kropki pokazują już tylko <b>początek lotu</b> — resztę łuku wyczuj sama.',
+      tarcze:[ { x:318, y:300, r:17, kat:-38 }, { x:240, y:385, r:16, kat:-30 } ],
+      przeszkody:[] },
+    { nazwa:'Etap 2 — za murem', podglad:6, wiatr:0,
+      opis:'Wysoki mur. Cel tuż za nim trafisz tylko <b>wysokim lobem</b>.',
+      tarcze:[ { x:296, y:432, r:16, kat:-60 }, { x:345, y:300, r:15, kat:-45 } ],
+      przeszkody:[ { x:178, y:332.5, w:22, h:275 } ] },
+    { nazwa:'Etap 3 — pod daszkiem', podglad:5, wiatr:25,
+      opis:'Cel pod daszkiem złapiesz tylko <b>płaskim strzałem</b>, drugi leży na daszku. Pojawia się lekki wiatr — strzałka u góry.',
+      tarcze:[ { x:312, y:410, r:15, kat:-20 }, { x:332, y:330, r:14, kat:-45 } ],
+      przeszkody:[ { x:305, y:350, w:140, h:12 } ] },
+    { nazwa:'Etap 4 — wichura', podglad:4, wiatr:90,
+      opis:'<b>Wiatr zmienia się po każdym strzale</b> — strzałka u góry pokazuje jego kierunek i siłę. Jeden cel w ruchu.',
+      tarcze:[ { x:205, y:262, r:15, kat:-40 }, { x:292, y:360, r:14, kat:-35 },
+               { x:350, y:190, r:14, kat:-52, ruch:'pion', amp:30, tempo:0.9, faza:0.6 } ],
+      przeszkody:[] },
+    { nazwa:'Etap 5 — ptaki', podglad:4, wiatr:50,
+      opis:'<b>Ptaki</b> przelatują przez tor lotu i zatrzymują strzały. Jeden cel schował się za murem.',
+      tarcze:[ { x:318, y:428, r:15, kat:-60 }, { x:335, y:232, r:14, kat:-45 } ],
+      przeszkody:[ { x:228, y:369, w:22, h:202 },
+                   { x:250, y:190, w:30, h:16, ruch:'poziom', amp:90, tempo:0.9, faza:0, wyglad:'ptak' },
+                   { x:200, y:300, w:30, h:16, ruch:'poziom', amp:70, tempo:1.3, faza:2, wyglad:'ptak' } ] },
+    { nazwa:'Etap 6 — finał', podglad:3, wiatr:70,
+      opis:'Wszystko naraz: <b>płaski strzał</b> pod daszek, <b>lob</b> nad murem, cel w ruchu i maleńki cel na samej górze. Do tego wiatr.',
+      tarcze:[ { x:180, y:438, r:13, kat:-15 }, { x:345, y:436, r:13, kat:-65 },
+               { x:250, y:160, r:13, kat:-40, ruch:'poziom', amp:40, tempo:0.8, faza:0 }, { x:360, y:108, r:12, kat:-62 } ],
+      przeszkody:[ { x:262, y:366, w:22, h:208 }, { x:175, y:380, w:90, h:12 } ] },
   ];
+  var wiatrAktualny = 0;
+  function losujWiatr() { var m = ETAPY[etapIdx].wiatr || 0; return m ? Math.round((Math.random() * 2 - 1) * m) : 0; }
 
   function trafionychCeli(){ return tarcze.filter(function(t){ return t.trafiona; }).length; }
   function wszystkieTrafione(){ return tarcze.length > 0 && trafionychCeli() === tarcze.length; }
@@ -15191,15 +15239,16 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   function wczytajEtap(){
     var e = ETAPY[etapIdx];
     tarcze = e.tarcze.map(function(t){
-      return { x:t.x, y:t.y, bazaY:t.y, r:t.r, kat:t.kat*Math.PI/180,
+      return { x:t.x, y:t.y, bazaX:t.x, bazaY:t.y, r:t.r, kat:t.kat*Math.PI/180,
                ruch:t.ruch||null, amp:t.amp||0, tempo:t.tempo||1, faza:t.faza||0,
                trafiona:false, blysk:0 };
     });
     przeszkody = e.przeszkody.map(function(p){
-      return { x:p.x, y:p.y, bazaY:p.y, w:p.w, h:p.h, ruch:p.ruch, amp:p.amp, tempo:p.tempo, faza:p.faza };
+      return { x:p.x, y:p.y, bazaX:p.x, bazaY:p.y, w:p.w, h:p.h, ruch:p.ruch||null, amp:p.amp||0, tempo:p.tempo||1, faza:p.faza||0, wyglad:p.wyglad||null };
     });
     strzalyWEtapie = 0;
     strzaly = []; czastki = []; teksty = [];
+    wiatrAktualny = losujWiatr();
     czekaNaOcene = false;
     odswiezPanel();
     komunikat.textContent = 'Odciągnij cięciwę i puść';
@@ -15441,6 +15490,19 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   }
 
   function rysujPrzeszkode(p){
+    if (p.wyglad === 'ptak') {
+      var mach = Math.sin(Date.now() / 90 + p.faza * 3) * 7, kier = Math.cos(czasAbs * p.tempo + p.faza) >= 0 ? 1 : -1;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.scale(kier, 1);
+      ctx.fillStyle = '#3a3346'; ctx.beginPath(); ctx.ellipse(0, 0, 11, 6, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(10, -3, 4.5, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = '#f2a03c'; ctx.beginPath(); ctx.moveTo(14, -3); ctx.lineTo(19, -1.5); ctx.lineTo(14, 0); ctx.fill();
+      ctx.fillStyle = '#fff'; ctx.fillRect(11, -5, 2, 2);
+      ctx.strokeStyle = '#3a3346'; ctx.lineWidth = 3.5; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-3, -2); ctx.quadraticCurveTo(-8, -10 - mach, -15, -4 - mach); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(2, -2); ctx.quadraticCurveTo(4, -12 - mach, -2, -14 - mach); ctx.stroke();
+      ctx.restore();
+      return;
+    }
     var lx=p.x-p.w/2, ty=p.y-p.h/2;
     ctx.save();
     ctx.fillStyle='rgba(0,0,0,0.20)';
@@ -15491,7 +15553,23 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     ctx.restore();
   }
 
+  function rysujWiatr(){
+    var m = ETAPY[etapIdx] && ETAPY[etapIdx].wiatr; if (!m) return;
+    var x = W / 2, yW = 112, dl = Math.min(60, Math.abs(wiatrAktualny) * 0.6), kier = wiatrAktualny >= 0 ? 1 : -1;
+    ctx.save();
+    ctx.fillStyle = 'rgba(10,14,30,0.55)'; ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x - 78, yW - 15, 156, 30, 15); else ctx.rect(x - 78, yW - 15, 156, 30); ctx.fill();
+    ctx.font = '700 12px -apple-system, sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillStyle = '#e8f1ff';
+    if (Math.abs(wiatrAktualny) < 4) { ctx.fillText('💨 prawie bez wiatru', x, yW); ctx.restore(); return; }
+    ctx.fillText('💨', x - 60, yW);
+    ctx.strokeStyle = '#9fd8ff'; ctx.fillStyle = '#9fd8ff'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    var x0 = x - kier * dl / 2 + 4, x1 = x + kier * dl / 2 + 4;
+    ctx.beginPath(); ctx.moveTo(x0, yW); ctx.lineTo(x1, yW); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x1 + kier * 7, yW); ctx.lineTo(x1 - kier * 3, yW - 7); ctx.lineTo(x1 - kier * 3, yW + 7); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e8f1ff'; ctx.fillText(Math.abs(wiatrAktualny), x + 60, yW);
+    ctx.restore();
+  }
   function rysujPodglad(){
+    rysujWiatr();
     if(!celowanie) return;
     var dx=startX-aktX, dy=startY-aktY;
     var dl=Math.min(Math.hypot(dx,dy),MAX_PRZECIAGNIECIE);
@@ -15499,7 +15577,8 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     var vx=Math.cos(kat)*dl*MNOZNIK_MOCY, vy=Math.sin(kat)*dl*MNOZNIK_MOCY;
     var px=WYLOT_X, py=WYLOT_Y;
     ctx.fillStyle='rgba(255,255,255,0.6)';
-    for(var i=0;i<16;i++){
+    var kropki = ETAPY[etapIdx].podglad || 8;   // tylko poczatek lotu - reszte luku trzeba wyczuc
+    for(var i=0;i<kropki;i++){
       vy+=GRAWITACJA*0.05; px+=vx*0.05; py+=vy*0.05;
       if(py>ZIEMIA_Y) break;
       ctx.beginPath(); ctx.arc(px,py,2.2,0,Math.PI*2); ctx.fill();
@@ -15559,8 +15638,9 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     if(dl<12){ napinajKoniec(false); return; }
     dl=Math.min(dl,MAX_PRZECIAGNIECIE);
     var kat=Math.atan2(dy,dx);
-    strzaly.push({ x:WYLOT_X, y:WYLOT_Y, vx:Math.cos(kat)*dl*MNOZNIK_MOCY, vy:Math.sin(kat)*dl*MNOZNIK_MOCY });
+    strzaly.push({ x:WYLOT_X, y:WYLOT_Y, vx:Math.cos(kat)*dl*MNOZNIK_MOCY, vy:Math.sin(kat)*dl*MNOZNIK_MOCY, wiatr:wiatrAktualny });
     strzalyWEtapie++;
+    wiatrAktualny = losujWiatr();      // nastepny strzal - nowy wiatr
     odswiezPanel();
     napinajKoniec(true);
     komunikat.textContent='';
@@ -15611,53 +15691,61 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     // Ruch przeszkod i ruchomych tarcz
     przeszkody.forEach(function(p){
       if(p.ruch==='pion') p.y = p.bazaY + Math.sin(czasAbs*p.tempo + p.faza) * p.amp;
+      if(p.ruch==='poziom') p.x = p.bazaX + Math.sin(czasAbs*p.tempo + p.faza) * p.amp;
     });
     tarcze.forEach(function(t){
       if(t.ruch==='pion') t.y = t.bazaY + Math.sin(czasAbs*t.tempo + t.faza) * t.amp;
+      if(t.ruch==='poziom') t.x = t.bazaX + Math.sin(czasAbs*t.tempo + t.faza) * t.amp;
       if(t.blysk>0) t.blysk -= dt*2;
     });
 
-    for(var i=strzaly.length-1;i>=0;i--){
-      var s=strzaly[i];
-      s.vy += GRAWITACJA*dt;
-      s.x += s.vx*dt; s.y += s.vy*dt;
+    // Lot strzaly w drobnych krokach (240/s) - trafienie liczone dokladnie, bez "przeskakiwania"
+    // malych celow miedzy klatkami (inaczej strzal przechodzacy przez cel bywal pudlem).
+    var podkroki = Math.max(1, Math.ceil(dt * 240)), dtS = dt / podkroki;
+    for (var pk = 0; pk < podkroki && strzaly.length; pk++) {
+      for(var i=strzaly.length-1;i>=0;i--){
+        var s=strzaly[i];
+        s.vy += GRAWITACJA*dtS;
+        s.vx += (s.wiatr||0)*dtS;         // wiatr znosi strzale
+        s.x += s.vx*dtS; s.y += s.vy*dtS;
 
-      // Przeszkoda blokuje
-      var zablokowana=false;
-      for(var p2=0;p2<przeszkody.length;p2++){
-        var pp=przeszkody[p2];
-        if(s.x>pp.x-pp.w/2-3 && s.x<pp.x+pp.w/2+3 && s.y>pp.y-pp.h/2 && s.y<pp.y+pp.h/2){ zablokowana=true; break; }
-      }
-      if(zablokowana){
-        dzwiekBloku();
-        teksty.push({x:s.x,y:s.y-12,tekst:'ZABLOKOWANA',kolor:'#e6543c',zycie:1.1});
-        for(var c1=0;c1<8;c1++) czastki.push({x:s.x,y:s.y,vx:losowo(-90,90),vy:losowo(-90,90),zycie:0.5,kolor:'#6f5a80'});
-        zakonczStrzale(s,i); continue;
-      }
+        // Przeszkoda blokuje
+        var zablokowana=false;
+        for(var p2=0;p2<przeszkody.length;p2++){
+          var pp=przeszkody[p2];
+          if(s.x>pp.x-pp.w/2-3 && s.x<pp.x+pp.w/2+3 && s.y>pp.y-pp.h/2 && s.y<pp.y+pp.h/2){ zablokowana=true; break; }
+        }
+        if(zablokowana){
+          dzwiekBloku();
+          teksty.push({x:s.x,y:s.y-12,tekst:'ZABLOKOWANA',kolor:'#e6543c',zycie:1.1});
+          for(var c1=0;c1<8;c1++) czastki.push({x:s.x,y:s.y,vx:losowo(-90,90),vy:losowo(-90,90),zycie:0.5,kolor:'#6f5a80'});
+          zakonczStrzale(s,i); continue;
+        }
 
-      // Cel trafiony albo nie - bez stopniowania
-      var trafil=false;
-      for(var t2=0;t2<tarcze.length;t2++){
-        var tt=tarcze[t2];
-        if(tt.trafiona) continue;
-        if(!czyTrafiony(tt, s.x, s.y)) continue;
-        tt.trafiona=true; tt.blysk=1;
-        odswiezPanel();
-        dzwiekTrafienia();
-        var kolor = '#ffd24a';
-        teksty.push({x:tt.x,y:tt.y-tt.r-16,tekst:'TRAFIONY!',kolor:kolor,zycie:1.1});
-        for(var c2=0;c2<16;c2++) czastki.push({x:s.x,y:s.y,vx:losowo(-130,130),vy:losowo(-130,130),zycie:0.5,kolor:kolor});
-        komunikat.textContent = 'Trafiony!';
-        trafil=true; break;
-      }
-      if(trafil){ zakonczStrzale(s,i); continue; }
+        // Cel trafiony albo nie - bez stopniowania
+        var trafil=false;
+        for(var t2=0;t2<tarcze.length;t2++){
+          var tt=tarcze[t2];
+          if(tt.trafiona) continue;
+          if(!czyTrafiony(tt, s.x, s.y)) continue;
+          tt.trafiona=true; tt.blysk=1;
+          odswiezPanel();
+          dzwiekTrafienia();
+          var kolor = '#ffd24a';
+          teksty.push({x:tt.x,y:tt.y-tt.r-16,tekst:'TRAFIONY!',kolor:kolor,zycie:1.1});
+          for(var c2=0;c2<16;c2++) czastki.push({x:s.x,y:s.y,vx:losowo(-130,130),vy:losowo(-130,130),zycie:0.5,kolor:kolor});
+          komunikat.textContent = 'Trafiony!';
+          trafil=true; break;
+        }
+        if(trafil){ zakonczStrzale(s,i); continue; }
 
-      // Poza ekranem / ziemia
-      if(s.y>ZIEMIA_Y || s.x>W+40 || s.x<-40 || s.y>H+40){
-        dzwiekPudla();
-        teksty.push({x:Math.min(W-30,Math.max(30,s.x)),y:Math.min(ZIEMIA_Y-10,s.y),tekst:'PUDŁO',kolor:'#e6543c',zycie:1.1});
-        komunikat.textContent='Pudło — strzelaj dalej, strzał masz bez liku.';
-        zakonczStrzale(s,i); continue;
+        // Poza ekranem / ziemia
+        if(s.y>ZIEMIA_Y || s.x>W+40 || s.x<-40 || s.y>H+40){
+          dzwiekPudla();
+          teksty.push({x:Math.min(W-30,Math.max(30,s.x)),y:Math.min(ZIEMIA_Y-10,s.y),tekst:'PUDŁO',kolor:'#e6543c',zycie:1.1});
+          komunikat.textContent='Pudło — strzelaj dalej, strzał masz bez liku.';
+          zakonczStrzale(s,i); continue;
+        }
       }
     }
 
@@ -16710,7 +16798,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
     } catch (e) { return; }
     var o = document.createElement('div'); o.id = 'poradnik';
     o.innerHTML = '<div class="por-karta"><div class="por-tytul">📼 Poradnik</div>'
-      + '<div class="por-pod">Jak przejść Jumping Prince — nagranie autora, <b>bez ani jednej pomyłki</b>.</div>'
+      + '<div class="por-pod">Jak przejść Jumping Prince</div>'
       + '<div class="por-wideo"><video muted playsinline loop autoplay></video><span class="por-ff">⏩ ×8</span></div>'
       + '<div class="por-rada">' + nastepnyTekstPoradnika() + '</div>'
       + '<button class="por-btn">Dzięki, bardzo pomogło 🙃</button></div>';
@@ -18739,6 +18827,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     border: 1.5px solid rgba(230,193,92,0.6); background: rgba(20,16,28,0.85); font-size: 17px; cursor: pointer; display: none; }
   #pasSterowania { touch-action: none; }
   #strefaDrazka { transition: none; }
+  #btnZapiszLb { display: none !important; }   /* zapis dzieje sie sam (plecak, nowe pietro) */
 </style>
 </head>
 <body>
@@ -21830,6 +21919,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   btnEkw.addEventListener('click', function () {
     if (nakladkaEkw.classList.contains('widoczna')) { zamknijPlecak(); return; }
     nakladkaEkw.classList.add('widoczna');
+    if (typeof graRozpoczeta !== 'undefined' && graRozpoczeta) zapiszGreLabirynt(true);   // zapis przy kazdym otwarciu plecaka
     btnEkw.classList.add('aktywny');
     widzianePrzedmioty = gracz.ekwipunek.length;   // od teraz nic nie jest "nowe"
     // Plecak zawsze otwiera sie na ekwipunku, nawet jesli ostatnio byl otwarty kreator laczenia
@@ -22433,10 +22523,23 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
     if (zapis && zapis.gracz) {
       // Wczytanie: postac z zapisu na poczatku zapisanego pietra (mapa losuje sie od nowa)
-      var hpZapisu = zapis.gracz.hp;
+      var hpZapisu = zapis.gracz.hp, mialKlucz = !!zapis.gracz.maKlucz;
       gracz = zapis.gracz;
       poziomLabiryntu = zapis.poziom || 0; trybNieskonczony = !!zapis.tryb; czasGry = zapis.czasGry || 0;
       generujMape(); zaludnijMape();
+      // Pietro losuje sie od nowa, ale z mniejsza liczba wrogow i skrzynek - tyle, ile juz pokonala/otworzyla
+      var pokonaniZapis = zapis.pokonani || 0, otwarteZapis = zapis.otwarte || 0;
+      for (var u = 0; u < pokonaniZapis; u++) {
+        var kandW = wrogowie.filter(function (w) { return !w.boss; }); if (!kandW.length) break;
+        wrogowie.splice(wrogowie.indexOf(kandW[Math.floor(Math.random() * kandW.length)]), 1);
+      }
+      for (var u2 = 0; u2 < otwarteZapis; u2++) {
+        var kandS = skrzynie.filter(function (s) { return !s.klucz && !s.otwarta; }); if (!kandS.length) break;   // skrzynka z kluczem zostaje
+        skrzynie.splice(skrzynie.indexOf(kandS[Math.floor(Math.random() * kandS.length)]), 1); usunieteSkrzynie++;
+      }
+      gracz.maKlucz = mialKlucz;                                         // klucz znaleziony przed zapisem - wraca z ekwipunkiem
+      if (mialKlucz) skrzynie.forEach(function (s) { s.klucz = false; });  // ...i nie ma go juz w zadnej skrzynce
+      liczbaWrogowStartPietra = wrogowie.filter(function (w) { return !w.boss; }).length + pokonaniZapis;
       gracz.x = (komnaty[0].cx + 0.5) * KAFEL; gracz.y = (komnaty[0].cy + 0.5) * KAFEL;
       gracz.cooldown = 0; gracz.rozpedzenie = 0; gracz.odOstatniegoCiosu = 0; gracz.niewrazliwosc = 1;
       przeliczHpMax();
@@ -22467,7 +22570,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function zapiszGreLabirynt(cicho) {
     try {
       if (!gracz) return false;
-      var dane = { wersja: 1, czas: Date.now(), poziom: poziomLabiryntu, tryb: trybNieskonczony, czasGry: czasGry, gracz: JSON.parse(JSON.stringify(gracz)) };
+      var zywi = wrogowie.filter(function (w) { return w.hp > 0 && !w.boss; }).length;
+      var dane = { wersja: 2, czas: Date.now(), poziom: poziomLabiryntu, tryb: trybNieskonczony, czasGry: czasGry, gracz: JSON.parse(JSON.stringify(gracz)),
+        pokonani: Math.max(0, liczbaWrogowStartPietra - zywi),                                        // wrogowie pokonani na tym pietrze
+        otwarte: usunieteSkrzynie + skrzynie.filter(function (s) { return s.otwarta; }).length };   // skrzynki otwarte na tym pietrze
       localStorage.setItem(KLUCZ_ZAPISU_LB, JSON.stringify(dane));
       if (!cicho) dziennik('💾 Zapisano — po wczytaniu zaczniesz to piętro od nowa z całym ekwipunkiem.');
       return true;
@@ -22514,7 +22620,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var _generujMapeOryg = generujMape;
   generujMape = function () { var w = _generujMapeOryg.apply(this, arguments); przygotujDrzwi(); pokazBanerPietra(); return w; };
   var _zaludnijMapeOryg = zaludnijMape;
-  zaludnijMape = function () { var w = _zaludnijMapeOryg.apply(this, arguments); przydzielKlucz(); return w; };
+  var liczbaWrogowStartPietra = 0, usunieteSkrzynie = 0;
+  zaludnijMape = function () { var w = _zaludnijMapeOryg.apply(this, arguments); przydzielKlucz();
+    liczbaWrogowStartPietra = wrogowie.filter(function (x) { return !x.boss; }).length; usunieteSkrzynie = 0; return w; };
 
   // ---------- DZWIEKI: wrogowie (ciszej niz gracz), czary, wybuchy, kroki ----------
   function tonSlizg(f1, f2, dl, typ, gl) {
@@ -23283,7 +23391,8 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
 }
 .galeria-zdjec img {
     width: 100%;
-    height: 130px;
+    height: auto;
+    aspect-ratio: 1 / 1;
     object-fit: cover;
     border-radius: 10px;
     border: 2px solid #d4af37;
@@ -23659,6 +23768,31 @@ details.koperta-prezent.smaczki { margin-top: 0.8rem; }
 details.koperta-prezent .koperta-tresc ul { margin: 0; padding-left: 1.1rem; }
 details.koperta-prezent .koperta-tresc li { margin: 0 0 0.6rem; }
 details.koperta-prezent .koperta-tresc b { color: #ffe08a; }
+
+/* Karty-przyciski do zewnetrznych gier (Wordle, Loldle) */
+a.karta-gry { display: flex; align-items: center; gap: 0.85rem; text-decoration: none !important; padding: 0.75rem 0.95rem;
+  border-radius: 16px; margin: 0.2rem 0 0.9rem; box-shadow: 0 6px 16px rgba(0,0,0,0.35); transition: transform .12s, box-shadow .12s; }
+a.karta-gry:hover, a.karta-gry:active { transform: translateY(-1px); box-shadow: 0 9px 22px rgba(0,0,0,0.45); }
+a.karta-gry .kg-ikona { flex: 0 0 auto; display: flex; }
+a.karta-gry .kg-tekst { flex: 1; min-width: 0; }
+a.karta-gry .kg-tytul { display: block; font-weight: 800; font-size: 1.02rem; color: #ffffff; line-height: 1.25; }
+a.karta-gry .kg-pod { display: block; font-size: 0.8rem; color: rgba(235,235,235,0.72); margin-top: 2px; }
+a.karta-gry .kg-strzalka { flex: 0 0 auto; font-size: 1.25rem; font-weight: 900; }
+.kg-wordle { background: linear-gradient(135deg, #1e2b1d, #111611); border: 1.5px solid #6aaa64; }
+.kg-wordle .kg-strzalka { color: #6aaa64; }
+.kg-kafle { display: grid; grid-template-columns: repeat(3, 14px); gap: 2px; }
+.kg-kafle span { width: 14px; height: 14px; border-radius: 2px; font-size: 9px; font-weight: 900; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-family: 'Arial Black', Arial, sans-serif; }
+.kg-loldle { background: linear-gradient(135deg, #0b1b2c, #11273b); border: 1.5px solid #c8aa6e; }
+.kg-loldle .kg-strzalka { color: #c8aa6e; }
+.kg-herb { width: 46px; height: 46px; border-radius: 10px; border: 2px solid #c8aa6e; display: flex; align-items: center; justify-content: center;
+  font-size: 1.35rem; background: radial-gradient(circle at 50% 35%, #1e3a56, #0a1622); box-shadow: inset 0 0 8px rgba(200,170,110,0.45); }
+
+/* Wersja testowa - przyciski male i dyskretne */
+.stApp [class*="st-key-zalicz_test"] button { min-height: 0 !important; padding: 0.15rem 0.7rem !important; opacity: 0.45;
+  background: transparent !important; border: 1px dashed rgba(230,193,92,0.35) !important; box-shadow: none !important; }
+.stApp [class*="st-key-zalicz_test"] button p { font-size: 0.78rem !important; color: rgba(240,225,190,0.8) !important; }
+.stApp [class*="st-key-zalicz_test"] { max-width: 140px; margin: 0.2rem auto !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -24464,17 +24598,23 @@ def _klucz_postaci(tekst):
 _ZNANE_POSTACIE = {_klucz_postaci(p): p for p in POSTACIE_LOL}
 
 
-def renderuj_wordle(etap_dane):
-    klucz = etap_dane["klucz"]
+def _karta_gry(url, klasa, ikona_html, tytul, podpis):
+    """Ladny przycisk-karta prowadzacy do zewnetrznej gry (Wordle, Loldle)."""
     st.markdown(
-        "<a href='https://www.nytimes.com/games/wordle/index.html' target='_blank' "
-        "style='display:block; text-align:center; text-decoration:none; "
-        "background:linear-gradient(135deg,#e6c15c,#d4af37); color:#16130a; "
-        "padding:0.6rem 1.4rem; border-radius:30px; font-weight:700; "
-        "letter-spacing:0.01em; box-shadow:0 3px 10px rgba(0,0,0,0.35); "
-        "margin-bottom:1rem;'>📝 Otwórz dzisiejsze Wordle</a>",
+        f"<a class='karta-gry {klasa}' href='{url}' target='_blank' rel='noopener'>"
+        f"<span class='kg-ikona'>{ikona_html}</span>"
+        f"<span class='kg-tekst'><span class='kg-tytul'>{tytul}</span><span class='kg-pod'>{podpis}</span></span>"
+        f"<span class='kg-strzalka'>↗</span></a>",
         unsafe_allow_html=True,
     )
+
+
+def renderuj_wordle(etap_dane):
+    klucz = etap_dane["klucz"]
+    kafle = "".join(f"<span style='background:{k}'>{l}</span>" for l, k in
+                    zip("WORDLE", ["#6aaa64", "#c9b458", "#787c7e", "#6aaa64", "#6aaa64", "#c9b458"]))
+    _karta_gry("https://www.nytimes.com/games/wordle/index.html", "kg-wordle",
+               f"<span class='kg-kafle'>{kafle}</span>", "Otwórz dzisiejsze Wordle", "nytimes.com · angielskie słowo dnia")
 
     dzisiejsze_slowo = pobierz_dzisiejszy_wordle()
     if dzisiejsze_slowo is None:
@@ -24485,8 +24625,9 @@ def renderuj_wordle(etap_dane):
 
     wpisane = st.text_input(t("twoja_odpowiedz"), key=f"pole_{klucz}")
     # Druga czesc: dzisiejsza postac z Loldle
-    st.markdown(tt({"pl": "🎮 A teraz **[Loldle](https://loldle.net/classic)** — tryb *Classic*. Jaka postać wyszła dzisiaj?",
-                    "en": "🎮 And now **[Loldle](https://loldle.net/classic)** — *Classic* mode. Which champion was today's?"}))
+    st.markdown("<div style='margin-top:0.6rem'></div>", unsafe_allow_html=True)
+    _karta_gry("https://loldle.net/classic", "kg-loldle", "<span class='kg-herb'>⚔️</span>",
+               "Otwórz dzisiejsze Loldle", "loldle.net · tryb Classic · postać dnia")
     postac = st.text_input(tt({"pl": "Dzisiejsza postać z Loldle", "en": "Today's Loldle champion"}), key=f"loldle_{klucz}")
     potwierdzona = False
     if postac.strip() and _klucz_postaci(postac) not in _ZNANE_POSTACIE:
@@ -24793,7 +24934,7 @@ def pokaz_powitanie():
 
     pokaz_baner_testowy()
     if tryb_testowy():
-        if st.button(tt({"pl": "⏭️ Pomiń kłódki (wersja testowa)", "en": "⏭️ Skip the padlocks (test version)"}),
+        if st.button("⏭️ Pomiń",
                      key="zalicz_test_klodki", use_container_width=True):
             st.session_state.ekran = "menu"
             st.session_state.czas_startu = time.time()
@@ -25149,7 +25290,7 @@ def pokaz_ekran_etapu(etap_dane):
         st.rerun()
 
     if tryb_testowy() and klucz not in st.session_state.rozwiazane:
-        if st.button(tt({"pl": "⏭️ Pomiń ten etap (wersja testowa)", "en": "⏭️ Skip this stage (test version)"}),
+        if st.button("⏭️ Pomiń",
                      key=f"zalicz_test_{klucz}", use_container_width=True):
             st.session_state.nieudane.discard(klucz)
             st.session_state.rozwiazane.add(klucz)
@@ -25362,7 +25503,7 @@ def pokaz_przycisk_kodu_pod_wiadomoscia():
                   key="kod_zablokowany", use_container_width=True, disabled=True)
         # Tylko w wersji testowej: od razu do sejfu (znika samo, gdy TRYB_TESTOWY = False)
         if tryb_testowy():
-            if st.button("🧪 Otwórz sejf (wersja testowa)", key="kod_test_od_razu", use_container_width=True):
+            if st.button("🔓 Otwórz sejf", key="zalicz_test_sejf", use_container_width=True):
                 st.session_state.ekran = "final"
                 st.rerun()
 
@@ -25820,6 +25961,34 @@ def pokaz_statystyki_gier():
     )
 
 
+# Kadry zdjec w galerii na koncu (kwadrat, twarze w srodku) - ustalone recznie dla kazdego zdjecia
+KADRY_GALERII = [(120, 0, 480, 360), (0, 28, 360, 388), (16, 160, 206, 350), (0, 22, 360, 382), (110, 0, 470, 360), (0, 90, 360, 450)]
+
+
+def _zdjecia_galerii():
+    if hasattr(_zdjecia_galerii, "_cache"):
+        return _zdjecia_galerii._cache
+    wynik = []
+    try:
+        import base64, io
+        from PIL import Image
+        for i, b64 in enumerate(ZDJECIA_GALERIA):
+            im = Image.open(io.BytesIO(base64.b64decode(b64))).convert("RGB")
+            w, h = im.size
+            if i < len(KADRY_GALERII) and KADRY_GALERII[i][2] <= w and KADRY_GALERII[i][3] <= h:
+                im = im.crop(KADRY_GALERII[i])
+            else:                                   # zapas: kwadrat ze srodka, lekko w gore
+                bok = min(w, h); x0 = (w - bok) // 2; y0 = (h - bok) // 4
+                im = im.crop((x0, y0, x0 + bok, y0 + bok))
+            im = im.resize((360, 360), Image.LANCZOS)
+            buf = io.BytesIO(); im.save(buf, "JPEG", quality=86)
+            wynik.append(base64.b64encode(buf.getvalue()).decode())
+    except Exception:
+        wynik = list(ZDJECIA_GALERIA)
+    _zdjecia_galerii._cache = wynik
+    return wynik
+
+
 def pokaz_cyrograf():
     """Po otwarciu sejfu: podpisany przy Blackjacku cyrograf - dusza sprzedana Diablu."""
     podpis = st.session_state.get("podpis_diabla")
@@ -25852,7 +26021,7 @@ def pokaz_final():
     components.html(sejf, height=480, scrolling=False)
     st.markdown(tt(WIADOMOSC_KONCOWA), unsafe_allow_html=True)
 
-    zdjecia_html = "".join(f"<img src='data:image/jpeg;base64,{z}' />" for z in ZDJECIA_GALERIA)
+    zdjecia_html = "".join(f"<img src='data:image/jpeg;base64,{z}' />" for z in _zdjecia_galerii())
     st.markdown(f"<div class='galeria-zdjec'>{zdjecia_html}</div>", unsafe_allow_html=True)
 
     if st.session_state.czas_startu:
