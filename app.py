@@ -18984,11 +18984,11 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
                   efektBroni:'rozpedzanie' },
     wlocznia:   { nazwa:'Włócznia',         ikona:'🔱', zasieg:96,  tempo:0.52, obr:26, magiczna:false,
                   efektBroni:'rzut' },
-    kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.20, obr:84, magiczna:false,
+    kusza:      { nazwa:'Kusza',            ikona:'🏹', zasieg:250, tempo:1.40, obr:84, magiczna:false,
                   pocisk:true, opis:'Powolny, ciężki bełt — ogromne obrażenia' },
     rozdzka:    { nazwa:'Różdżka',          ikona:'🪄', zasieg:210, tempo:0.47, obr:15, magiczna:true,  opis:'Pocisk na dystans' },
     rozdzkaOgnia:{nazwa:'Różdżka Ognia',    ikona:'🔥', zasieg:195, tempo:0.62, obr:16, magiczna:true,  opis:'Wybucha przy trafieniu i podpala kilku wrogów', efekt:'ogien' },
-    rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:200, tempo:0.58, obr:15, magiczna:true,  opis:'Razi też sąsiadów', efekt:'piorun' },
+    rozdzkaPior:{ nazwa:'Różdżka Piorunów', ikona:'⚡', zasieg:200, tempo:0.29, obr:5, magiczna:true,  opis:'Błyskawica od razu w cel i dalej po sąsiadach', efekt:'piorun' },
     rozdzkaZimy:{ nazwa:'Różdżka Zimy',     ikona:'❄️', zasieg:195, tempo:0.54, obr:13, magiczna:true,  opis:'Wybucha mrozem i spowalnia kilku wrogów', efekt:'zima' },
     rozdzkaWiedzmy:{nazwa:'Różdżka Wiedźmy',ikona:'🌈', zasieg:205, tempo:0.62, obr:4, magiczna:true,
                     opis:'+1 obrażeń za każdego zabitego wroga', mityczna:true },
@@ -19965,11 +19965,13 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       // wrogowie zdazali zejsc z linii strzalu)
       pociski.push({ x:gracz.x, y:gracz.y, vx:Math.cos(kat)*640, vy:Math.sin(kat)*640,
                      obr:bron.obr, efekt:null, zycie:1.1, kolor:'#d8d0b0',
-                     ksztalt:'wlocznia', kat:kat });
+                     ksztalt:'wlocznia', kat:kat, przebija:true, trafieni:[] });   // belt przelatuje przez wrogow
       ton(240, 0.10, 'square', 0.13);
       setTimeout(function () { ton(150, 0.08, 'square', 0.10); }, 60);
       return;
     }
+
+    if (bron.magiczna && bron.efekt === 'piorun') { uderzPiorunem(cel, bron.obr); return; }   // natychmiastowa blyskawica
 
     if (bron.magiczna) {
       var kolorP = { ogien:'#e6743c', zar:'#ff9a3c', piorun:'#ffe066', zima:'#a8e0f5', mroz:'#5aa8e6' }[bron.efekt] || (bron.mityczna ? '#ff7ae0' : '#b89ae6');
@@ -20511,10 +20513,16 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
         var trafiony = null;
         for (var j = 0; j < wrogowie.length; j++) {
           var w2 = wrogowie[j];
+          if (p.trafieni && p.trafieni.indexOf(w2) >= 0) continue;   // przebijajacy belt - kazdego wroga rani tylko raz
           if (Math.hypot(p.x - w2.x, p.y - w2.y) < w2.r + 9) { trafiony = w2; break; }
         }
         if (trafiony) {
           zadajObrazeniaWrogowi(trafiony, p.obr);
+          if (p.przebija) {                 // kusza: belt leci dalej i moze trafic kolejnych wrogow za tym
+            p.trafieni.push(trafiony);
+            rozbryzg(p.x, p.y, '#d8d0b0', 6);
+            continue;
+          }
           if (p.efekt === 'ogien') {
             // Kula ognia wybucha przy trafieniu: rani wszystkich w malym
             // promieniu (60% obrazen) i podpala kazdego, kogo dosiegnie.
@@ -22741,6 +22749,32 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // Czy zyje jeszcze ktorys ze slug przywolanych w walce z bossem (nowych nie ma, dopoki tamci zyja)
+  // Rozdzka piorunow: bez lecacego pocisku - blyskawica od razu w cel, potem przeskakuje po sasiadach
+  function uderzPiorunem(cel, obr) {
+    var sx = gracz.x, sy = gracz.y - 6, dl = Math.hypot(cel.x - sx, cel.y - sy), kroki = Math.max(1, Math.ceil(dl / 8));
+    for (var k = 1; k <= kroki; k++) {                       // piorun nie przechodzi przez sciany
+      var px = sx + (cel.x - sx) * k / kroki, py = sy + (cel.y - sy) * k / kroki;
+      if (czySciana(px, py)) { dodajBlyskawice(sx, sy, px, py); ton(900, 0.04, 'sawtooth', 0.04); return; }
+    }
+    dodajBlyskawice(sx, sy, cel.x, cel.y);
+    ton(1300 + Math.random() * 200, 0.05, 'sawtooth', 0.05);
+    zadajObrazeniaWrogowi(cel, obr);
+    var ogniwo = cel, trafieni = [cel], sila = 0.6;
+    for (var skok = 0; skok < SKOKI_PIORUNA; skok++) {
+      var nast = null, najD = ZASIEG_PIORUNA;
+      for (var wi = 0; wi < wrogowie.length; wi++) {
+        var w3 = wrogowie[wi];
+        if (trafieni.indexOf(w3) >= 0 || w3.hp <= 0) continue;
+        var d3 = Math.hypot(w3.x - ogniwo.x, w3.y - ogniwo.y);
+        if (d3 < najD) { najD = d3; nast = w3; }
+      }
+      if (!nast) break;
+      dodajBlyskawice(ogniwo.x, ogniwo.y, nast.x, nast.y);
+      zadajObrazeniaWrogowi(nast, Math.max(1, Math.round(obr * sila)));
+      trafieni.push(nast); ogniwo = nast; sila *= 0.85;
+    }
+  }
+
   function zyjeSluga() {
     return wrogowie.some(function (w) { return w.hp > 0 && !w.boss && !w.przedBossem; });
   }
