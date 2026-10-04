@@ -22775,6 +22775,53 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     }
   }
 
+  // ---------- DWIE PROBY Z KAZDYM BOSSEM ----------
+  var probyBossa = 0;
+  var _zakonczGreOryg = zakonczGre;
+  zakonczGre = function (zwyciestwo) {
+    if (!zwyciestwo && !trybNieskonczony && bossPrzywolany && arenaZamknieta && komnataBossa && probyBossa === 0
+        && wrogowie.some(function (w) { return w.boss && w.hp > 0; })) {
+      probyBossa = 1;
+      drugaProbaBossa();
+      return;
+    }
+    return _zakonczGreOryg.apply(this, arguments);
+  };
+  function drugaProbaBossa() {
+    trwa = false;
+    dzwiekSmierciGracza();
+    nakladka.style.display = 'flex';
+    var bj = document.getElementById('btnJeszczeNie'); if (bj) bj.style.display = 'none';
+    nakladkaTytul.textContent = '💀 Padłaś… ale to jeszcze nie koniec!';
+    nakladkaOpis.innerHTML = 'Z każdym bossem masz <b>dwie próby</b>. Wracasz do komnaty z pełnym zdrowiem, a boss zaczyna walkę od nowa.'
+      + '<br><br>Następna porażka cofnie Cię na początek piętra.';
+    nakladkaBtn.style.display = 'inline-block'; nakladkaBtn.disabled = false; nakladkaBtn.style.opacity = '1';
+    nakladkaBtn.textContent = '⚔️ Druga próba';
+    nakladkaBtn.onclick = function () {
+      inicjujDzwiek();
+      nakladka.style.display = 'none';
+      // boss od nowa - pelne zdrowie, bez slug, pociskow i czarow na planszy
+      wrogowie = wrogowie.filter(function (w) { return w.boss; });
+      wrogowie.forEach(function (w) { w.hp = w.hpMax; w.plonie = 0; w.krwawienie = 0; w.spowolnienie = 0; w.zamrozony = 0; });
+      pociski = [];
+      try { gazy.length = 0; } catch (e) {}
+      try { scianyMagiczne.length = 0; } catch (e) {}
+      try { uderzeniaBossa.length = 0; polaMrozu.length = 0; } catch (e) {}
+      cooldownSlug = 6;
+      // postac tuz za drzwiami, w srodku komnaty (drzwi zostaja zamkniete)
+      var kb = komnataBossa;
+      if (kb.drzwi && kb.drzwi.length) {
+        var sd = srodekDrzwi(), kier = kb.drzwiNaZewnatrz || [0, 0];
+        gracz.x = sd.x - kier[0] * KAFEL * 1.6; gracz.y = sd.y - kier[1] * KAFEL * 1.6;
+      } else { gracz.x = (kb.cx + 0.5) * KAFEL; gracz.y = (kb.cy + 3.5) * KAFEL; }
+      gracz.hp = gracz.hpMax; gracz.niewrazliwosc = 2;
+      kamX = gracz.x - WID_SWIATA / 2; kamY = gracz.y - WYS_SWIATA * KAM_PION;
+      odswiezHud();
+      dziennik('⚔️ Druga próba — tym razem się uda!');
+      trwa = true; czasOstatni = null; requestAnimationFrame(petla);
+    };
+  }
+
   function zyjeSluga() {
     return wrogowie.some(function (w) { return w.hp > 0 && !w.boss && !w.przedBossem; });
   }
@@ -22856,6 +22903,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Po wygenerowaniu mapy: drzwi zamkniete, klucz do znalezienia od nowa
   function przygotujDrzwi() {
     drzwiBossaOtwarte = false; drzwiZatrzasniete = false;
+    if (typeof probyBossa !== 'undefined') probyBossa = 0;
     if (typeof gracz !== 'undefined' && gracz) gracz.maKlucz = false;
     if (komnataBossa && komnataBossa.drzwi && komnataBossa.drzwi.length) ustawDrzwiBossa(false);
   }
@@ -22879,6 +22927,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function zatrzasnijDrzwiIBudzBossa() {
     var d = DEFINICJE_BOSSOW[poziomLabiryntu];
     drzwiBossaOtwarte = false; ustawDrzwiBossa(false); drzwiZatrzasniete = true;
+    probyBossa = 0;   // nowy boss - znowu dwie proby
     wrogowie.forEach(function (w) { w.przedBossem = true; });   // ci nie sa przyzwanymi slugami
     bossPrzywolany = true; arenaZamknieta = true; cooldownSlug = 6;
     wrogowie.push(stworzBossa((komnataBossa.cx+0.5)*KAFEL, (komnataBossa.cy+0.5)*KAFEL));
