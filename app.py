@@ -831,6 +831,12 @@ ETAPY = [
         "typ": "odyseusz",
     },
     {
+        "klucz": "proca",
+        "emoji": "🍉",
+        "tytul": {"pl": "🍉 Owocowa proca", "en": "🍉 Fruit slingshot"},
+        "typ": "proca",
+    },
+    {
         "klucz": "parkour",
         "emoji": "🧗",
         "tytul": {"pl": "🧗 Jumping Prince", "en": "🧗 Jumping Prince"},
@@ -875,7 +881,7 @@ KATEGORIE = [
         "etapy": [
             # Od rozgrzewki do najtrudniejszych - kolejnosc = kolejnosc na liscie
             "memory", "samolot", "blackjack", "dron", "bungee",
-            "piano", "simon", "odyseusz", "bitwa",
+            "piano", "simon", "odyseusz", "proca", "bitwa",
             "gra", "zaba", "poziom_diabla",
             "snake", "parkour",
         ],
@@ -4613,8 +4619,11 @@ SZABLON_ZABY = """<!DOCTYPE html>
     // Teren, platformy i przeszkody
     for (var k = od; k <= doK; k++) {
       var ex = k * KAFEL - kamX;
-      if (czyPrzepasc(k)) continue;
+      // Nad przepascia pomijamy TYLKO ziemie (i kolce na ziemi) - platformy nad przepascia
+      // istnieja fizycznie, wiec musza byc widoczne (wczesniej znikala cala kolumna)
+      var przepascK = czyPrzepasc(k);
       var gora = POZIOM_ZIEMI - wysokoscTerenu(k) * KAFEL;
+      if (!przepascK) {
       ctx.fillStyle = '#141a33'; ctx.fillRect(ex, gora, KAFEL, WYS - gora);
       ctx.fillStyle = e.akcent; ctx.fillRect(ex, gora, KAFEL, 3);
       ctx.fillStyle = 'rgba(255,255,255,0.055)'; ctx.fillRect(ex + 2, gora + 4, KAFEL - 4, 2);
@@ -4643,11 +4652,16 @@ SZABLON_ZABY = """<!DOCTYPE html>
           ctx.closePath(); ctx.fill();
         }
       }
+      }
       var pp2 = poziomPlatformy(k);
       if (pp2 !== null) {
-        ctx.fillStyle='#1e2647'; ctx.fillRect(ex, pp2, KAFEL, 9);
-        ctx.fillStyle=e.akcent; ctx.fillRect(ex, pp2, KAFEL, 3);
-        ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(ex, pp2+7, KAFEL, 2);
+        // Platforma: grubsza, z poswiata w kolorze etapu - dobrze widoczna takze nad przepascia
+        ctx.save(); ctx.shadowColor = e.akcent; ctx.shadowBlur = 10;
+        ctx.fillStyle='#2b3566'; ctx.fillRect(ex, pp2, KAFEL, 12);
+        ctx.restore();
+        ctx.fillStyle=e.akcent; ctx.fillRect(ex, pp2, KAFEL, 4);
+        ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(ex + 2, pp2 + 5, KAFEL - 4, 1.5);
+        ctx.fillStyle='rgba(0,0,0,0.35)'; ctx.fillRect(ex, pp2+10, KAFEL, 2);
       }
       if (czyKolecSufit(k)) {
         var dolK = POZIOM_ZIEMI - 4 * KAFEL;
@@ -15107,7 +15121,7 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   <div id="komunikat"></div>
   <div id="nakladka">
     <div id="nakladkaTytul">🏹 Łucznik</div>
-    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić.<br><br>Kropki pokazują tylko <b>początek lotu</b> — resztę łuku musisz wyczuć sama. Po drodze: mury, daszki, ptaki i <b>wiatr</b> (strzałka u góry).<br><br>Strzał masz bez ograniczeń. Sześć etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
+    <div id="nakladkaOpis">Odciągnij cięciwę i puść, żeby strzelić.<br><br>Kropki pokazują kawałek toru lotu. Po drodze: <b>ruchome płytki</b>, zasuwy i cele w ruchu — liczy się wyczucie momentu.<br><br>Strzał masz bez ograniczeń. Sześć etapów, a na końcu zobaczysz swoją <b>celność</b>.</div>
     <button class="gra-btn" id="nakladkaBtn">Rozpocznij ▶</button>
   </div>
 </div>
@@ -15198,37 +15212,40 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
   // ---------- ETAPY ----------
   // Tarcze sa POCHYLONE tak, zeby ich lico bylo zwrocone ku nadlatujacej
   // strzale (ta leci lobem z lewej i opada z gory) - stad kat ~-38 stopni.
-  // Kazdy etap ma inny motyw. "podglad" = ile kropek trajektorii widac (reszte luku trzeba wyczuc),
-  // "wiatr" = maks. sila wiatru (losowany na nowo po kazdym strzale, podglad go NIE uwzglednia).
+  // Bez wiatru i bez wielkich murow: ruchome plytki, zasuwy i ruchome cele - liczy sie wyczucie momentu.
+  // Kazdy etap sprawdzony symulatorem z ruchem przeszkod w czasie (kazdy cel da sie trafic).
   var ETAPY = [
-    { nazwa:'Etap 1 — rozgrzewka', podglad:8, wiatr:0,
-      opis:'Dwa cele na otwartym polu. Kropki pokazują już tylko <b>początek lotu</b> — resztę łuku wyczuj sama.',
+    { nazwa:'Etap 1 — rozgrzewka', wiatr:0,
+      opis:'Dwa cele na otwartym polu. Kropki pokazują kawałek toru — zawsze tej samej długości, niezależnie od siły naciągu.',
       tarcze:[ { x:318, y:300, r:17, kat:-38 }, { x:240, y:385, r:16, kat:-30 } ],
       przeszkody:[] },
-    { nazwa:'Etap 2 — za murem', podglad:6, wiatr:0,
-      opis:'Wysoki mur. Cel tuż za nim trafisz tylko <b>wysokim lobem</b>.',
-      tarcze:[ { x:296, y:432, r:16, kat:-60 }, { x:345, y:300, r:15, kat:-45 } ],
-      przeszkody:[ { x:178, y:332.5, w:22, h:275 } ] },
-    { nazwa:'Etap 3 — pod daszkiem', podglad:5, wiatr:25,
-      opis:'Cel pod daszkiem złapiesz tylko <b>płaskim strzałem</b>, drugi leży na daszku. Pojawia się lekki wiatr — strzałka u góry.',
-      tarcze:[ { x:312, y:410, r:15, kat:-20 }, { x:332, y:330, r:14, kat:-45 } ],
-      przeszkody:[ { x:305, y:350, w:140, h:12 } ] },
-    { nazwa:'Etap 4 — wichura', podglad:4, wiatr:90,
-      opis:'<b>Wiatr zmienia się po każdym strzale</b> — strzałka u góry pokazuje jego kierunek i siłę. Jeden cel w ruchu.',
-      tarcze:[ { x:205, y:262, r:15, kat:-40 }, { x:292, y:360, r:14, kat:-35 },
-               { x:350, y:190, r:14, kat:-52, ruch:'pion', amp:30, tempo:0.9, faza:0.6 } ],
-      przeszkody:[] },
-    { nazwa:'Etap 5 — ptaki', podglad:4, wiatr:50,
-      opis:'<b>Ptaki</b> przelatują przez tor lotu i zatrzymują strzały. Jeden cel schował się za murem.',
-      tarcze:[ { x:318, y:428, r:15, kat:-60 }, { x:335, y:232, r:14, kat:-45 } ],
-      przeszkody:[ { x:228, y:369, w:22, h:202 },
-                   { x:250, y:190, w:30, h:16, ruch:'poziom', amp:90, tempo:0.9, faza:0, wyglad:'ptak' },
-                   { x:200, y:300, w:30, h:16, ruch:'poziom', amp:70, tempo:1.3, faza:2, wyglad:'ptak' } ] },
-    { nazwa:'Etap 6 — finał', podglad:3, wiatr:70,
-      opis:'Wszystko naraz: <b>płaski strzał</b> pod daszek, <b>lob</b> nad murem, cel w ruchu i maleńki cel na samej górze. Do tego wiatr.',
-      tarcze:[ { x:180, y:438, r:13, kat:-15 }, { x:345, y:436, r:13, kat:-65 },
-               { x:250, y:160, r:13, kat:-40, ruch:'poziom', amp:40, tempo:0.8, faza:0 }, { x:360, y:108, r:12, kat:-62 } ],
-      przeszkody:[ { x:262, y:366, w:22, h:208 }, { x:175, y:380, w:90, h:12 } ] },
+    { nazwa:'Etap 2 — ruchome płytki', wiatr:0,
+      opis:'Przed celami jeżdżą <b>płytki</b>. Strzelaj, kiedy odsłonią tarczę.',
+      tarcze:[ { x:300, y:330, r:16, kat:-35 }, { x:345, y:200, r:15, kat:-48 } ],
+      przeszkody:[ { x:255, y:330, w:16, h:90, ruch:'pion', amp:70, tempo:1.1, faza:0 },
+                   { x:305, y:210, w:16, h:80, ruch:'pion', amp:60, tempo:0.8, faza:2 } ] },
+    { nazwa:'Etap 3 — zasuwy w powietrzu', wiatr:0,
+      opis:'Nad polem przesuwają się <b>poziome zasuwy</b> — przecinają tory lobów. Jeden cel jeździ góra-dół.',
+      tarcze:[ { x:330, y:410, r:15, kat:-25 }, { x:300, y:170, r:14, kat:-50 },
+               { x:205, y:300, r:14, kat:-35, ruch:'pion', amp:40, tempo:0.9, faza:0 } ],
+      przeszkody:[ { x:200, y:235, w:90, h:14, ruch:'poziom', amp:70, tempo:0.9, faza:0 },
+                   { x:260, y:150, w:80, h:14, ruch:'poziom', amp:80, tempo:1.2, faza:1 } ] },
+    { nazwa:'Etap 4 — brama', wiatr:0,
+      opis:'Dwie płytki jeżdżą <b>na zmianę</b> — przejście do celu otwiera się tylko na chwilę.',
+      tarcze:[ { x:335, y:320, r:15, kat:-30 }, { x:350, y:160, r:14, kat:-52 } ],
+      przeszkody:[ { x:220, y:320, w:16, h:90, ruch:'pion', amp:70, tempo:1.0, faza:0 },
+                   { x:272, y:320, w:16, h:90, ruch:'pion', amp:70, tempo:1.0, faza:3.14159 } ] },
+    { nazwa:'Etap 5 — ruchome cele', wiatr:0,
+      opis:'Tym razem <b>ruszają się cele</b> — jeden w poziomie, drugi w pionie. I jeden mały, daleko.',
+      tarcze:[ { x:260, y:220, r:14, kat:-40, ruch:'poziom', amp:60, tempo:0.9, faza:0 },
+               { x:330, y:330, r:14, kat:-35, ruch:'pion', amp:70, tempo:1.2, faza:0 }, { x:360, y:130, r:12, kat:-58 } ],
+      przeszkody:[ { x:200, y:440, w:18, h:60 } ] },
+    { nazwa:'Etap 6 — finał', wiatr:0,
+      opis:'Wszystko naraz: płytka przed celem, zasuwa nad celem przy ziemi, cel w ruchu i maleńki cel na samej górze.',
+      tarcze:[ { x:332, y:360, r:13, kat:-30 }, { x:250, y:150, r:13, kat:-45, ruch:'poziom', amp:50, tempo:0.8, faza:0 },
+               { x:365, y:105, r:11, kat:-62 }, { x:300, y:432, r:13, kat:-20 } ],
+      przeszkody:[ { x:282, y:360, w:16, h:90, ruch:'pion', amp:70, tempo:1.4, faza:0 },
+                   { x:300, y:395, w:80, h:14, ruch:'poziom', amp:70, tempo:1.0, faza:0 } ] },
   ];
   var wiatrAktualny = 0;
   function losujWiatr() { var m = ETAPY[etapIdx].wiatr || 0; return m ? Math.round((Math.random() * 2 - 1) * m) : 0; }
@@ -15575,14 +15592,21 @@ SZABLON_ODYSEUSZ = """<!DOCTYPE html>
     var dl=Math.min(Math.hypot(dx,dy),MAX_PRZECIAGNIECIE);
     var kat=Math.atan2(dy,dx);
     var vx=Math.cos(kat)*dl*MNOZNIK_MOCY, vy=Math.sin(kat)*dl*MNOZNIK_MOCY;
-    var px=WYLOT_X, py=WYLOT_Y;
-    ctx.fillStyle='rgba(255,255,255,0.6)';
-    var kropki = ETAPY[etapIdx].podglad || 8;   // tylko poczatek lotu - reszte luku trzeba wyczuc
-    for(var i=0;i<kropki;i++){
-      vy+=GRAWITACJA*0.05; px+=vx*0.05; py+=vy*0.05;
-      if(py>ZIEMIA_Y) break;
-      ctx.beginPath(); ctx.arc(px,py,2.2,0,Math.PI*2); ctx.fill();
+    // Podglad toru ma STALA dlugosc (ok. 240 px drogi) - mocniejszy naciag nie pokazuje wiecej,
+    // kropki co ~9 px, blednace ku koncowi
+    var px=WYLOT_X, py=WYLOT_Y, droga=0, nastepna=9, DLUGOSC_PODGLADU=240, krok=1/240;
+    ctx.fillStyle='rgba(255,255,255,0.95)';
+    for (var it = 0; it < 3000 && droga < DLUGOSC_PODGLADU; it++) {
+      vy+=GRAWITACJA*krok; var nx=px+vx*krok, ny=py+vy*krok;
+      droga+=Math.hypot(nx-px, ny-py); px=nx; py=ny;
+      if(py>ZIEMIA_Y || px>W+20) break;
+      if (droga >= nastepna) {
+        nastepna += 9;
+        ctx.globalAlpha = Math.max(0.15, 0.8 - 0.6 * (droga / DLUGOSC_PODGLADU));
+        ctx.beginPath(); ctx.arc(px,py,2.2,0,Math.PI*2); ctx.fill();
+      }
     }
+    ctx.globalAlpha = 1;
     var proc=dl/MAX_PRZECIAGNIECIE;
     ctx.strokeStyle='rgba(22,19,10,0.5)'; ctx.lineWidth=3;
     ctx.beginPath(); ctx.arc(WYLOT_X,WYLOT_Y,30,0,Math.PI*2); ctx.stroke();
@@ -24554,6 +24578,1035 @@ def renderuj_samolot(etap_dane):
     return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, t("napewno_samolot"), etykieta_bledow=t("bledy_etykieta_samolot"))
 
 
+SZABLON_PROCA = """<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; outline:none; -webkit-user-select:none; user-select:none; }
+  html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui, -apple-system, 'Segoe UI', sans-serif; }
+  #gra { position:relative; width:100%; max-width:420px; margin:0 auto; border-radius:14px; overflow:hidden; border:2px solid #d4af37; }
+  #plotno { display:block; width:100%; height:auto; touch-action:none; }
+  #panel { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:8px 52px 0 12px; pointer-events:none; }
+  #etapEtykieta { font-weight:900; font-size:14px; color:#1d3b1f; text-shadow:0 1px 0 rgba(255,255,255,0.7); }
+  #wrogowieEtykieta { font-weight:900; font-size:14px; color:#1d3b1f; text-shadow:0 1px 0 rgba(255,255,255,0.7); }
+  #podpowiedz { position:absolute; top:30px; left:10px; right:52px; font-size:12px; line-height:1.35; color:#24361f; font-weight:700;
+    background:rgba(255,255,255,0.55); border-radius:10px; padding:5px 8px; pointer-events:none; display:none; }
+  #btnInfo { position:absolute; top:44px; right:8px; width:34px; height:34px; border-radius:50%; border:2px solid rgba(60,40,10,0.6);
+    background:rgba(255,248,220,0.92); font-weight:900; font-size:17px; color:#5a3a0a; cursor:pointer; }
+  #przyciskiTreningu { position:absolute; top:84px; right:8px; display:none; flex-direction:column; gap:6px; }
+  #przyciskiTreningu button { padding:6px 9px; border-radius:10px; border:1.5px solid rgba(60,40,10,0.55); background:rgba(255,248,220,0.92);
+    font-weight:800; font-size:12px; color:#5a3a0a; cursor:pointer; }
+  #torba { position:absolute; left:0; right:0; bottom:0; height:10.7%; display:flex; align-items:center; justify-content:center; gap:5px; padding:0 6px; }
+  #torba .owoc { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px;
+    background:rgba(255,255,255,0.14); border:1.5px solid rgba(255,255,255,0.25); cursor:pointer; position:relative; }
+  #torba .owoc.wybrany { background:rgba(255,224,138,0.35); border-color:#ffe08a; box-shadow:0 0 10px rgba(255,224,138,0.7); }
+  #torba .owoc .cena { position:absolute; bottom:-4px; right:-4px; font-size:9px; font-weight:900; color:#16130a; background:#ffe08a; border-radius:6px; padding:0 3px; }
+  #torba .pusto { color:rgba(255,255,255,0.7); font-size:12px; font-weight:700; }
+  #komunikat { position:absolute; top:38%; left:0; right:0; text-align:center; font-weight:900; font-size:20px; color:#fff;
+    text-shadow:0 2px 6px rgba(0,0,0,0.6); opacity:0; transition:opacity .25s; pointer-events:none; padding:0 16px; }
+  #komunikat.widoczny { opacity:1; }
+  .warstwa { position:absolute; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; padding:10px;
+    background:rgba(10,14,8,0.72); }
+  .ukryty { display:none !important; }
+  .karta { width:100%; max-width:350px; max-height:100%; overflow-y:auto; background:linear-gradient(160deg,#2f2a14,#191510);
+    border:1.5px solid rgba(230,193,92,0.75); border-radius:18px; padding:14px; color:#f4ead0; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.6); }
+  .karta h2 { font-size:20px; color:#ffe08a; margin-bottom:4px; }
+  .karta p { font-size:13px; line-height:1.45; margin:6px 0; }
+  .budzet { font-size:14px; margin:4px 0 8px; }
+  .budzet b { color:#9dff8a; font-size:17px; }
+  .koszyk { display:flex; justify-content:center; gap:6px; min-height:34px; margin-bottom:8px; }
+  .koszyk span { width:32px; height:32px; border-radius:9px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; font-size:20px; }
+  .oferty { display:flex; flex-direction:column; gap:8px; }
+  .oferta { display:flex; align-items:center; gap:10px; text-align:left; padding:9px 10px; border-radius:14px; cursor:pointer;
+    background:rgba(255,255,255,0.06); border:1.5px solid rgba(230,193,92,0.35); color:#f4ead0; font-family:inherit; }
+  .oferta:active { transform:scale(0.98); }
+  .oferta .ikona { font-size:30px; width:38px; text-align:center; flex:0 0 auto; display:flex; justify-content:center; }
+  .oferta .tekst { flex:1; min-width:0; }
+  .oferta .nazwa { font-weight:900; font-size:14px; }
+  .oferta .opis { font-size:11.5px; opacity:0.85; line-height:1.35; margin-top:2px; }
+  .oferta .metka { flex:0 0 auto; font-weight:900; font-size:14px; color:#16130a; background:#9dff8a; border-radius:10px; padding:3px 8px; }
+  .btn { display:inline-block; margin-top:10px; padding:11px 22px; border:none; border-radius:13px; background:linear-gradient(135deg,#ffe08a,#d4af37);
+    color:#16130a; font-weight:900; font-size:15px; cursor:pointer; font-family:inherit; }
+  .btn.drugi { background:rgba(255,255,255,0.1); color:#ffe08a; border:1.5px solid rgba(230,193,92,0.6); }
+  .sciaga-tier { text-align:left; margin-top:10px; }
+  .sciaga-tier h3 { font-size:13px; color:#9dff8a; margin-bottom:4px; }
+  .sciaga-wiersz { display:flex; gap:8px; align-items:center; font-size:12px; line-height:1.35; padding:4px 0; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .sciaga-wiersz .ikona { font-size:20px; width:28px; text-align:center; flex:0 0 auto; display:flex; justify-content:center; }
+  .zamknij { position:absolute; top:8px; left:10px; width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.15);
+    color:#fff; font-size:15px; font-weight:900; cursor:pointer; }
+</style>
+</head>
+<body>
+<audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
+<div id="gra">
+  <canvas id="plotno" width="380" height="560"></canvas>
+  <div id="panel"><div id="etapEtykieta"></div><div id="wrogowieEtykieta"></div></div>
+  <div id="podpowiedz"></div>
+  <button id="btnInfo">?</button>
+  <div id="przyciskiTreningu"><button id="btnUstawCele">↻ Cele</button><button id="btnDoEtapow">Etapy ▶</button></div>
+  <div id="torba"></div>
+  <div id="komunikat"></div>
+  <div id="targ" class="warstwa ukryty"></div>
+  <div id="sciaga" class="warstwa ukryty"></div>
+  <div id="nakladka" class="warstwa">
+    <div class="karta">
+      <h2 id="nakladkaTytul">🍉 Owocowa proca</h2>
+      <p id="nakladkaOpis">Szkodniki zalęgły się w ogrodzie! Odciągnij owoc w procy, wyceluj i puść. <b>Dotknij ekranu w locie</b> (albo zaraz po upadku), żeby użyć mocy owocu — raz na owoc.<br><br>Przed każdym etapem kupujesz na targu <b>3 owoce za 5 $</b>. Na łączce możesz najpierw wypróbować wszystkie owoce za darmo.</p>
+      <button class="btn" id="btnTrening">🌿 Łączka treningowa</button><br>
+      <button class="btn drugi" id="nakladkaBtn">Od razu do etapów ▶</button>
+    </div>
+  </div>
+</div>
+<script>
+  var plotno = document.getElementById('plotno'), ctx = plotno.getContext('2d');
+  var W = 380, H = 560, ZIEMIA = 500, DPR = Math.min(2, window.devicePixelRatio || 1);
+  plotno.width = Math.round(W * DPR); plotno.height = Math.round(H * DPR);
+  var G = 380, PROCA_X = 74, PROCA_Y = 412, MAX_NACIAG = 85, MOC = 4.6;
+  var WIDELKI = [[60, 398], [89, 398]];
+
+  // ===================== DZWIEK =====================
+  var audioCtx = null;
+  function inicjujDzwiek() {
+    if (!audioCtx) { try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (audioCtx && audioCtx.state === 'suspended') { try { audioCtx.resume(); } catch (e) {} }
+  }
+  function ton(f, d, typ, vol, f2) {
+    if (!audioCtx) return;
+    try {
+      var t0 = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+      o.type = typ || 'sine'; o.frequency.setValueAtTime(f, t0);
+      if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + d);
+      g.gain.setValueAtTime(vol || 0.08, t0); g.gain.exponentialRampToValueAtTime(0.0001, t0 + d);
+      o.connect(g); g.connect(audioCtx.destination); o.start(t0); o.stop(t0 + d + 0.02);
+    } catch (e) {}
+  }
+  function szum(d, vol, czest) {
+    if (!audioCtx) return;
+    try {
+      var n = Math.floor(audioCtx.sampleRate * d), buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate), dane = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) dane[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 2);
+      var s = audioCtx.createBufferSource(), g = audioCtx.createGain(), fl = audioCtx.createBiquadFilter();
+      fl.type = 'lowpass'; fl.frequency.value = czest || 900; s.buffer = buf; g.gain.value = vol || 0.25;
+      s.connect(fl); fl.connect(g); g.connect(audioCtx.destination); s.start();
+    } catch (e) {}
+  }
+
+  // ===================== OWOCE =====================
+  var OWOCE = {
+    borowka:    { nazwa:'Borówka',    emoji:'🫐', cena:1, r:11, masa:0.8, sok:'#4a5bd6', opis:'Dotknij — rozpada się na 3 borówki.' },
+    winogrona:  { nazwa:'Winogrona',  emoji:'🍇', cena:1, r:13, masa:0.9, sok:'#8a3fc0', opis:'Dotknij — śrut z 6 winogron prosto przed siebie.' },
+    wisnie:     { nazwa:'Wiśnie',     emoji:'🍒', cena:1, r:12, masa:0.9, sok:'#c2183a', opis:'Dotknij — rozdzielają się: jedna w górę, druga w dół.' },
+    cytryna:    { nazwa:'Cytryna',    emoji:'🍋', cena:1, r:13, masa:1.0, sok:'#ffe14a', opis:'Dotknij — mały, kwaśny wybuch.' },
+    banan:      { nazwa:'Banan',      emoji:'🍌', cena:2, r:14, masa:1.1, sok:'#ffe27a', opis:'Dotknij — leci prosto w prawo jak strzała, bez grawitacji.' },
+    jablko:     { nazwa:'Jabłko',     emoji:'🍎', cena:2, r:14, masa:1.3, sok:'#e8473c', opis:'Dotknij — wybucha.' },
+    pomarancza: { nazwa:'Pomarańcza', emoji:'🍊', cena:2, r:14, masa:1.6, sok:'#ff9a2a', opis:'Dotknij — nurkuje pionowo w dół i miażdży nawet kamień.' },
+    truskawka:  { nazwa:'Truskawka',  emoji:'🍓', cena:2, r:13, masa:1.0, sok:'#e8304a', opis:'Dotknij — sypie w dół deszczem 5 pestek.' },
+    arbuz:      { nazwa:'Arbuz',      emoji:'🍉', cena:3, r:22, masa:3.0, sok:'#ff4d6d', opis:'Wielki i ciężki. Dotknij — potężny wybuch.' },
+    ananas:     { nazwa:'Ananas',     emoji:'🍍', cena:3, r:16, masa:1.8, sok:'#ffd23c', opis:'Dotknij — rakieta: wystrzeliwuje do przodu i przebija drewno oraz szkło.' },
+    granat:     { nazwa:'Granat',     emoji:null, cena:3, r:15, masa:1.5, sok:'#c8102e', opis:'Dotknij — pęka i sypie pestkami na wszystkie strony.' }
+  };
+  var TIERY = { 1: ['borowka', 'winogrona', 'wisnie', 'cytryna'], 2: ['banan', 'jablko', 'pomarancza', 'truskawka'], 3: ['arbuz', 'ananas', 'granat'] };
+  var KOLEJNOSC = TIERY[1].concat(TIERY[2], TIERY[3]);
+  var IKONA_GRANATU = '<svg viewBox="0 0 32 32" width="1em" height="1em"><circle cx="16" cy="18" r="11" fill="#c8102e"/><circle cx="12" cy="14" r="3.5" fill="rgba(255,255,255,0.35)"/>'
+    + '<path d="M11 8 L13 4 L16 7 L19 4 L21 8 Z" fill="#8a0c20"/></svg>';
+  function ikonaHtml(k) { return OWOCE[k].emoji || IKONA_GRANATU; }
+
+  // ===================== ETAPY =====================
+  function B(x, dol, w, h, typ) { return { x: x, dol: dol, w: w, h: h, typ: typ }; }
+  function R(x, dol, szef) { return { x: x, dol: dol, szef: !!szef }; }
+  var TRENING = { nazwa: 'Łączka treningowa',
+    bloki: [ B(232, 0, 14, 62, 'drewno'), B(286, 0, 14, 62, 'drewno'), B(226, 62, 80, 12, 'drewno'), B(328, 0, 36, 36, 'szklo'), B(328, 36, 36, 36, 'kamien') ],
+    robaki: [ R(266, 74), R(266, 0), R(346, 72) ] };
+  var ETAPY_GRY = [
+    { nazwa: 'Ogródek', bloki: [ B(245, 0, 14, 62, 'drewno'), B(291, 0, 14, 62, 'drewno'), B(238, 62, 74, 12, 'drewno'), B(330, 0, 34, 34, 'szklo') ],
+      robaki: [ R(275, 74), R(275, 0), R(347, 34) ] },
+    { nazwa: 'Szklarnia', bloki: [ B(212, 0, 14, 70, 'drewno'), B(300, 0, 14, 70, 'drewno'), B(206, 70, 114, 12, 'szklo'),
+        B(224, 82, 12, 52, 'szklo'), B(290, 82, 12, 52, 'szklo'), B(216, 134, 94, 12, 'drewno'), B(342, 0, 30, 30, 'kamien') ],
+      robaki: [ R(263, 0), R(263, 82), R(263, 146), R(357, 30) ] },
+    { nazwa: 'Kamienny fort', bloki: [ B(206, 0, 20, 92, 'kamien'), B(324, 0, 20, 92, 'kamien'), B(200, 92, 150, 14, 'kamien'),
+        B(230, 0, 28, 28, 'drewno'), B(230, 28, 28, 28, 'drewno'), B(294, 0, 24, 40, 'szklo') ],
+      robaki: [ R(276, 0, true), R(244, 56), R(275, 106) ] }
+  ];
+  var WYTRZYMALOSC = { drewno: 50, szklo: 20, kamien: 110 };
+  var MASA_BLOKU = { drewno: 1, szklo: 0.6, kamien: 2 };
+
+  // ===================== STAN =====================
+  var bloki = [], robaki = [], owoce = [], czastki = [], napisy = [], pierscienie = [];
+  var tryb = 'menu', etapIdx = 0, torba = [], wybranyIdx = 0, zaladowany = null, glowny = null;
+  var stanStrzalu = 'celowanie', czasOsiadania = 0, celowanie = false, startX = 0, startY = 0, naciagX = 0, naciagY = 0;
+  var sladOstatni = [], sladBiezacy = [], ostatniPunktSladu = 0;
+  var wstrzas = 0, czasAbs = 0, trwa = false, czasOstatni = null, wybranyTrening = 'jablko';
+  var strzalyLacznie = 0, szkodnikiLacznie = 0, budzet = 5, wybraneNaTargu = [];
+  var CHMURY = [[40, 70, 1], [180, 50, 0.8], [300, 95, 1.1]];
+
+  var el = function (id) { return document.getElementById(id); };
+  function zbudujPlansze(def) {
+    bloki = def.bloki.map(function (b) { return { x: b.x, y: ZIEMIA - b.dol - b.h, w: b.w, h: b.h, typ: b.typ, hp: WYTRZYMALOSC[b.typ], hpMax: WYTRZYMALOSC[b.typ], vy: 0, blysk: 0, usun: false }; });
+    robaki = def.robaki.map(function (r) { var rr = r.szef ? 16 : 13; return { x: r.x, y: ZIEMIA - r.dol - rr, r: rr, hp: r.szef ? 80 : 30, hpMax: r.szef ? 80 : 30, szef: r.szef, vx: 0, vy: 0, blysk: 0, martwy: false, faza: Math.random() * 6 }; });
+    owoce = []; czastki = []; napisy = []; pierscienie = []; glowny = null; sladOstatni = []; sladBiezacy = [];
+    odswiezPanel();
+  }
+
+  // ===================== FIZYKA =====================
+  function nakladaSie(aL, aP, bL, bP) { return aL < bP - 3 && aP > bL + 3; }
+  function podporaOd(xL, xP, dol, pomin) {           // czy cos podpiera dol (wysokosc) w zakresie x
+    if (dol >= ZIEMIA - 0.5) return ZIEMIA;
+    for (var i = 0; i < bloki.length; i++) { var b = bloki[i]; if (b === pomin || b.usun || Math.abs(b.vy) > 1) continue;
+      if (Math.abs(b.y - dol) < 1.5 && nakladaSie(xL, xP, b.x, b.x + b.w)) return b.y; }
+    return null;
+  }
+  function ladowanie(xL, xP, staryDol, nowyDol, pomin) {   // najblizsza powierzchnia, na ktora spadamy
+    var najl = nowyDol >= ZIEMIA ? ZIEMIA : null;
+    for (var i = 0; i < bloki.length; i++) { var b = bloki[i]; if (b === pomin || b.usun) continue;
+      if (staryDol <= b.y + 0.5 && nowyDol >= b.y && nakladaSie(xL, xP, b.x, b.x + b.w) && (najl === null || b.y < najl)) najl = b.y; }
+    return najl;
+  }
+  function krokBlokow(dt) {
+    bloki.sort(function (a, b) { return (b.y + b.h) - (a.y + a.h); });
+    for (var i = 0; i < bloki.length; i++) {
+      var b = bloki[i]; if (b.usun) continue;
+      var dol = b.y + b.h;
+      if (b.vy <= 0 && podporaOd(b.x, b.x + b.w, dol, b) !== null) { b.vy = 0; continue; }
+      b.vy += G * dt;
+      var nowyDol = dol + b.vy * dt, l = ladowanie(b.x, b.x + b.w, dol, nowyDol, b);
+      // miazdzenie szkodnikow pod spadajacym blokiem
+      for (var j = 0; j < robaki.length; j++) { var rb = robaki[j]; if (rb.martwy) continue;
+        if (nakladaSie(b.x, b.x + b.w, rb.x - rb.r, rb.x + rb.r) && dol <= rb.y - rb.r + 2 && nowyDol >= rb.y - rb.r) {
+          if (b.vy > 90) zranRobaka(rb, b.vy * 0.4 * MASA_BLOKU[b.typ]); else if (!rb.martwy) { l = Math.min(l === null ? 1e9 : l, rb.y - rb.r); }
+        } }
+      if (l !== null && l <= nowyDol) {
+        if (b.vy > 230) uszkodzBlok(b, (b.vy - 200) * 0.08 * (b.typ === 'szklo' ? 3 : 1));
+        if (b.vy > 120) { ton(140, 0.08, 'triangle', 0.05); }
+        b.y = l - b.h; b.vy = 0;
+      } else b.y += b.vy * dt;
+      if (b.y > H + 50) b.usun = true;
+    }
+  }
+  function krokRobakow(dt) {
+    for (var i = 0; i < robaki.length; i++) {
+      var rb = robaki[i]; if (rb.martwy) continue;
+      if (rb.blysk > 0) rb.blysk -= dt;
+      rb.x += rb.vx * dt; rb.vx *= Math.max(0, 1 - 5 * dt);
+      var dol = rb.y + rb.r, xL = rb.x - rb.r * 0.5, xP = rb.x + rb.r * 0.5;
+      if (rb.vy <= 0 && podporaOd(xL, xP, dol, null) !== null) { rb.vy = 0; continue; }
+      rb.vy += G * dt;
+      var nowyDol = dol + rb.vy * dt, l = ladowanie(xL, xP, dol, nowyDol, null);
+      if (l !== null && l <= nowyDol) { if (rb.vy > 210) zranRobaka(rb, (rb.vy - 160) * 0.28); rb.y = l - rb.r; rb.vy = 0; }
+      else rb.y += rb.vy * dt;
+      if (rb.y > H + 40 || rb.x < -40 || rb.x > W + 40) zabijRobaka(rb);
+    }
+  }
+  function kolizjaOwocBlok(o, b) {
+    if (b.usun) return;
+    var cx = Math.max(b.x, Math.min(o.x, b.x + b.w)), cy = Math.max(b.y, Math.min(o.y, b.y + b.h));
+    var dx = o.x - cx, dy = o.y - cy, d2 = dx * dx + dy * dy;
+    if (d2 >= o.r * o.r) return;
+    var d = Math.sqrt(d2), nx, ny;
+    if (d < 0.001) {
+      var lw = o.x - b.x, pr = b.x + b.w - o.x, gr = o.y - b.y, dl = b.y + b.h - o.y, m = Math.min(lw, pr, gr, dl);
+      nx = m === lw ? -1 : (m === pr ? 1 : 0); ny = m === gr ? -1 : (m === dl ? 1 : 0); d = 0;
+    } else { nx = dx / d; ny = dy / d; }
+    var vn = o.vx * nx + o.vy * ny;
+    if (vn < 0) {
+      var udar = -vn;
+      if (o.przebija && b.typ !== 'kamien') { uszkodzBlok(b, 999); o.vx *= 0.92; o.vy *= 0.92; return; }
+      var dmg = (o.przebija && b.typ === 'kamien') ? 80 : o.masa * udar * 0.12;
+      if (o.przebija) { o.przebija = false; o.bezGrawitacji = 0; }
+      if (o.banan) { o.banan = false; o.bezGrawitacji = 0; }
+      if (dmg > 2) uszkodzBlok(b, dmg);
+      if (udar > 110) { soczek(o, Math.min(10, udar / 30)); dzwiekUderzenia(b.typ, udar); }
+      if (b.usun) { o.vx *= 0.62; o.vy *= 0.62; return; }
+      o.vx -= 1.3 * vn * nx; o.vy -= 1.3 * vn * ny;
+      var tx = -ny, ty = nx, vt = o.vx * tx + o.vy * ty; o.vx -= vt * tx * 0.15; o.vy -= vt * ty * 0.15;
+    }
+    var pen = o.r - d; o.x += nx * pen; o.y += ny * pen;
+    if (ny < -0.5) { o.naZiemi = true; o.wKat = o.vx / o.r; }
+  }
+  function kolizjaOwocRobak(o, rb) {
+    if (rb.martwy) return;
+    var dx = rb.x - o.x, dy = rb.y - o.y, d = Math.hypot(dx, dy), min = o.r + rb.r;
+    if (d >= min || d < 0.001) return;
+    var nx = dx / d, ny = dy / d, vn = o.vx * nx + o.vy * ny;
+    if (vn > 0) {
+      zranRobaka(rb, o.masa * vn * 0.16 + 4);
+      if (vn > 90) soczek(o, 6);
+      rb.vx += nx * vn * 0.3 * o.masa;
+      o.vx -= 1.3 * vn * nx * 0.6; o.vy -= 1.3 * vn * ny * 0.6;
+      if (o.banan) { o.banan = false; o.bezGrawitacji = 0; }
+    }
+    var pen = min - d; o.x -= nx * pen; o.y -= ny * pen;
+  }
+  function krokOwocow(dt) {
+    for (var i = 0; i < owoce.length; i++) {
+      var o = owoce[i]; if (o.usun) continue;
+      o.zycie += dt; o.naZiemi = false;
+      if (o.bezGrawitacji > 0) { o.bezGrawitacji -= dt; if (o.bezGrawitacji <= 0) o.przebija = false; } else o.vy += G * dt;
+      o.x += o.vx * dt; o.y += o.vy * dt; o.kat += o.wKat * dt;
+      if (o.y + o.r > ZIEMIA) {
+        o.y = ZIEMIA - o.r;
+        if (o.vy > 0) { if (o.vy > 140) soczek(o, Math.min(8, o.vy / 40)); o.vy = -o.vy * 0.32; if (Math.abs(o.vy) < 30) o.vy = 0; }
+        o.vx *= Math.max(0, 1 - 2.2 * dt); o.wKat = o.vx / o.r; o.bezGrawitacji = 0; o.banan = false; o.przebija = false; o.naZiemi = true;
+      }
+      for (var j = 0; j < bloki.length; j++) kolizjaOwocBlok(o, bloki[j]);
+      for (var k = 0; k < robaki.length; k++) kolizjaOwocRobak(o, robaki[k]);
+      if (o.naZiemi) o.vx *= Math.max(0, 1 - 1.2 * dt);
+      var v = Math.hypot(o.vx, o.vy);
+      if (v < 14 && o.naZiemi) o.spokoj += dt; else o.spokoj = 0;
+      var limitSpokoju = (o.glowny && !o.mocUzyta) ? 2.5 : 1.0;    // nieuzyta moc: chwila na klikniecie po upadku
+      if (o.x > W + 60 || o.x < -80 || o.y > H + 80 || o.spokoj > limitSpokoju || o.zycie > 12 || (o.pestka && o.zycie > 3.5)) o.usun = true;
+    }
+  }
+  function krok(dt) { krokOwocow(dt); krokBlokow(dt); krokRobakow(dt); }
+
+  // ===================== OBRAZENIA I EFEKTY =====================
+  function uszkodzBlok(b, dmg) {
+    if (b.usun) return;
+    b.hp -= dmg; b.blysk = 0.15;
+    if (b.hp <= 0) {
+      b.usun = true;
+      var kol = b.typ === 'drewno' ? '#a8743e' : (b.typ === 'szklo' ? '#bfeaff' : '#9a9a9a');
+      for (var i = 0; i < 12; i++) czastki.push({ x: b.x + Math.random() * b.w, y: b.y + Math.random() * b.h, vx: (Math.random() - 0.5) * 180, vy: -Math.random() * 160,
+        r: 2 + Math.random() * 3, kolor: kol, zycie: 0.9, max: 0.9, kwadrat: true, grawitacja: true });
+      if (b.typ === 'szklo') { ton(1800, 0.12, 'triangle', 0.05); ton(2400, 0.1, 'sine', 0.04); }
+      else if (b.typ === 'drewno') { szum(0.15, 0.18, 1200); }
+      else { szum(0.25, 0.25, 500); }
+    }
+  }
+  function dzwiekUderzenia(typ, udar) {
+    var v = Math.min(0.12, udar / 3000);
+    if (typ === 'szklo') ton(1500, 0.06, 'triangle', v); else if (typ === 'kamien') ton(120, 0.1, 'sine', v * 1.5); else ton(220, 0.07, 'triangle', v);
+  }
+  function zranRobaka(rb, dmg) {
+    if (rb.martwy) return;
+    rb.hp -= dmg; rb.blysk = 0.2;
+    if (dmg > 6) ton(520, 0.06, 'square', 0.03);
+    if (rb.hp <= 0) zabijRobaka(rb);
+  }
+  function zabijRobaka(rb) {
+    if (rb.martwy) return;
+    rb.martwy = true;
+    for (var i = 0; i < 16; i++) czastki.push({ x: rb.x, y: rb.y, vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160 - 40,
+      r: 3 + Math.random() * 4, kolor: rb.szef ? '#b06ad8' : '#8bd36a', zycie: 0.7, max: 0.7 });
+    napisy.push({ x: rb.x, y: rb.y - 20, tekst: rb.szef ? '+3 👑' : '+1', zycie: 1.1 });
+    ton(660, 0.08, 'triangle', 0.06); setTimeout(function () { ton(990, 0.1, 'triangle', 0.05); }, 70);
+    if (tryb === 'etap') { szkodnikiLacznie++; window.stat && window.stat('szkodniki'); }
+    odswiezPanel();
+  }
+  function soczek(o, ile) {
+    var kol = (OWOCE[o.typ] && OWOCE[o.typ].sok) || '#ffd23c';
+    for (var i = 0; i < ile; i++) czastki.push({ x: o.x, y: o.y, vx: (Math.random() - 0.5) * 140, vy: -Math.random() * 120, r: 1.5 + Math.random() * 2, kolor: kol, zycie: 0.5, max: 0.5, grawitacja: true });
+  }
+  function wybuch(x, y, R, dmg, kolor) {
+    pierscienie.push({ x: x, y: y, R: R, zycie: 0.45, max: 0.45, kolor: kolor });
+    for (var i = 0; i < 26; i++) { var k = Math.random() * Math.PI * 2, v = 60 + Math.random() * 220;
+      czastki.push({ x: x, y: y, vx: Math.cos(k) * v, vy: Math.sin(k) * v, r: 2 + Math.random() * 4, kolor: Math.random() < 0.5 ? kolor : '#fff3b0', zycie: 0.6, max: 0.6 }); }
+    wstrzas = Math.min(0.5, 0.15 + R / 300);
+    szum(0.3 + R / 400, 0.32, 700); ton(110, 0.35, 'sine', 0.18, 40);
+    bloki.forEach(function (b) { if (b.usun) return; var cx = Math.max(b.x, Math.min(x, b.x + b.w)), cy = Math.max(b.y, Math.min(y, b.y + b.h)), d = Math.hypot(x - cx, y - cy);
+      if (d < R) uszkodzBlok(b, dmg * (1 - d / R) * (b.typ === 'kamien' ? 0.75 : 1)); });
+    robaki.forEach(function (rb) { if (rb.martwy) return; var d = Math.max(0, Math.hypot(x - rb.x, y - rb.y) - rb.r);
+      if (d < R) { zranRobaka(rb, dmg * (1 - d / R)); rb.vx += (rb.x - x) / (R + 1) * 120; } });
+    owoce.forEach(function (o) { if (o.usun) return; var dx = o.x - x, dy = o.y - y, d = Math.hypot(dx, dy) || 1;
+      if (d < R) { var f = 260 * (1 - d / R); o.vx += dx / d * f; o.vy += dy / d * f; } });
+  }
+
+  // ===================== STRZAL I MOCE =====================
+  function nowyOwoc(typ, x, y, vx, vy, czyGlowny, op) {
+    op = op || {}; var d = OWOCE[typ];
+    return { typ: typ, x: x, y: y, vx: vx, vy: vy, r: op.r || d.r, masa: op.masa || d.masa, kat: 0, wKat: vx / 45,
+      glowny: czyGlowny, mocUzyta: !czyGlowny, bezGrawitacji: 0, przebija: false, banan: false, pestka: !!op.pestka, kolor: op.kolor || null,
+      zycie: 0, spokoj: 0, naZiemi: false, usun: false };
+  }
+  function wystrzel() {
+    var o = nowyOwoc(zaladowany, PROCA_X + naciagX, PROCA_Y + naciagY, -naciagX * MOC, -naciagY * MOC, true);
+    owoce.push(o); glowny = o;
+    if (tryb === 'etap') { torba.splice(wybranyIdx, 1); wybranyIdx = 0; }
+    zaladowany = null; stanStrzalu = 'lot'; sladBiezacy = []; ostatniPunktSladu = 0;
+    strzalyLacznie++; window.stat && window.stat('strzaly');
+    szum(0.12, 0.2, 2500); ton(300, 0.15, 'triangle', 0.06, 700);
+    odswiezTorbe();
+  }
+  function uzyjMocy(o) {
+    o.mocUzyta = true;
+    var s = Math.max(120, Math.hypot(o.vx, o.vy)), kat = Math.atan2(o.vy, o.vx), i;
+    switch (o.typ) {
+      case 'borowka':
+        [-0.2, 0.2].forEach(function (d) { owoce.push(nowyOwoc('borowka', o.x, o.y, Math.cos(kat + d) * s, Math.sin(kat + d) * s, false, { r: 10, masa: 0.7 })); });
+        ton(880, 0.08, 'triangle', 0.06); break;
+      case 'winogrona':
+        for (i = 0; i < 6; i++) { var dk = -0.35 + i * 0.14;
+          owoce.push(nowyOwoc('winogrona', o.x, o.y, Math.cos(kat + dk) * s * 1.05, Math.sin(kat + dk) * s * 1.05, false, { r: 7, masa: 0.45, kolor: '#7b3fa8' })); }
+        o.usun = true; ton(700, 0.08, 'square', 0.04); break;
+      case 'wisnie':
+        o.vy -= 150; owoce.push(nowyOwoc('wisnie', o.x, o.y, o.vx, o.vy + 300, false, { r: 11, masa: 0.9 }));
+        ton(760, 0.08, 'triangle', 0.06); break;
+      case 'cytryna': wybuch(o.x, o.y, 48, 45, '#fff36b'); o.usun = true; break;
+      case 'banan': o.vx = 470; o.vy = 0; o.bezGrawitacji = 99; o.banan = true; o.kat = 0; o.wKat = 0; ton(500, 0.2, 'sawtooth', 0.05, 1200); break;
+      case 'jablko': wybuch(o.x, o.y, 68, 95, '#ff5a3c'); o.usun = true; break;
+      case 'pomarancza': o.vx *= 0.15; o.vy = 560; o.masa *= 2.2; o.wKat = 12; ton(900, 0.25, 'sawtooth', 0.05, 200); break;
+      case 'truskawka':
+        for (i = 0; i < 5; i++) owoce.push(nowyOwoc('truskawka', o.x, o.y, o.vx * 0.3 + (i - 2) * 38, 230 + Math.random() * 90, false, { r: 5, masa: 0.55, kolor: '#ffe27a', pestka: true }));
+        ton(820, 0.1, 'triangle', 0.05); break;
+      case 'arbuz':
+        wybuch(o.x, o.y, 105, 140, '#ff4d6d');
+        for (i = 0; i < 10; i++) czastki.push({ x: o.x, y: o.y, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 260, r: 2.5, kolor: '#1a1a1a', zycie: 1.0, max: 1.0, grawitacja: true });
+        o.usun = true; break;
+      case 'ananas': o.vx = Math.cos(kat) * 640; o.vy = Math.sin(kat) * 640; o.bezGrawitacji = 0.75; o.przebija = true; o.wKat = 0; o.kat = kat; ton(200, 0.4, 'sawtooth', 0.06, 900); break;
+      case 'granat':
+        for (i = 0; i < 12; i++) { var kg = i * Math.PI * 2 / 12;
+          owoce.push(nowyOwoc('granat', o.x, o.y, Math.cos(kg) * 270 + o.vx * 0.3, Math.sin(kg) * 270 + o.vy * 0.3, false, { r: 5, masa: 0.6, kolor: '#c8102e', pestka: true })); }
+        wybuch(o.x, o.y, 30, 20, '#ff6b7a'); o.usun = true; break;
+    }
+  }
+
+  // ===================== PRZEBIEG GRY =====================
+  function logikaStrzalu(dt) {
+    owoce = owoce.filter(function (o) { return !o.usun; });
+    if (stanStrzalu === 'lot') {
+      if (glowny && !glowny.usun && czasAbs - ostatniPunktSladu > 0.035) { sladBiezacy.push([glowny.x, glowny.y]); ostatniPunktSladu = czasAbs; }
+      if (glowny && glowny.usun) glowny = null;
+      if (!owoce.length) { stanStrzalu = 'osiadanie'; czasOsiadania = 0; sladOstatni = sladBiezacy; glowny = null; }
+    } else if (stanStrzalu === 'osiadanie') {
+      czasOsiadania += dt;
+      var ruch = bloki.some(function (b) { return !b.usun && Math.abs(b.vy) > 1; }) || robaki.some(function (r) { return !r.martwy && (Math.abs(r.vy) > 1 || Math.abs(r.vx) > 5); });
+      if (czasOsiadania > 0.6 && !ruch) koniecStrzalu();
+    }
+  }
+  function zyweRobaki() { return robaki.filter(function (r) { return !r.martwy; }).length; }
+  function koniecStrzalu() {
+    bloki = bloki.filter(function (b) { return !b.usun; });
+    var zywe = zyweRobaki();
+    if (tryb === 'trening') {
+      if (!zywe) { pokazKomunikat('🎯 Wszystkie trafione! Ustawiam nowe cele…'); setTimeout(function () { if (tryb === 'trening') zbudujPlansze(TRENING); }, 900); }
+      zaladowany = wybranyTrening; stanStrzalu = 'celowanie'; return;
+    }
+    if (!zywe) { wygranaEtapu(); return; }
+    if (!torba.length) { przegranaEtapu(); return; }
+    wybranyIdx = 0; zaladowany = torba[0]; stanStrzalu = 'celowanie'; odswiezTorbe();
+  }
+  function pokazKomunikat(t) { var k = el('komunikat'); k.textContent = t; k.classList.add('widoczny'); clearTimeout(pokazKomunikat._t); pokazKomunikat._t = setTimeout(function () { k.classList.remove('widoczny'); }, 1800); }
+
+  function odswiezPanel() {
+    el('etapEtykieta').textContent = tryb === 'trening' ? '🌿 Łączka treningowa' : (tryb === 'etap' ? ('Etap ' + (etapIdx + 1) + ' / ' + ETAPY_GRY.length + ' · ' + ETAPY_GRY[etapIdx].nazwa) : '');
+    el('wrogowieEtykieta').textContent = tryb === 'menu' ? '' : ('🐛 ' + zyweRobaki());
+  }
+  function odswiezTorbe() {
+    var t = el('torba'); t.innerHTML = '';
+    var lista = tryb === 'trening' ? KOLEJNOSC : torba;
+    if (tryb === 'etap' && !lista.length && !zaladowany) { t.innerHTML = '<span class="pusto">Torba pusta</span>'; return; }
+    lista.forEach(function (k, i) {
+      var b = document.createElement('div'); b.className = 'owoc';
+      var aktywny = tryb === 'trening' ? (k === wybranyTrening) : (i === wybranyIdx && stanStrzalu === 'celowanie');
+      if (aktywny) b.classList.add('wybrany');
+      b.innerHTML = ikonaHtml(k) + (tryb === 'etap' ? '<span class="cena">' + OWOCE[k].cena + '$</span>' : '');
+      b.addEventListener('click', function () {
+        if (stanStrzalu !== 'celowanie' || celowanie) return;
+        if (tryb === 'trening') { wybranyTrening = k; zaladowany = k; pokazOpisTreningu(); }
+        else { wybranyIdx = i; zaladowany = torba[i]; }
+        ton(600, 0.05, 'triangle', 0.04); odswiezTorbe();
+      });
+      t.appendChild(b);
+    });
+  }
+  function pokazOpisTreningu() {
+    var p = el('podpowiedz'); var d = OWOCE[wybranyTrening];
+    p.innerHTML = '<b>' + d.nazwa + ' (' + d.cena + ' $)</b> — ' + d.opis;
+  }
+
+  // ---- Targ: budzet 5 $, 3 wybory, kolejne oferty zaleza od tego, co juz kupione ----
+  function ofertyTargu() {
+    var zostalo = 3 - wybraneNaTargu.length;
+    if (budzet <= 0 || zostalo <= 0) return null;
+    var ceny;
+    if (zostalo === 1) { var c = Math.min(budzet, 3); ceny = [c, c, c]; }   // ostatni wybor: najdrozsze, na jakie starcza
+    else if (budzet >= 3) ceny = [1, 2, 3];
+    else if (budzet === 2) ceny = [1, 2, 2];
+    else ceny = [1, 1, 1];
+    var oferty = [], uzyte = wybraneNaTargu.slice();
+    ceny.forEach(function (c) {
+      var pula = TIERY[c].filter(function (k) { return uzyte.indexOf(k) < 0; });
+      if (!pula.length) pula = TIERY[c].slice();
+      var k = pula[Math.floor(Math.random() * pula.length)]; oferty.push(k); uzyte.push(k);
+    });
+    return oferty;
+  }
+  function otworzTarg() {
+    budzet = 5; wybraneNaTargu = []; torba = []; rysujTarg();
+    el('targ').classList.remove('ukryty');
+  }
+  function rysujTarg() {
+    var oferty = ofertyTargu(), nr = wybraneNaTargu.length + 1;
+    var h = '<div class="karta"><h2>🛒 Targ owocowy</h2>'
+      + '<div class="budzet">Etap ' + (etapIdx + 1) + ' · ' + ETAPY_GRY[etapIdx].nazwa + '<br>Budżet: <b>' + budzet + ' $</b>' + (oferty ? ' · wybór ' + nr + ' z 3' : '') + '</div>'
+      + '<div class="koszyk">' + (wybraneNaTargu.length ? wybraneNaTargu.map(function (k) { return '<span>' + ikonaHtml(k) + '</span>'; }).join('') : '<p style="opacity:.6;font-size:12px;margin:8px 0">Koszyk pusty</p>') + '</div>';
+    if (oferty) {
+      h += '<div class="oferty">' + oferty.map(function (k) { var d = OWOCE[k];
+        return '<button class="oferta" data-k="' + k + '"><span class="ikona">' + ikonaHtml(k) + '</span><span class="tekst"><span class="nazwa">' + d.nazwa + '</span>'
+          + '<div class="opis">' + d.opis + '</div></span><span class="metka">' + d.cena + ' $</span></button>'; }).join('') + '</div>'
+        + '<p style="font-size:11px;opacity:.7">Nie wiesz, co pojawi się w kolejnym wyborze — kupuj z głową.</p>';
+    } else {
+      h += '<p>Koszyk gotowy! Kolejność strzałów wybierasz na dole ekranu.</p><button class="btn" id="btnDoProcy">▶ Do procy!</button>';
+    }
+    h += '</div>';
+    var t = el('targ'); t.innerHTML = h;
+    [].forEach.call(t.querySelectorAll('.oferta'), function (b) {
+      b.addEventListener('click', function () { inicjujDzwiek(); var k = b.getAttribute('data-k'); wybraneNaTargu.push(k); budzet -= OWOCE[k].cena; ton(880, 0.07, 'triangle', 0.05); rysujTarg(); });
+    });
+    var bd = el('btnDoProcy');
+    if (bd) bd.addEventListener('click', function () { el('targ').classList.add('ukryty'); startEtapu(); });
+  }
+  function startEtapu() {
+    tryb = 'etap'; zbudujPlansze(ETAPY_GRY[etapIdx]);
+    torba = wybraneNaTargu.slice(); wybranyIdx = 0; zaladowany = torba[0]; stanStrzalu = 'celowanie';
+    el('podpowiedz').style.display = 'none'; el('przyciskiTreningu').style.display = 'none';
+    odswiezPanel(); odswiezTorbe(); trwa = true;
+    pokazKomunikat('Etap ' + (etapIdx + 1) + ': ' + ETAPY_GRY[etapIdx].nazwa);
+  }
+  function startTreningu() {
+    tryb = 'trening'; zbudujPlansze(TRENING); zaladowany = wybranyTrening; stanStrzalu = 'celowanie';
+    el('nakladka').style.display = 'none'; el('podpowiedz').style.display = 'block'; el('przyciskiTreningu').style.display = 'flex';
+    pokazOpisTreningu(); odswiezPanel(); odswiezTorbe(); trwa = true;
+  }
+  function doEtapow() {
+    el('nakladka').style.display = 'none'; el('podpowiedz').style.display = 'none'; el('przyciskiTreningu').style.display = 'none';
+    tryb = 'etap'; etapIdx = 0; trwa = false; zbudujPlansze(ETAPY_GRY[0]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg();
+  }
+  function wygranaEtapu() {
+    trwa = false; ton(660, 0.12, 'triangle', 0.07); setTimeout(function () { ton(880, 0.12, 'triangle', 0.07); }, 120); setTimeout(function () { ton(1320, 0.2, 'triangle', 0.07); }, 240);
+    var n = el('nakladka'), ost = etapIdx === ETAPY_GRY.length - 1;
+    n.style.display = 'flex';
+    if (ost) {
+      el('nakladkaTytul').textContent = '🏆 Ogród uratowany!';
+      el('nakladkaOpis').innerHTML = 'Etap zaliczony automatycznie!<br><br>🐛 Przegonione szkodniki: <b>' + szkodnikiLacznie + '</b><br>🍉 Wystrzelone owoce: <b>' + strzalyLacznie + '</b>';
+      el('nakladkaBtn').style.display = 'none'; el('btnTrening').style.display = 'none';
+      var w = { type: 'streamlit-child:zaliczono', wartosc: true };
+      window.postMessage(w, '*'); if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
+    } else {
+      el('nakladkaTytul').textContent = '🎉 Etap ' + (etapIdx + 1) + ' zaliczony!';
+      el('nakladkaOpis').innerHTML = '<b>' + ETAPY_GRY[etapIdx].nazwa + '</b> bez szkodników! Zostało owoców w torbie: <b>' + torba.length + '</b>.<br><br>Następny etap: <b>' + ETAPY_GRY[etapIdx + 1].nazwa + '</b> — najpierw targ.';
+      el('nakladkaBtn').textContent = 'Dalej ▶'; el('nakladkaBtn').style.display = 'inline-block'; el('btnTrening').style.display = 'none';
+      el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; etapIdx++; zbudujPlansze(ETAPY_GRY[etapIdx]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg(); };
+    }
+  }
+  function przegranaEtapu() {
+    trwa = false; ton(300, 0.3, 'sawtooth', 0.05, 120);
+    var n = el('nakladka'); n.style.display = 'flex';
+    el('nakladkaTytul').textContent = '🥀 Zabrakło owoców…';
+    el('nakladkaOpis').innerHTML = 'Szkodników zostało: <b>' + zyweRobaki() + '</b>.<br><br>Spróbuj jeszcze raz — nowy targ, nowe owoce.';
+    el('nakladkaBtn').textContent = '↻ Jeszcze raz'; el('nakladkaBtn').style.display = 'inline-block'; el('btnTrening').style.display = 'none';
+    el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; zbudujPlansze(ETAPY_GRY[etapIdx]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg(); };
+  }
+  function pokazSciage() {
+    var h = '<div class="karta" style="position:relative"><button class="zamknij" id="btnZamknijSciage">✕</button><h2>❓ Owoce</h2>'
+      + '<p>Odciągnij owoc w procy i puść. <b>Dotknij ekranu w locie</b> (albo zaraz po upadku), żeby użyć jego mocy — raz na owoc.</p>';
+    [1, 2, 3].forEach(function (c) {
+      h += '<div class="sciaga-tier"><h3>' + c + ' $</h3>' + TIERY[c].map(function (k) { var d = OWOCE[k];
+        return '<div class="sciaga-wiersz"><span class="ikona">' + ikonaHtml(k) + '</span><span><b>' + d.nazwa + '</b> — ' + d.opis + '</span></div>'; }).join('') + '</div>';
+    });
+    h += '</div>';
+    var s = el('sciaga'); s.innerHTML = h; s.classList.remove('ukryty');
+    el('btnZamknijSciage').addEventListener('click', function () { s.classList.add('ukryty'); });
+  }
+
+  // ===================== STEROWANIE =====================
+  function pozycja(e) { var r = plotno.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; }
+  plotno.addEventListener('pointerdown', function (e) {
+    inicjujDzwiek();
+    if (!trwa) return;
+    if (stanStrzalu === 'lot') { if (glowny && !glowny.usun && !glowny.mocUzyta) uzyjMocy(glowny); return; }
+    if (stanStrzalu === 'celowanie' && zaladowany) {
+      var p = pozycja(e); celowanie = true; startX = p.x; startY = p.y; naciagX = 0; naciagY = 0;
+      try { plotno.setPointerCapture(e.pointerId); } catch (x) {}
+      ton(250, 0.05, 'triangle', 0.03);
+    }
+  });
+  plotno.addEventListener('pointermove', function (e) {
+    if (!celowanie) return;
+    var p = pozycja(e), dx = p.x - startX, dy = p.y - startY, d = Math.hypot(dx, dy);
+    if (d > MAX_NACIAG) { dx *= MAX_NACIAG / d; dy *= MAX_NACIAG / d; }
+    var r = OWOCE[zaladowany].r; if (PROCA_Y + dy > ZIEMIA - r) dy = ZIEMIA - r - PROCA_Y;
+    naciagX = dx; naciagY = dy;
+  });
+  function puszczenie() {
+    if (!celowanie) return; celowanie = false;
+    if (Math.hypot(naciagX, naciagY) > 12 && zaladowany) wystrzel();
+    naciagX = 0; naciagY = 0;
+  }
+  plotno.addEventListener('pointerup', puszczenie);
+  plotno.addEventListener('pointercancel', puszczenie);
+
+  // ===================== RYSOWANIE =====================
+  function zaokr(x, y, w, h, r) { ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(x, y, w, h, r); else ctx.rect(x, y, w, h); }
+  function rysujTlo() {
+    var g = ctx.createLinearGradient(0, 0, 0, ZIEMIA); g.addColorStop(0, '#7cc8f2'); g.addColorStop(1, '#dff3ff');
+    ctx.fillStyle = g; ctx.fillRect(-20, -20, W + 40, ZIEMIA + 20);
+    var gs = ctx.createRadialGradient(320, 70, 8, 320, 70, 70); gs.addColorStop(0, 'rgba(255,240,170,0.8)'); gs.addColorStop(1, 'rgba(255,240,170,0)');
+    ctx.fillStyle = gs; ctx.fillRect(250, 0, 140, 140); ctx.fillStyle = '#fff1a8'; ctx.beginPath(); ctx.arc(320, 70, 22, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.85)';
+    CHMURY.forEach(function (c) { var x = ((c[0] + czasAbs * 6 * c[2]) % (W + 120)) - 60, y = c[1], s = c[2];
+      ctx.beginPath(); ctx.ellipse(x, y, 30 * s, 10 * s, 0, 0, Math.PI * 2); ctx.ellipse(x + 16 * s, y - 7 * s, 18 * s, 10 * s, 0, 0, Math.PI * 2); ctx.ellipse(x - 14 * s, y - 4 * s, 14 * s, 8 * s, 0, 0, Math.PI * 2); ctx.fill(); });
+    ctx.fillStyle = '#a6d98a'; ctx.beginPath(); ctx.moveTo(0, ZIEMIA - 30);
+    for (var i = 0; i <= 8; i++) ctx.quadraticCurveTo(i * 50 - 25, ZIEMIA - 60 - (i % 3) * 14, i * 50, ZIEMIA - 30); ctx.lineTo(W, ZIEMIA); ctx.lineTo(0, ZIEMIA); ctx.fill();
+    ctx.fillStyle = '#8cc872'; ctx.beginPath(); ctx.moveTo(0, ZIEMIA - 14);
+    for (i = 0; i <= 6; i++) ctx.quadraticCurveTo(i * 70 - 35, ZIEMIA - 34, i * 70, ZIEMIA - 14); ctx.lineTo(W, ZIEMIA); ctx.lineTo(0, ZIEMIA); ctx.fill();
+    ctx.strokeStyle = 'rgba(120,80,40,0.55)'; ctx.lineWidth = 3;                    // plotek
+    for (i = 0; i < 6; i++) { ctx.beginPath(); ctx.moveTo(150 + i * 40, ZIEMIA); ctx.lineTo(150 + i * 40, ZIEMIA - 26); ctx.stroke(); }
+    ctx.beginPath(); ctx.moveTo(146, ZIEMIA - 18); ctx.lineTo(354, ZIEMIA - 18); ctx.stroke();
+    var gz = ctx.createLinearGradient(0, ZIEMIA, 0, H); gz.addColorStop(0, '#6b4a2a'); gz.addColorStop(1, '#3d2a16');
+    ctx.fillStyle = gz; ctx.fillRect(-20, ZIEMIA, W + 40, H - ZIEMIA + 20);
+    ctx.fillStyle = '#5db345'; ctx.fillRect(-20, ZIEMIA - 2, W + 40, 7); ctx.fillStyle = '#7fd162'; ctx.fillRect(-20, ZIEMIA - 2, W + 40, 2);
+  }
+  function rysujBlok(b) {
+    if (b.usun) return;
+    ctx.save();
+    if (b.typ === 'drewno') {
+      var g = ctx.createLinearGradient(b.x, 0, b.x + b.w, 0); g.addColorStop(0, '#c08a4e'); g.addColorStop(1, '#94632f');
+      ctx.fillStyle = g; zaokr(b.x, b.y, b.w, b.h, 3); ctx.fill();
+      ctx.strokeStyle = 'rgba(80,45,15,0.45)'; ctx.lineWidth = 1;
+      if (b.w > b.h) { for (var i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(b.x + 3, b.y + b.h * i / 3); ctx.lineTo(b.x + b.w - 3, b.y + b.h * i / 3); ctx.stroke(); } }
+      else { for (i = 1; i < 3; i++) { ctx.beginPath(); ctx.moveTo(b.x + b.w * i / 3, b.y + 3); ctx.lineTo(b.x + b.w * i / 3, b.y + b.h - 3); ctx.stroke(); } }
+      ctx.strokeStyle = '#5a3a18'; ctx.lineWidth = 1.5; zaokr(b.x, b.y, b.w, b.h, 3); ctx.stroke();
+    } else if (b.typ === 'szklo') {
+      ctx.fillStyle = 'rgba(190,235,255,0.55)'; zaokr(b.x, b.y, b.w, b.h, 2); ctx.fill();
+      ctx.strokeStyle = 'rgba(120,190,230,0.95)'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,0.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(b.x + 4, b.y + b.h - 5); ctx.lineTo(b.x + Math.min(b.w, b.h) * 0.6, b.y + 5); ctx.stroke();
+    } else {
+      var gk = ctx.createLinearGradient(0, b.y, 0, b.y + b.h); gk.addColorStop(0, '#b4b4b4'); gk.addColorStop(1, '#7c7c7c');
+      ctx.fillStyle = gk; zaokr(b.x, b.y, b.w, b.h, 3); ctx.fill();
+      ctx.fillStyle = 'rgba(60,60,60,0.35)';
+      for (i = 0; i < Math.max(2, (b.w * b.h) / 220); i++) ctx.fillRect(b.x + ((i * 37) % Math.max(1, b.w - 4)) + 2, b.y + ((i * 23) % Math.max(1, b.h - 4)) + 2, 3, 2);
+      ctx.strokeStyle = '#4e4e4e'; ctx.lineWidth = 1.5; zaokr(b.x, b.y, b.w, b.h, 3); ctx.stroke();
+    }
+    var uszk = 1 - b.hp / b.hpMax;                    // pekniecia
+    if (uszk > 0.35) {
+      ctx.strokeStyle = b.typ === 'szklo' ? 'rgba(255,255,255,0.9)' : 'rgba(30,20,10,0.7)'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(b.x + b.w * 0.3, b.y); ctx.lineTo(b.x + b.w * 0.5, b.y + b.h * 0.45); ctx.lineTo(b.x + b.w * 0.35, b.y + b.h); ctx.stroke();
+      if (uszk > 0.65) { ctx.beginPath(); ctx.moveTo(b.x + b.w, b.y + b.h * 0.3); ctx.lineTo(b.x + b.w * 0.55, b.y + b.h * 0.5); ctx.stroke(); }
+    }
+    if (b.blysk > 0) { b.blysk -= 1 / 60; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(b.x, b.y, b.w, b.h); }
+    ctx.restore();
+  }
+  function rysujRobaka(rb) {
+    if (rb.martwy) return;
+    var x = rb.x, y = rb.y, r = rb.r, t = czasAbs * 3 + rb.faza, kolA = rb.szef ? '#9b59c9' : '#76c450', kolB = rb.szef ? '#6d3496' : '#4f9a33';
+    ctx.save(); ctx.translate(x, y + Math.sin(t) * 0.8);
+    ctx.strokeStyle = kolB; ctx.lineWidth = 2;                                    // czulki
+    ctx.beginPath(); ctx.moveTo(-r * 0.3, -r * 0.8); ctx.quadraticCurveTo(-r * 0.6, -r * 1.5, -r * 0.2 + Math.sin(t) * 2, -r * 1.55); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(r * 0.3, -r * 0.8); ctx.quadraticCurveTo(r * 0.6, -r * 1.5, r * 0.4 + Math.sin(t + 1) * 2, -r * 1.5); ctx.stroke();
+    ctx.fillStyle = kolB; ctx.beginPath(); ctx.arc(-r * 0.2 + Math.sin(t) * 2, -r * 1.55, 2.5, 0, Math.PI * 2); ctx.arc(r * 0.4 + Math.sin(t + 1) * 2, -r * 1.5, 2.5, 0, Math.PI * 2); ctx.fill();
+    var g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 2, 0, 0, r); g.addColorStop(0, rb.szef ? '#c48ae6' : '#a2e07f'); g.addColorStop(1, kolA);
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, r * 1.05, r, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.3)'; ctx.lineWidth = 1.2; ctx.stroke();
+    ctx.fillStyle = 'rgba(0,0,0,0.12)'; ctx.beginPath(); ctx.arc(r * 0.45, r * 0.25, r * 0.18, 0, Math.PI * 2); ctx.arc(-r * 0.1, r * 0.5, r * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(-r * 0.38, -r * 0.18, r * 0.27, r * 0.32, 0, 0, Math.PI * 2); ctx.ellipse(r * 0.22, -r * 0.18, r * 0.27, r * 0.32, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#1b1b1b'; ctx.beginPath(); ctx.arc(-r * 0.47, -r * 0.12, r * 0.13, 0, Math.PI * 2); ctx.arc(r * 0.13, -r * 0.12, r * 0.13, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#1b1b1b'; ctx.lineWidth = 2;                               // gniewne brwi
+    ctx.beginPath(); ctx.moveTo(-r * 0.65, -r * 0.6); ctx.lineTo(-r * 0.15, -r * 0.45); ctx.moveTo(r * 0.45, -r * 0.6); ctx.lineTo(-r * 0.02, -r * 0.45); ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(-r * 0.1, r * 0.42, r * 0.22, Math.PI * 1.15, Math.PI * 1.85); ctx.stroke();   // grymas
+    if (rb.szef) { ctx.fillStyle = '#ffd23c'; ctx.beginPath(); ctx.moveTo(-r * 0.5, -r * 0.85); ctx.lineTo(-r * 0.35, -r * 1.25); ctx.lineTo(-r * 0.1, -r * 0.95); ctx.lineTo(r * 0.1, -r * 1.3); ctx.lineTo(r * 0.3, -r * 0.95); ctx.lineTo(r * 0.5, -r * 1.25); ctx.lineTo(r * 0.55, -r * 0.85); ctx.closePath(); ctx.fill(); }
+    if (rb.hp < rb.hpMax * 0.5) { ctx.fillStyle = 'rgba(255,255,255,0.9)'; ctx.fillRect(r * 0.3, -r * 0.95, r * 0.5, r * 0.18); ctx.fillRect(r * 0.46, -r * 1.1, r * 0.18, r * 0.5); }
+    if (rb.blysk > 0) { ctx.fillStyle = 'rgba(255,60,60,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, r * 1.05, r, 0, 0, Math.PI * 2); ctx.fill(); }
+    ctx.restore();
+  }
+  function rysujGranat(r) {
+    var g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 1, 0, 0, r); g.addColorStop(0, '#ff5a6e'); g.addColorStop(1, '#a50d24');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#7a0a1a'; ctx.beginPath(); ctx.moveTo(-r * 0.35, -r * 0.85); ctx.lineTo(-r * 0.2, -r * 1.3); ctx.lineTo(0, -r * 0.95); ctx.lineTo(r * 0.2, -r * 1.3); ctx.lineTo(r * 0.35, -r * 0.85); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(-r * 0.35, -r * 0.3, r * 0.25, 0, Math.PI * 2); ctx.fill();
+  }
+  function rysujOwocW(typ, x, y, r, kat, kolor) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(kat);
+    if (kolor) {
+      var g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 0.5, 0, 0, r); g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, kolor); g.addColorStop(1, kolor);
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, r, r * (typ === 'truskawka' ? 0.7 : 1), 0, 0, Math.PI * 2); ctx.fill();
+    } else if (typ === 'granat') rysujGranat(r);
+    else { ctx.font = Math.round(r * 2.15) + 'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(OWOCE[typ].emoji, 0, r * 0.08); }
+    ctx.restore();
+  }
+  function rysujOwoc(o) {
+    if (o.usun) return;
+    if (o.przebija || o.banan) {                                                   // smuga rakiety / banana
+      ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = o.przebija ? '#ff9a2a' : '#fff3a0'; ctx.lineWidth = o.r; ctx.lineCap = 'round';
+      var dl = Math.hypot(o.vx, o.vy) || 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x - o.vx / dl * 34, o.y - o.vy / dl * 34); ctx.stroke(); ctx.restore();
+    }
+    rysujOwocW(o.typ, o.x, o.y, o.r, o.kat, o.kolor);
+    if (o.glowny && !o.mocUzyta && stanStrzalu === 'lot') {                         // pierscien: moc gotowa
+      ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,' + (0.45 + 0.35 * Math.sin(czasAbs * 10)).toFixed(2) + ')'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 5, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
+    }
+  }
+  function rysujProce(przod) {
+    if (!przod) {
+      ctx.strokeStyle = '#6b3f1c'; ctx.lineWidth = 9; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, ZIEMIA + 2); ctx.lineTo(PROCA_X + 1, 440); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X - 10, 430, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
+      ctx.strokeStyle = '#8a5428'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X - 10, 430, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
+    }
+    var px = PROCA_X + naciagX, py = PROCA_Y + naciagY, czyOwoc = stanStrzalu === 'celowanie' && zaladowany;
+    var tip = przod ? WIDELKI[1] : WIDELKI[0];
+    ctx.strokeStyle = '#5a1f1f'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(tip[0], tip[1]); ctx.lineTo(czyOwoc ? px - (przod ? -6 : 6) : PROCA_X + (przod ? 5 : -5), czyOwoc ? py : PROCA_Y); ctx.stroke();
+    if (przod) {
+      ctx.strokeStyle = '#6b3f1c'; ctx.lineWidth = 9; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X + 12, 430, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
+      ctx.strokeStyle = '#8a5428'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X + 12, 430, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
+    }
+  }
+  function rysujZaladowany() {
+    if (stanStrzalu !== 'celowanie' || !zaladowany) return;
+    var px = PROCA_X + naciagX, py = PROCA_Y + naciagY, d = OWOCE[zaladowany];
+    ctx.fillStyle = '#4a2a14'; zaokr(px - d.r - 3, py - 5, 6, 10, 2); ctx.fill();          // skorzana kieszen
+    rysujOwocW(zaladowany, px, py, d.r, 0, null);
+  }
+  function rysujPodglad() {
+    if (!celowanie || Math.hypot(naciagX, naciagY) < 12) return;
+    var vx = -naciagX * MOC, vy = -naciagY * MOC, x = PROCA_X + naciagX, y = PROCA_Y + naciagY, droga = 0, nast = 10, krok = 1 / 240;
+    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+    for (var i = 0; i < 2000 && droga < 120; i++) {
+      vy += G * krok; var nx = x + vx * krok, ny = y + vy * krok; droga += Math.hypot(nx - x, ny - y); x = nx; y = ny;
+      if (droga >= nast) { nast += 10; ctx.globalAlpha = Math.max(0.15, 0.9 - droga / 140); ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2); ctx.fill(); }
+    }
+    ctx.globalAlpha = 1;
+  }
+  function rysujSlad() {
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    sladOstatni.forEach(function (p, i) { if (i % 2) return; ctx.beginPath(); ctx.arc(p[0], p[1], 1.6, 0, Math.PI * 2); ctx.fill(); });
+  }
+  function aktualizujEfekty(dt) {
+    if (wstrzas > 0) wstrzas -= dt;
+    czastki.forEach(function (c) { c.x += c.vx * dt; c.y += c.vy * dt; if (c.grawitacja) c.vy += 600 * dt; c.zycie -= dt; });
+    czastki = czastki.filter(function (c) { return c.zycie > 0; });
+    pierscienie.forEach(function (p) { p.zycie -= dt; }); pierscienie = pierscienie.filter(function (p) { return p.zycie > 0; });
+    napisy.forEach(function (n) { n.y -= 30 * dt; n.zycie -= dt; }); napisy = napisy.filter(function (n) { return n.zycie > 0; });
+  }
+  function rysujEfekty() {
+    pierscienie.forEach(function (p) { var k = 1 - p.zycie / p.max; ctx.save(); ctx.globalAlpha = 1 - k;
+      ctx.fillStyle = p.kolor; ctx.globalAlpha = (1 - k) * 0.35; ctx.beginPath(); ctx.arc(p.x, p.y, p.R * (0.3 + 0.7 * k), 0, Math.PI * 2); ctx.fill();
+      ctx.globalAlpha = 1 - k; ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(p.x, p.y, p.R * (0.3 + 0.7 * k), 0, Math.PI * 2); ctx.stroke(); ctx.restore(); });
+    czastki.forEach(function (c) { ctx.globalAlpha = Math.max(0, c.zycie / c.max); ctx.fillStyle = c.kolor;
+      if (c.kwadrat) ctx.fillRect(c.x - c.r, c.y - c.r, c.r * 2, c.r * 2); else { ctx.beginPath(); ctx.arc(c.x, c.y, c.r, 0, Math.PI * 2); ctx.fill(); } });
+    ctx.globalAlpha = 1;
+    napisy.forEach(function (n) { ctx.globalAlpha = Math.min(1, n.zycie / 0.4); ctx.font = '900 16px system-ui, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 3; ctx.strokeText(n.tekst, n.x, n.y); ctx.fillText(n.tekst, n.x, n.y); });
+    ctx.globalAlpha = 1;
+  }
+  function rysuj() {
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    if (wstrzas > 0) ctx.translate((Math.random() - 0.5) * wstrzas * 16, (Math.random() - 0.5) * wstrzas * 16);
+    rysujTlo(); rysujSlad();
+    rysujProce(false);
+    bloki.forEach(rysujBlok); robaki.forEach(rysujRobaka);
+    rysujZaladowany(); rysujProce(true);
+    owoce.forEach(rysujOwoc);
+    rysujEfekty(); rysujPodglad();
+  }
+  function petla(czas) {
+    if (czasOstatni === null) czasOstatni = czas;
+    var dt = Math.min(0.05, (czas - czasOstatni) / 1000); czasOstatni = czas; czasAbs += dt;
+    if (trwa) { var n = Math.max(1, Math.ceil(dt * 120)), h = dt / n; for (var i = 0; i < n; i++) krok(h); logikaStrzalu(dt); }
+    aktualizujEfekty(dt); rysuj();
+    requestAnimationFrame(petla);
+  }
+
+  // ===================== START =====================
+  el('btnTrening').addEventListener('click', function () { inicjujDzwiek(); startTreningu(); });
+  el('nakladkaBtn').onclick = function () { inicjujDzwiek(); doEtapow(); };
+  el('btnInfo').addEventListener('click', function () { inicjujDzwiek(); pokazSciage(); });
+  el('btnUstawCele').addEventListener('click', function () { zbudujPlansze(TRENING); zaladowany = wybranyTrening; stanStrzalu = 'celowanie'; });
+  el('btnDoEtapow').addEventListener('click', function () { inicjujDzwiek(); doEtapow(); });
+  zbudujPlansze(TRENING);
+  requestAnimationFrame(petla);
+</script>
+<script>
+/* ---------- PELNY EKRAN ----------
+   requestFullscreen() NIE dziala w komponencie Streamlita: gra siedzi w
+   iframie, ktory nie ma uprawnienia allow="fullscreen", wiec przegladarka
+   po cichu odrzuca wywolanie. Dlatego glowna sciezka to rozciagniecie
+   SAMEJ RAMKI na cale okno (position:fixed + 100vw/100vh) - to nie wymaga
+   zadnych uprawnien. requestFullscreen zostaje tylko jako zapas. */
+(function () {
+  var korzen = document.getElementById('gra');
+  if (!korzen) return;
+
+  var ramka = null;
+  try { ramka = window.frameElement; } catch (e) { ramka = null; }
+
+  var przycisk = document.createElement('button');
+  przycisk.textContent = '⛶';
+  przycisk.style.cssText =
+    'position:fixed;top:5px;right:5px;z-index:2147483647;width:34px;height:34px;' +
+    'border-radius:9px;border:1px solid rgba(255,255,255,0.4);' +
+    'background:rgba(18,16,24,0.8);color:#f0e8d0;font-size:16px;line-height:1;' +
+    'padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent;';
+  document.body.appendChild(przycisk);
+
+  var wlaczony = false, styleRamki = '', styleRodzica = '';
+  var natW = 0, natH = 0;
+
+  function przelicz() {
+    ustawBlokadeWnetrza(wlaczony);
+    if (!wlaczony) {
+      korzen.style.transform = '';
+      korzen.style.position = '';
+      korzen.style.left = '';
+      korzen.style.top = '';
+      korzen.style.width = '';
+      korzen.style.height = '';
+      korzen.style.transformOrigin = '';
+      document.body.style.overflow = '';
+      return;
+    }
+    // Gra sama zarzadza swoim rozmiarem (np. strzelanka 3D) - wtedy tylko
+    // pozwalamy jej wypelnic okno i nie skalujemy niczego transformem.
+    if (window.__wlasneSkalowanie) {
+      korzen.style.transform = '';
+      korzen.style.position = 'absolute';
+      korzen.style.left = '0px';
+      korzen.style.top = '0px';
+      korzen.style.width = window.innerWidth + 'px';
+      korzen.style.height = window.innerHeight + 'px';
+      document.body.style.overflow = 'hidden';
+      document.body.style.background = '#0d0d0d';
+      if (typeof window.__dopasujGre === 'function') window.__dopasujGre();
+      return;
+    }
+    // KLUCZOWE: kontener ma zwykle width:100%, wiec po rozciagnieciu ramki
+    // sam by sie rozszerzyl do nowej szerokosci, a potem zostalby jeszcze
+    // przeskalowany - i wystawal poza ekran. Dlatego przybijamy mu wymiary
+    // w pikselach do tych ZMIERZONYCH przed wejsciem w pelny ekran.
+    korzen.style.width = natW + 'px';
+    korzen.style.height = natH + 'px';
+    var s = Math.min(window.innerWidth / natW, window.innerHeight / natH);
+    korzen.style.transformOrigin = 'top left';
+    korzen.style.transform = 'scale(' + s + ')';
+    korzen.style.position = 'absolute';
+    korzen.style.left = ((window.innerWidth - natW * s) / 2) + 'px';
+    korzen.style.top = ((window.innerHeight - natH * s) / 2) + 'px';
+    document.body.style.overflow = 'hidden';
+    document.body.style.background = '#0d0d0d';
+  }
+
+  // Próbujemy PRAWDZIWEGO pełnego ekranu na naszej ramce, wywołanego
+  // w kontekście strony nadrzędnej - wtedy przeglądarka chowa też swój
+  // pasek adresu (tak działa pełny ekran na YouTube). Gdy system tego nie
+  // wspiera (m.in. iPhone, gdzie Fullscreen API działa tylko dla wideo),
+  // spadamy na rozciągnięcie ramki i chowamy, co się da, na stronie.
+  var prawdziwyPelny = false;
+
+  function sprobujPrawdziwegoPelnego() {
+    if (!ramka) return false;
+    var f = ramka.requestFullscreen || ramka.webkitRequestFullscreen
+         || ramka.mozRequestFullScreen || ramka.msRequestFullscreen;
+    if (!f) return false;
+    try {
+      var wynik = f.call(ramka);
+      if (wynik && typeof wynik.catch === 'function') {
+        wynik.catch(function () { prawdziwyPelny = false; zapasowyPelny(); });
+      }
+      prawdziwyPelny = true;
+      return true;
+    } catch (e) { return false; }
+  }
+
+  // Chowa nagłówek i marginesy strony nadrzędnej, żeby gra dostała
+  // maksimum miejsca nawet bez prawdziwego pełnego ekranu.
+  var ukryteElementy = [];
+  function schowajInterfejsStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      var doUkrycia = d.querySelectorAll(
+        'header[data-testid="stHeader"], #MainMenu, footer, [data-testid="stToolbar"], [data-testid="stDecoration"]'
+      );
+      for (var i = 0; i < doUkrycia.length; i++) {
+        ukryteElementy.push([doUkrycia[i], doUkrycia[i].style.display]);
+        doUkrycia[i].style.display = 'none';
+      }
+      styleRodzica = d.body.getAttribute('style') || '';
+      zablokujPrzewijanieStrony();
+      d.body.style.overflow = 'hidden';
+      d.body.style.margin = '0';
+      if (d.documentElement) d.documentElement.style.overflow = 'hidden';
+      // Przewinięcie na samą górę pomaga schować pasek adresu na iOS
+      try { ramka.ownerDocument.defaultView.scrollTo(0, 0); } catch (e2) {}
+    } catch (e) {}
+  }
+  function przywrocInterfejsStrony() {
+    ukryteElementy.forEach(function (para) { para[0].style.display = para[1] || ''; });
+    ukryteElementy = [];
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument;
+      d.body.setAttribute('style', styleRodzica);
+      if (d.documentElement) d.documentElement.style.overflow = '';
+      odblokujPrzewijanieStrony();
+    } catch (e) {}
+  }
+
+  function zapasowyPelny() {
+    if (!ramka) return;
+    styleRamki = ramka.getAttribute('style') || '';
+    ramka.style.cssText =
+      'position:fixed !important;top:0 !important;left:0 !important;' +
+      'width:100vw !important;height:100vh !important;height:100dvh !important;max-width:none !important;' +
+      'z-index:2147483646 !important;border:0 !important;margin:0 !important;';
+    schowajInterfejsStrony();
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+  }
+
+  function wlacz() {
+    var r = korzen.getBoundingClientRect();
+    natW = r.width || 380;
+    natH = r.height || 560;
+    wlaczony = true;
+    przycisk.textContent = '✕';
+
+    if (ramka) {
+      styleRamki = ramka.getAttribute('style') || '';
+      if (sprobujPrawdziwegoPelnego()) {
+        // Ramka wypełnia teraz cały ekran urządzenia
+        ramka.style.width = '100%';
+        ramka.style.height = '100%';
+        ramka.style.maxWidth = 'none';
+        ramka.style.border = '0';
+      } else {
+        zapasowyPelny();
+      }
+      // Poziomo, jeśli urządzenie na to pozwala (Android/desktop)
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape').catch(function () {});
+        }
+      } catch (e) {}
+    } else {
+      var el = document.documentElement;
+      var f2 = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (f2) { try { f2.call(el); } catch (err) {} }
+    }
+    setTimeout(przelicz, 60);
+    setTimeout(przelicz, 260);
+    setTimeout(przelicz, 700);
+  }
+
+  function wylacz() {
+    wlaczony = false;
+    przycisk.textContent = '⛶';
+    if (ramka) {
+      if (prawdziwyPelny) {
+        var g2 = document.exitFullscreen || document.webkitExitFullscreen;
+        try {
+          var dd = ramka.ownerDocument;
+          var g3 = dd.exitFullscreen || dd.webkitExitFullscreen;
+          if (g3 && (dd.fullscreenElement || dd.webkitFullscreenElement)) g3.call(dd);
+          else if (g2) g2.call(document);
+        } catch (e) {}
+        prawdziwyPelny = false;
+      }
+      przywrocInterfejsStrony();
+      ramka.setAttribute('style', styleRamki);
+    } else {
+      var g = document.exitFullscreen || document.webkitExitFullscreen;
+      if (g && (document.fullscreenElement || document.webkitFullscreenElement)) {
+        try { g.call(document); } catch (err) {}
+      }
+    }
+    przelicz();
+  }
+
+  // ---- Blokada przewijania w pelnym ekranie ----
+  // Kontener, ktory w Streamlicie faktycznie sie przewija, zostawal odblokowany,
+  // a gry z touch-action:manipulation (np. serduszka) oddawaly przesuniecia palcem
+  // stronie pod spodem. Blokujemy wszystkich przodkow ramki i same gesty w srodku.
+  var zablokowane = [];
+  function zablokujPrzewijanieStrony() {
+    if (!ramka) return;
+    try {
+      var d = ramka.ownerDocument, lista = [], el = ramka.parentElement;
+      while (el) { lista.push(el); el = el.parentElement; }
+      var znane = d.querySelectorAll('[data-testid="stMain"], [data-testid="stAppViewContainer"], section.main, .stApp, .main');
+      for (var i = 0; i < znane.length; i++) { if (lista.indexOf(znane[i]) < 0) lista.push(znane[i]); }
+      if (d.documentElement && lista.indexOf(d.documentElement) < 0) lista.push(d.documentElement);
+      lista.forEach(function (e) {
+        zablokowane.push([e, e.style.overflow, e.style.overscrollBehavior]);
+        e.style.overflow = 'hidden';
+        e.style.overscrollBehavior = 'none';
+      });
+    } catch (e) {}
+  }
+  function odblokujPrzewijanieStrony() {
+    zablokowane.forEach(function (p) { p[0].style.overflow = p[1]; p[0].style.overscrollBehavior = p[2]; });
+    zablokowane = [];
+  }
+  function ustawBlokadeWnetrza(wl) {
+    var h = document.documentElement, b = document.body;
+    // Poza pelnym ekranem przewijanie strony dziala takze nad gra; elementy
+    // sterujace (joystick, przyciski, karty) maja wlasne touch-action:none
+    window.__pelnyEkranAktywny = !!wl;
+    h.classList.toggle('poza-pelnym-ekranem', !wl);
+    h.style.overflow = wl ? 'hidden' : '';
+    h.style.overscrollBehavior = wl ? 'none' : '';
+    b.style.overscrollBehavior = wl ? 'none' : '';
+  }
+  // Element, ktory naprawde ma co przewijac (np. panel w grze) - jego gest zostawiamy w spokoju
+  function czyPrzewijalny(el) {
+    while (el && el !== document.body && el !== document.documentElement && el.nodeType === 1) {
+      var oy = window.getComputedStyle(el).overflowY;
+      if ((oy === 'auto' || oy === 'scroll') && el.scrollHeight > el.clientHeight + 1) return true;
+      el = el.parentElement;
+    }
+    return false;
+  }
+  document.addEventListener('touchmove', function (e) {
+    if (!wlaczony || !e.cancelable) return;
+    if ((e.touches && e.touches.length > 1) || !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('wheel', function (e) {
+    if (wlaczony && e.cancelable && !czyPrzewijalny(e.target)) e.preventDefault();
+  }, { passive: false });
+  document.addEventListener('gesturestart', function (e) { if (wlaczony && e.cancelable) e.preventDefault(); });
+  // Gra znika w trakcie pelnego ekranu (np. po zaliczeniu i przeladowaniu) - oddajemy stronie jej stan
+  window.addEventListener('pagehide', function () {
+    if (wlaczony) { try { przywrocInterfejsStrony(); } catch (e) {} }
+  });
+  (function () {
+    var s = document.createElement('style');
+    s.textContent = 'html.poza-pelnym-ekranem, html.poza-pelnym-ekranem body { touch-action: pan-y !important; }';
+    document.head.appendChild(s);
+  })();
+  ustawBlokadeWnetrza(false);
+
+  przycisk.addEventListener('click', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (wlaczony) wylacz(); else wlacz();
+  });
+
+  window.addEventListener('resize', function () { if (wlaczony) przelicz(); });
+  ['fullscreenchange', 'webkitfullscreenchange'].forEach(function (ev) {
+    document.addEventListener(ev, function () { setTimeout(przelicz, 60); });
+  });
+})();
+</script>
+</body>
+</html>
+"""
+
+
+def renderuj_proca(etap_dane):
+    klucz = etap_dane["klucz"]
+
+    if _KOMPONENT_WYNIKU is not None:
+        wynik = gra_z_wynikiem(SZABLON_PROCA, 600, key=f"kmp_{klucz}")
+        return True if wynik else None
+
+    components.html(SZABLON_PROCA, height=640, scrolling=False)
+    return pokaz_przycisk_ukonczone_z_potwierdzeniem(klucz, "Na pewno uratowałaś cały ogród przed szkodnikami?")
+
+
 def renderuj_odyseusz(etap_dane):
     klucz = etap_dane["klucz"]
 
@@ -25455,6 +26508,8 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_samolot(etap_dane)
     elif typ == "odyseusz":
         wynik = renderuj_odyseusz(etap_dane)
+    elif typ == "proca":
+        wynik = renderuj_proca(etap_dane)
     elif typ == "parkour":
         wynik = renderuj_parkour(etap_dane)
     elif typ == "labirynt":
@@ -25979,6 +27034,7 @@ OPISY_STATOW = {
     "samolot":   [("metry", "📏", "Najdalszy lot", "Best flight"),
                   ("podejscia", "🔁", "Udało się za podejściem nr", "Made it on attempt no.")],
     "odyseusz":  [("pudla", "🎯", "Chybione strzały", "Missed shots")],
+    "proca":     [("strzaly", "🍉", "Wystrzelone owoce", "Fruits fired"), ("szkodniki", "🐛", "Przegonione szkodniki", "Pests defeated")],
     "parkour":   [("skoki", "🦘", "Wykonane skoki", "Jumps made")],
     "minecraft": [("smierci", "💀", "Liczba śmierci", "Deaths"), ("bloki", "⛏️", "Wykopane bloki", "Blocks mined"),
                   ("potwory", "🧟", "Pokonane potwory", "Monsters slain")],
