@@ -24635,6 +24635,10 @@ SZABLON_PROCA = """<!DOCTYPE html>
   .sciaga-wiersz .ikona { font-size:20px; width:28px; text-align:center; flex:0 0 auto; display:flex; justify-content:center; }
   .zamknij { position:absolute; top:8px; left:10px; width:30px; height:30px; border-radius:50%; border:none; background:rgba(255,255,255,0.15);
     color:#fff; font-size:15px; font-weight:900; cursor:pointer; }
+  .numer { font-size:12px; color:#9dff8a; font-weight:800; letter-spacing:.04em; }
+  .owoceEtapu { display:flex; justify-content:center; gap:6px; margin:6px 0 8px; font-size:26px; }
+  .owoceEtapu span { width:40px; height:40px; border-radius:11px; background:rgba(255,255,255,0.08); display:flex; align-items:center; justify-content:center; }
+  .rada { background:rgba(157,255,138,0.08); border:1px dashed rgba(157,255,138,0.4); border-radius:10px; padding:7px 9px; text-align:left; }
 </style>
 </head>
 <body>
@@ -24642,19 +24646,15 @@ SZABLON_PROCA = """<!DOCTYPE html>
 <div id="gra">
   <canvas id="plotno" width="380" height="560"></canvas>
   <div id="panel"><div id="etapEtykieta"></div><div id="wrogowieEtykieta"></div></div>
-  <div id="podpowiedz"></div>
   <button id="btnInfo">?</button>
-  <div id="przyciskiTreningu"><button id="btnUstawCele">↻ Cele</button><button id="btnDoEtapow">Etapy ▶</button></div>
   <div id="torba"></div>
   <div id="komunikat"></div>
-  <div id="targ" class="warstwa ukryty"></div>
-  <div id="sciaga" class="warstwa ukryty"></div>
+  <div id="wstep" class="warstwa ukryty"></div>
   <div id="nakladka" class="warstwa">
     <div class="karta">
       <h2 id="nakladkaTytul">🍉 Owocowa proca</h2>
-      <p id="nakladkaOpis">Szkodniki zalęgły się w ogrodzie! Odciągnij owoc w procy, wyceluj i puść. <b>Dotknij ekranu w locie</b> (albo zaraz po upadku), żeby użyć mocy owocu — raz na owoc.<br><br>Przed każdym etapem kupujesz na targu <b>3 owoce za 5 $</b>. Na łączce możesz najpierw wypróbować wszystkie owoce za darmo.</p>
-      <button class="btn" id="btnTrening">🌿 Łączka treningowa</button><br>
-      <button class="btn drugi" id="nakladkaBtn">Od razu do etapów ▶</button>
+      <p id="nakladkaOpis">Szkodniki zalęgły się w ogrodzie! Odciągnij owoc w procy, wyceluj i puść.<br><br>Każdy owoc ma swoją moc — <b>dotknij ekranu w locie</b> (albo zaraz po upadku), żeby jej użyć. Raz na owoc.<br><br>W każdym etapie dostajesz inne owoce, a plansze są ułożone tak, żeby trzeba było użyć ich mocy z głową.</p>
+      <button class="btn" id="nakladkaBtn">▶ Zaczynamy</button><button class="btn drugi" id="btnDrugi" style="display:none"></button>
     </div>
   </div>
 </div>
@@ -24662,8 +24662,9 @@ SZABLON_PROCA = """<!DOCTYPE html>
   var plotno = document.getElementById('plotno'), ctx = plotno.getContext('2d');
   var W = 380, H = 560, ZIEMIA = 500, DPR = Math.min(2, window.devicePixelRatio || 1);
   plotno.width = Math.round(W * DPR); plotno.height = Math.round(H * DPR);
-  var G = 380, PROCA_X = 74, PROCA_Y = 412, MAX_NACIAG = 85, MOC = 4.6;
-  var WIDELKI = [[60, 398], [89, 398]];
+  var G = 380, PROCA_X = 74, PROCA_Y = 350, MAX_NACIAG = 85, MOC = 5.0;   // proca na pagorku: pelny naciag we wszystkie strony
+  var WIDELKI = [[60, 336], [89, 336]];
+  var SYM = false;   // tryb symulacji (solver) - bez dzwiekow, czastek i statystyk
 
   // ===================== DZWIEK =====================
   var audioCtx = null;
@@ -24692,71 +24693,96 @@ SZABLON_PROCA = """<!DOCTYPE html>
     } catch (e) {}
   }
 
-  // ===================== OWOCE =====================
+
+  // ===================== OWOCE (6, kazdy z wyrazna moca) =====================
   var OWOCE = {
-    borowka:    { nazwa:'Borówka',    emoji:'🫐', cena:1, r:11, masa:0.8, sok:'#4a5bd6', opis:'Dotknij — rozpada się na 3 borówki.' },
-    winogrona:  { nazwa:'Winogrona',  emoji:'🍇', cena:1, r:13, masa:0.9, sok:'#8a3fc0', opis:'Dotknij — śrut z 6 winogron prosto przed siebie.' },
-    wisnie:     { nazwa:'Wiśnie',     emoji:'🍒', cena:1, r:12, masa:0.9, sok:'#c2183a', opis:'Dotknij — rozdzielają się: jedna w górę, druga w dół.' },
-    cytryna:    { nazwa:'Cytryna',    emoji:'🍋', cena:1, r:13, masa:1.0, sok:'#ffe14a', opis:'Dotknij — mały, kwaśny wybuch.' },
-    banan:      { nazwa:'Banan',      emoji:'🍌', cena:2, r:14, masa:1.1, sok:'#ffe27a', opis:'Dotknij — leci prosto w prawo jak strzała, bez grawitacji.' },
-    jablko:     { nazwa:'Jabłko',     emoji:'🍎', cena:2, r:14, masa:1.3, sok:'#e8473c', opis:'Dotknij — wybucha.' },
-    pomarancza: { nazwa:'Pomarańcza', emoji:'🍊', cena:2, r:14, masa:1.6, sok:'#ff9a2a', opis:'Dotknij — nurkuje pionowo w dół i miażdży nawet kamień.' },
-    truskawka:  { nazwa:'Truskawka',  emoji:'🍓', cena:2, r:13, masa:1.0, sok:'#e8304a', opis:'Dotknij — sypie w dół deszczem 5 pestek.' },
-    arbuz:      { nazwa:'Arbuz',      emoji:'🍉', cena:3, r:22, masa:3.0, sok:'#ff4d6d', opis:'Wielki i ciężki. Dotknij — potężny wybuch.' },
-    ananas:     { nazwa:'Ananas',     emoji:'🍍', cena:3, r:16, masa:1.8, sok:'#ffd23c', opis:'Dotknij — rakieta: wystrzeliwuje do przodu i przebija drewno oraz szkło.' },
-    granat:     { nazwa:'Granat',     emoji:null, cena:3, r:15, masa:1.5, sok:'#c8102e', opis:'Dotknij — pęka i sypie pestkami na wszystkie strony.' }
+    borowka:   { nazwa:'Borówka',   emoji:'🫐', r:12, masa:0.9, sok:'#4a5bd6', opis:'Dotknij — przenika przez pierwszą ścianę, w którą uderzy.' },
+    banan:     { nazwa:'Banan',     emoji:'🍌', r:14, masa:1.1, sok:'#ffe27a', opis:'Dotknij — leci prosto w prawo jak strzała, bez grawitacji.' },
+    winogrona: { nazwa:'Winogrona', emoji:'🍇', r:13, masa:0.9, sok:'#8a3fc0', opis:'Dotknij — salwa 6 winogron w kierunku lotu.' },
+    jablko:    { nazwa:'Jabłko',    emoji:'🍎', r:14, masa:1.3, sok:'#e8473c', opis:'Dotknij — wybucha.' },
+    truskawka: { nazwa:'Truskawka', emoji:'🍓', r:13, masa:1.0, sok:'#e8304a', opis:'Dotknij — sypie w dół 5 pestek, rozchodzących się na boki.' },
+    granat:    { nazwa:'Granat',    emoji:null, r:15, masa:1.5, sok:'#c8102e', opis:'Dotknij — pęka i sypie pestkami na wszystkie strony.' }
   };
-  var TIERY = { 1: ['borowka', 'winogrona', 'wisnie', 'cytryna'], 2: ['banan', 'jablko', 'pomarancza', 'truskawka'], 3: ['arbuz', 'ananas', 'granat'] };
-  var KOLEJNOSC = TIERY[1].concat(TIERY[2], TIERY[3]);
   var IKONA_GRANATU = '<svg viewBox="0 0 32 32" width="1em" height="1em"><circle cx="16" cy="18" r="11" fill="#c8102e"/><circle cx="12" cy="14" r="3.5" fill="rgba(255,255,255,0.35)"/>'
     + '<path d="M11 8 L13 4 L16 7 L19 4 L21 8 Z" fill="#8a0c20"/></svg>';
   function ikonaHtml(k) { return OWOCE[k].emoji || IKONA_GRANATU; }
 
-  // ===================== ETAPY =====================
-  function B(x, dol, w, h, typ) { return { x: x, dol: dol, w: w, h: h, typ: typ }; }
+  // ===================== ETAPY: kazdy z przydzielonymi owocami i plansza pod nie =====================
+  function B(x, dol, w, h, typ) { return { x: x, dol: dol, w: w, h: h, typ: typ || 'skala' }; }
   function R(x, dol, szef) { return { x: x, dol: dol, szef: !!szef }; }
-  var TRENING = { nazwa: 'Łączka treningowa',
-    bloki: [ B(232, 0, 14, 62, 'drewno'), B(286, 0, 14, 62, 'drewno'), B(226, 62, 80, 12, 'drewno'), B(328, 0, 36, 36, 'szklo'), B(328, 36, 36, 36, 'kamien') ],
-    robaki: [ R(266, 74), R(266, 0), R(346, 72) ] };
   var ETAPY_GRY = [
-    { nazwa: 'Ogródek', bloki: [ B(245, 0, 14, 62, 'drewno'), B(291, 0, 14, 62, 'drewno'), B(238, 62, 74, 12, 'drewno'), B(330, 0, 34, 34, 'szklo') ],
-      robaki: [ R(275, 74), R(275, 0), R(347, 34) ] },
-    { nazwa: 'Szklarnia', bloki: [ B(212, 0, 14, 70, 'drewno'), B(300, 0, 14, 70, 'drewno'), B(206, 70, 114, 12, 'szklo'),
-        B(224, 82, 12, 52, 'szklo'), B(290, 82, 12, 52, 'szklo'), B(216, 134, 94, 12, 'drewno'), B(342, 0, 30, 30, 'kamien') ],
-      robaki: [ R(263, 0), R(263, 82), R(263, 146), R(357, 30) ] },
-    { nazwa: 'Kamienny fort', bloki: [ B(206, 0, 20, 92, 'kamien'), B(324, 0, 20, 92, 'kamien'), B(200, 92, 150, 14, 'kamien'),
-        B(230, 0, 28, 28, 'drewno'), B(230, 28, 28, 28, 'drewno'), B(294, 0, 24, 40, 'szklo') ],
-      robaki: [ R(276, 0, true), R(244, 56), R(275, 106) ] }
+    { nazwa:'Tunel', owoce:['banan','banan','banan'],
+      rada:'Wleć na wysokość tunelu i dotknij ekranu — banan poleci prosto jak strzała.',
+      bloki:[ B(200,0,16,150), B(320,0,16,150), B(170,150,190,14), B(170,210,190,14), B(346,164,14,46) ],
+      robaki:[ R(255,164), R(310,164), R(300,224) ] },
+    { nazwa:'Salwa', owoce:['winogrona','winogrona'],
+      rada:'Strzel wysoko i dotknij nad szkodnikami, kiedy owoc już opada — winogrona rozsypią się jak salwa.',
+      bloki:[ B(206,0,6,24), B(241,0,6,24), B(276,0,6,24), B(311,0,6,24), B(346,0,6,24) ],
+      robaki:[ R(190,0), R(226,0), R(261,0), R(296,0), R(331,0), R(366,0) ] },
+    { nazwa:'Przez ścianę', owoce:['borowka','borowka'],
+      rada:'Dotknij tuż przed ścianą — borówka przeniknie przez nią i trafi szkodnika w środku.',
+      bloki:[ B(220,0,14,60), B(290,0,14,60), B(220,60,84,12), B(318,0,34,140), B(296,140,70,10), B(296,150,10,50), B(356,150,10,50), B(296,200,70,10) ],
+      robaki:[ R(262,0), R(331,150) ] },
+    { nazwa:'Bunkier', owoce:['jablko','jablko'],
+      rada:'Wrzuć jabłko do środka i dotknij — wybuch dosięgnie wszystkich naraz.',
+      bloki:[ B(214,0,14,90), B(336,0,14,90) ],
+      robaki:[ R(246,0), R(282,0), R(318,0), R(343,90) ] },
+    { nazwa:'Studnie', owoce:['truskawka','truskawka'],
+      rada:'Dotknij nad studniami — pestki rozchodzą się na boki w trakcie spadania. Liczy się wysokość!',
+      bloki:[ B(180,0,14,110), B(224,0,14,110), B(268,0,14,110), B(312,0,14,110), B(356,0,14,110) ],
+      robaki:[ R(209,0), R(253,0), R(297,0), R(341,0) ] },
+    { nazwa:'Komnata', owoce:['granat','granat'],
+      rada:'Wpuść granat przez otwór w dachu i dotknij w środku — pestki polecą we wszystkie strony.',
+      bloki:[ B(180,0,14,170), B(352,0,14,170), B(180,170,72,12), B(294,170,72,12), B(194,85,36,10), B(316,85,36,10) ],
+      robaki:[ R(212,0), R(334,0), R(273,0), R(212,95), R(334,95) ] },
+    { nazwa:'Warsztat', owoce:['banan','borowka','jablko'],
+      rada:'Każdy owoc ma tu swoje zadanie: tunel, zamknięta skrzynia pod nim i dach z dwoma szkodnikami.',
+      bloki:[ B(240,0,14,120), B(316,0,14,120), B(230,120,110,12), B(230,172,110,12), B(330,132,10,40) ],
+      robaki:[ R(290,132), R(285,0), R(262,184), R(312,184) ] },
+    { nazwa:'Szklana wieża', owoce:['winogrona','truskawka','granat'],
+      rada:'Szkło pęka od byle czego — rozbij wieżę, a spadające piętra zrobią resztę.',
+      bloki:[ B(220,0,10,60,'szklo'), B(320,0,10,60,'szklo'), B(214,60,122,10,'drewno'), B(232,70,10,55,'szklo'), B(308,70,10,55,'szklo'),
+              B(226,125,98,10,'drewno'), B(244,135,10,45,'szklo'), B(296,135,10,45,'szklo'), B(238,180,74,10,'drewno') ],
+      robaki:[ R(270,0), R(270,70), R(270,135), R(274,190), R(355,0), R(190,0) ] },
+    { nazwa:'Bastion', owoce:['borowka','banan','truskawka','jablko'],
+      rada:'Skrzynia, tunel nad nią, dwa szkodniki na dachu i dwie studnie — dobierz owoc do każdej kryjówki.',
+      bloki:[ B(170,0,10,50), B(222,0,10,50), B(170,50,62,10), B(160,110,90,12), B(160,160,90,12), B(240,122,10,38),
+              B(280,0,12,80), B(322,0,12,80), B(364,0,12,80) ],
+      robaki:[ R(201,0), R(200,122), R(185,172), R(215,172), R(307,0), R(349,0) ] },
+    { nazwa:'Królewski ogród', owoce:['banan','winogrona','jablko','truskawka','granat','borowka'],
+      rada:'Szef ma 120 punktów życia. Wybuch jabłka na drewnianym dachu bunkra rozbije go i mocno zrani Szefa — potem dobij go całym owocem (borówka przeniknie przez ścianę).',
+      bloki:[ B(150,0,14,60), B(194,0,14,60), B(238,0,14,60), B(262,0,12,64), B(362,0,12,64), B(262,64,112,12,'drewno'),
+              B(262,150,112,12), B(262,200,112,12), B(364,162,10,38) ],
+      robaki:[ R(179,0), R(223,0), R(318,0,true), R(330,162), R(290,212), R(340,212) ] }
   ];
-  var WYTRZYMALOSC = { drewno: 50, szklo: 20, kamien: 110 };
-  var MASA_BLOKU = { drewno: 1, szklo: 0.6, kamien: 2 };
+  var WYTRZYMALOSC = { drewno: 50, szklo: 20, kamien: 110, skala: 1e9 };
+  var MASA_BLOKU = { drewno: 1, szklo: 0.6, kamien: 2, skala: 3 };
 
   // ===================== STAN =====================
   var bloki = [], robaki = [], owoce = [], czastki = [], napisy = [], pierscienie = [];
-  var tryb = 'menu', etapIdx = 0, torba = [], wybranyIdx = 0, zaladowany = null, glowny = null;
+  var etapIdx = 0, torba = [], wybranyIdx = 0, zaladowany = null, glowny = null;
   var stanStrzalu = 'celowanie', czasOsiadania = 0, celowanie = false, startX = 0, startY = 0, naciagX = 0, naciagY = 0;
   var sladOstatni = [], sladBiezacy = [], ostatniPunktSladu = 0;
-  var wstrzas = 0, czasAbs = 0, trwa = false, czasOstatni = null, wybranyTrening = 'jablko';
-  var strzalyLacznie = 0, szkodnikiLacznie = 0, budzet = 5, wybraneNaTargu = [];
+  var wstrzas = 0, czasAbs = 0, trwa = false, czasOstatni = null;
+  var strzalyLacznie = 0, szkodnikiLacznie = 0;
   var CHMURY = [[40, 70, 1], [180, 50, 0.8], [300, 95, 1.1]];
-
   var el = function (id) { return document.getElementById(id); };
+
   function zbudujPlansze(def) {
     bloki = def.bloki.map(function (b) { return { x: b.x, y: ZIEMIA - b.dol - b.h, w: b.w, h: b.h, typ: b.typ, hp: WYTRZYMALOSC[b.typ], hpMax: WYTRZYMALOSC[b.typ], vy: 0, blysk: 0, usun: false }; });
-    robaki = def.robaki.map(function (r) { var rr = r.szef ? 16 : 13; return { x: r.x, y: ZIEMIA - r.dol - rr, r: rr, hp: r.szef ? 80 : 30, hpMax: r.szef ? 80 : 30, szef: r.szef, vx: 0, vy: 0, blysk: 0, martwy: false, faza: Math.random() * 6 }; });
+    robaki = def.robaki.map(function (r, i) { var rr = r.szef ? 16 : 13; return { id: i, x: r.x, y: ZIEMIA - r.dol - rr, r: rr, hp: r.szef ? 120 : 22, hpMax: r.szef ? 120 : 22, szef: r.szef, vx: 0, vy: 0, blysk: 0, martwy: false, faza: i * 1.7 }; });
     owoce = []; czastki = []; napisy = []; pierscienie = []; glowny = null; sladOstatni = []; sladBiezacy = [];
-    odswiezPanel();
   }
 
   // ===================== FIZYKA =====================
   function nakladaSie(aL, aP, bL, bP) { return aL < bP - 3 && aP > bL + 3; }
-  function podporaOd(xL, xP, dol, pomin) {           // czy cos podpiera dol (wysokosc) w zakresie x
+  function podporaOd(xL, xP, dol, pomin) {
     if (dol >= ZIEMIA - 0.5) return ZIEMIA;
     for (var i = 0; i < bloki.length; i++) { var b = bloki[i]; if (b === pomin || b.usun || Math.abs(b.vy) > 1) continue;
       if (Math.abs(b.y - dol) < 1.5 && nakladaSie(xL, xP, b.x, b.x + b.w)) return b.y; }
     return null;
   }
-  function ladowanie(xL, xP, staryDol, nowyDol, pomin) {   // najblizsza powierzchnia, na ktora spadamy
+  function ladowanie(xL, xP, staryDol, nowyDol, pomin) {
     var najl = nowyDol >= ZIEMIA ? ZIEMIA : null;
     for (var i = 0; i < bloki.length; i++) { var b = bloki[i]; if (b === pomin || b.usun) continue;
       if (staryDol <= b.y + 0.5 && nowyDol >= b.y && nakladaSie(xL, xP, b.x, b.x + b.w) && (najl === null || b.y < najl)) najl = b.y; }
@@ -24765,19 +24791,19 @@ SZABLON_PROCA = """<!DOCTYPE html>
   function krokBlokow(dt) {
     bloki.sort(function (a, b) { return (b.y + b.h) - (a.y + a.h); });
     for (var i = 0; i < bloki.length; i++) {
-      var b = bloki[i]; if (b.usun) continue;
+      var b = bloki[i]; if (b.usun || b.typ === 'skala') continue;          // skala stoi w miejscu
       var dol = b.y + b.h;
       if (b.vy <= 0 && podporaOd(b.x, b.x + b.w, dol, b) !== null) { b.vy = 0; continue; }
       b.vy += G * dt;
       var nowyDol = dol + b.vy * dt, l = ladowanie(b.x, b.x + b.w, dol, nowyDol, b);
-      // miazdzenie szkodnikow pod spadajacym blokiem
       for (var j = 0; j < robaki.length; j++) { var rb = robaki[j]; if (rb.martwy) continue;
         if (nakladaSie(b.x, b.x + b.w, rb.x - rb.r, rb.x + rb.r) && dol <= rb.y - rb.r + 2 && nowyDol >= rb.y - rb.r) {
-          if (b.vy > 90) zranRobaka(rb, b.vy * 0.4 * MASA_BLOKU[b.typ]); else if (!rb.martwy) { l = Math.min(l === null ? 1e9 : l, rb.y - rb.r); }
+          if (b.vy > 90) zranRobaka(rb, b.vy * 0.4 * MASA_BLOKU[b.typ]);
+          if (!rb.martwy) l = Math.min(l === null ? 1e9 : l, rb.y - rb.r);
         } }
       if (l !== null && l <= nowyDol) {
         if (b.vy > 230) uszkodzBlok(b, (b.vy - 200) * 0.08 * (b.typ === 'szklo' ? 3 : 1));
-        if (b.vy > 120) { ton(140, 0.08, 'triangle', 0.05); }
+        if (b.vy > 120) dzwiek(function () { ton(140, 0.08, 'triangle', 0.05); });
         b.y = l - b.h; b.vy = 0;
       } else b.y += b.vy * dt;
       if (b.y > H + 50) b.usun = true;
@@ -24787,7 +24813,13 @@ SZABLON_PROCA = """<!DOCTYPE html>
     for (var i = 0; i < robaki.length; i++) {
       var rb = robaki[i]; if (rb.martwy) continue;
       if (rb.blysk > 0) rb.blysk -= dt;
-      rb.x += rb.vx * dt; rb.vx *= Math.max(0, 1 - 5 * dt);
+      if (Math.abs(rb.vx) > 0.5) {                                             // przesuniecie, ale nie przez sciany
+        var nx = rb.x + rb.vx * dt, zablok = false;
+        for (var k = 0; k < bloki.length; k++) { var bb = bloki[k]; if (bb.usun) continue;
+          if (nx + rb.r > bb.x && nx - rb.r < bb.x + bb.w && rb.y + rb.r > bb.y + 2 && rb.y - rb.r < bb.y + bb.h) { zablok = true; break; } }
+        if (!zablok) rb.x = nx; else rb.vx = 0;
+      }
+      rb.vx *= Math.max(0, 1 - 5 * dt);
       var dol = rb.y + rb.r, xL = rb.x - rb.r * 0.5, xP = rb.x + rb.r * 0.5;
       if (rb.vy <= 0 && podporaOd(xL, xP, dol, null) !== null) { rb.vy = 0; continue; }
       rb.vy += G * dt;
@@ -24801,7 +24833,8 @@ SZABLON_PROCA = """<!DOCTYPE html>
     if (b.usun) return;
     var cx = Math.max(b.x, Math.min(o.x, b.x + b.w)), cy = Math.max(b.y, Math.min(o.y, b.y + b.h));
     var dx = o.x - cx, dy = o.y - cy, d2 = dx * dx + dy * dy;
-    if (d2 >= o.r * o.r) return;
+    if (d2 >= o.r * o.r) { if (o.duchBlok === b) { o.duchBlok = null; o.duch = false; } return; }   // wyszla z przenikanej sciany
+    if (o.duch && (o.duchBlok === null || o.duchBlok === b)) { o.duchBlok = b; return; }        // borowka: przenika pierwsza sciane
     var d = Math.sqrt(d2), nx, ny;
     if (d < 0.001) {
       var lw = o.x - b.x, pr = b.x + b.w - o.x, gr = o.y - b.y, dl = b.y + b.h - o.y, m = Math.min(lw, pr, gr, dl);
@@ -24810,12 +24843,10 @@ SZABLON_PROCA = """<!DOCTYPE html>
     var vn = o.vx * nx + o.vy * ny;
     if (vn < 0) {
       var udar = -vn;
-      if (o.przebija && b.typ !== 'kamien') { uszkodzBlok(b, 999); o.vx *= 0.92; o.vy *= 0.92; return; }
-      var dmg = (o.przebija && b.typ === 'kamien') ? 80 : o.masa * udar * 0.12;
-      if (o.przebija) { o.przebija = false; o.bezGrawitacji = 0; }
       if (o.banan) { o.banan = false; o.bezGrawitacji = 0; }
+      var dmg = o.masa * udar * 0.12;
       if (dmg > 2) uszkodzBlok(b, dmg);
-      if (udar > 110) { soczek(o, Math.min(10, udar / 30)); dzwiekUderzenia(b.typ, udar); }
+      if (udar > 110) { soczek(o, Math.min(10, udar / 30)); var bt = b.typ; dzwiek(function () { dzwiekUderzenia(bt, udar); }); }
       if (b.usun) { o.vx *= 0.62; o.vy *= 0.62; return; }
       o.vx -= 1.3 * vn * nx; o.vy -= 1.3 * vn * ny;
       var tx = -ny, ty = nx, vt = o.vx * tx + o.vy * ty; o.vx -= vt * tx * 0.15; o.vy -= vt * ty * 0.15;
@@ -24829,7 +24860,9 @@ SZABLON_PROCA = """<!DOCTYPE html>
     if (d >= min || d < 0.001) return;
     var nx = dx / d, ny = dy / d, vn = o.vx * nx + o.vy * ny;
     if (vn > 0) {
-      zranRobaka(rb, o.masa * vn * 0.16 + 4);
+      var dmg = o.masa * vn * 0.16 + 4;
+      if (vn > 50 && o.glowny) dmg = Math.max(dmg, 26);             // caly owoc zabija zwyklego szkodnika; kawalki i pestki - wg masy i predkosci
+      zranRobaka(rb, dmg);
       if (vn > 90) soczek(o, 6);
       rb.vx += nx * vn * 0.3 * o.masa;
       o.vx -= 1.3 * vn * nx * 0.6; o.vy -= 1.3 * vn * ny * 0.6;
@@ -24841,68 +24874,72 @@ SZABLON_PROCA = """<!DOCTYPE html>
     for (var i = 0; i < owoce.length; i++) {
       var o = owoce[i]; if (o.usun) continue;
       o.zycie += dt; o.naZiemi = false;
-      if (o.bezGrawitacji > 0) { o.bezGrawitacji -= dt; if (o.bezGrawitacji <= 0) o.przebija = false; } else o.vy += G * dt;
+      if (o.bezGrawitacji > 0) o.bezGrawitacji -= dt; else o.vy += G * dt;
       o.x += o.vx * dt; o.y += o.vy * dt; o.kat += o.wKat * dt;
       if (o.y + o.r > ZIEMIA) {
         o.y = ZIEMIA - o.r;
         if (o.vy > 0) { if (o.vy > 140) soczek(o, Math.min(8, o.vy / 40)); o.vy = -o.vy * 0.32; if (Math.abs(o.vy) < 30) o.vy = 0; }
-        o.vx *= Math.max(0, 1 - 2.2 * dt); o.wKat = o.vx / o.r; o.bezGrawitacji = 0; o.banan = false; o.przebija = false; o.naZiemi = true;
+        o.vx *= Math.max(0, 1 - 2.2 * dt); o.wKat = o.vx / o.r; o.bezGrawitacji = 0; o.banan = false; o.naZiemi = true;
       }
       for (var j = 0; j < bloki.length; j++) kolizjaOwocBlok(o, bloki[j]);
       for (var k = 0; k < robaki.length; k++) kolizjaOwocRobak(o, robaki[k]);
       if (o.naZiemi) o.vx *= Math.max(0, 1 - 1.2 * dt);
       var v = Math.hypot(o.vx, o.vy);
       if (v < 14 && o.naZiemi) o.spokoj += dt; else o.spokoj = 0;
-      var limitSpokoju = (o.glowny && !o.mocUzyta) ? 2.5 : 1.0;    // nieuzyta moc: chwila na klikniecie po upadku
+      var limitSpokoju = (o.glowny && !o.mocUzyta) ? 2.5 : 1.0;
       if (o.x > W + 60 || o.x < -80 || o.y > H + 80 || o.spokoj > limitSpokoju || o.zycie > 12 || (o.pestka && o.zycie > 3.5)) o.usun = true;
     }
   }
   function krok(dt) { krokOwocow(dt); krokBlokow(dt); krokRobakow(dt); }
 
   // ===================== OBRAZENIA I EFEKTY =====================
+  function dzwiek(f) { if (!SYM) f(); }
   function uszkodzBlok(b, dmg) {
-    if (b.usun) return;
+    if (b.usun || b.typ === 'skala') return;
     b.hp -= dmg; b.blysk = 0.15;
     if (b.hp <= 0) {
       b.usun = true;
+      if (SYM) return;
       var kol = b.typ === 'drewno' ? '#a8743e' : (b.typ === 'szklo' ? '#bfeaff' : '#9a9a9a');
       for (var i = 0; i < 12; i++) czastki.push({ x: b.x + Math.random() * b.w, y: b.y + Math.random() * b.h, vx: (Math.random() - 0.5) * 180, vy: -Math.random() * 160,
         r: 2 + Math.random() * 3, kolor: kol, zycie: 0.9, max: 0.9, kwadrat: true, grawitacja: true });
       if (b.typ === 'szklo') { ton(1800, 0.12, 'triangle', 0.05); ton(2400, 0.1, 'sine', 0.04); }
-      else if (b.typ === 'drewno') { szum(0.15, 0.18, 1200); }
-      else { szum(0.25, 0.25, 500); }
+      else if (b.typ === 'drewno') szum(0.15, 0.18, 1200); else szum(0.25, 0.25, 500);
     }
   }
   function dzwiekUderzenia(typ, udar) {
     var v = Math.min(0.12, udar / 3000);
-    if (typ === 'szklo') ton(1500, 0.06, 'triangle', v); else if (typ === 'kamien') ton(120, 0.1, 'sine', v * 1.5); else ton(220, 0.07, 'triangle', v);
+    if (typ === 'szklo') ton(1500, 0.06, 'triangle', v); else if (typ === 'kamien' || typ === 'skala') ton(120, 0.1, 'sine', v * 1.5); else ton(220, 0.07, 'triangle', v);
   }
   function zranRobaka(rb, dmg) {
     if (rb.martwy) return;
     rb.hp -= dmg; rb.blysk = 0.2;
-    if (dmg > 6) ton(520, 0.06, 'square', 0.03);
+    if (dmg > 6) dzwiek(function () { ton(520, 0.06, 'square', 0.03); });
     if (rb.hp <= 0) zabijRobaka(rb);
   }
   function zabijRobaka(rb) {
     if (rb.martwy) return;
     rb.martwy = true;
+    if (SYM) return;
     for (var i = 0; i < 16; i++) czastki.push({ x: rb.x, y: rb.y, vx: (Math.random() - 0.5) * 160, vy: (Math.random() - 0.5) * 160 - 40,
       r: 3 + Math.random() * 4, kolor: rb.szef ? '#b06ad8' : '#8bd36a', zycie: 0.7, max: 0.7 });
-    napisy.push({ x: rb.x, y: rb.y - 20, tekst: rb.szef ? '+3 👑' : '+1', zycie: 1.1 });
+    napisy.push({ x: rb.x, y: rb.y - 20, tekst: rb.szef ? '👑 Szef!' : '+1', zycie: 1.1 });
     ton(660, 0.08, 'triangle', 0.06); setTimeout(function () { ton(990, 0.1, 'triangle', 0.05); }, 70);
-    if (tryb === 'etap') { szkodnikiLacznie++; window.stat && window.stat('szkodniki'); }
+    szkodnikiLacznie++; window.stat && window.stat('szkodniki');
     odswiezPanel();
   }
   function soczek(o, ile) {
+    if (SYM) return;
     var kol = (OWOCE[o.typ] && OWOCE[o.typ].sok) || '#ffd23c';
     for (var i = 0; i < ile; i++) czastki.push({ x: o.x, y: o.y, vx: (Math.random() - 0.5) * 140, vy: -Math.random() * 120, r: 1.5 + Math.random() * 2, kolor: kol, zycie: 0.5, max: 0.5, grawitacja: true });
   }
   function wybuch(x, y, R, dmg, kolor) {
-    pierscienie.push({ x: x, y: y, R: R, zycie: 0.45, max: 0.45, kolor: kolor });
-    for (var i = 0; i < 26; i++) { var k = Math.random() * Math.PI * 2, v = 60 + Math.random() * 220;
-      czastki.push({ x: x, y: y, vx: Math.cos(k) * v, vy: Math.sin(k) * v, r: 2 + Math.random() * 4, kolor: Math.random() < 0.5 ? kolor : '#fff3b0', zycie: 0.6, max: 0.6 }); }
-    wstrzas = Math.min(0.5, 0.15 + R / 300);
-    szum(0.3 + R / 400, 0.32, 700); ton(110, 0.35, 'sine', 0.18, 40);
+    if (!SYM) {
+      pierscienie.push({ x: x, y: y, R: R, zycie: 0.45, max: 0.45, kolor: kolor });
+      for (var i = 0; i < 26; i++) { var k = Math.random() * Math.PI * 2, v = 60 + Math.random() * 220;
+        czastki.push({ x: x, y: y, vx: Math.cos(k) * v, vy: Math.sin(k) * v, r: 2 + Math.random() * 4, kolor: Math.random() < 0.5 ? kolor : '#fff3b0', zycie: 0.6, max: 0.6 }); }
+      wstrzas = Math.min(0.5, 0.15 + R / 300); szum(0.3 + R / 400, 0.32, 700); ton(110, 0.35, 'sine', 0.18, 40);
+    }
     bloki.forEach(function (b) { if (b.usun) return; var cx = Math.max(b.x, Math.min(x, b.x + b.w)), cy = Math.max(b.y, Math.min(y, b.y + b.h)), d = Math.hypot(x - cx, y - cy);
       if (d < R) uszkodzBlok(b, dmg * (1 - d / R) * (b.typ === 'kamien' ? 0.75 : 1)); });
     robaki.forEach(function (rb) { if (rb.martwy) return; var d = Math.max(0, Math.hypot(x - rb.x, y - rb.y) - rb.r);
@@ -24915,49 +24952,53 @@ SZABLON_PROCA = """<!DOCTYPE html>
   function nowyOwoc(typ, x, y, vx, vy, czyGlowny, op) {
     op = op || {}; var d = OWOCE[typ];
     return { typ: typ, x: x, y: y, vx: vx, vy: vy, r: op.r || d.r, masa: op.masa || d.masa, kat: 0, wKat: vx / 45,
-      glowny: czyGlowny, mocUzyta: !czyGlowny, bezGrawitacji: 0, przebija: false, banan: false, pestka: !!op.pestka, kolor: op.kolor || null,
+      glowny: czyGlowny, mocUzyta: !czyGlowny, bezGrawitacji: 0, banan: false, duch: false, duchBlok: null, pestka: !!op.pestka, kolor: op.kolor || null,
       zycie: 0, spokoj: 0, naZiemi: false, usun: false };
-  }
-  function wystrzel() {
-    var o = nowyOwoc(zaladowany, PROCA_X + naciagX, PROCA_Y + naciagY, -naciagX * MOC, -naciagY * MOC, true);
-    owoce.push(o); glowny = o;
-    if (tryb === 'etap') { torba.splice(wybranyIdx, 1); wybranyIdx = 0; }
-    zaladowany = null; stanStrzalu = 'lot'; sladBiezacy = []; ostatniPunktSladu = 0;
-    strzalyLacznie++; window.stat && window.stat('strzaly');
-    szum(0.12, 0.2, 2500); ton(300, 0.15, 'triangle', 0.06, 700);
-    odswiezTorbe();
   }
   function uzyjMocy(o) {
     o.mocUzyta = true;
     var s = Math.max(120, Math.hypot(o.vx, o.vy)), kat = Math.atan2(o.vy, o.vx), i;
     switch (o.typ) {
-      case 'borowka':
-        [-0.2, 0.2].forEach(function (d) { owoce.push(nowyOwoc('borowka', o.x, o.y, Math.cos(kat + d) * s, Math.sin(kat + d) * s, false, { r: 10, masa: 0.7 })); });
-        ton(880, 0.08, 'triangle', 0.06); break;
+      case 'borowka': o.duch = true; o.duchBlok = null; dzwiek(function () { ton(1200, 0.3, 'sine', 0.06, 400); }); break;
+      case 'banan': o.vx = 470; o.vy = 0; o.bezGrawitacji = 99; o.banan = true; o.kat = 0; o.wKat = 0; dzwiek(function () { ton(500, 0.2, 'sawtooth', 0.05, 1200); }); break;
       case 'winogrona':
         for (i = 0; i < 6; i++) { var dk = -0.35 + i * 0.14;
           owoce.push(nowyOwoc('winogrona', o.x, o.y, Math.cos(kat + dk) * s * 1.05, Math.sin(kat + dk) * s * 1.05, false, { r: 7, masa: 0.45, kolor: '#7b3fa8' })); }
-        o.usun = true; ton(700, 0.08, 'square', 0.04); break;
-      case 'wisnie':
-        o.vy -= 150; owoce.push(nowyOwoc('wisnie', o.x, o.y, o.vx, o.vy + 300, false, { r: 11, masa: 0.9 }));
-        ton(760, 0.08, 'triangle', 0.06); break;
-      case 'cytryna': wybuch(o.x, o.y, 48, 45, '#fff36b'); o.usun = true; break;
-      case 'banan': o.vx = 470; o.vy = 0; o.bezGrawitacji = 99; o.banan = true; o.kat = 0; o.wKat = 0; ton(500, 0.2, 'sawtooth', 0.05, 1200); break;
-      case 'jablko': wybuch(o.x, o.y, 68, 95, '#ff5a3c'); o.usun = true; break;
-      case 'pomarancza': o.vx *= 0.15; o.vy = 560; o.masa *= 2.2; o.wKat = 12; ton(900, 0.25, 'sawtooth', 0.05, 200); break;
+        o.usun = true; dzwiek(function () { ton(700, 0.08, 'square', 0.04); }); break;
+      case 'jablko': wybuch(o.x, o.y, 70, 95, '#ff5a3c'); o.usun = true; break;
       case 'truskawka':
-        for (i = 0; i < 5; i++) owoce.push(nowyOwoc('truskawka', o.x, o.y, o.vx * 0.3 + (i - 2) * 38, 230 + Math.random() * 90, false, { r: 5, masa: 0.55, kolor: '#ffe27a', pestka: true }));
-        ton(820, 0.1, 'triangle', 0.05); break;
-      case 'arbuz':
-        wybuch(o.x, o.y, 105, 140, '#ff4d6d');
-        for (i = 0; i < 10; i++) czastki.push({ x: o.x, y: o.y, vx: (Math.random() - 0.5) * 300, vy: -Math.random() * 260, r: 2.5, kolor: '#1a1a1a', zycie: 1.0, max: 1.0, grawitacja: true });
-        o.usun = true; break;
-      case 'ananas': o.vx = Math.cos(kat) * 640; o.vy = Math.sin(kat) * 640; o.bezGrawitacji = 0.75; o.przebija = true; o.wKat = 0; o.kat = kat; ton(200, 0.4, 'sawtooth', 0.06, 900); break;
+        for (i = 0; i < 5; i++) owoce.push(nowyOwoc('truskawka', o.x + (i - 2) * 22, o.y, o.vx * 0.25 + (i - 2) * 70, 300, false, { r: 5, masa: 0.55, kolor: '#ffe27a', pestka: true }));
+        o.usun = true; dzwiek(function () { ton(820, 0.1, 'triangle', 0.05); }); break;
       case 'granat':
-        for (i = 0; i < 12; i++) { var kg = i * Math.PI * 2 / 12;
-          owoce.push(nowyOwoc('granat', o.x, o.y, Math.cos(kg) * 270 + o.vx * 0.3, Math.sin(kg) * 270 + o.vy * 0.3, false, { r: 5, masa: 0.6, kolor: '#c8102e', pestka: true })); }
-        wybuch(o.x, o.y, 30, 20, '#ff6b7a'); o.usun = true; break;
+        for (i = 0; i < 10; i++) { var kg = i * Math.PI * 2 / 10 + 0.13;
+          owoce.push(nowyOwoc('granat', o.x, o.y, Math.cos(kg) * 240 + o.vx * 0.3, Math.sin(kg) * 240 + o.vy * 0.3, false, { r: 5, masa: 0.5, kolor: '#c8102e', pestka: true })); }
+        wybuch(o.x, o.y, 26, 15, '#ff6b7a'); o.usun = true; break;
     }
+  }
+  function wystrzel() {
+    var o = nowyOwoc(zaladowany, PROCA_X + naciagX, PROCA_Y + naciagY, -naciagX * MOC, -naciagY * MOC, true);
+    owoce.push(o); glowny = o;
+    torba.splice(wybranyIdx, 1); wybranyIdx = 0;
+    zaladowany = null; stanStrzalu = 'lot'; sladBiezacy = []; ostatniPunktSladu = 0;
+    strzalyLacznie++; window.stat && window.stat('strzaly');
+    szum(0.12, 0.2, 2500); ton(300, 0.15, 'triangle', 0.06, 700);
+    odswiezTorbe();
+  }
+  // ---- Symulacja jednego strzalu (do sprawdzania etapow): zwraca liczbe zabitych szkodnikow ----
+  function symuluj(typ, nx, ny, tKlik, zastosuj) {
+    var kopiaB = JSON.stringify(bloki), kopiaR = JSON.stringify(robaki), stareOwoce = owoce, staryGlowny = glowny;
+    SYM = true; owoce = [];
+    var o = nowyOwoc(typ, PROCA_X + nx, PROCA_Y + ny, -nx * MOC, -ny * MOC, true); owoce.push(o);
+    var t = 0, dt = 1 / 120, przed = zyweRobaki();
+    for (var i = 0; i < 120 * 8; i++) {
+      if (tKlik !== null && !o.mocUzyta && !o.usun && t >= tKlik) uzyjMocy(o);
+      krok(dt); t += dt; owoce = owoce.filter(function (q) { return !q.usun; });
+      if (!owoce.length) { for (var j = 0; j < 180; j++) krok(dt); break; }
+    }
+    var zabite = przed - zyweRobaki();
+    if (!zastosuj) { bloki = JSON.parse(kopiaB); robaki = JSON.parse(kopiaR); }
+    owoce = stareOwoce; glowny = staryGlowny; SYM = false;
+    return zabite;
   }
 
   // ===================== PRZEBIEG GRY =====================
@@ -24976,137 +25017,69 @@ SZABLON_PROCA = """<!DOCTYPE html>
   function zyweRobaki() { return robaki.filter(function (r) { return !r.martwy; }).length; }
   function koniecStrzalu() {
     bloki = bloki.filter(function (b) { return !b.usun; });
-    var zywe = zyweRobaki();
-    if (tryb === 'trening') {
-      if (!zywe) { pokazKomunikat('🎯 Wszystkie trafione! Ustawiam nowe cele…'); setTimeout(function () { if (tryb === 'trening') zbudujPlansze(TRENING); }, 900); }
-      zaladowany = wybranyTrening; stanStrzalu = 'celowanie'; return;
-    }
-    if (!zywe) { wygranaEtapu(); return; }
+    if (!zyweRobaki()) { wygranaEtapu(); return; }
     if (!torba.length) { przegranaEtapu(); return; }
     wybranyIdx = 0; zaladowany = torba[0]; stanStrzalu = 'celowanie'; odswiezTorbe();
   }
   function pokazKomunikat(t) { var k = el('komunikat'); k.textContent = t; k.classList.add('widoczny'); clearTimeout(pokazKomunikat._t); pokazKomunikat._t = setTimeout(function () { k.classList.remove('widoczny'); }, 1800); }
-
   function odswiezPanel() {
-    el('etapEtykieta').textContent = tryb === 'trening' ? '🌿 Łączka treningowa' : (tryb === 'etap' ? ('Etap ' + (etapIdx + 1) + ' / ' + ETAPY_GRY.length + ' · ' + ETAPY_GRY[etapIdx].nazwa) : '');
-    el('wrogowieEtykieta').textContent = tryb === 'menu' ? '' : ('🐛 ' + zyweRobaki());
+    el('etapEtykieta').textContent = 'Etap ' + (etapIdx + 1) + ' / ' + ETAPY_GRY.length + ' · ' + ETAPY_GRY[etapIdx].nazwa;
+    el('wrogowieEtykieta').textContent = '🐛 ' + zyweRobaki();
   }
   function odswiezTorbe() {
     var t = el('torba'); t.innerHTML = '';
-    var lista = tryb === 'trening' ? KOLEJNOSC : torba;
-    if (tryb === 'etap' && !lista.length && !zaladowany) { t.innerHTML = '<span class="pusto">Torba pusta</span>'; return; }
-    lista.forEach(function (k, i) {
+    if (!torba.length) { t.innerHTML = '<span class="pusto">' + (stanStrzalu === 'celowanie' ? '' : 'Ostatni owoc w locie…') + '</span>'; return; }
+    torba.forEach(function (k, i) {
       var b = document.createElement('div'); b.className = 'owoc';
-      var aktywny = tryb === 'trening' ? (k === wybranyTrening) : (i === wybranyIdx && stanStrzalu === 'celowanie');
-      if (aktywny) b.classList.add('wybrany');
-      b.innerHTML = ikonaHtml(k) + (tryb === 'etap' ? '<span class="cena">' + OWOCE[k].cena + '$</span>' : '');
+      if (i === wybranyIdx && stanStrzalu === 'celowanie') b.classList.add('wybrany');
+      b.innerHTML = ikonaHtml(k);
       b.addEventListener('click', function () {
         if (stanStrzalu !== 'celowanie' || celowanie) return;
-        if (tryb === 'trening') { wybranyTrening = k; zaladowany = k; pokazOpisTreningu(); }
-        else { wybranyIdx = i; zaladowany = torba[i]; }
-        ton(600, 0.05, 'triangle', 0.04); odswiezTorbe();
+        wybranyIdx = i; zaladowany = torba[i]; ton(600, 0.05, 'triangle', 0.04); odswiezTorbe();
+        pokazKomunikat(OWOCE[zaladowany].nazwa);
       });
       t.appendChild(b);
     });
   }
-  function pokazOpisTreningu() {
-    var p = el('podpowiedz'); var d = OWOCE[wybranyTrening];
-    p.innerHTML = '<b>' + d.nazwa + ' (' + d.cena + ' $)</b> — ' + d.opis;
+  function kartaEtapu(idx) {
+    var e = ETAPY_GRY[idx], rodzaje = [];
+    e.owoce.forEach(function (k) { if (rodzaje.indexOf(k) < 0) rodzaje.push(k); });
+    var h = '<div class="karta"><div class="numer">Etap ' + (idx + 1) + ' z ' + ETAPY_GRY.length + '</div><h2>' + e.nazwa + '</h2>'
+      + '<div class="owoceEtapu">' + e.owoce.map(function (k) { return '<span>' + ikonaHtml(k) + '</span>'; }).join('') + '</div>'
+      + rodzaje.map(function (k) { return '<div class="sciaga-wiersz"><span class="ikona">' + ikonaHtml(k) + '</span><span><b>' + OWOCE[k].nazwa + '</b> — ' + OWOCE[k].opis + '</span></div>'; }).join('')
+      + '<p class="rada">💡 ' + e.rada + '</p><button class="btn" id="btnStartEtapu">▶ Start</button></div>';
+    return h;
   }
-
-  // ---- Targ: budzet 5 $, 3 wybory, kolejne oferty zaleza od tego, co juz kupione ----
-  function ofertyTargu() {
-    var zostalo = 3 - wybraneNaTargu.length;
-    if (budzet <= 0 || zostalo <= 0) return null;
-    var ceny;
-    if (zostalo === 1) { var c = Math.min(budzet, 3); ceny = [c, c, c]; }   // ostatni wybor: najdrozsze, na jakie starcza
-    else if (budzet >= 3) ceny = [1, 2, 3];
-    else if (budzet === 2) ceny = [1, 2, 2];
-    else ceny = [1, 1, 1];
-    var oferty = [], uzyte = wybraneNaTargu.slice();
-    ceny.forEach(function (c) {
-      var pula = TIERY[c].filter(function (k) { return uzyte.indexOf(k) < 0; });
-      if (!pula.length) pula = TIERY[c].slice();
-      var k = pula[Math.floor(Math.random() * pula.length)]; oferty.push(k); uzyte.push(k);
-    });
-    return oferty;
-  }
-  function otworzTarg() {
-    budzet = 5; wybraneNaTargu = []; torba = []; rysujTarg();
-    el('targ').classList.remove('ukryty');
-  }
-  function rysujTarg() {
-    var oferty = ofertyTargu(), nr = wybraneNaTargu.length + 1;
-    var h = '<div class="karta"><h2>🛒 Targ owocowy</h2>'
-      + '<div class="budzet">Etap ' + (etapIdx + 1) + ' · ' + ETAPY_GRY[etapIdx].nazwa + '<br>Budżet: <b>' + budzet + ' $</b>' + (oferty ? ' · wybór ' + nr + ' z 3' : '') + '</div>'
-      + '<div class="koszyk">' + (wybraneNaTargu.length ? wybraneNaTargu.map(function (k) { return '<span>' + ikonaHtml(k) + '</span>'; }).join('') : '<p style="opacity:.6;font-size:12px;margin:8px 0">Koszyk pusty</p>') + '</div>';
-    if (oferty) {
-      h += '<div class="oferty">' + oferty.map(function (k) { var d = OWOCE[k];
-        return '<button class="oferta" data-k="' + k + '"><span class="ikona">' + ikonaHtml(k) + '</span><span class="tekst"><span class="nazwa">' + d.nazwa + '</span>'
-          + '<div class="opis">' + d.opis + '</div></span><span class="metka">' + d.cena + ' $</span></button>'; }).join('') + '</div>'
-        + '<p style="font-size:11px;opacity:.7">Nie wiesz, co pojawi się w kolejnym wyborze — kupuj z głową.</p>';
-    } else {
-      h += '<p>Koszyk gotowy! Kolejność strzałów wybierasz na dole ekranu.</p><button class="btn" id="btnDoProcy">▶ Do procy!</button>';
-    }
-    h += '</div>';
-    var t = el('targ'); t.innerHTML = h;
-    [].forEach.call(t.querySelectorAll('.oferta'), function (b) {
-      b.addEventListener('click', function () { inicjujDzwiek(); var k = b.getAttribute('data-k'); wybraneNaTargu.push(k); budzet -= OWOCE[k].cena; ton(880, 0.07, 'triangle', 0.05); rysujTarg(); });
-    });
-    var bd = el('btnDoProcy');
-    if (bd) bd.addEventListener('click', function () { el('targ').classList.add('ukryty'); startEtapu(); });
-  }
-  function startEtapu() {
-    tryb = 'etap'; zbudujPlansze(ETAPY_GRY[etapIdx]);
-    torba = wybraneNaTargu.slice(); wybranyIdx = 0; zaladowany = torba[0]; stanStrzalu = 'celowanie';
-    el('podpowiedz').style.display = 'none'; el('przyciskiTreningu').style.display = 'none';
-    odswiezPanel(); odswiezTorbe(); trwa = true;
-    pokazKomunikat('Etap ' + (etapIdx + 1) + ': ' + ETAPY_GRY[etapIdx].nazwa);
-  }
-  function startTreningu() {
-    tryb = 'trening'; zbudujPlansze(TRENING); zaladowany = wybranyTrening; stanStrzalu = 'celowanie';
-    el('nakladka').style.display = 'none'; el('podpowiedz').style.display = 'block'; el('przyciskiTreningu').style.display = 'flex';
-    pokazOpisTreningu(); odswiezPanel(); odswiezTorbe(); trwa = true;
-  }
-  function doEtapow() {
-    el('nakladka').style.display = 'none'; el('podpowiedz').style.display = 'none'; el('przyciskiTreningu').style.display = 'none';
-    tryb = 'etap'; etapIdx = 0; trwa = false; zbudujPlansze(ETAPY_GRY[0]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg();
+  function pokazEtap(idx) {
+    etapIdx = idx; trwa = false; zbudujPlansze(ETAPY_GRY[idx]); odswiezPanel();
+    torba = ETAPY_GRY[idx].owoce.slice(); wybranyIdx = 0; zaladowany = torba[0]; stanStrzalu = 'celowanie'; odswiezTorbe();
+    var w = el('wstep'); w.innerHTML = kartaEtapu(idx); w.classList.remove('ukryty');
+    el('btnStartEtapu').addEventListener('click', function () { inicjujDzwiek(); w.classList.add('ukryty'); trwa = true; czasOstatni = null; });
   }
   function wygranaEtapu() {
     trwa = false; ton(660, 0.12, 'triangle', 0.07); setTimeout(function () { ton(880, 0.12, 'triangle', 0.07); }, 120); setTimeout(function () { ton(1320, 0.2, 'triangle', 0.07); }, 240);
     var n = el('nakladka'), ost = etapIdx === ETAPY_GRY.length - 1;
-    n.style.display = 'flex';
+    n.style.display = 'flex'; el('btnDrugi').style.display = 'none';
     if (ost) {
       el('nakladkaTytul').textContent = '🏆 Ogród uratowany!';
       el('nakladkaOpis').innerHTML = 'Etap zaliczony automatycznie!<br><br>🐛 Przegonione szkodniki: <b>' + szkodnikiLacznie + '</b><br>🍉 Wystrzelone owoce: <b>' + strzalyLacznie + '</b>';
-      el('nakladkaBtn').style.display = 'none'; el('btnTrening').style.display = 'none';
+      el('nakladkaBtn').style.display = 'none';
       var w = { type: 'streamlit-child:zaliczono', wartosc: true };
       window.postMessage(w, '*'); if (window.parent && window.parent !== window) window.parent.postMessage(w, '*');
     } else {
       el('nakladkaTytul').textContent = '🎉 Etap ' + (etapIdx + 1) + ' zaliczony!';
-      el('nakladkaOpis').innerHTML = '<b>' + ETAPY_GRY[etapIdx].nazwa + '</b> bez szkodników! Zostało owoców w torbie: <b>' + torba.length + '</b>.<br><br>Następny etap: <b>' + ETAPY_GRY[etapIdx + 1].nazwa + '</b> — najpierw targ.';
-      el('nakladkaBtn').textContent = 'Dalej ▶'; el('nakladkaBtn').style.display = 'inline-block'; el('btnTrening').style.display = 'none';
-      el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; etapIdx++; zbudujPlansze(ETAPY_GRY[etapIdx]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg(); };
+      el('nakladkaOpis').innerHTML = '<b>' + ETAPY_GRY[etapIdx].nazwa + '</b> bez szkodników' + (torba.length ? ' — i zostało jeszcze ' + torba.length + ' ' + (torba.length === 1 ? 'owoc' : 'owoce') + ' w zapasie!' : '!');
+      el('nakladkaBtn').textContent = 'Dalej ▶'; el('nakladkaBtn').style.display = 'inline-block';
+      el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; pokazEtap(etapIdx + 1); };
     }
   }
   function przegranaEtapu() {
     trwa = false; ton(300, 0.3, 'sawtooth', 0.05, 120);
-    var n = el('nakladka'); n.style.display = 'flex';
+    var n = el('nakladka'); n.style.display = 'flex'; el('btnDrugi').style.display = 'none';
     el('nakladkaTytul').textContent = '🥀 Zabrakło owoców…';
-    el('nakladkaOpis').innerHTML = 'Szkodników zostało: <b>' + zyweRobaki() + '</b>.<br><br>Spróbuj jeszcze raz — nowy targ, nowe owoce.';
-    el('nakladkaBtn').textContent = '↻ Jeszcze raz'; el('nakladkaBtn').style.display = 'inline-block'; el('btnTrening').style.display = 'none';
-    el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; zbudujPlansze(ETAPY_GRY[etapIdx]); odswiezPanel(); el('torba').innerHTML = ''; otworzTarg(); };
-  }
-  function pokazSciage() {
-    var h = '<div class="karta" style="position:relative"><button class="zamknij" id="btnZamknijSciage">✕</button><h2>❓ Owoce</h2>'
-      + '<p>Odciągnij owoc w procy i puść. <b>Dotknij ekranu w locie</b> (albo zaraz po upadku), żeby użyć jego mocy — raz na owoc.</p>';
-    [1, 2, 3].forEach(function (c) {
-      h += '<div class="sciaga-tier"><h3>' + c + ' $</h3>' + TIERY[c].map(function (k) { var d = OWOCE[k];
-        return '<div class="sciaga-wiersz"><span class="ikona">' + ikonaHtml(k) + '</span><span><b>' + d.nazwa + '</b> — ' + d.opis + '</span></div>'; }).join('') + '</div>';
-    });
-    h += '</div>';
-    var s = el('sciaga'); s.innerHTML = h; s.classList.remove('ukryty');
-    el('btnZamknijSciage').addEventListener('click', function () { s.classList.add('ukryty'); });
+    el('nakladkaOpis').innerHTML = 'Szkodników zostało: <b>' + zyweRobaki() + '</b>.<br><br>💡 ' + ETAPY_GRY[etapIdx].rada;
+    el('nakladkaBtn').textContent = '↻ Jeszcze raz'; el('nakladkaBtn').style.display = 'inline-block';
+    el('nakladkaBtn').onclick = function () { inicjujDzwiek(); n.style.display = 'none'; pokazEtap(etapIdx); };
   }
 
   // ===================== STEROWANIE =====================
@@ -25128,11 +25101,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
     var r = OWOCE[zaladowany].r; if (PROCA_Y + dy > ZIEMIA - r) dy = ZIEMIA - r - PROCA_Y;
     naciagX = dx; naciagY = dy;
   });
-  function puszczenie() {
-    if (!celowanie) return; celowanie = false;
-    if (Math.hypot(naciagX, naciagY) > 12 && zaladowany) wystrzel();
-    naciagX = 0; naciagY = 0;
-  }
+  function puszczenie() { if (!celowanie) return; celowanie = false; if (Math.hypot(naciagX, naciagY) > 12 && zaladowany) wystrzel(); naciagX = 0; naciagY = 0; }
   plotno.addEventListener('pointerup', puszczenie);
   plotno.addEventListener('pointercancel', puszczenie);
 
@@ -25157,8 +25126,18 @@ SZABLON_PROCA = """<!DOCTYPE html>
     ctx.fillStyle = gz; ctx.fillRect(-20, ZIEMIA, W + 40, H - ZIEMIA + 20);
     ctx.fillStyle = '#5db345'; ctx.fillRect(-20, ZIEMIA - 2, W + 40, 7); ctx.fillStyle = '#7fd162'; ctx.fillRect(-20, ZIEMIA - 2, W + 40, 2);
   }
+
+  function rysujSkale(b) {
+    var g = ctx.createLinearGradient(b.x, b.y, b.x + b.w, b.y + b.h); g.addColorStop(0, '#5d5148'); g.addColorStop(1, '#3a322c');
+    ctx.fillStyle = g; zaokr(b.x, b.y, b.w, b.h, 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    for (var i = 0; i < Math.max(2, (b.w * b.h) / 160); i++) ctx.fillRect(b.x + ((i * 29) % Math.max(1, b.w - 5)) + 2, b.y + ((i * 17) % Math.max(1, b.h - 4)) + 2, 4, 2);
+    ctx.strokeStyle = '#211b17'; ctx.lineWidth = 1.5; zaokr(b.x, b.y, b.w, b.h, 2); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(b.x + 1, b.y + 1, b.w - 2, 2);
+  }
   function rysujBlok(b) {
     if (b.usun) return;
+    if (b.typ === 'skala') { rysujSkale(b); return; }
     ctx.save();
     if (b.typ === 'drewno') {
       var g = ctx.createLinearGradient(b.x, 0, b.x + b.w, 0); g.addColorStop(0, '#c08a4e'); g.addColorStop(1, '#94632f');
@@ -25187,6 +25166,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
     if (b.blysk > 0) { b.blysk -= 1 / 60; ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.fillRect(b.x, b.y, b.w, b.h); }
     ctx.restore();
   }
+
   function rysujRobaka(rb) {
     if (rb.martwy) return;
     var x = rb.x, y = rb.y, r = rb.r, t = czasAbs * 3 + rb.faza, kolA = rb.szef ? '#9b59c9' : '#76c450', kolB = rb.szef ? '#6d3496' : '#4f9a33';
@@ -25209,14 +25189,16 @@ SZABLON_PROCA = """<!DOCTYPE html>
     if (rb.blysk > 0) { ctx.fillStyle = 'rgba(255,60,60,0.35)'; ctx.beginPath(); ctx.ellipse(0, 0, r * 1.05, r, 0, 0, Math.PI * 2); ctx.fill(); }
     ctx.restore();
   }
+
   function rysujGranat(r) {
     var g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 1, 0, 0, r); g.addColorStop(0, '#ff5a6e'); g.addColorStop(1, '#a50d24');
     ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
     ctx.fillStyle = '#7a0a1a'; ctx.beginPath(); ctx.moveTo(-r * 0.35, -r * 0.85); ctx.lineTo(-r * 0.2, -r * 1.3); ctx.lineTo(0, -r * 0.95); ctx.lineTo(r * 0.2, -r * 1.3); ctx.lineTo(r * 0.35, -r * 0.85); ctx.closePath(); ctx.fill();
     ctx.fillStyle = 'rgba(255,255,255,0.35)'; ctx.beginPath(); ctx.arc(-r * 0.35, -r * 0.3, r * 0.25, 0, Math.PI * 2); ctx.fill();
   }
-  function rysujOwocW(typ, x, y, r, kat, kolor) {
-    ctx.save(); ctx.translate(x, y); ctx.rotate(kat);
+
+  function rysujOwocW(typ, x, y, r, kat, kolor, alfa) {
+    ctx.save(); ctx.translate(x, y); ctx.rotate(kat); if (alfa !== undefined) ctx.globalAlpha = alfa;
     if (kolor) {
       var g = ctx.createRadialGradient(-r * 0.3, -r * 0.3, 0.5, 0, 0, r); g.addColorStop(0, '#ffffff'); g.addColorStop(0.25, kolor); g.addColorStop(1, kolor);
       ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, r, r * (typ === 'truskawka' ? 0.7 : 1), 0, 0, Math.PI * 2); ctx.fill();
@@ -25226,23 +25208,32 @@ SZABLON_PROCA = """<!DOCTYPE html>
   }
   function rysujOwoc(o) {
     if (o.usun) return;
-    if (o.przebija || o.banan) {                                                   // smuga rakiety / banana
-      ctx.save(); ctx.globalAlpha = 0.5; ctx.strokeStyle = o.przebija ? '#ff9a2a' : '#fff3a0'; ctx.lineWidth = o.r; ctx.lineCap = 'round';
+    if (o.banan || o.duch) {
+      ctx.save(); ctx.globalAlpha = 0.45; ctx.strokeStyle = o.duch ? '#8fb4ff' : '#fff3a0'; ctx.lineWidth = o.r * (o.duch ? 1.6 : 1); ctx.lineCap = 'round';
       var dl = Math.hypot(o.vx, o.vy) || 1; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.lineTo(o.x - o.vx / dl * 34, o.y - o.vy / dl * 34); ctx.stroke(); ctx.restore();
     }
-    rysujOwocW(o.typ, o.x, o.y, o.r, o.kat, o.kolor);
-    if (o.glowny && !o.mocUzyta && stanStrzalu === 'lot') {                         // pierscien: moc gotowa
+    if (o.duch) { ctx.save(); ctx.shadowColor = '#8fb4ff'; ctx.shadowBlur = 14; rysujOwocW(o.typ, o.x, o.y, o.r, o.kat, o.kolor, 0.6); ctx.restore(); }
+    else rysujOwocW(o.typ, o.x, o.y, o.r, o.kat, o.kolor);
+    if (o.glowny && !o.mocUzyta && stanStrzalu === 'lot') {
       ctx.save(); ctx.strokeStyle = 'rgba(255,255,255,' + (0.45 + 0.35 * Math.sin(czasAbs * 10)).toFixed(2) + ')'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.arc(o.x, o.y, o.r + 5, 0, Math.PI * 2); ctx.stroke(); ctx.restore();
     }
   }
   function rysujProce(przod) {
+    var bazaY = PROCA_Y + 34, pienY = PROCA_Y + 82;          // proca stoi na skalnym pagorku
     if (!przod) {
+      var gp = ctx.createLinearGradient(0, pienY - 10, 0, ZIEMIA);
+      gp.addColorStop(0, '#8a7a66'); gp.addColorStop(1, '#5d5044');
+      ctx.fillStyle = gp; ctx.beginPath(); ctx.moveTo(10, ZIEMIA); ctx.quadraticCurveTo(28, pienY + 4, PROCA_X + 1, pienY - 6);
+      ctx.quadraticCurveTo(124, pienY + 4, 140, ZIEMIA); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = '#463b31'; ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.fillStyle = '#6fbf55'; ctx.beginPath(); ctx.ellipse(PROCA_X + 1, pienY - 4, 34, 6, 0, Math.PI, 0); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.fillRect(40, pienY + 24, 8, 4); ctx.fillRect(98, pienY + 40, 10, 4); ctx.fillRect(66, pienY + 60, 9, 3);
       ctx.strokeStyle = '#6b3f1c'; ctx.lineWidth = 9; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, ZIEMIA + 2); ctx.lineTo(PROCA_X + 1, 440); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X - 10, 430, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, pienY); ctx.lineTo(PROCA_X + 1, bazaY + 4); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, bazaY + 4); ctx.quadraticCurveTo(PROCA_X - 10, bazaY - 10, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
       ctx.strokeStyle = '#8a5428'; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X - 10, 430, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, bazaY + 4); ctx.quadraticCurveTo(PROCA_X - 10, bazaY - 10, WIDELKI[0][0], WIDELKI[0][1]); ctx.stroke();
     }
     var px = PROCA_X + naciagX, py = PROCA_Y + naciagY, czyOwoc = stanStrzalu === 'celowanie' && zaladowany;
     var tip = przod ? WIDELKI[1] : WIDELKI[0];
@@ -25250,23 +25241,24 @@ SZABLON_PROCA = """<!DOCTYPE html>
     ctx.beginPath(); ctx.moveTo(tip[0], tip[1]); ctx.lineTo(czyOwoc ? px - (przod ? -6 : 6) : PROCA_X + (przod ? 5 : -5), czyOwoc ? py : PROCA_Y); ctx.stroke();
     if (przod) {
       ctx.strokeStyle = '#6b3f1c'; ctx.lineWidth = 9; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X + 12, 430, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, bazaY + 4); ctx.quadraticCurveTo(PROCA_X + 12, bazaY - 10, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
       ctx.strokeStyle = '#8a5428'; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, 444); ctx.quadraticCurveTo(PROCA_X + 12, 430, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(PROCA_X + 1, bazaY + 4); ctx.quadraticCurveTo(PROCA_X + 12, bazaY - 10, WIDELKI[1][0], WIDELKI[1][1]); ctx.stroke();
     }
   }
+
   function rysujZaladowany() {
     if (stanStrzalu !== 'celowanie' || !zaladowany) return;
     var px = PROCA_X + naciagX, py = PROCA_Y + naciagY, d = OWOCE[zaladowany];
-    ctx.fillStyle = '#4a2a14'; zaokr(px - d.r - 3, py - 5, 6, 10, 2); ctx.fill();          // skorzana kieszen
+    ctx.fillStyle = '#4a2a14'; zaokr(px - d.r - 3, py - 5, 6, 10, 2); ctx.fill();
     rysujOwocW(zaladowany, px, py, d.r, 0, null);
   }
   function rysujPodglad() {
     if (!celowanie || Math.hypot(naciagX, naciagY) < 12) return;
-    var vx = -naciagX * MOC, vy = -naciagY * MOC, x = PROCA_X + naciagX, y = PROCA_Y + naciagY, droga = 0, nast = 10, krok = 1 / 240;
+    var vx = -naciagX * MOC, vy = -naciagY * MOC, x = PROCA_X + naciagX, y = PROCA_Y + naciagY, droga = 0, nast = 10, krokP = 1 / 240;
     ctx.fillStyle = 'rgba(255,255,255,0.95)';
     for (var i = 0; i < 2000 && droga < 120; i++) {
-      vy += G * krok; var nx = x + vx * krok, ny = y + vy * krok; droga += Math.hypot(nx - x, ny - y); x = nx; y = ny;
+      vy += G * krokP; var nx = x + vx * krokP, ny = y + vy * krokP; droga += Math.hypot(nx - x, ny - y); x = nx; y = ny;
       if (droga >= nast) { nast += 10; ctx.globalAlpha = Math.max(0.15, 0.9 - droga / 140); ctx.beginPath(); ctx.arc(x, y, 2.4, 0, Math.PI * 2); ctx.fill(); }
     }
     ctx.globalAlpha = 1;
@@ -25293,6 +25285,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
       ctx.fillStyle = '#fff'; ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 3; ctx.strokeText(n.tekst, n.x, n.y); ctx.fillText(n.tekst, n.x, n.y); });
     ctx.globalAlpha = 1;
   }
+
   function rysuj() {
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     if (wstrzas > 0) ctx.translate((Math.random() - 0.5) * wstrzas * 16, (Math.random() - 0.5) * wstrzas * 16);
@@ -25312,12 +25305,13 @@ SZABLON_PROCA = """<!DOCTYPE html>
   }
 
   // ===================== START =====================
-  el('btnTrening').addEventListener('click', function () { inicjujDzwiek(); startTreningu(); });
-  el('nakladkaBtn').onclick = function () { inicjujDzwiek(); doEtapow(); };
-  el('btnInfo').addEventListener('click', function () { inicjujDzwiek(); pokazSciage(); });
-  el('btnUstawCele').addEventListener('click', function () { zbudujPlansze(TRENING); zaladowany = wybranyTrening; stanStrzalu = 'celowanie'; });
-  el('btnDoEtapow').addEventListener('click', function () { inicjujDzwiek(); doEtapow(); });
-  zbudujPlansze(TRENING);
+  el('nakladkaBtn').onclick = function () { inicjujDzwiek(); el('nakladka').style.display = 'none'; pokazEtap(0); };
+  el('btnInfo').addEventListener('click', function () {
+    inicjujDzwiek(); var w = el('wstep'); w.innerHTML = kartaEtapu(etapIdx).replace('▶ Start', '✕ Zamknij'); w.classList.remove('ukryty');
+    var bylo = trwa; trwa = false;
+    el('btnStartEtapu').addEventListener('click', function () { w.classList.add('ukryty'); trwa = bylo || trwa; czasOstatni = null; });
+  });
+  zbudujPlansze(ETAPY_GRY[0]); odswiezPanel();
   requestAnimationFrame(petla);
 </script>
 <script>
