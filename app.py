@@ -1111,7 +1111,8 @@ def _wymagane_przed(kat):
 
 
 def _zablokowany_bez_testu(kat):
-    return any(k not in st.session_state.rozwiazane for k in _wymagane_przed(kat))
+    # Levele sa zawsze otwarte - zamiast kończenia poprzednich jest krótki quiz na wejście
+    return False
 
 
 def przygody_odblokowane():
@@ -16262,6 +16263,8 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   .pkn-przyciski button { flex: 1; padding: 10px 4px; border-radius: 14px; border: 1.5px solid rgba(230,193,92,0.6); background: linear-gradient(160deg,#3a2e14,#1a1420);
     color: #fff; font-size: 30px; cursor: pointer; }
   .pkn-przyciski button span { display: block; font-size: 12px; font-weight: 800; color: #ffe08a; margin-top: 2px; }
+  .por-poddaj { width: 100%; margin-top: 8px; padding: 8px; border-radius: 10px; background: transparent; cursor: pointer;
+    border: 1px dashed rgba(230,193,92,0.5); color: rgba(241,230,200,0.8); font-weight: 700; font-size: 12.5px; font-family: inherit; }
 </style>
 </head>
 <body>
@@ -16813,6 +16816,7 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   var PORADNIK_B64 = '__PORADNIK_WIDEO__', poradnikPokazany = false, poradnikUrl = null;
   function pokazPoradnik() {
     if (document.getElementById('poradnik') || PORADNIK_B64.length < 200) return;
+    zliczPoradnik();
     try {
       if (!poradnikUrl) {
         var bin = atob(PORADNIK_B64), arr = new Uint8Array(bin.length);
@@ -16825,12 +16829,37 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
       + '<div class="por-pod">Jak przejść Jumping Prince</div>'
       + '<div class="por-wideo"><video muted playsinline loop autoplay></video><span class="por-ff">⏩ ×8</span></div>'
       + '<div class="por-rada">' + nastepnyTekstPoradnika() + '</div>'
-      + '<button class="por-btn">Dzięki, bardzo pomogło 🙃</button></div>';
+      + '<button class="por-btn">Dzięki, bardzo pomogło 🙃</button>'
+      + (ilePoradnikow() >= 10 ? '<button class="por-poddaj">🏳️ Poddaję się</button>' : '') + '</div>';
     document.body.appendChild(o);
     var v = o.querySelector('video');
     v.muted = true; v.setAttribute('muted', ''); v.src = poradnikUrl;
     var pl = v.play(); if (pl && pl.catch) pl.catch(function () {});
     o.querySelector('.por-btn').addEventListener('click', function () { v.pause(); o.parentNode.removeChild(o); });
+    var bp = o.querySelector('.por-poddaj');
+    if (bp) bp.addEventListener('click', function () {
+      var karta = o.querySelector('.por-karta');
+      karta.innerHTML = '<div class="por-tytul">🏳️ Na pewno się poddajesz?</div>'
+        + '<div class="por-rada">Etap zostanie zaliczony… ale księżniczka będzie trochę rozczarowana 😅</div>'
+        + '<button class="por-btn" id="porTak">Tak, poddaję się</button>'
+        + '<button class="por-poddaj" id="porNie">Nie, walczę dalej 💪</button>';
+      v.pause();
+      karta.querySelector('#porNie').addEventListener('click', function () { o.parentNode.removeChild(o); });
+      karta.querySelector('#porTak').addEventListener('click', function () {
+        o.parentNode.removeChild(o);
+        window.stat && window.stat('poddanie');
+        zakonczGre(true);
+        nakladkaTytul.textContent = '🏳️ Poddałaś się… ale etap zaliczony';
+        nakladkaOpis.textContent = 'Księżniczka poczeka na kolejną próbę 😅';
+      });
+    });
+  }
+  // Ile razy pokazal sie poradnik (pamietane w telefonie) - od 10. razu mozna sie poddac
+  var licznikPoradnikowLokalny = 0;
+  function ilePoradnikow() { try { return +localStorage.getItem('escape_jp_poradniki') || 0; } catch (e) { return licznikPoradnikowLokalny; } }
+  function zliczPoradnik() {
+    licznikPoradnikowLokalny++;
+    try { localStorage.setItem('escape_jp_poradniki', String((+localStorage.getItem('escape_jp_poradniki') || 0) + 1)); } catch (e) {}
   }
   function pokazKomunikatSpadku(ile) {
     komunikatSpadku.textContent = ile >= 12 ? ('Ojej! Spadłaś o ' + ile + ' platform...')
@@ -23900,6 +23929,18 @@ a.karta-gry .kg-strzalka { flex: 0 0 auto; font-size: 1.25rem; font-weight: 900;
   background: transparent !important; border: 1px dashed rgba(230,193,92,0.35) !important; box-shadow: none !important; }
 .stApp [class*="st-key-zalicz_test"] button p { font-size: 0.78rem !important; color: rgba(240,225,190,0.8) !important; }
 .stApp [class*="st-key-zalicz_test"] { max-width: 140px; margin: 0.2rem auto !important; }
+
+/* Quiz na wejscie do levelu */
+.quiz-lvl-naglowek { text-align: center; font-size: 1.5rem; font-weight: 900; color: #ffe08a; margin-top: 0.4rem; }
+.quiz-lvl-pod { text-align: center; font-size: 0.9rem; opacity: 0.8; margin: 0.2rem 0 0.9rem; }
+.quiz-lvl-karta { background: linear-gradient(160deg, #2a2213, #17121f); border: 1.5px solid rgba(230,193,92,0.6); border-radius: 16px;
+  padding: 1rem 1.1rem 1.2rem; margin-bottom: 0.9rem; box-shadow: 0 8px 20px rgba(0,0,0,0.4); }
+.quiz-lvl-nr { font-size: 0.8rem; color: #ffe08a; font-weight: 800; letter-spacing: .04em; margin-bottom: 0.4rem; }
+.quiz-lvl-pytanie { font-size: 1.15rem; font-weight: 800; line-height: 1.45; color: #f6efdc; }
+.quiz-lvl-wynik { border-radius: 14px; padding: 0.8rem 1rem; margin-bottom: 0.8rem; font-weight: 900; font-size: 1.05rem; }
+.quiz-lvl-wynik.dobrze { background: rgba(80,200,120,0.15); border: 1.5px solid rgba(80,200,120,0.6); color: #a6f0b8; }
+.quiz-lvl-wynik.zle { background: rgba(230,90,90,0.13); border: 1.5px solid rgba(230,90,90,0.55); color: #ffb3b3; }
+.quiz-lvl-wyjasnienie { font-weight: 500; font-size: 0.92rem; color: #eee4cc; margin-top: 0.3rem; line-height: 1.45; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -23949,6 +23990,8 @@ def zapisz_postep():
     st.query_params["n"] = ",".join(sorted(st.session_state.nieudane))
     st.query_params["b"] = koduj_bledy_per_etap(st.session_state.bledy_per_etap)
     st.query_params["j"] = st.session_state.jezyk
+    if st.session_state.get("quizy"):
+        st.query_params["q"] = ",".join(sorted(st.session_state.quizy))
     if st.session_state.czas_startu:
         st.query_params["t"] = str(st.session_state.czas_startu)
     if st.session_state.get("samouczek_zrobiony"):
@@ -23965,6 +24008,7 @@ def zapisz_postep():
         "czas_startu": st.session_state.czas_startu,
         "samouczek_zrobiony": bool(st.session_state.get("samouczek_zrobiony")),
         "podpis_diabla": st.session_state.get("podpis_diabla"),
+        "quizy": sorted(st.session_state.get("quizy", set())),
     }
     try:
         with open(sciezka_stanu(), "w", encoding="utf-8") as f:
@@ -23996,6 +24040,7 @@ def zainicjuj_stan():
     czas_plik = zapisane.get("czas_startu")
 
     st.session_state.rozwiazane = rozwiazane_url | rozwiazane_plik
+    st.session_state.quizy = set(x for x in str(st.query_params.get("q", "")).split(",") if x) | set(zapisane.get("quizy", []))
     st.session_state.nieudane = {
         k for k in (nieudane_url | nieudane_plik)
         if next((e for e in ETAPY if e["klucz"] == k), {}).get("jedna_proba")
@@ -24094,9 +24139,10 @@ SZABLON_KRZYZOWKI = """<!DOCTYPE html><html><head><meta charset="utf-8">
   #btnPodpowiedz { display:block; width:100%; margin-top:10px; padding:12px; border-radius:14px; cursor:pointer; font-family:inherit;
     background:linear-gradient(160deg,#2a2213,#17121f); border:1.5px dashed rgba(230,193,92,0.8); color:#ffe08a; box-shadow:0 4px 14px rgba(0,0,0,0.35); font-size:15px; font-weight:800; }
   #btnPodpowiedz:disabled { opacity:0.7; border-style:solid; cursor:default; }
-  #kartaPodpowiedzi { max-height:0; overflow:hidden; opacity:0; margin-top:0; border-radius:14px; transition:max-height .45s ease, opacity .35s ease, margin-top .35s ease;
+  #kartaPodpowiedzi { display:none; margin-top:10px; border-radius:14px;
     background:linear-gradient(160deg,#3a2e14,#1a1420); border:1.5px solid rgba(230,193,92,0.7); box-shadow:0 6px 18px rgba(0,0,0,0.4); }
-  #kartaPodpowiedzi.widoczna { max-height:260px; opacity:1; margin-top:10px; }
+  #kartaPodpowiedzi.widoczna { display:block; animation:podpWejscie .35s ease-out; }
+  @keyframes podpWejscie { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
   #kartaPodpowiedzi .kp-tytul { padding:10px 14px 0; color:#ffe08a; font-weight:900; font-size:14px; letter-spacing:.02em; }
   #kartaPodpowiedzi .kp-tekst { padding:6px 14px 12px; color:#f1e6c8; font-size:14px; line-height:1.5; }
   #kartaPodpowiedzi .kp-tekst b { color:#ffe08a; }
@@ -24157,7 +24203,6 @@ SZABLON_KRZYZOWKI = """<!DOCTYPE html><html><head><meta charset="utf-8">
       kartaPodp.classList.add('widoczna'); klik(760);
       var k3 = karty[2];
       if (k3) { k3.classList.remove('blysk'); void k3.offsetWidth; k3.classList.add('blysk'); if (!zaliczone) { aktywne = 2; rysuj(); } }
-      setTimeout(function () { kartaPodp.scrollIntoView && kartaPodp.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }, 60);
     });
     gra.appendChild(btnPodp); gra.appendChild(kartaPodp);
   }
@@ -24267,7 +24312,7 @@ def renderuj_krzyzowka(etap_dane):
             },
         }
         html = SZABLON_KRZYZOWKI.replace("__DANE__", json.dumps(dane, ensure_ascii=False).replace("</", "<\\/"))
-        wynik = gra_z_wynikiem(html, 900, key=f"kmp_{klucz}")
+        wynik = gra_z_wynikiem(html, 1010, key=f"kmp_{klucz}")
         return True if wynik else None
 
     # Zapas, gdy most do gier jest niedostepny - dotychczasowa wersja
@@ -26185,6 +26230,80 @@ def _postep_kategorii(kat):
     return zrobione, len(etapy)
 
 
+# ---------------------------------------------------------------------------
+# QUIZ NA WEJSCIE DO LEVELU: 3 pytania prawda/falsz, bez kary za bledy
+# ---------------------------------------------------------------------------
+PYTANIA_LEVELI = {
+    "mozgowe": [
+        ("Każdy prostokąt jest kwadratem.", False, "Odwrotnie: każdy kwadrat jest prostokątem, ale prostokąt może mieć boki różnej długości."),
+        ("5/8 jest większe niż 0,625.", False, "To dokładnie tyle samo: 5 ÷ 8 = 0,625."),
+        ("Suma kątów w każdym trójkącie wynosi 180°.", True, "Zawsze 180° — niezależnie od kształtu trójkąta."),
+    ],
+    "gry": [
+        ("Twórca Flappy Bird urodził się w Chinach.", False, "Dong Nguyen jest z Wietnamu."),
+        ("Twórca Flappy Bird sam usunął grę ze sklepów, choć zarabiała krocie.", True, "W 2014 roku zdjął ją z App Store i Google Play — mówił, że gra uzależnia."),
+        ("Tetris wymyślono w Japonii.", False, "Wymyślił go Aleksiej Pażytnow w Moskwie, w czasach ZSRR."),
+    ],
+    "przygody": [
+        ("W Minecrafcie Creeper wybucha, kiedy podejdzie do gracza.", True, "Syczy, a potem — bum."),
+        ("Do zrobienia pochodni potrzebny jest diament.", False, "Wystarczy węgiel (albo węgiel drzewny) i patyk."),
+        ("Enderman wścieka się, gdy spojrzysz mu prosto w oczy.", True, "Lepiej nie patrzeć. Albo założyć dynię na głowę."),
+    ],
+}
+
+
+def pokaz_quiz_levelu(kat):
+    pytania = PYTANIA_LEVELI.get(kat["id"], [])
+    q = st.session_state.get("quiz_lvl")
+    if not q or q.get("kat") != kat["id"]:
+        q = st.session_state.quiz_lvl = {"kat": kat["id"], "nr": 0, "odp": None, "dobre": 0}
+    nr_levelu = KATEGORIE.index(kat) + 1
+    st.markdown(
+        f"<div class='quiz-lvl-naglowek'>🔑 Klucz do Level {nr_levelu}</div>"
+        f"<div class='quiz-lvl-pod'>3 pytania — prawda czy fałsz? Za błędy nie ma kary.</div>",
+        unsafe_allow_html=True,
+    )
+    if q["nr"] >= len(pytania):
+        st.session_state.quizy = set(st.session_state.get("quizy", set())) | {kat["id"]}
+        st.session_state.quiz_lvl = None
+        zapisz_postep()
+        st.session_state.ekran = f"kategoria:{kat['id']}"
+        st.rerun()
+        return
+    tekst, prawda, wyjasnienie = pytania[q["nr"]]
+    st.markdown(
+        f"<div class='quiz-lvl-karta'><div class='quiz-lvl-nr'>Pytanie {q['nr'] + 1} / {len(pytania)}</div>"
+        f"<div class='quiz-lvl-pytanie'>{tekst}</div></div>",
+        unsafe_allow_html=True,
+    )
+    if q["odp"] is None:
+        k1, k2 = st.columns(2)
+        with k1:
+            if st.button("✅ Prawda", key=f"quiz_{kat['id']}_{q['nr']}_p", use_container_width=True):
+                q["odp"] = True; q["dobre"] += (prawda is True); st.rerun()
+        with k2:
+            if st.button("❌ Fałsz", key=f"quiz_{kat['id']}_{q['nr']}_f", use_container_width=True):
+                q["odp"] = False; q["dobre"] += (prawda is False); st.rerun()
+    else:
+        dobrze = q["odp"] == prawda
+        st.markdown(
+            f"<div class='quiz-lvl-wynik {'dobrze' if dobrze else 'zle'}'>"
+            f"{'✅ Dobrze!' if dobrze else '❌ Nie tym razem — to ' + ('prawda' if prawda else 'fałsz') + '.'}"
+            f"<div class='quiz-lvl-wyjasnienie'>{wyjasnienie}</div></div>",
+            unsafe_allow_html=True,
+        )
+        ostatnie = q["nr"] == len(pytania) - 1
+        if ostatnie:
+            st.markdown(f"<div class='quiz-lvl-pod'>Wynik: {q['dobre']} / {len(pytania)} — i tak wchodzisz 😉</div>", unsafe_allow_html=True)
+        if st.button("🔓 Otwórz level ▶" if ostatnie else "Dalej ▶", key=f"quiz_{kat['id']}_{q['nr']}_dalej", use_container_width=True, type="primary"):
+            q["nr"] += 1; q["odp"] = None
+            st.rerun()
+    st.markdown("<div style='margin-top:1.2rem'></div>", unsafe_allow_html=True)
+    if st.button("← Wróć do menu", key=f"quiz_{kat['id']}_wroc", use_container_width=True):
+        st.session_state.ekran = "menu"
+        st.rerun()
+
+
 def pokaz_menu():
     st.session_state.pop("gra_dalej_klucz", None)
     pokaz_baner_testowy()
@@ -26240,10 +26359,11 @@ def pokaz_menu():
         zrobione, ile = _postep_kategorii(kat)
         pasek = "▰" * zrobione + "▱" * (ile - zrobione)   # jedna kratka = jedna gra
         znacznik = " ✅" if zrobione == ile else ""
+        quiz_zrobiony = kat["id"] in st.session_state.get("quizy", set())
         etykieta = (
             f"**{tt(kat['nazwa'])}**{znacznik}\n\n"
             f"{tt(kat['opis'])}\n\n"
-            f"{pasek}  {zrobione}/{ile}"
+            + (f"{pasek}  {zrobione}/{ile}" if quiz_zrobiony else "🔑 Na wejście: 3 pytania — prawda czy fałsz?")
         )
         if st.button(
             etykieta,
@@ -26251,7 +26371,7 @@ def pokaz_menu():
             use_container_width=True,
             type="primary",
         ):
-            st.session_state.ekran = f"kategoria:{kat['id']}"
+            st.session_state.ekran = f"kategoria:{kat['id']}" if quiz_zrobiony else f"quiz:{kat['id']}"
             st.rerun()
 
     wszystkie = all(e["klucz"] in st.session_state.rozwiazane for e in ETAPY)
@@ -27313,6 +27433,13 @@ def main():
     elif ekran == "wiadomosc":
         pokaz_ukryta_wiadomosc()
         pokaz_przycisk_kodu_pod_wiadomoscia()
+    elif ekran.startswith("quiz:"):
+        kat = next((k for k in KATEGORIE if k["id"] == ekran.split(":", 1)[1]), None)
+        if kat is None:
+            st.session_state.ekran = "menu"
+            st.rerun()
+        else:
+            pokaz_quiz_levelu(kat)
     elif ekran.startswith("kategoria:"):
         kat_id = ekran.split(":", 1)[1]
         kat = next((k for k in KATEGORIE if k["id"] == kat_id), None)
