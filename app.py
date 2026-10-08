@@ -905,7 +905,7 @@ KATEGORIE = [
 # zobaczyc prawdziwa wersje, gdy stala jest jeszcze True). Nie zapisuje sie w
 # pamieci telefonu. Gdy stala jest False i nie chcesz zadnej furtki - usun
 # wywolanie _odczytaj_tryb_testowy() w main().
-TRYB_TESTOWY = True
+TRYB_TESTOWY = False
 
 
 def tryb_testowy():
@@ -4149,6 +4149,11 @@ SZABLON_ZABY = """<!DOCTYPE html>
   #sprobujPonownie .proba { font-size:15px; font-weight:800; color:#ffe08a; margin-top:6px; }
   #sprobujPonownie .podp { font-size:12px; color:#d8d0e8; margin-top:12px; opacity:0.85; }
   @keyframes spWjazd { from { opacity:0; transform:scale(1.15); } to { opacity:1; transform:none; } }
+  #wyborEtapuDashera { display: none; flex-direction: column; gap: 8px; margin-top: 10px; width: 100%; max-width: 260px; margin-left: auto; margin-right: auto; }
+  #wyborEtapuDashera .wybor-tytul { font-size: 12px; font-weight: 800; opacity: 0.75; letter-spacing: .05em; text-transform: uppercase; }
+  .wybor-etapu { padding: 11px 14px; border-radius: 12px; border: 2px solid var(--akcent); background: rgba(255,255,255,0.06); color: #fff;
+    font-weight: 900; font-size: 14px; cursor: pointer; font-family: inherit; }
+  .wybor-etapu.zamkniety { opacity: 0.4; border-style: dashed; cursor: default; }
 </style>
 </head>
 <body>
@@ -4211,8 +4216,8 @@ SZABLON_ZABY = """<!DOCTYPE html>
       nad:  '.....^.............p.....^........p.....................^.......^..p......^.........^....p............p.............^...............p...................^......p..........^......^...........^....p...............^.....p.................^....^.................p.................^....^..........' },
 
     { nazwa:'Burza', kolor:['#52281a','#30140d'], akcent:'#ff8a4a', tempo:156, gama:[0,2,5,9], predkosc:238,
-      teren:'========================111122223333333333========              ==============2222222222222==============  22  33  22  ========================             3333333===============11112222333322221111======                =============22  33   22=============^^====2222====  ====3333========================',
-      nad:  '....^.......^^.....................^...............pp...PP...pp...................^^^..P.........^..........................^......vvvvvv.......p....P.........^..........^..........^...^...^...^...........pp..PP..pp..PP......^......................................^...........^............................' },
+      teren: '========================111122223333333333========              ==============2222222222222==============  22  33  22  ========================            33333333===============11112222333322221111======                =============22  33   22=============^^====2222====  ====3333========================',
+      nad: '....^.......^^.....................^...............pp...PP...pp...................^^^..P.........^..........................^......vvvvvv.......pp...PP........^..........^..........^...^...................pp..PP..pp..PP......^......................................^...........^............................' },
   ];
 
   // ---------- DZWIEK ----------
@@ -4369,7 +4374,9 @@ SZABLON_ZABY = """<!DOCTYPE html>
   }
 
   // ---------- AKTUALIZACJA ----------
+  var TEMPO_GRY = 1.1;   // calosc o 10% szybciej: bieg, spadanie i skoki - te same tory, mniej czasu na reakcje
   function aktualizuj(dt) {
+    dt *= TEMPO_GRY;
     czasGlobalny += dt;
     gracz.x += (ETAPY[etapIdx].predkosc || PREDKOSC) * dt;   // etap 3 jest szybszy
 
@@ -4534,6 +4541,7 @@ SZABLON_ZABY = """<!DOCTYPE html>
 
   function przejdzDalej() {
     dzwiekEtapu();
+    zapiszPostepDashera(etapIdx + 1);          // etap ukonczony - zapamietane w telefonie
     etapIdx++; proby = 1;
     wczytajEtap(etapIdx);
     blyskAkcentu = 1;
@@ -4732,18 +4740,39 @@ SZABLON_ZABY = """<!DOCTYPE html>
     strefa.addEventListener(ev, function () { trzymaSkok = false; });
   });
 
-  function rozpocznijGre() {
-    etapIdx = 0; proby = 1; trzymaSkok = false;
-    wczytajEtap(0);
+  // ---- Pamiec postepu: ukonczone etapy zostaja w telefonie, mozna wybrac etap (3. odblokowany po 2.) ----
+  var KLUCZ_POSTEPU_DASHERA = 'escape_dasher_postep';
+  function postepDashera() { try { return +localStorage.getItem(KLUCZ_POSTEPU_DASHERA) || 0; } catch (e) { return 0; } }
+  function zapiszPostepDashera(ile) { try { if (ile > postepDashera()) localStorage.setItem(KLUCZ_POSTEPU_DASHERA, String(ile)); } catch (e) {} }
+  function pokazWyborEtapu() {
+    var p = postepDashera(), box = document.getElementById('wyborEtapuDashera');
+    if (!box) { box = document.createElement('div'); box.id = 'wyborEtapuDashera'; nakladkaBtn.parentNode.insertBefore(box, nakladkaBtn); }
+    if (p <= 0) { box.style.display = 'none'; nakladkaBtn.style.display = 'inline-block'; return; }
+    nakladkaBtn.style.display = 'none'; box.style.display = 'flex';
+    box.innerHTML = '<div class="wybor-tytul">Wybierz etap</div>' + ETAPY.map(function (e, i) {
+      var otwarty = i <= p, ukonczony = i < p;
+      return '<button class="wybor-etapu' + (otwarty ? '' : ' zamkniety') + '" data-i="' + i + '"' + (otwarty ? '' : ' disabled') + ' style="--akcent:' + e.akcent + '">'
+        + 'Etap ' + (i + 1) + ' · ' + e.nazwa + (ukonczony ? ' ✓' : (otwarty ? '' : ' 🔒')) + '</button>';
+    }).join('');
+    [].forEach.call(box.querySelectorAll('.wybor-etapu'), function (bt) {
+      bt.addEventListener('click', function () { if (bt.disabled) return; inicjujDzwiek(); rozpocznijGre(+bt.getAttribute('data-i')); });
+    });
+  }
+  function rozpocznijGre(odEtapu) {
+    var start = odEtapu || 0;
+    var box = document.getElementById('wyborEtapuDashera'); if (box) box.style.display = 'none';
+    etapIdx = start; proby = 1; trzymaSkok = false;
+    wczytajEtap(start);
     nakladka.style.display = 'none';
     wskazowka.style.display = 'block';
     trwa = true; czasOstatni = null;
     requestAnimationFrame(petla);
   }
-  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(); };
+  nakladkaBtn.onclick = function () { inicjujDzwiek(); rozpocznijGre(0); };
 
   wczytajEtap(0);
   rysuj();
+  pokazWyborEtapu();
 </script>
 
 <script>
@@ -9747,6 +9776,18 @@ SZABLON_MINECRAFT = """
   #btnZapiszMc:active { transform: scale(0.94); }
   .nakladka-wczytaj { margin-top: 10px; }
   #btnNowySwiat, #btnZapiszMc { display: none !important; }   /* bez resetu mapy; zapis przy otwarciu receptur */
+  #wielkiKomunikatPod { position: absolute; top: calc(42% + 30px); left: 50%; transform: translateX(-50%); z-index: 20; pointer-events: none;
+    text-align: center; font-size: 13px; font-weight: 900; letter-spacing: 0.02em; color: rgba(232,255,224,0.85); white-space: nowrap;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.7); opacity: 0; }
+  #wielkiKomunikatPod.widoczny { animation: podWjazd 4.6s ease-out forwards; }
+  @keyframes podWjazd { 0% { opacity: 0; } 12% { opacity: 0.85; } 80% { opacity: 0.85; } 100% { opacity: 0; } }
+  .przycisk-spania { position: absolute; left: 50%; transform: translateX(-50%); z-index: 4; padding: 9px 18px; border-radius: 20px;
+    background: linear-gradient(135deg, #ffe08a, #d4af37); color: #16130a; font-weight: 900; font-size: 14px; border: none; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.45); font-family: inherit; }
+  #hudLuku { position: absolute; z-index: 3; display: none; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 12px; pointer-events: none;
+    background: rgba(10,10,16,0.6); border: 1.5px solid rgba(230,193,92,0.6); font-size: 18px; }
+  #hudLuku span { font-size: 13px; font-weight: 900; color: #ffe08a; }
+  .nazwa-slotu { font-size: 9px; line-height: 1.1; color: #e8e2d0; text-align: center; margin-top: 3px; max-width: 100%; word-break: break-word; }
 </style>
 </head>
 <body>
@@ -9828,6 +9869,18 @@ SZABLON_MINECRAFT = """
   var btnPrawo = document.getElementById('btnPrawo');
   var btnNowySwiat = document.getElementById('btnNowySwiat');
   var btnSpij = document.getElementById('btnSpij');
+  // Spanie: przycisk nad gra (jak "Otworz skrzynke" w labiryncie), nie w pasku - przyciski sie nie rozjezdzaja
+  document.getElementById('gra').appendChild(btnSpij); btnSpij.className = 'przycisk-spania'; btnSpij.innerHTML = '🛏️ Śpij do rana';
+  var hudLuku = document.createElement('div'); hudLuku.id = 'hudLuku'; document.getElementById('gra').appendChild(hudLuku);
+  function aktualizujHudLuku() {
+    var c = document.getElementById('canvasSwiat'); if (!c) return;
+    hudLuku.style.left = (c.offsetLeft + 8) + 'px'; hudLuku.style.top = (c.offsetTop + c.offsetHeight - 42) + 'px';
+    btnSpij.style.top = (c.offsetTop + c.offsetHeight - 64) + 'px';
+    var maLuk = (ekwipunek.luk || 0) > 0;
+    hudLuku.style.display = maLuk ? 'flex' : 'none';
+    if (maLuk) hudLuku.innerHTML = '🏹<span>' + (ekwipunek.strzala || 0) + '</span>';
+  }
+  setInterval(function () { try { aktualizujHudLuku(); } catch (e) {} }, 400);
   var nakladka = document.getElementById('nakladka');
   var nakladkaBtn = document.getElementById('nakladkaBtn');
   var pasekGloduWypelnienie = document.getElementById('pasekGloduWypelnienie');
@@ -9890,10 +9943,10 @@ SZABLON_MINECRAFT = """
     // Rozny odglos w zaleznosci od materialu - drewno/kamien/miekkie
     if (blok === 'drewno' || blok === 'drewnoBrzozy' || blok === 'liscie' ||
         blok === 'deski' || blok === 'deskiBrzozowe' || blok === 'drzwi' || blok === 'drzwiBrzozowe') {
-      zagrajTon(190, 0.09, 'triangle');
+      zagrajTon(110, 0.08, 'sine');        // drewno (zamienione z ziemia)
     } else if (blok === 'ziemia' || blok === 'piach' || blok === 'trawa' ||
                blok === 'welna' || blok === 'lozko') {
-      zagrajTon(110, 0.08, 'sine');
+      zagrajTon(190, 0.09, 'triangle');    // ziemia (zamienione z drewnem)
     } else {
       zagrajTon(250, 0.07, 'square');
     }
@@ -9922,19 +9975,19 @@ SZABLON_MINECRAFT = """
     if (!audioCtx) return;
     try {
       if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(210, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(780, audioCtx.currentTime + 0.05);
-      osc.frequency.exponentialRampToValueAtTime(360, audioCtx.currentTime + 0.11);
-      gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.015);
-      gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.12);
-      osc.connect(gain); gain.connect(audioCtx.destination);
-      osc.start(); osc.stop(audioCtx.currentTime + 0.13);
+      var t = audioCtx.currentTime;
+      var osc = audioCtx.createOscillator(), g = audioCtx.createGain();                 // brzdek cieciwy
+      osc.type = 'triangle'; osc.frequency.setValueAtTime(170, t); osc.frequency.exponentialRampToValueAtTime(95, t + 0.18);
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.25, t + 0.005); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+      osc.connect(g); g.connect(audioCtx.destination); osc.start(t); osc.stop(t + 0.24);
+      var n = Math.floor(audioCtx.sampleRate * 0.18), buf = audioCtx.createBuffer(1, n, audioCtx.sampleRate), d = buf.getChannelData(0);
+      for (var i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * i / n);                  // swist strzaly
+      var s = audioCtx.createBufferSource(), f = audioCtx.createBiquadFilter(), g2 = audioCtx.createGain();
+      f.type = 'bandpass'; f.frequency.setValueAtTime(2600, t); f.frequency.exponentialRampToValueAtTime(900, t + 0.18);
+      g2.gain.value = 0.12; s.buffer = buf; s.connect(f); f.connect(g2); g2.connect(audioCtx.destination); s.start(t + 0.02);
     } catch (e) {}
   }
+
 
   function zagrajAla() {
     zagrajTon(520, 0.08, 'square');
@@ -10253,7 +10306,7 @@ SZABLON_MINECRAFT = """
   }
   function odswiezPrzyciskSpania() {
     if (!btnSpij) return;
-    btnSpij.style.display = (trwa && czyNaLozku()) ? 'inline-block' : 'none';
+    btnSpij.style.display = (trwa && czyNaLozku()) ? 'block' : 'none';
   }
   function przespijNoc() {
     if (!czyNaLozku()) return;
@@ -10450,6 +10503,9 @@ SZABLON_MINECRAFT = """
     }, czasMs || 1300);
   }
 
+  function nazwaSlotu(k) {
+    var d = document.createElement('div'); d.className = 'nazwa-slotu'; d.textContent = NAZWY_BLOKOW[k] || k; return d;
+  }
   function odswiezEkwipunek() {
     aktualizujEtykieteWybranego();
     ekwipunekEl.innerHTML = '';
@@ -10478,6 +10534,7 @@ SZABLON_MINECRAFT = """
         slot.className = 'slot-bloku';
         slot.title = NAZWY_BLOKOW[klucz] + ' (+' + (WARTOSC_GLODOWA_JEDZENIA[klucz] || 3) + ' głodu)';
         slot.appendChild(stworzIkonkeElementu(klucz, 28));
+        slot.appendChild(nazwaSlotu(klucz));
         var licznik = document.createElement('div');
         licznik.className = 'licznik-bloku';
         licznik.textContent = ekwipunek[klucz] || 0;
@@ -10508,6 +10565,7 @@ SZABLON_MINECRAFT = """
       slot.className = 'slot-bloku' + (klucz === wybranyBlok ? ' wybrany' : '');
       slot.title = NAZWY_BLOKOW[klucz];
       slot.appendChild(stworzIkonkeElementu(klucz, 28));
+      slot.appendChild(nazwaSlotu(klucz));
       var licznik = document.createElement('div');
       licznik.className = 'licznik-bloku';
       licznik.textContent = ekwipunek[klucz];
@@ -10541,6 +10599,7 @@ SZABLON_MINECRAFT = """
         slot.className = 'slot-bloku slot-narzedzie';
         slot.title = NAZWY_BLOKOW[klucz];
         slot.appendChild(stworzIkonkeElementu(klucz, 28));
+        slot.appendChild(nazwaSlotu(klucz));
         var licznik = document.createElement('div');
         licznik.className = 'licznik-bloku';
         licznik.textContent = ekwipunek[klucz];
@@ -11376,7 +11435,7 @@ SZABLON_MINECRAFT = """
     var p = potwory[idx];
     p.hp -= obrazenia;
     pokazLatajaceObrazeniaSwiat(p.x, p.y, '-' + obrazenia, '#fbbf24');
-    if (opisNarzedzia === 'łukiem') { zagrajStrzalLuku(); } else { zagrajSwistMiecza(); }
+    if (opisNarzedzia === 'łukiem') { zagrajTon(140, 0.06, 'square'); } else { zagrajSwistMiecza(); }   // luk: odglos trafienia
     if (p.hp <= 0) {
       var nazwaTyp = { zombie: 'Zombie', szkielet: 'Szkielet', pajak: 'Pająk' }[p.typ];
       var dropInfo = '';
@@ -11393,6 +11452,31 @@ SZABLON_MINECRAFT = """
     rysuj();
   }
 
+  var ZASIEG_LUKU = 14;
+  function wolnaLiniaStrzalu(x0, y0, x1, y1) {
+    var ax = x0 + 0.5, ay = y0 + 0.5, bx = x1 + 0.5, by = y1 + 0.5, kroki = Math.ceil(Math.hypot(bx - ax, by - ay) * 4);
+    for (var i = 1; i < kroki; i++) {
+      var tx = Math.floor(ax + (bx - ax) * i / kroki), ty = Math.floor(ay + (by - ay) * i / kroki);
+      if ((tx === x0 && ty === y0) || (tx === x1 && ty === y1)) continue;
+      if (!jestPuste(tx, ty)) return false;
+    }
+    return true;
+  }
+  function animujStrzale(x0, y0, x1, y1, poTrafieniu) {
+    var t0 = performance.now(), czas = Math.max(120, Math.hypot(x1 - x0, y1 - y0) * 28);
+    (function klatka() {
+      var k = Math.min(1, (performance.now() - t0) / czas);
+      rysuj();
+      var px = x0 + (x1 - x0) * k, py = y0 + (y1 - y0) * k + Math.sin(k * Math.PI) * -0.4, kat = Math.atan2(y1 - y0, x1 - x0);
+      var sx = (px - kameraX + 0.5) * KOMORKA, sy = (py - kameraY + 0.5) * KOMORKA;
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(kat);
+      ctx.strokeStyle = '#6b4a2a'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(-KOMORKA * 0.45, 0); ctx.lineTo(KOMORKA * 0.35, 0); ctx.stroke();
+      ctx.fillStyle = '#c9ced6'; ctx.beginPath(); ctx.moveTo(KOMORKA * 0.45, 0); ctx.lineTo(KOMORKA * 0.3, -4); ctx.lineTo(KOMORKA * 0.3, 4); ctx.fill();
+      ctx.fillStyle = '#e8e2d0'; ctx.fillRect(-KOMORKA * 0.48, -3, 5, 6);
+      ctx.restore();
+      if (k < 1) requestAnimationFrame(klatka); else { poTrafieniu(); rysuj(); }
+    })();
+  }
   function atakujPotwora(idx, dyst) {
     if (dyst <= 1) {
       var uzytyMiecz = najlepszyMiecz();
@@ -11405,9 +11489,18 @@ SZABLON_MINECRAFT = """
         dzwiekBlokada();
         return;
       }
+      var celP = potwory[idx];
+      if (dyst > ZASIEG_LUKU) { pokazDziennikMc('🏹 Za daleko — łuk sięga ' + ZASIEG_LUKU + ' kratek.', 1600); dzwiekBlokada(); return; }
+      if (!wolnaLiniaStrzalu(graczX, graczY, celP.x, celP.y) && !wolnaLiniaStrzalu(graczX, graczY - 1, celP.x, celP.y)) {
+        pokazDziennikMc('🧱 Ściana zasłania cel — strzała nie przeleci.', 1600); dzwiekBlokada(); return;
+      }
       ekwipunek.strzala--;
       odswiezEkwipunek();
-      wykonajAtakNaPotwora(idx, OBRAZENIA_LUKU, 'łukiem');
+      zagrajStrzalLuku();
+      animujStrzale(graczX, graczY - 0.5, celP.x, celP.y, function () {
+        var i2 = potwory.indexOf(celP);
+        if (i2 >= 0) wykonajAtakNaPotwora(i2, OBRAZENIA_LUKU, 'łukiem');
+      });
     }
   }
 
@@ -11784,6 +11877,11 @@ SZABLON_MINECRAFT = """
     return brak;
   }
 
+  function pokazPodKomunikat(tekst) {
+    var el = document.getElementById('wielkiKomunikatPod');
+    if (!el) { el = document.createElement('div'); el.id = 'wielkiKomunikatPod'; document.getElementById('gra').appendChild(el); }
+    el.textContent = tekst; el.classList.remove('widoczny'); void el.offsetWidth; el.classList.add('widoczny');
+  }
   function pokazWielkiKomunikat(tekst, kolor, czas) {
     var el = document.getElementById('wielkiKomunikat');
     if (!el) return;
@@ -11805,10 +11903,13 @@ SZABLON_MINECRAFT = """
 
     if (brak.length === 0) {
       pokazWielkiKomunikat('🏠 PIĘKNY DOM!', '#8ef08a', 3200);
+      pokazPodKomunikat('✅ Etap ukończony — możesz grać, ile chcesz');
       zagrajTon(660, 0.15, 'triangle');
       setTimeout(function () { zagrajTon(880, 0.2, 'triangle'); }, 150);
       setTimeout(function () { zagrajTon(1180, 0.25, 'triangle'); }, 320);
       var wiadomoscZaliczenia = { type: 'streamlit-child:zaliczono', wartosc: true };
+      // "dalej": zalicz etap, ale zostaw gre na ekranie - mozna grac dalej
+      if (wiadomoscZaliczenia.wartosc && typeof wiadomoscZaliczenia.wartosc === 'object') wiadomoscZaliczenia.wartosc.dalej = true;
       window.postMessage(wiadomoscZaliczenia, '*');
       if (window.parent && window.parent !== window) window.parent.postMessage(wiadomoscZaliczenia, '*');
       return;
@@ -16263,6 +16364,10 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
   .pkn-przyciski button { flex: 1; padding: 10px 4px; border-radius: 14px; border: 1.5px solid rgba(230,193,92,0.6); background: linear-gradient(160deg,#3a2e14,#1a1420);
     color: #fff; font-size: 30px; cursor: pointer; }
   .pkn-przyciski button span { display: block; font-size: 12px; font-weight: 800; color: #ffe08a; margin-top: 2px; }
+  #btnWGore { position: absolute; right: 10px; bottom: 112px; width: 58px; height: 58px; border-radius: 50%; z-index: 8; display: none;
+    flex-direction: column; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; font-family: inherit;
+    background: rgba(25,22,40,0.85); border: 2px solid rgba(230,193,92,0.8); box-shadow: 0 4px 14px rgba(0,0,0,0.45); }
+  #btnWGore span { font-size: 8.5px; font-weight: 800; color: #ffe08a; margin-top: 1px; }
   .por-poddaj { width: 100%; margin-top: 8px; padding: 8px; border-radius: 10px; background: transparent; cursor: pointer;
     border: 1px dashed rgba(230,193,92,0.5); color: rgba(241,230,200,0.8); font-weight: 700; font-size: 12.5px; font-family: inherit; }
 </style>
@@ -16854,6 +16959,21 @@ SZABLON_PARKOUR = """<!DOCTYPE html>
       });
     });
   }
+  // ---- Ulatwienie "dla lamusow": od 5. poradnika strzalka w gore przenosi na srodek nastepnej platformy ----
+  var btnWGore = document.createElement('button');
+  btnWGore.id = 'btnWGore'; btnWGore.innerHTML = '⬆️<span>Ułatwienie</span>';
+  document.getElementById('gra').appendChild(btnWGore);
+  btnWGore.addEventListener('click', function () {
+    if (!trwa || scena || platformaAktualna >= PLATFORMY.length - 1) return;
+    inicjujDzwiek();
+    var i = platformaAktualna + 1, p = PLATFORMY[i];
+    postacX = p.x; postacY = p.y; postacVX = 0; postacVY = 0; naZiemi = true; ladowanie = false;
+    platformaAktualna = i; aktualizujEtykiete();
+    zagrajLadowanie();
+    if (i === indeksMety) { if (!porwana) rozpocznijPorwanie(); else pokazPKN(); }
+  });
+  setInterval(function () { btnWGore.style.display = (trwa && ilePoradnikow() >= 5) ? 'flex' : 'none'; }, 300);
+
   // Ile razy pokazal sie poradnik (pamietane w telefonie) - od 10. razu mozna sie poddac
   var licznikPoradnikowLokalny = 0;
   function ilePoradnikow() { try { return +localStorage.getItem('escape_jp_poradniki') || 0; } catch (e) { return licznikPoradnikowLokalny; } }
@@ -19557,14 +19677,17 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // wpychac wszystko w jedna. Przyrost z nastepnego punktu jest zawsze
   // pokazany przy przycisku "+", zeby nie trzeba bylo zgadywac.
   var SPADEK_ZYSKU = 0.055;
-  function sumaZPunktow(naPunkt, ile) {
-    var s = 0;
-    for (var i = 0; i < ile; i++) s += naPunkt / (1 + i * SPADEK_ZYSKU);
+  // Obrazenia i zdrowie traca na wartosci duzo wolniej - da sie zbudowac postac "pod atak" albo "pod zdrowie"
+  var SPADEK_STATU = { obrazenia: 0.02, zdrowie: 0.02 };
+  function spadekDla(klucz) { return SPADEK_STATU[klucz] !== undefined ? SPADEK_STATU[klucz] : SPADEK_ZYSKU; }
+  function sumaZPunktow(naPunkt, ile, klucz) {
+    var s = 0, sp = spadekDla(klucz);
+    for (var i = 0; i < ile; i++) s += naPunkt / (1 + i * sp);
     return s;
   }
   function zyskZNastepnego(klucz) {
     var def = DEF_STATOW.find(function (d) { return d.klucz === klucz; });
-    return def.naPunkt / (1 + (gracz.staty[klucz] || 0) * SPADEK_ZYSKU);
+    return def.naPunkt / (1 + (gracz.staty[klucz] || 0) * spadekDla(klucz));
   }
 
   // 100% = dawna predkosc ataku. 75% na starcie wydluza przerwy o 1/3.
@@ -19575,7 +19698,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function wartoscStatu(klucz) {
     var def = DEF_STATOW.find(function (d) { return d.klucz === klucz; });
     var baza = { zdrowie:100, obrazenia:10, obrona:0, predkosc:118, szybkosc:75 }[klucz];
-    var zPunktow = sumaZPunktow(def.naPunkt, gracz.staty[klucz] || 0);
+    var zPunktow = sumaZPunktow(def.naPunkt, gracz.staty[klucz] || 0, klucz);
     var zPancerza = 0;
     ['helm','zbroja','buty','amulet'].forEach(function (s) {
       var p = gracz.zalozone[s];
@@ -20064,7 +20187,8 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   }
 
   // ---------- PETLA ----------
-  function aktualizuj(dt) {
+  function aktualizuj(dt) { if (mapaPelna) return; return aktualizujWlasciwie.apply(this, arguments); }   // otwarta mapa = pauza
+  function aktualizujWlasciwie(dt) {
     aktualizujKulkiXp(dt);
     if (blyskPoziomu > 0) blyskPoziomu -= dt;
     // Odkrywanie minimapy: pola w promieniu 3 kafli wokol gracza
@@ -20741,9 +20865,27 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   // Wieksza i odsunieta od gornej krawedzi - przycisk pelnego ekranu
   // siedzi w prawym gornym rogu i wczesniej ladowal na minimapie.
   var MINI_BOK = 100, MINI_MARGINES = 8, MINI_ODSTEP_GORA = 8;
+  // Mapa pietra: zwykle minimapa w rogu; po dotknieciu - cala mapa na ekranie (gra stoi)
+  var mapaPelna = false;
   function rysujMinimape() {
-    var skala = MINI_BOK / (SIATKA * KAFEL);
-    var mx = WID - MINI_BOK - MINI_MARGINES, my = MINI_ODSTEP_GORA;
+    if (!mapaPelna) { rysujMinimapeW(WID - MINI_BOK - MINI_MARGINES, MINI_ODSTEP_GORA, MINI_BOK); return; }
+    var lh = widok.height / (widok.width / WID);                   // logiczna wysokosc plotna (takze w pelnym ekranie)
+    ctx.save(); ctx.fillStyle = 'rgba(5,4,10,0.9)'; ctx.fillRect(0, 0, WID, lh); ctx.restore();
+    var bok = Math.min(WID, lh - 40) - 20, mx = (WID - bok) / 2, my = (lh - bok) / 2 + 8;
+    rysujMinimapeW(mx, my, bok);
+    ctx.save(); ctx.fillStyle = '#ffe08a'; ctx.font = '800 13px system-ui, sans-serif'; ctx.textAlign = 'center';
+    ctx.fillText('🗺️ Mapa piętra — dotknij, żeby zamknąć', WID / 2, my - 12); ctx.restore();
+  }
+  widok.addEventListener('pointerdown', function (e) {
+    var r = widok.getBoundingClientRect(), s = WID / r.width, x = (e.clientX - r.left) * s, y = (e.clientY - r.top) * s;
+    if (mapaPelna) { mapaPelna = false; e.preventDefault(); e.stopPropagation(); return; }
+    var mx = WID - MINI_BOK - MINI_MARGINES;
+    if (x >= mx - 6 && x <= mx + MINI_BOK + 6 && y >= MINI_ODSTEP_GORA - 6 && y <= MINI_ODSTEP_GORA + MINI_BOK + 6) {
+      mapaPelna = true; e.preventDefault(); e.stopPropagation();
+    }
+  }, true);
+  function rysujMinimapeW(mx, my, BOK) {
+    var skala = BOK / (SIATKA * KAFEL);
 
     ctx.save();
     // Wyrazniejsza niz wczesniej: ciemniejsze, gestsze tlo i mocniejsza ramka,
@@ -20752,10 +20894,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     // kolorze. Wczesniej cala minimapa, lacznie z kropka gracza, byla przygaszona.
     ctx.globalAlpha = 0.14;
     ctx.fillStyle = '#07060c';
-    ctx.fillRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
+    ctx.fillRect(mx - 4, my - 4, BOK + 8, BOK + 8);
     ctx.globalAlpha = 1;
     ctx.strokeStyle = 'rgba(230,193,92,0.45)'; ctx.lineWidth = 1.5;
-    ctx.strokeRect(mx - 4, my - 4, MINI_BOK + 8, MINI_BOK + 8);
+    ctx.strokeRect(mx - 4, my - 4, BOK + 8, BOK + 8);
 
     // CALA przechodnia mapa, wiec widac takze KORYTARZE, nie tylko komnaty
     var kaflik = Math.max(1.5, KAFEL * skala);
@@ -22832,9 +22974,9 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   var probyBossa = 0;
   var _zakonczGreOryg = zakonczGre;
   zakonczGre = function (zwyciestwo) {
-    if (!zwyciestwo && !trybNieskonczony && bossPrzywolany && arenaZamknieta && komnataBossa && probyBossa === 0
+    if (!zwyciestwo && !trybNieskonczony && bossPrzywolany && arenaZamknieta && komnataBossa && probyBossa < 2
         && wrogowie.some(function (w) { return w.boss && w.hp > 0; })) {
-      probyBossa = 1;
+      probyBossa++;
       drugaProbaBossa();
       return;
     }
@@ -22846,10 +22988,10 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
     nakladka.style.display = 'flex';
     var bj = document.getElementById('btnJeszczeNie'); if (bj) bj.style.display = 'none';
     nakladkaTytul.textContent = '💀 Padłaś… ale to jeszcze nie koniec!';
-    nakladkaOpis.innerHTML = 'Z każdym bossem masz <b>dwie próby</b>. Wracasz do komnaty z pełnym zdrowiem, a boss zaczyna walkę od nowa.'
-      + '<br><br>Następna porażka cofnie Cię na początek piętra.';
+    nakladkaOpis.innerHTML = 'Z każdym bossem masz <b>trzy próby</b>. Wracasz do komnaty z pełnym zdrowiem, a boss zaczyna walkę od nowa.'
+      + '<br><br>' + (probyBossa >= 2 ? 'To ostatnia próba — następna porażka cofnie Cię na początek piętra.' : 'Zostały jeszcze <b>' + (3 - probyBossa) + '</b> próby.');
     nakladkaBtn.style.display = 'inline-block'; nakladkaBtn.disabled = false; nakladkaBtn.style.opacity = '1';
-    nakladkaBtn.textContent = '⚔️ Druga próba';
+    nakladkaBtn.textContent = probyBossa >= 2 ? '⚔️ Ostatnia próba' : '⚔️ Druga próba';
     nakladkaBtn.onclick = function () {
       inicjujDzwiek();
       nakladka.style.display = 'none';
@@ -22870,7 +23012,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
       gracz.hp = gracz.hpMax; gracz.niewrazliwosc = 2;
       kamX = gracz.x - WID_SWIATA / 2; kamY = gracz.y - WYS_SWIATA * KAM_PION;
       odswiezHud();
-      dziennik('⚔️ Druga próba — tym razem się uda!');
+      dziennik(probyBossa >= 2 ? '⚔️ Ostatnia próba — dasz radę!' : '⚔️ Druga próba — tym razem się uda!');
       trwa = true; czasOstatni = null; requestAnimationFrame(petla);
     };
   }
@@ -22980,7 +23122,7 @@ SZABLON_LABIRYNT = """<!DOCTYPE html>
   function zatrzasnijDrzwiIBudzBossa() {
     var d = DEFINICJE_BOSSOW[poziomLabiryntu];
     drzwiBossaOtwarte = false; ustawDrzwiBossa(false); drzwiZatrzasniete = true;
-    probyBossa = 0;   // nowy boss - znowu dwie proby
+    probyBossa = 0;   // nowy boss - znowu trzy proby
     wrogowie.forEach(function (w) { w.przedBossem = true; });   // ci nie sa przyzwanymi slugami
     bossPrzywolany = true; arenaZamknieta = true; cooldownSlug = 6;
     wrogowie.push(stworzBossa((komnataBossa.cx+0.5)*KAFEL, (komnataBossa.cy+0.5)*KAFEL));
@@ -23930,6 +24072,30 @@ a.karta-gry .kg-strzalka { flex: 0 0 auto; font-size: 1.25rem; font-weight: 900;
 .stApp [class*="st-key-zalicz_test"] button p { font-size: 0.78rem !important; color: rgba(240,225,190,0.8) !important; }
 .stApp [class*="st-key-zalicz_test"] { max-width: 140px; margin: 0.2rem auto !important; }
 
+/* Quiz: dwa jednakowe przyciski - Prawda (zielony ✓) i Falsz (czerwony ✕).
+   Nadpisuja globalna regule dla przyciskow w kolumnach (kwadraty z cyframi klodek). */
+.stApp div[class*="st-key-quizP_"] div.stButton > button,
+.stApp div[class*="st-key-quizF_"] div.stButton > button {
+  aspect-ratio: auto !important; height: auto !important; min-height: 62px !important; width: 100% !important;
+  font-size: 1.1rem !important; padding: 0.7rem 0.8rem !important; border-radius: 16px !important;
+  display: flex !important; align-items: center !important; justify-content: center !important;
+  animation: none !important; color: #e9ffe9 !important;
+  background: linear-gradient(160deg, #1f3322, #121a13) !important; border: 2px solid #4fc46a !important;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.35) !important; }
+.stApp div[class*="st-key-quizF_"] div.stButton > button {
+  background: linear-gradient(160deg, #3a1d1c, #1d1212) !important; border-color: #e5574e !important; color: #ffecec !important; }
+.stApp div[class*="st-key-quizP_"] div.stButton > button p,
+.stApp div[class*="st-key-quizF_"] div.stButton > button p {
+  font-size: 1.1rem !important; font-weight: 900 !important; color: inherit !important; margin: 0 !important;
+  display: flex !important; align-items: center !important; }
+.stApp div[class*="st-key-quizP_"] div.stButton > button p::before,
+.stApp div[class*="st-key-quizF_"] div.stButton > button p::before {
+  content: '✓'; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%;
+  background: #3fbf5f; color: #fff; font-size: 1rem; font-weight: 900; margin-right: 0.55rem; flex: 0 0 auto; }
+.stApp div[class*="st-key-quizF_"] div.stButton > button p::before { content: '✕'; background: #e5574e; }
+div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-quizP_"]) { flex-wrap: nowrap !important; gap: 0.7rem !important; }
+div[data-testid="stHorizontalBlock"]:has(div[class*="st-key-quizP_"]) > div[data-testid="stColumn"] {
+  min-width: 0 !important; width: auto !important; flex: 1 1 0 !important; }
 /* Quiz na wejscie do levelu */
 .quiz-lvl-naglowek { text-align: center; font-size: 1.5rem; font-weight: 900; color: #ffe08a; margin-top: 0.4rem; }
 .quiz-lvl-pod { text-align: center; font-size: 0.9rem; opacity: 0.8; margin: 0.2rem 0 0.9rem; }
@@ -24576,11 +24742,9 @@ def renderuj_minecraft(etap_dane):
     klucz = etap_dane["klucz"]
 
     if _KOMPONENT_WYNIKU is not None:
+        # Piekny dom = etap zaliczony od razu (bez recznego przycisku), a gra zostaje na ekranie
         gotowe_do_zaliczenia = gra_z_wynikiem(SZABLON_MINECRAFT, 732, key=f"kmp_{klucz}")
-        if gotowe_do_zaliczenia:
-            if st.button(t("ukonczone_btn"), key=f"btn_{klucz}"):
-                return True
-        return None
+        return True if gotowe_do_zaliczenia else None
 
     # Fallback, gdyby most byl niedostepny - stary reczny przycisk.
     components.html(SZABLON_MINECRAFT, height=732, scrolling=False)
@@ -24632,7 +24796,9 @@ SZABLON_PROCA = """<!DOCTYPE html>
   html, body { width:100%; overflow:hidden; background:#0d0d0d; touch-action:none; font-family:system-ui, -apple-system, 'Segoe UI', sans-serif; }
   #gra { position:relative; width:100%; max-width:420px; margin:0 auto; border-radius:14px; overflow:hidden; border:2px solid #d4af37; }
   #plotno { display:block; width:100%; height:auto; touch-action:none; }
-  #panel { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:8px 52px 0 12px; pointer-events:none; }
+  #panel { position:absolute; top:0; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:8px 52px 0 48px; pointer-events:none; }
+  #btnReset { position:absolute; top:5px; left:8px; width:32px; height:32px; border-radius:50%; border:2px solid rgba(60,40,10,0.6); z-index:5;
+    background:rgba(255,248,220,0.92); font-weight:900; font-size:17px; color:#5a3a0a; cursor:pointer; display:none; }
   #etapEtykieta { font-weight:900; font-size:14px; color:#1d3b1f; text-shadow:0 1px 0 rgba(255,255,255,0.7); }
   #wrogowieEtykieta { font-weight:900; font-size:14px; color:#1d3b1f; text-shadow:0 1px 0 rgba(255,255,255,0.7); }
   #podpowiedz { position:absolute; top:30px; left:10px; right:52px; font-size:12px; line-height:1.35; color:#24361f; font-weight:700;
@@ -24690,6 +24856,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
 <audio id="odblokowanieDzwiekuIOS" loop playsinline style="display:none;"></audio>
 <div id="gra">
   <canvas id="plotno" width="380" height="560"></canvas>
+  <button id="btnReset" title="Zacznij etap od nowa">↻</button>
   <div id="panel"><div id="etapEtykieta"></div><div id="wrogowieEtykieta"></div></div>
   <button id="btnInfo">?</button>
   <div id="torba"></div>
@@ -24741,7 +24908,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
 
   // ===================== OWOCE (6, kazdy z wyrazna moca) =====================
   var OWOCE = {
-    borowka:   { nazwa:'Borówka',   emoji:'🫐', r:12, masa:0.9, sok:'#4a5bd6', opis:'Dotknij — przenika przez pierwszą ścianę, w którą uderzy.' },
+    borowka:   { nazwa:'Borówka',   emoji:'🫐', r:12, masa:0.9, sok:'#4a5bd6', opis:'Dotknij — na chwilę zmienia się w ducha i przenika przez ściany.' },
     banan:     { nazwa:'Banan',     emoji:'🍌', r:14, masa:1.1, sok:'#ffe27a', opis:'Dotknij — leci prosto w prawo jak strzała, bez grawitacji.' },
     winogrona: { nazwa:'Winogrona', emoji:'🍇', r:13, masa:0.9, sok:'#8a3fc0', opis:'Dotknij — salwa 6 winogron w kierunku lotu.' },
     jablko:    { nazwa:'Jabłko',    emoji:'🍎', r:14, masa:1.3, sok:'#e8473c', opis:'Dotknij — wybucha.' },
@@ -24794,11 +24961,11 @@ SZABLON_PROCA = """<!DOCTYPE html>
       bloki:[ B(170,0,10,50), B(222,0,10,50), B(170,50,62,10), B(160,110,90,12), B(160,160,90,12), B(240,122,10,38),
               B(280,0,12,80), B(322,0,12,80), B(364,0,12,80) ],
       robaki:[ R(201,0), R(200,122), R(185,172), R(215,172), R(307,0), R(349,0) ] },
-    { nazwa:'Królewski ogród', owoce:['banan','winogrona','jablko','truskawka','granat','borowka'],
-      rada:'Szef ma 120 punktów życia. Wybuch jabłka na drewnianym dachu bunkra rozbije go i mocno zrani Szefa — potem dobij go całym owocem (borówka przeniknie przez ścianę).',
-      bloki:[ B(150,0,14,60), B(194,0,14,60), B(238,0,14,60), B(262,0,12,64), B(362,0,12,64), B(262,64,112,12,'drewno'),
-              B(262,150,112,12), B(262,200,112,12), B(364,162,10,38) ],
-      robaki:[ R(179,0), R(223,0), R(318,0,true), R(330,162), R(290,212), R(340,212) ] }
+    { nazwa:'Królewski ogród', owoce:['banan','borowka','borowka','jablko'],
+      rada:'Tylko cztery owoce na ośmiu szkodników — każdy strzał musi trafić kilku naraz. Banan przeleci przez cały tunel, borówka przeniknie do komnaty Szefa i bunkra nad nią.',
+      bloki:[ B(140,150,90,90), B(140,0,90,104), B(230,104,14,46), B(244,0,30,150), B(330,0,30,150), B(244,150,116,30),
+              B(250,180,10,44,'drewno'), B(350,180,10,44,'drewno'), B(244,224,116,10,'drewno') ],
+      robaki:[ R(170,104), R(205,104), R(302,0,true), R(285,180), R(320,180), R(300,234), R(160,240), R(200,240) ] }
   ];
   var WYTRZYMALOSC = { drewno: 50, szklo: 20, kamien: 110, skala: 1e9 };
   var MASA_BLOKU = { drewno: 1, szklo: 0.6, kamien: 2, skala: 3 };
@@ -24874,12 +25041,16 @@ SZABLON_PROCA = """<!DOCTYPE html>
       if (rb.y > H + 40 || rb.x < -40 || rb.x > W + 40) zabijRobaka(rb);
     }
   }
+  function nachodziBlok(o, b) {
+    var cx = Math.max(b.x, Math.min(o.x, b.x + b.w)), cy = Math.max(b.y, Math.min(o.y, b.y + b.h));
+    return (o.x - cx) * (o.x - cx) + (o.y - cy) * (o.y - cy) < o.r * o.r;
+  }
   function kolizjaOwocBlok(o, b) {
     if (b.usun) return;
     var cx = Math.max(b.x, Math.min(o.x, b.x + b.w)), cy = Math.max(b.y, Math.min(o.y, b.y + b.h));
     var dx = o.x - cx, dy = o.y - cy, d2 = dx * dx + dy * dy;
-    if (d2 >= o.r * o.r) { if (o.duchBlok === b) { o.duchBlok = null; o.duch = false; } return; }   // wyszla z przenikanej sciany
-    if (o.duch && (o.duchBlok === null || o.duchBlok === b)) { o.duchBlok = b; return; }        // borowka: przenika pierwsza sciane
+    if (d2 >= o.r * o.r) return;
+    if (o.duch) return;                                         // borowka-duch przenika sciany
     var d = Math.sqrt(d2), nx, ny;
     if (d < 0.001) {
       var lw = o.x - b.x, pr = b.x + b.w - o.x, gr = o.y - b.y, dl = b.y + b.h - o.y, m = Math.min(lw, pr, gr, dl);
@@ -24921,6 +25092,10 @@ SZABLON_PROCA = """<!DOCTYPE html>
       o.zycie += dt; o.naZiemi = false;
       if (o.bezGrawitacji > 0) o.bezGrawitacji -= dt; else o.vy += G * dt;
       o.x += o.vx * dt; o.y += o.vy * dt; o.kat += o.wKat * dt;
+      if (o.duch) {                                             // duch trwa 1,4 s; konczy sie dopiero poza murem
+        o.duchCzas -= dt;
+        if (o.duchCzas <= 0 && !bloki.some(function (bb) { return !bb.usun && nachodziBlok(o, bb); })) o.duch = false;
+      }
       if (o.y + o.r > ZIEMIA) {
         o.y = ZIEMIA - o.r;
         if (o.vy > 0) { if (o.vy > 140) soczek(o, Math.min(8, o.vy / 40)); o.vy = -o.vy * 0.32; if (Math.abs(o.vy) < 30) o.vy = 0; }
@@ -25004,7 +25179,7 @@ SZABLON_PROCA = """<!DOCTYPE html>
     o.mocUzyta = true;
     var s = Math.max(120, Math.hypot(o.vx, o.vy)), kat = Math.atan2(o.vy, o.vx), i;
     switch (o.typ) {
-      case 'borowka': o.duch = true; o.duchBlok = null; dzwiek(function () { ton(1200, 0.3, 'sine', 0.06, 400); }); break;
+      case 'borowka': o.duch = true; o.duchCzas = 1.4; o.duchBlok = null; dzwiek(function () { ton(1200, 0.3, 'sine', 0.06, 400); }); break;
       case 'banan': o.vx = 470; o.vy = 0; o.bezGrawitacji = 99; o.banan = true; o.kat = 0; o.wKat = 0; dzwiek(function () { ton(500, 0.2, 'sawtooth', 0.05, 1200); }); break;
       case 'winogrona':
         for (i = 0; i < 6; i++) { var dk = -0.35 + i * 0.14;
@@ -25101,6 +25276,16 @@ SZABLON_PROCA = """<!DOCTYPE html>
     var w = el('wstep'); w.innerHTML = kartaEtapu(idx); w.classList.remove('ukryty');
     el('btnStartEtapu').addEventListener('click', function () { inicjujDzwiek(); w.classList.add('ukryty'); trwa = true; czasOstatni = null; });
   }
+  // Reset: ta sama mapa od nowa, pelna torba, bez karty wstepu
+  function resetujEtap() {
+    if (!trwa) return;
+    inicjujDzwiek(); ton(420, 0.08, 'triangle', 0.05);
+    zbudujPlansze(ETAPY_GRY[etapIdx]); odswiezPanel();
+    torba = ETAPY_GRY[etapIdx].owoce.slice(); wybranyIdx = 0; zaladowany = torba[0];
+    owoce = []; glowny = null; celowanie = false; naciagX = 0; naciagY = 0; stanStrzalu = 'celowanie'; odswiezTorbe();
+  }
+  el('btnReset').addEventListener('click', resetujEtap);
+  setInterval(function () { el('btnReset').style.display = trwa ? 'block' : 'none'; }, 250);
   function wygranaEtapu() {
     trwa = false; ton(660, 0.12, 'triangle', 0.07); setTimeout(function () { ton(880, 0.12, 'triangle', 0.07); }, 120); setTimeout(function () { ton(1320, 0.2, 'triangle', 0.07); }, 240);
     var n = el('nakladka'), ost = etapIdx === ETAPY_GRY.length - 1;
@@ -26135,9 +26320,11 @@ def pokaz_powitanie():
     # Klodka jest przypieta do ekranu (position:fixed) w losowym, ale zawsze
     # WIDOCZNYM miejscu - dawniej odstep o losowej wysokosci rozciagal strone
     # i trzeba bylo ja przewijac. Przewijanie tego ekranu blokuje CSS (:has).
-    losowe_x = random.choice([18, 26, 34, 42, 50, 58, 66, 74, 82])      # srodek klodki, % szerokosci
-    losowe_y = random.choice([46, 52, 58, 64, 70, 76])                  # srodek klodki, % wysokosci
-    gora_min = 400 if tryb_testowy() else 210                          # pod naglowkiem (i banerem testowym)
+    # Losowe miejsce jako ULAMEK wolnego obszaru (0..1) - piksele liczy skrypt z faktycznie
+    # widocznej czesci ekranu, wiec klodka nie moze wyjsc poza ekran na zadnym telefonie
+    losowe_x = random.choice([0.0, 0.15, 0.3, 0.45, 0.6, 0.75, 0.9, 1.0])
+    losowe_y = random.choice([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+    gora_min = 330 if tryb_testowy() else 200                          # pod naglowkiem (i przyciskiem testowym)
     kliknieto = st.button("🔒", key="zamek_btn")
 
     # WAZNE: st.markdown/st.html z <style> okazal sie zawodny przy KOLEJNYCH
@@ -26160,9 +26347,31 @@ def pokaz_powitanie():
               wrapper.style.marginLeft = '0';
               wrapper.style.position = 'fixed';
               wrapper.style.zIndex = '50';
-              wrapper.style.left = 'clamp(8px, calc({losowe_x}vw - 80px), calc(100vw - 168px))';
-              wrapper.style.top = 'clamp({gora_min}px, calc({losowe_y}vh - 80px), calc(100vh - 176px))';
-              wrapper.style.top = 'clamp({gora_min}px, calc({losowe_y}dvh - 80px), calc(100dvh - 176px))';
+              wrapper.style.right = 'auto'; wrapper.style.bottom = 'auto'; wrapper.style.transform = 'none';
+              var okno = window.parent, BOK = 160, MARG = 10;
+              // Ustawia klodke w pikselach widocznego obszaru, potem MIERZY, gdzie naprawde jest
+              // (np. gdy przodek ma transform i 'fixed' liczy sie od niego) i dosuwa o roznice.
+              function ustaw() {{
+                var vv = okno.visualViewport, sz = vv ? vv.width : okno.innerWidth, wy = vv ? vv.height : okno.innerHeight;
+                var ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
+                var gora = Math.min({gora_min}, Math.max(MARG, wy - BOK - MARG));
+                var celX = ox + MARG + {losowe_x} * Math.max(0, sz - BOK - 2 * MARG);
+                var celY = oy + gora + {losowe_y} * Math.max(0, wy - BOK - MARG - gora);
+                wrapper.style.left = celX + 'px'; wrapper.style.top = celY + 'px';
+                var r = wrapper.getBoundingClientRect();
+                if (Math.abs(r.left - celX) > 1 || Math.abs(r.top - celY) > 1) {{
+                  wrapper.style.left = (celX + (celX - r.left)) + 'px'; wrapper.style.top = (celY + (celY - r.top)) + 'px';
+                }}
+              }}
+              ustaw();
+              [60, 250, 700, 1500].forEach(function (t) {{ setTimeout(ustaw, t); }});   // po ulozeniu sie strony
+              if (!okno.__klodkaNasluch) {{
+                okno.__klodkaNasluch = true;
+                var popraw = function () {{ try {{ var w = okno.document.querySelector('.st-key-zamek_btn'); if (w && w.__ustaw) w.__ustaw(); }} catch (e) {{}} }};
+                okno.addEventListener('resize', popraw); okno.addEventListener('orientationchange', function () {{ setTimeout(popraw, 300); }});
+                if (okno.visualViewport) {{ okno.visualViewport.addEventListener('resize', popraw); okno.visualViewport.addEventListener('scroll', popraw); }}
+              }}
+              wrapper.__ustaw = ustaw;
               var btn = wrapper.querySelector('button');
               if (!btn) return;
               // Samo emoji - bez tla/ramki/cienia, tylko wieksze i z
@@ -26279,10 +26488,10 @@ def pokaz_quiz_levelu(kat):
     if q["odp"] is None:
         k1, k2 = st.columns(2)
         with k1:
-            if st.button("✅ Prawda", key=f"quiz_{kat['id']}_{q['nr']}_p", use_container_width=True):
+            if st.button("Prawda", key=f"quizP_{kat['id']}_{q['nr']}", use_container_width=True):
                 q["odp"] = True; q["dobre"] += (prawda is True); st.rerun()
         with k2:
-            if st.button("❌ Fałsz", key=f"quiz_{kat['id']}_{q['nr']}_f", use_container_width=True):
+            if st.button("Fałsz", key=f"quizF_{kat['id']}_{q['nr']}", use_container_width=True):
                 q["odp"] = False; q["dobre"] += (prawda is False); st.rerun()
     else:
         dobrze = q["odp"] == prawda
