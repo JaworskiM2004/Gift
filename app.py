@@ -23545,6 +23545,12 @@ h1, h2, h3 { font-family: 'Cinzel', serif !important; color: #f0dfa8; }
     color: #e6c15c;
 }
 
+/* Streamlit dokleja do kazdego naglowka ikonke "link do tego miejsca" (🔗) —
+   w prezencie zupelnie zbedna, wiec ja chowamy */
+[data-testid="stHeaderActionElements"], .stMarkdown h1 a[href^="#"], .stMarkdown h2 a[href^="#"],
+.stMarkdown h3 a[href^="#"], [data-testid="stMarkdownContainer"] :is(h1,h2,h3,h4) > span > a {
+  display: none !important;
+}
 .tytul {
     font-family: 'Cinzel', serif;
     text-align: center;
