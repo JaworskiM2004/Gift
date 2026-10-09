@@ -1024,7 +1024,8 @@ def pokaz_samouczek(krok):
         kola = "".join(
             f"<span class='samouczek-kolo'>{x}</span>"
             for x in tt({
-                "pl": ["👥 Zapytaj kogoś", "🔎 Szukaj w internecie", "🤖 Poproś AI o pomoc"],
+                "pl": ["🤖 Możesz korzystać z AI", "👥 Możesz prosić innych o pomoc", "🔎 Możesz szukać w internecie",
+                       "📱 Możesz pokazywać grę innym", "🎮 Możesz dawać innym pograć"],
                 "en": ["👥 Ask someone", "🔎 Search the internet", "🤖 Ask an AI"],
             })
         )
@@ -1035,12 +1036,11 @@ def pokaz_samouczek(krok):
                 "pl": "Najważniejsze: celem jest <b>dobra zabawa</b> 🎉",
                 "en": "Most important: the goal is to <b>have fun</b> 🎉"}) + "</div>"
             + "<p>" + tt({
-                "pl": "Dlatego każda pomoc w granicach rozsądku jest jak najbardziej w porządku. "
-                      "Jeśli coś okaże się za trudne, korzystaj z kół ratunkowych:",
+                "pl": "Dlatego zasady są proste — wszystko jest dozwolone. Jeśli z czymś nie dajesz sobie rady:",
                 "en": "So any help within reason is totally fine. "
                       "If something turns out too hard, use your lifelines:"}) + "</p>"
             + "<div class='samouczek-kola'>" + kola + "</div>"
-            + "<p>" + tt({"pl": "…albo czegokolwiek innego, co przyjdzie Ci do głowy 😉",
+            + "<p>" + tt({"pl": "To nie są żadne koła ratunkowe, które się kończą — po prostu tak się w to gra 😉",
                           "en": "…or anything else you can think of 😉"}) + "</p>"
             + "</div>",
             unsafe_allow_html=True,
@@ -1064,8 +1064,8 @@ def pokaz_samouczek(krok):
             "<div class='samouczek'>"
             + "<h3>" + tt({"pl": "🏰 Trzy levele", "en": "🏰 Three levels"}) + "</h3>"
             + "<p>" + tt({
-                "pl": "Gry są podzielone na <b>3 levele</b>. Gdy skończysz cały level, "
-                      "odkrywa się następny — z innymi rodzajami gier.",
+                "pl": "Gry są podzielone na <b>3 levele</b>, każdy z innymi rodzajami gier. "
+                      "Żeby wejść do levelu, wystarczy przejść <b>krótki quiz</b> — 3 pytania: prawda czy fałsz?",
                 "en": "The games are split into <b>3 levels</b>. Once you finish a whole level, "
                       "the next one opens — with different kinds of games."}) + "</p>"
             + f"<div class='samouczek-sciezka'>{sciezka}</div></div>",
@@ -26356,7 +26356,7 @@ def pokaz_powitanie():
               // Ustawia klodke w pikselach widocznego obszaru, potem MIERZY, gdzie naprawde jest
               // (np. gdy przodek ma transform i 'fixed' liczy sie od niego) i dosuwa o roznice.
               function ustaw() {{
-                if (wrapper.__wcisniety) return;
+                if (wrapper.__wcisniety && Date.now() - wrapper.__wcisniety < 1200) return;
                 var vv = okno.visualViewport, sz = vv ? vv.width : okno.innerWidth, wy = vv ? vv.height : okno.innerHeight;
                 var ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
                 var gora = Math.min({gora_min}, Math.max(MARG, wy - BOK - MARG));
@@ -26410,9 +26410,13 @@ def pokaz_powitanie():
               if (!btn.dataset.dzwiek) {{
                 btn.dataset.dzwiek = '1';
                 btn.addEventListener('click', new window.parent.Function('ev', {json.dumps(KOD_KLIKNIECIA_ZAMKA)}));
-                // w trakcie dotyku klodka stoi w miejscu (zadne przestawianie pozycji)
-                btn.addEventListener('pointerdown', function () {{ wrapper.__wcisniety = true; }});
-                ['pointerup', 'pointercancel'].forEach(function (t) {{ btn.addEventListener(t, function () {{ setTimeout(function () {{ wrapper.__wcisniety = false; }}, 400); }}); }});
+                // w trakcie dotyku klodka stoi w miejscu. Znacznik to CZAS dotkniecia (sam wygasa po 1,2 s),
+                // a funkcje powstaja w oknie STRONY - ramka tego skryptu ginie przy przeladowaniu Streamlita
+                // i jej liczniki czasu tez (przez to klodka zostawala na zawsze w jednym miejscu).
+                btn.addEventListener('pointerdown', new window.parent.Function('ev', "var w = this.closest('.st-key-zamek_btn'); if (w) w.__wcisniety = Date.now();"));
+                ['pointerup', 'pointercancel'].forEach(function (t) {{
+                  btn.addEventListener(t, new window.parent.Function('ev', "var w = this.closest('.st-key-zamek_btn'); if (w) w.__wcisniety = 0;"));
+                }});
               }}
 
               var styl = doc.getElementById('styl-pulsowania-zamka');
@@ -26462,10 +26466,11 @@ PYTANIA_LEVELI = {
         ("Tetris wymyślono w Japonii.", False, "Wymyślił go Aleksiej Pażytnow w Moskwie, w czasach ZSRR."),
     ],
     "przygody": [
-        ("W Minecrafcie Creeper wybucha, kiedy podejdzie do gracza.", True, "Syczy, a potem — bum."),
-        ("Do zrobienia pochodni potrzebny jest diament.", False, "Wystarczy węgiel (albo węgiel drzewny) i patyk."),
-        ("Enderman wścieka się, gdy spojrzysz mu prosto w oczy.", True, "Lepiej nie patrzeć. Albo założyć dynię na głowę."),
+        ("Diament da się wydobyć kamiennym kilofem.", False, "Kamienny nie wystarczy — potrzebny jest co najmniej żelazny kilof."),
+        ("Łóżko postawione w Netherze wybucha, kiedy spróbujesz się w nim położyć.", True, "Tak — i to całkiem mocno. Tak samo w Endzie."),
+        ("Świnia trafiona piorunem zamienia się w zombie piglina.", True, "Tak — dawniej ta postać nazywała się zombie pigman."),
     ],
+
 }
 
 
@@ -27608,14 +27613,14 @@ SKRYPT_CIEMNYCH_PASKOW = """<script>
       var m = d.querySelector('meta[name="theme-color"]');
       if (!m) { m = d.createElement('meta'); m.setAttribute('name', 'theme-color'); d.head.appendChild(m); }
       if (m.getAttribute('content') !== KOLOR) m.setAttribute('content', KOLOR);
-      var c = d.querySelector('meta[name="color-scheme"]');
-      if (!c) { c = d.createElement('meta'); c.setAttribute('name', 'color-scheme'); d.head.appendChild(c); }
-      c.setAttribute('content', 'dark');
-      d.documentElement.style.backgroundColor = KOLOR; d.documentElement.style.colorScheme = 'dark';
+      // BEZ color-scheme: niezgodny schemat kolorow sprawia, ze ramki (animacje, gry) dostaja biale tlo
+      var c = d.querySelector('meta[name="color-scheme"]'); if (c && c.getAttribute('content') === 'dark') c.remove();
+      if (d.documentElement.style.colorScheme) d.documentElement.style.colorScheme = '';
+      d.documentElement.style.backgroundColor = KOLOR;
       if (d.body) d.body.style.backgroundColor = KOLOR;
     } catch (e) {}
   }
-  var o = window;
+  var o = window.parent;            // od strony aplikacji w gore (ta niewidoczna ramka nic nie maluje)
   for (var i = 0; i < 6; i++) {
     pomaluj(o);
     try { if (o.parent === o) break; void o.parent.document; o = o.parent; } catch (e) { break; }
