@@ -553,6 +553,13 @@ ETAPY = [
         "odpowiedz": "lampa jak skurwysyn",
     },
     {
+        "klucz": "morse",
+        "emoji": "🔊",
+        "tytul": {"pl": "🔊 · – – ·", "en": "🔊 · – – ·"},
+        "typ": "morse",
+        "bez_tytulu": True,
+    },
+    {
         "klucz": "wordle",
         "emoji": "📝",
         "tytul": {"pl": "📝 Wordle & Loldle", "en": "📝 Wordle & Loldle"},
@@ -874,7 +881,7 @@ KATEGORIE = [
         "nazwa": {"pl": "Level 1", "en": "Level 1"},
         "opis": {"pl": "Mózgowe · zagadki i łamigłówki", "en": "Brain teasers · riddles and puzzles"},
         "kolor": "#7ea8e6",
-        "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman"],
+        "etapy": ["krzyzowka", "rebus", "wordle", "data", "szachy", "historia", "spiderman", "morse"],
     },
     {
         "id": "gry",
@@ -25973,6 +25980,142 @@ def _karta_gry(url, klasa, ikona_html, tytul, podpis):
     )
 
 
+# ----------------------------------------------------------------------
+# MORSE — tylko głośniczek i pole na tekst. Zero opisu: trzeba się
+# domyślić, że to alfabet Morse'a. Dźwięk jest gotowym plikiem WAV
+# (element <audio>, nie Web Audio), więc na iPhonie gra nawet przy
+# włączonym przełączniku wyciszenia.
+# ----------------------------------------------------------------------
+TEKST_MORSE = "POWODZENIA PRZYDA CI SIĘ"
+_KODY_MORSE = {
+    "A": ".-", "B": "-...", "C": "-.-.", "D": "-..", "E": ".", "F": "..-.",
+    "G": "--.", "H": "....", "I": "..", "J": ".---", "K": "-.-", "L": ".-..",
+    "M": "--", "N": "-.", "O": "---", "P": ".--.", "Q": "--.-", "R": ".-.",
+    "S": "...", "T": "-", "U": "..-", "V": "...-", "W": ".--", "X": "-..-",
+    "Y": "-.--", "Z": "--..",
+}
+
+
+def _plan_morse(tekst):
+    """Lista długości w jednostkach: dodatnie = dźwięk, ujemne = cisza.
+    Odstępy celowo trochę dłuższe niż w normie (litera: 4 jednostki zamiast
+    3, słowo: 10 zamiast 7), żeby dało się to rozpisać ze słuchu. Polskie
+    znaki idą jak zwykłe litery (Ę → E) — tak rozumie je każdy słownik
+    Morse'a w internecie."""
+    tekst = str(tekst).upper().translate(_POLSKIE_ZNAKI)
+    plan = [-4]                               # chwila ciszy na start
+    for i, slowo in enumerate(tekst.split()):
+        if i:
+            plan.append(-10)
+        for j, litera in enumerate(slowo):
+            if j:
+                plan.append(-4)
+            for k, znak in enumerate(_KODY_MORSE.get(litera, "")):
+                if k:
+                    plan.append(-1)
+                plan.append(1 if znak == "." else 3)
+    plan.append(-4)
+    return plan
+
+
+def _html_morse(tekst):
+    # Plik WAV powstaje dopiero w przeglądarce (z krótkiego planu) — dzięki
+    # temu strona nie przesyła przy każdym odświeżeniu ponad 1 MB dźwięku.
+    return """<!DOCTYPE html><html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  html,body{margin:0;padding:0;background:transparent;overflow:hidden;}
+  body{display:flex;align-items:center;justify-content:center;height:100vh;
+       -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
+  #glosnik{width:150px;height:150px;border-radius:50%;border:none;cursor:pointer;
+       background:radial-gradient(circle at 35% 30%,#3a3358,#1c1830 70%);
+       box-shadow:0 0 0 3px rgba(255,255,255,0.10),0 10px 30px rgba(0,0,0,0.45);
+       display:flex;align-items:center;justify-content:center;padding:0;
+       transition:transform .12s ease;touch-action:manipulation;}
+  #glosnik:active{transform:scale(0.94);}
+  #glosnik svg{width:78px;height:78px;}
+  .fala{opacity:.35;transition:opacity .2s;}
+  #glosnik.gra{animation:puls 1.1s ease-in-out infinite;}
+  #glosnik.gra .fala{opacity:1;}
+  #glosnik.gra .fala2{animation:mig 1.1s ease-in-out infinite;}
+  @keyframes puls{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.10),0 0 0 0 rgba(160,140,255,.45),0 10px 30px rgba(0,0,0,.45);}
+                  50%{box-shadow:0 0 0 3px rgba(255,255,255,.18),0 0 0 18px rgba(160,140,255,0),0 10px 30px rgba(0,0,0,.45);}}
+  @keyframes mig{0%,100%{opacity:1}50%{opacity:.3}}
+</style></head><body>
+<audio id="dzwiek" preload="auto" playsinline></audio>
+<button id="glosnik" aria-label="🔊">
+  <svg viewBox="0 0 64 64" fill="none" stroke="#f3eefe" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M10 25h10l13-11v36L20 39H10z" fill="#f3eefe"/>
+    <path class="fala" d="M41 24c3 2.5 4.5 5 4.5 8s-1.5 5.5-4.5 8"/>
+    <path class="fala fala2" d="M47 17c5.5 4 8.5 9 8.5 15s-3 11-8.5 15"/>
+  </svg>
+</button>
+<script>
+(function(){
+  var PLAN = __PLAN__, JEDN = 0.13, HZ = 660, FS = 16000;
+  // <audio> zamiast Web Audio: na iPhonie gra nawet przy wyciszeniu
+  function zbudujWav(){
+    var n = 0, i, k;
+    for (i = 0; i < PLAN.length; i++) n += Math.round(Math.abs(PLAN[i]) * JEDN * FS);
+    var buf = new ArrayBuffer(44 + n * 2), d = new DataView(buf);
+    function txt(o, t){ for (var j = 0; j < t.length; j++) d.setUint8(o + j, t.charCodeAt(j)); }
+    txt(0, 'RIFF'); d.setUint32(4, 36 + n * 2, true); txt(8, 'WAVE'); txt(12, 'fmt ');
+    d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
+    d.setUint32(24, FS, true); d.setUint32(28, FS * 2, true); d.setUint16(32, 2, true);
+    d.setUint16(34, 16, true); txt(36, 'data'); d.setUint32(40, n * 2, true);
+    var o = 44, narost = Math.round(0.006 * FS);
+    for (i = 0; i < PLAN.length; i++) {
+      var m = Math.round(Math.abs(PLAN[i]) * JEDN * FS);
+      for (k = 0; k < m; k++, o += 2) {
+        var v = 0;
+        if (PLAN[i] > 0) {
+          var obw = Math.min(1, k / narost, (m - 1 - k) / narost);
+          v = Math.round(0.55 * 32767 * obw * Math.sin(2 * Math.PI * HZ * k / FS));
+        }
+        d.setInt16(o, v, true);
+      }
+    }
+    return new Blob([buf], { type: 'audio/wav' });
+  }
+  var a = document.getElementById('dzwiek'), b = document.getElementById('glosnik');
+  try { a.src = URL.createObjectURL(zbudujWav()); } catch (e) {}
+  function stop(){ try { a.pause(); a.currentTime = 0; } catch (e) {} b.classList.remove('gra'); }
+  b.addEventListener('click', function(){
+    if (!a.paused) { stop(); return; }
+    try { a.currentTime = 0; } catch (e) {}
+    var p = a.play(); b.classList.add('gra');
+    if (p && p.catch) p.catch(function(){ b.classList.remove('gra'); });
+  });
+  a.addEventListener('ended', function(){ b.classList.remove('gra'); });
+  a.addEventListener('pause', function(){ b.classList.remove('gra'); });
+})();
+</script></body></html>""".replace("__PLAN__", json.dumps(_plan_morse(tekst)))
+
+
+def renderuj_morse(etap_dane):
+    klucz = etap_dane["klucz"]
+    # Bez podpowiedzi Streamlita pod polem ("Press Enter to apply")
+    st.markdown("<style>[data-testid='InputInstructions']{display:none !important;}"
+                ".st-key-pole_morse input{text-align:center;font-size:1.15rem;letter-spacing:0.04em;}"
+                "</style>", unsafe_allow_html=True)
+    components.html(_html_morse(TEKST_MORSE), height=210, scrolling=False)
+    kol_pole, kol_ok = st.columns([5, 1])
+    with kol_pole:
+        wpisane = st.text_input("morse", key=f"pole_{klucz}", label_visibility="collapsed")
+    with kol_ok:
+        klik = st.button("➜", key=f"btn_{klucz}", use_container_width=True)
+    if not wpisane.strip():
+        return None
+    oczyszczone = "".join(z for z in znormalizuj(wpisane) if z.isalnum())
+    cel = "".join(z for z in znormalizuj(TEKST_MORSE) if z.isalnum())
+    if oczyszczone == cel:
+        return True
+    if klik or wpisane:
+        st.markdown("<div style='text-align:center;font-size:1.6rem;margin-top:0.4rem;'>❌</div>",
+                    unsafe_allow_html=True)
+    return None
+
+
 def renderuj_wordle(etap_dane):
     klucz = etap_dane["klucz"]
     kafle = "".join(f"<span style='background:{k}'>{l}</span>" for l, k in
@@ -26788,7 +26931,8 @@ def pokaz_ekran_etapu(etap_dane):
         st.info(t("level_zablokowany").format(n=KATEGORIE.index(kat_e)))
         return
 
-    st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
+    if not etap_dane.get("bez_tytulu"):
+        st.markdown(f"<h2 class='tytul' style='font-size:1.5rem;'>{tt(etap_dane['tytul'])}</h2>", unsafe_allow_html=True)
     # Instrukcja etapu (krzyzowka, rebus) - byla w danych, ale nigdzie sie nie wyswietlala
     if etap_dane.get("info"):
         st.markdown(f"<div class='info-etapu'>💡 {tt(etap_dane['info'])}</div>", unsafe_allow_html=True)
@@ -26842,6 +26986,8 @@ def pokaz_ekran_etapu(etap_dane):
         wynik = renderuj_piano(etap_dane)
     elif typ == "wordle":
         wynik = renderuj_wordle(etap_dane)
+    elif typ == "morse":
+        wynik = renderuj_morse(etap_dane)
     elif typ == "data":
         wynik = renderuj_data(etap_dane)
     elif typ == "szachy":
