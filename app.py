@@ -26356,6 +26356,7 @@ def pokaz_powitanie():
               // Ustawia klodke w pikselach widocznego obszaru, potem MIERZY, gdzie naprawde jest
               // (np. gdy przodek ma transform i 'fixed' liczy sie od niego) i dosuwa o roznice.
               function ustaw() {{
+                if (wrapper.__wcisniety) return;
                 var vv = okno.visualViewport, sz = vv ? vv.width : okno.innerWidth, wy = vv ? vv.height : okno.innerHeight;
                 var ox = vv ? vv.offsetLeft : 0, oy = vv ? vv.offsetTop : 0;
                 var gora = Math.min({gora_min}, Math.max(MARG, wy - BOK - MARG));
@@ -26373,7 +26374,7 @@ def pokaz_powitanie():
                 okno.__klodkaNasluch = true;
                 var popraw = function () {{ try {{ var w = okno.document.querySelector('.st-key-zamek_btn'); if (w && w.__ustaw) w.__ustaw(); }} catch (e) {{}} }};
                 okno.addEventListener('resize', popraw); okno.addEventListener('orientationchange', function () {{ setTimeout(popraw, 300); }});
-                if (okno.visualViewport) {{ okno.visualViewport.addEventListener('resize', popraw); okno.visualViewport.addEventListener('scroll', popraw); }}
+                if (okno.visualViewport) okno.visualViewport.addEventListener('resize', popraw);
               }}
               wrapper.__ustaw = ustaw;
               var btn = wrapper.querySelector('button');
@@ -26408,7 +26409,10 @@ def pokaz_powitanie():
               // Funkcja tworzona w oknie STRONY - przezyje zniszczenie tej ramki
               if (!btn.dataset.dzwiek) {{
                 btn.dataset.dzwiek = '1';
-                btn.addEventListener('pointerdown', new window.parent.Function('ev', {json.dumps(KOD_KLIKNIECIA_ZAMKA)}));
+                btn.addEventListener('click', new window.parent.Function('ev', {json.dumps(KOD_KLIKNIECIA_ZAMKA)}));
+                // w trakcie dotyku klodka stoi w miejscu (zadne przestawianie pozycji)
+                btn.addEventListener('pointerdown', function () {{ wrapper.__wcisniety = true; }});
+                ['pointerup', 'pointercancel'].forEach(function (t) {{ btn.addEventListener(t, function () {{ setTimeout(function () {{ wrapper.__wcisniety = false; }}, 400); }}); }});
               }}
 
               var styl = doc.getElementById('styl-pulsowania-zamka');
@@ -27591,8 +27595,38 @@ SKRYPT_PAMIECI = """<script>
 </script>"""
 
 
+# Ciemne paski Safari (gora i dol): Safari barwi je kolorem tla strony NADRZEDNEJ i znacznikiem
+# theme-color. Na streamlit.app aplikacja siedzi w ramce strony Streamlit Cloud (ta sama domena),
+# wiec skrypt idzie w gore przez wszystkie ramki i w kazdej ustawia ciemne tlo i theme-color.
+KOLOR_PASKOW = "#0e0c16"
+SKRYPT_CIEMNYCH_PASKOW = """<script>
+(function () {
+  var KOLOR = '__KOLOR__';
+  function pomaluj(okno) {
+    try {
+      var d = okno.document; if (!d || !d.head) return;
+      var m = d.querySelector('meta[name="theme-color"]');
+      if (!m) { m = d.createElement('meta'); m.setAttribute('name', 'theme-color'); d.head.appendChild(m); }
+      if (m.getAttribute('content') !== KOLOR) m.setAttribute('content', KOLOR);
+      var c = d.querySelector('meta[name="color-scheme"]');
+      if (!c) { c = d.createElement('meta'); c.setAttribute('name', 'color-scheme'); d.head.appendChild(c); }
+      c.setAttribute('content', 'dark');
+      d.documentElement.style.backgroundColor = KOLOR; d.documentElement.style.colorScheme = 'dark';
+      if (d.body) d.body.style.backgroundColor = KOLOR;
+    } catch (e) {}
+  }
+  var o = window;
+  for (var i = 0; i < 6; i++) {
+    pomaluj(o);
+    try { if (o.parent === o) break; void o.parent.document; o = o.parent; } catch (e) { break; }
+  }
+})();
+</script>""".replace("__KOLOR__", KOLOR_PASKOW)
+
+
 def pamiec_przegladarki(swiezy):
     if not PRZYWRACANIE_Z_PRZEGLADARKI:
+        components.html(SKRYPT_CIEMNYCH_PASKOW, height=0)
         return
     from urllib.parse import urlencode
     parametry = {k: st.query_params.get(k) for k in list(st.query_params) if k not in ("resetuj", "test", "samouczek")}
@@ -27603,7 +27637,8 @@ def pamiec_przegladarki(swiezy):
     components.html(
         SKRYPT_PAMIECI.replace("__SWIEZY__", "true" if swiezy else "false")
                       .replace("__ZAPIS__", json.dumps(zapis))
-                      .replace("__WYCZYSC__", "true" if wyczysc else "false"),
+                      .replace("__WYCZYSC__", "true" if wyczysc else "false")
+        + SKRYPT_CIEMNYCH_PASKOW,
         height=0,
     )
 
