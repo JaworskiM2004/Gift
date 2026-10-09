@@ -25986,7 +25986,7 @@ def _karta_gry(url, klasa, ikona_html, tytul, podpis):
 # (element <audio>, nie Web Audio), więc na iPhonie gra nawet przy
 # włączonym przełączniku wyciszenia.
 # ----------------------------------------------------------------------
-TEKST_MORSE = "POWODZENIA PRZYDA CI SIĘ"
+TEKST_MORSE = "POWODZENIA"
 _KODY_MORSE = {
     "A": ".-", "B": "-...", "C": "-.-.", "D": "-..", "E": ".", "F": "..-.",
     "G": "--.", "H": "....", "I": "..", "J": ".---", "K": "-.-", "L": ".-..",
@@ -25994,6 +25994,9 @@ _KODY_MORSE = {
     "S": "...", "T": "-", "U": "..-", "V": "...-", "W": ".--", "X": "-..-",
     "Y": "-.--", "Z": "--..",
 }
+
+
+JEDNOSTKA_MORSE = 0.22   # sekundy na krótki sygnał (długi = 3x)
 
 
 def _plan_morse(tekst):
@@ -26019,43 +26022,69 @@ def _plan_morse(tekst):
 
 
 def _html_morse(tekst):
-    # Plik WAV powstaje dopiero w przeglądarce (z krótkiego planu) — dzięki
-    # temu strona nie przesyła przy każdym odświeżeniu ponad 1 MB dźwięku.
+    # Plik WAV powstaje dopiero w przeglądarce (z krótkiego planu) — strona
+    # nie przesyła przy każdym odświeżeniu całego nagrania. Jedno kliknięcie
+    # = jedno odtworzenie; w trakcie kliknięcia są ignorowane. Przycisk
+    # rozbłyskuje razem z każdym piknięciem, a pierścień pokazuje postęp.
     return """<!DOCTYPE html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
   html,body{margin:0;padding:0;background:transparent;overflow:hidden;}
   body{display:flex;align-items:center;justify-content:center;height:100vh;
        -webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
-  #glosnik{width:150px;height:150px;border-radius:50%;border:none;cursor:pointer;
+  #oprawa{position:relative;width:200px;height:200px;display:flex;align-items:center;justify-content:center;}
+  #pierscien{position:absolute;inset:0;width:200px;height:200px;transform:rotate(-90deg);
+       opacity:0;transition:opacity .3s;pointer-events:none;}
+  #oprawa.gra #pierscien{opacity:1;}
+  #pierscien circle{fill:none;stroke-width:6;}
+  #tlo-p{stroke:rgba(255,255,255,0.10);}
+  #postep{stroke:#a996ff;stroke-linecap:round;filter:drop-shadow(0 0 5px rgba(169,150,255,.8));}
+  #glosnik{position:relative;width:156px;height:156px;border-radius:50%;border:none;cursor:pointer;
        background:radial-gradient(circle at 35% 30%,#3a3358,#1c1830 70%);
        box-shadow:0 0 0 3px rgba(255,255,255,0.10),0 10px 30px rgba(0,0,0,0.45);
        display:flex;align-items:center;justify-content:center;padding:0;
-       transition:transform .12s ease;touch-action:manipulation;}
+       transition:transform .08s ease, background .08s ease, box-shadow .08s ease;
+       touch-action:manipulation;animation:oddech 2.6s ease-in-out infinite;}
+  @keyframes oddech{0%,100%{transform:scale(1);}50%{transform:scale(1.035);}}
   #glosnik:active{transform:scale(0.94);}
-  #glosnik svg{width:78px;height:78px;}
+  #glosnik svg{width:80px;height:80px;}
   .fala{opacity:.35;transition:opacity .2s;}
-  #glosnik.gra{animation:puls 1.1s ease-in-out infinite;}
-  #glosnik.gra .fala{opacity:1;}
-  #glosnik.gra .fala2{animation:mig 1.1s ease-in-out infinite;}
-  @keyframes puls{0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.10),0 0 0 0 rgba(160,140,255,.45),0 10px 30px rgba(0,0,0,.45);}
-                  50%{box-shadow:0 0 0 3px rgba(255,255,255,.18),0 0 0 18px rgba(160,140,255,0),0 10px 30px rgba(0,0,0,.45);}}
-  @keyframes mig{0%,100%{opacity:1}50%{opacity:.3}}
+  #oprawa.gra #glosnik{animation:none;cursor:default;
+       background:radial-gradient(circle at 35% 30%,#4b3f86,#251e48 70%);
+       box-shadow:0 0 0 3px rgba(169,150,255,.35),0 10px 30px rgba(0,0,0,0.45);}
+  #oprawa.gra .fala{opacity:.55;}
+  #oprawa.gra.ton #glosnik{transform:scale(1.07);
+       background:radial-gradient(circle at 35% 30%,#d9cfff,#8f78ff 65%);
+       box-shadow:0 0 0 4px rgba(255,255,255,.55),0 0 38px 10px rgba(169,150,255,.85),0 10px 30px rgba(0,0,0,.45);}
+  #oprawa.gra.ton #glosnik svg path{stroke:#1c1830;}
+  #oprawa.gra.ton #glosnik svg path:first-child{fill:#1c1830;}
+  #oprawa.gra.ton .fala{opacity:1;}
 </style></head><body>
 <audio id="dzwiek" preload="auto" playsinline></audio>
-<button id="glosnik" aria-label="🔊">
-  <svg viewBox="0 0 64 64" fill="none" stroke="#f3eefe" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M10 25h10l13-11v36L20 39H10z" fill="#f3eefe"/>
-    <path class="fala" d="M41 24c3 2.5 4.5 5 4.5 8s-1.5 5.5-4.5 8"/>
-    <path class="fala fala2" d="M47 17c5.5 4 8.5 9 8.5 15s-3 11-8.5 15"/>
-  </svg>
-</button>
+<div id="oprawa">
+  <svg id="pierscien" viewBox="0 0 200 200"><circle id="tlo-p" cx="100" cy="100" r="94"/><circle id="postep" cx="100" cy="100" r="94"/></svg>
+  <button id="glosnik" aria-label="🔊">
+    <svg viewBox="0 0 64 64" fill="none" stroke="#f3eefe" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M10 25h10l13-11v36L20 39H10z" fill="#f3eefe"/>
+      <path class="fala" d="M41 24c3 2.5 4.5 5 4.5 8s-1.5 5.5-4.5 8"/>
+      <path class="fala" d="M47 17c5.5 4 8.5 9 8.5 15s-3 11-8.5 15"/>
+    </svg>
+  </button>
+</div>
 <script>
 (function(){
-  var PLAN = __PLAN__, JEDN = 0.13, HZ = 660, FS = 16000;
+  var PLAN = __PLAN__, JEDN = __JEDN__, HZ = 620, FS = 16000;
+  // Odcinki z dźwiękiem [od, do] w sekundach — do rozbłysków przycisku
+  var TONY = [], t0 = 0, i;
+  for (i = 0; i < PLAN.length; i++) {
+    var dl = Math.abs(PLAN[i]) * JEDN;
+    if (PLAN[i] > 0) TONY.push([t0, t0 + dl]);
+    t0 += dl;
+  }
+  var CALOSC = t0;
   // <audio> zamiast Web Audio: na iPhonie gra nawet przy wyciszeniu
   function zbudujWav(){
-    var n = 0, i, k;
+    var n = 0, k;
     for (i = 0; i < PLAN.length; i++) n += Math.round(Math.abs(PLAN[i]) * JEDN * FS);
     var buf = new ArrayBuffer(44 + n * 2), d = new DataView(buf);
     function txt(o, t){ for (var j = 0; j < t.length; j++) d.setUint8(o + j, t.charCodeAt(j)); }
@@ -26063,33 +26092,52 @@ def _html_morse(tekst):
     d.setUint32(16, 16, true); d.setUint16(20, 1, true); d.setUint16(22, 1, true);
     d.setUint32(24, FS, true); d.setUint32(28, FS * 2, true); d.setUint16(32, 2, true);
     d.setUint16(34, 16, true); txt(36, 'data'); d.setUint32(40, n * 2, true);
-    var o = 44, narost = Math.round(0.006 * FS);
+    var o = 44, narost = Math.round(0.008 * FS);
     for (i = 0; i < PLAN.length; i++) {
       var m = Math.round(Math.abs(PLAN[i]) * JEDN * FS);
       for (k = 0; k < m; k++, o += 2) {
         var v = 0;
         if (PLAN[i] > 0) {
           var obw = Math.min(1, k / narost, (m - 1 - k) / narost);
-          v = Math.round(0.55 * 32767 * obw * Math.sin(2 * Math.PI * HZ * k / FS));
+          v = Math.round(0.6 * 32767 * obw * Math.sin(2 * Math.PI * HZ * k / FS));
         }
         d.setInt16(o, v, true);
       }
     }
     return new Blob([buf], { type: 'audio/wav' });
   }
-  var a = document.getElementById('dzwiek'), b = document.getElementById('glosnik');
+  var a = document.getElementById('dzwiek'), b = document.getElementById('glosnik'),
+      op = document.getElementById('oprawa'), pr = document.getElementById('postep');
+  var OBW = 2 * Math.PI * 94;
+  pr.style.strokeDasharray = OBW; pr.style.strokeDashoffset = OBW;
   try { a.src = URL.createObjectURL(zbudujWav()); } catch (e) {}
-  function stop(){ try { a.pause(); a.currentTime = 0; } catch (e) {} b.classList.remove('gra'); }
+  var gra = false;
+  function klatka(){
+    if (!gra) return;
+    var t = a.currentTime || 0, ton = false;
+    for (var j = 0; j < TONY.length; j++) {
+      if (t < TONY[j][0]) break;
+      if (t < TONY[j][1]) { ton = true; break; }
+    }
+    op.classList.toggle('ton', ton);
+    pr.style.strokeDashoffset = OBW * (1 - Math.min(1, t / CALOSC));
+    requestAnimationFrame(klatka);
+  }
+  function koniec(){
+    gra = false; op.classList.remove('gra'); op.classList.remove('ton');
+    pr.style.strokeDashoffset = OBW;
+  }
   b.addEventListener('click', function(){
-    if (!a.paused) { stop(); return; }
+    if (gra) return;                       // jedno kliknięcie = jedno odtworzenie
     try { a.currentTime = 0; } catch (e) {}
-    var p = a.play(); b.classList.add('gra');
-    if (p && p.catch) p.catch(function(){ b.classList.remove('gra'); });
+    gra = true; op.classList.add('gra');
+    var p = a.play();
+    if (p && p.catch) p.catch(koniec);
+    requestAnimationFrame(klatka);
   });
-  a.addEventListener('ended', function(){ b.classList.remove('gra'); });
-  a.addEventListener('pause', function(){ b.classList.remove('gra'); });
+  a.addEventListener('ended', koniec);
 })();
-</script></body></html>""".replace("__PLAN__", json.dumps(_plan_morse(tekst)))
+</script></body></html>""".replace("__PLAN__", json.dumps(_plan_morse(tekst))).replace("__JEDN__", str(JEDNOSTKA_MORSE))
 
 
 def renderuj_morse(etap_dane):
@@ -26098,7 +26146,7 @@ def renderuj_morse(etap_dane):
     st.markdown("<style>[data-testid='InputInstructions']{display:none !important;}"
                 ".st-key-pole_morse input{text-align:center;font-size:1.15rem;letter-spacing:0.04em;}"
                 "</style>", unsafe_allow_html=True)
-    components.html(_html_morse(TEKST_MORSE), height=210, scrolling=False)
+    components.html(_html_morse(TEKST_MORSE), height=230, scrolling=False)
     kol_pole, kol_ok = st.columns([5, 1])
     with kol_pole:
         wpisane = st.text_input("morse", key=f"pole_{klucz}", label_visibility="collapsed")
